@@ -3,6 +3,7 @@
 | # | Decision | Status |
 |---|---|---|
 | [0001](0001-riddler-one-package.md) | Riddler is one package that consumes the statifier family, and the element document is its contract | proposed |
+| [0003](0003-template-subset.md) | The template subset | proposed |
 
 New ADRs: next number, same three-section format (Context, Decision,
 Consequences), plus the typespecs and worked-example sections this family's
