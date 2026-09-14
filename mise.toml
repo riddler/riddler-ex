@@ -1,0 +1,15 @@
+# mise config for riddler: toolchain only.
+#
+#   mise install        provision the toolchain below
+#
+# Pinned to match the toolchain the rest of the work on this machine runs, and
+# to what this package's dependencies need: predicator 9.4 declares
+# `elixir: "~> 1.18"`, so the pin below is a requirement and not a preference.
+# It also satisfies mix.exs's `elixir: "~> 1.18"`.
+#
+# Toolchain only: nothing in lib/ or test/ needs a database, a browser or a
+# JRE, so there is no env block and no service to provision here.
+
+[tools]
+erlang = "27.3"
+elixir = "1.18.3-otp-27"
