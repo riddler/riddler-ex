@@ -12,6 +12,13 @@ defmodule Riddler.Elements.Type.TextQuestion do
   format should be told while they are authoring rather than when a visitor
   submits.
 
+  Three fields belong to a format rather than to the question, and each is
+  read only by the format that owns it. `pattern` is the regular expression
+  the `pattern` format holds a response to, and it has to match the whole
+  response. `min` and `max` are the bounds the `integer` and `number` formats
+  hold a response between. A question that declares one without the format
+  that reads it declares something nothing consults.
+
       iex> Riddler.Elements.Type.TextQuestion.validate(%{type: "text_question", key: "email", label: "Work email", format: "email"})
       []
 
@@ -27,7 +34,8 @@ defmodule Riddler.Elements.Type.TextQuestion do
   alias Riddler.Finding
 
   @impl true
-  def fields, do: %{required: [:label], optional: [:placeholder, :required, :format]}
+  def fields,
+    do: %{required: [:label], optional: [:placeholder, :required, :format, :pattern, :min, :max]}
 
   @impl true
   def validate(node) do
