@@ -19,13 +19,13 @@ defmodule Riddler.CorpusTest do
   compared as `code`, `field` and `node_key` and never by its message, because
   the code is the stable thing a host switches on and the message is prose a
   second runtime is not obliged to reproduce word for word.
+
+  The runner and that encoder are `Riddler.Corpus`, not this file, because the
+  task that emits this corpus into a second repository runs every case before
+  it copies it out and has to run them the way this suite does.
   """
 
   use ExUnit.Case, async: true
-
-  alias Riddler.Elements
-  alias Riddler.Elements.Document
-  alias Riddler.Template
 
   @corpus_files [
     "corpus/elements/admit.json",
@@ -189,127 +189,13 @@ defmodule Riddler.CorpusTest do
 
   # -- running one case -------------------------------------------------------
 
-  defp mismatches(path) do
-    capability = read(path)["capability"]
+  # The runner, the one encoder and the canonical form all live in
+  # `Riddler.Corpus` rather than here, because `mix riddler.corpus` emits this
+  # corpus into a second repository and has to run every case before it copies
+  # it out. Two copies of that logic would let the emitted corpus describe a
+  # runtime this suite never ran.
 
-    path
-    |> cases()
-    |> Enum.map(fn one -> {one["name"], run(capability, one["input"]), one["expected"]} end)
-    |> Enum.reject(fn {_name, answered, stated} -> answered == stated end)
-  end
-
-  defp run("elements.admit", input) do
-    case Document.admit(input["document"]) do
-      nil -> %{"admitted" => false, "findings" => []}
-      document -> %{"admitted" => true, "findings" => admit_findings(document)}
-    end
-  end
-
-  defp run("elements.resolve", input) do
-    document = admitted(input["document"])
-
-    case input["screen"] do
-      nil ->
-        {:ok, resolved} = Elements.resolve(document, input["root"])
-        encode(resolved)
-
-      screen_key ->
-        case Elements.resolve_screen(document, screen_key, input["root"]) do
-          {:ok, screen} -> encode(screen)
-          {:error, :no_such_screen} -> %{"error" => "no_such_screen"}
-        end
-    end
-  end
-
-  defp run("elements.validate_responses", input) do
-    document = admitted(input["document"])
-
-    document
-    |> validate_responses(input)
-    |> encode_validation()
-  end
-
-  defp run("templates.render", input) do
-    case Template.compile(input["source"]) do
-      {:error, findings} -> %{"compiled" => false, "findings" => encode_findings(findings)}
-      {:ok, compiled} -> render_modes(compiled, input)
-    end
-  end
-
-  defp admit_findings(document) do
-    case Document.validate(document) do
-      {:ok, _document} -> []
-      {:error, findings} -> encode_findings(findings)
-    end
-  end
-
-  defp admitted(raw) do
-    document = Document.admit(raw)
-    refute is_nil(document), "a case input that is meant to be a document was not admitted"
-    document
-  end
-
-  defp validate_responses(document, input) do
-    case Map.fetch(input, "pressed_button") do
-      {:ok, key} ->
-        Elements.validate_responses(document, input["screen"], input["responses"], key)
-
-      :error ->
-        Elements.validate_responses(document, input["screen"], input["responses"])
-    end
-  end
-
-  defp encode_validation(:ok), do: %{"ok" => true}
-  defp encode_validation({:error, :no_such_screen}), do: %{"error" => "no_such_screen"}
-
-  defp encode_validation({:error, findings}),
-    do: %{"ok" => false, "findings" => encode_findings(findings)}
-
-  # `both` is the corpus's way of saying that a template where nothing is
-  # missing renders the same in either mode. It is run twice, and a runtime
-  # whose two modes disagree fails the case rather than passing half of it.
-  defp render_modes(compiled, input) do
-    case input["mode"] do
-      nil -> %{"compiled" => true}
-      "both" -> agreed(render(compiled, input, :lenient), render(compiled, input, :strict))
-      "lenient" -> render(compiled, input, :lenient)
-      "strict" -> render(compiled, input, :strict)
-    end
-  end
-
-  defp agreed(same, same), do: same
-  defp agreed(lenient, strict), do: %{"modes_disagree" => [lenient, strict]}
-
-  defp render(compiled, input, mode) do
-    case Template.render(compiled, input["assigns"] || %{}, mode) do
-      {:ok, text, missing} ->
-        %{"compiled" => true, "rendered" => true, "text" => text, "missing" => missing}
-
-      {:error, missing} ->
-        %{"compiled" => true, "rendered" => false, "missing" => missing}
-    end
-  end
-
-  # -- the one encoder --------------------------------------------------------
-
-  defp encode_findings(findings) do
-    Enum.map(findings, fn finding ->
-      %{"code" => finding.code, "field" => finding.field, "node_key" => finding.node_key}
-    end)
-  end
-
-  defp encode(struct) when is_struct(struct), do: struct |> Map.from_struct() |> encode()
-
-  defp encode(map) when is_map(map),
-    do: Map.new(map, fn {key, value} -> {encode_key(key), encode(value)} end)
-
-  defp encode(list) when is_list(list), do: Enum.map(list, &encode/1)
-  defp encode(value) when value in [nil, true, false], do: value
-  defp encode(atom) when is_atom(atom), do: Atom.to_string(atom)
-  defp encode(value), do: value
-
-  defp encode_key(key) when is_atom(key), do: Atom.to_string(key)
-  defp encode_key(key), do: key
+  defp mismatches(path), do: Riddler.Corpus.mismatches(path)
 
   # -- the documents the corpus carries ---------------------------------------
 
@@ -337,9 +223,11 @@ defmodule Riddler.CorpusTest do
 
   # -- reading and canonical form ---------------------------------------------
 
-  defp read(path), do: path |> File.read!() |> Jason.decode!()
+  defp read(path), do: Riddler.Corpus.read(path)
 
-  defp cases(path), do: read(path)["cases"]
+  defp cases(path), do: Riddler.Corpus.cases(path)
+
+  defp canonical(value), do: Riddler.Corpus.canonical(value)
 
   defp repeated_names(path) do
     names = Enum.map(cases(path), & &1["name"])
@@ -347,38 +235,6 @@ defmodule Riddler.CorpusTest do
   end
 
   defp resolved_schema(path), do: path |> read() |> ExJsonSchema.Schema.resolve()
-
-  # The canonical form is what makes the emit a copy and the drift check
-  # meaningful: keys sorted, two spaces of indent, one trailing newline. Scalars
-  # are encoded by the JSON library, so only the shape is this function's.
-  defp canonical(value), do: IO.iodata_to_binary([layout(value, ""), "\n"])
-
-  defp layout(map, _indent) when map_size(map) == 0, do: "{}"
-
-  defp layout(map, indent) when is_map(map) do
-    inner = indent <> "  "
-
-    entries =
-      map
-      |> Map.keys()
-      |> Enum.sort()
-      |> Enum.map_intersperse(",\n", fn key ->
-        [inner, Jason.encode!(key), ": ", layout(Map.fetch!(map, key), inner)]
-      end)
-
-    ["{\n", entries, "\n", indent, "}"]
-  end
-
-  defp layout([], _indent), do: "[]"
-
-  defp layout(list, indent) when is_list(list) do
-    inner = indent <> "  "
-    entries = Enum.map_intersperse(list, ",\n", fn value -> [inner, layout(value, inner)] end)
-
-    ["[\n", entries, "\n", indent, "]"]
-  end
-
-  defp layout(value, _indent), do: Jason.encode!(value)
 
   # -- the retired spellings --------------------------------------------------
 
