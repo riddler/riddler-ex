@@ -18,7 +18,7 @@ defmodule Riddler.MixProject do
       docs: docs(),
       package: package(),
       test_coverage: [tool: ExCoveralls],
-      dialyzer: [plt_add_apps: [:ex_unit]],
+      dialyzer: [plt_add_apps: [:ex_unit, :mix]],
       preferred_cli_env: [
         coveralls: :test,
         "coveralls.detail": :test,

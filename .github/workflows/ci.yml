@@ -91,3 +91,25 @@ jobs:
           test "${#cmd[@]}" -gt 0 || { echo "gate.full is empty" >&2; exit 1; }
           echo "gate command (.claude/wurk.json gate.full): ${cmd[*]}"
           "${cmd[@]}"
+
+      # The corpus is authored in this repository and emitted into
+      # riddler_spec, so the two can disagree: a case added here and not
+      # re-emitted leaves a second runtime held to an older contract, and
+      # nothing else in either repository would notice. This step is what
+      # notices. It runs after the gate, so the gate sees the repository alone
+      # and this checkout cannot affect it.
+      #
+      # actions/checkout puts a second repository under the workspace rather
+      # than beside it, so the target is passed explicitly here; a person
+      # running the task locally gets the `../riddler_spec` default instead.
+      # riddler_spec is public, so the default read-only GITHUB_TOKEN reads it
+      # and nothing authenticates to anything.
+      - name: Check out the corpus repository
+        uses: actions/checkout@v4
+        with:
+          repository: riddler/riddler_spec
+          ref: main
+          path: riddler_spec
+
+      - name: Corpus drift
+        run: mix riddler.corpus --check --to riddler_spec
