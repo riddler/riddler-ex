@@ -1,13 +1,15 @@
-# ADR-0002: The element document v1
+# ADR-0002: The screen document v1
 
 Status: proposed
 
 ## Context
 
-ADR-0001 decided that the element document is the contract between a host and
-this runtime, that it is JSON, and that it carries a `schema_version`. It
-deliberately decided nothing about what is inside one. This record decides that:
-the envelope, what a screen is, what a node is, and what a resolved screen is.
+ADR-0001 decided that the content document is the contract between a host and
+this runtime, that it is JSON, that it carries a `schema_version`, and that a
+content kind is a document shape, a resolved shape, a registry and a corpus
+capability. This record decides the document of the one kind v1 ships, the
+screens kind: the envelope, what a screen is, what a node is, and what a
+resolved screen is. It decides nothing about any other kind.
 
 A document exists so that a host can declare what a visitor is shown without
 declaring how it is shown, and so that a second runtime in another language can
@@ -42,11 +44,26 @@ what it may not is refused loudly.
 ## Decision
 
 **A document is a JSON object with an envelope and screens.** The envelope is
-`schema_version`, an integer, `1` in this version; `id`, a string that names the
-document; and `metadata`, an object. `metadata` carries `name`, `description` and
-`domain` as strings and is otherwise an open map: a host may put what it likes
-beside them, and this package neither interprets nor refuses the extras. A
-document with no `screens` is refused.
+`schema_version`, an integer, `1` in this version; `kind`, a string, optional;
+`id`, a string that names the document; and `metadata`, an object. `metadata`
+carries `name`, `description` and `domain` as strings and is otherwise an open
+map: a host may put what it likes beside them, and this package neither
+interprets nor refuses the extras. A document with no `screens` is refused.
+
+**`kind` names the content kind the document belongs to, and it defaults to
+`screens` when absent.** A document that omits `kind` is a screen document, so
+every document authored before kinds existed is still admitted unchanged. A
+`kind` the registry of kinds does not know is an admit finding,
+`document.unknown_kind`, naming the value; it is not passed through silently,
+because a document resolved by the wrong kind's rules is worse than a document
+refused. The decided `kind` is carried through to the resolved document, so a
+host holding a resolved document can tell what it is holding without the
+document it came from.
+
+**`screens` is the screens kind's body key, and every other kind carries its
+own.** The key that holds a kind's content is the kind's to name; nothing here
+reserves a shared body key across kinds, and a second kind's record names its
+own.
 
 **A screen is `key`, `title` and `nodes`.** `nodes` is an ordered list, and the
 order is the order the visitor is shown. A screen with an empty `nodes` list is
@@ -79,6 +96,15 @@ context does not carry - hides the node and reports it in the resolved document'
 diagnostics. A condition that evaluates false hides the node silently, because
 that is not an error, it is the condition doing its job.
 
+**The node vocabulary, `responses`, buttons, `outcome` and `writes` are the
+screens kind's and no other's.** They exist because a screen is shown to a
+visitor who fills it in and presses something; a kind with no visitor and no
+submission carries none of them, and a kind that wants one of them says so in
+its own record rather than inheriting it from this one. What is shared across
+kinds is the template subset, conditions, containers, diagnostics and findings,
+and those rules are written below for screens and generalised by the
+forthcoming ADR-0004.
+
 **The v1 types are `heading`, `text`, `text_question`, `button` and `variant`.**
 Their fields are:
 
@@ -89,8 +115,8 @@ Their fields are:
 `text_question` carries `label`; and optionally `placeholder`, `required` (a
 boolean, default false) and `format` (a string naming a validation format the
 package knows; `email` is the one the fixture uses). `answer_options` is the
-field name reserved for the select kinds - a choice question, a multi-select -
-and those kinds are not built in this version. Naming the field now is what keeps
+field name reserved for the select question types - a choice question, a multi-select -
+and those types are not built in this version. Naming the field now is what keeps
 a later select question from arriving under a second spelling.
 
 `button` carries `label` and `outcome`; `outcome` is required. It may carry
@@ -150,20 +176,34 @@ not refuse. Refusal is admit's job.
 
 **Enumeration is delegated to the code half's tests.** The exact finding
 messages, the full list of validation formats, and the field-by-field admission
-rules are `Riddler.Elements.Document`'s tests and the corpus emitted from them.
+rules are `Riddler.Screens.Document`'s tests and the corpus emitted from them.
 This record asserts what the categories are; a list in prose and a list in code
 drift apart, and only one of them runs.
 
 ## Consequences
 
 Three code halves follow, each with the enumerating tests this record delegates
-to. One builds `Riddler.Elements.Document.admit/1` and `validate/1` with the type
+to. One builds `Riddler.Screens.Document.admit/1` and `validate/1` with the type
 registry, and is held to admitting the fixture named in the Context with zero
-findings. One builds `Riddler.Elements.resolve/2`, which produces the resolved
+findings. One builds `Riddler.Screens.resolve/2`, which produces the resolved
 document described above, diagnostics included. One builds
-`Riddler.Elements.validate_responses/3` and its arity-4 form, which is where
+`Riddler.Screens.validate_responses/3` and its arity-4 form, which is where
 `required` and `format` are enforced and where a button's `validates` is
 consulted.
+
+The first release of this package named those modules `Riddler.Elements`, after
+the nodes inside a screen rather than after the kind they belong to. The code
+half renames the tree to `Riddler.Screens` and the corpus capabilities from
+`elements.*` to `screens.*` with 0.1.0, and adds the `kind` envelope field and
+its `document.unknown_kind` finding at the same time; no `Riddler.Elements`
+name and no `elements.*` capability survives that release.
+
+The shared rules this record states - key uniqueness, conditions, the variant
+container, diagnostics and findings - are written here for screens because
+screens is the only kind v1 ships. They are generalised to every kind by
+ADR-0004, the shared content machinery, which is forthcoming and precedes the
+first non-screen kind's record. Until then a reader looking for a shared rule
+reads this record, and that is the reason ADR-0004 exists.
 
 The JSON Schema for this document is written from this record, in the draft the
 corpus test validates against, and lives beside the corpus. It enumerates the
@@ -176,7 +216,7 @@ neither validates a style value nor ships a default for one.
 
 Nothing here decides transport, authentication, streaming, the identity or
 durability of a visitor's execution, or the editor; ADR-0001 left those open and
-this record leaves them open. Nothing here decides the select kinds: the field
+this record leaves them open. Nothing here decides the select question types: the field
 name is reserved, the behavior is not.
 
 ## Typespecs
@@ -186,6 +226,7 @@ Minimal, and a contract for the code half rather than a second source of truth.
 ```elixir
 @type document :: %{
         schema_version: pos_integer(),
+        kind: String.t(),
         id: String.t(),
         metadata: %{optional(String.t()) => term()},
         screens: [screen()]
@@ -202,6 +243,7 @@ Minimal, and a contract for the code half rather than a second source of truth.
 
 @type resolved :: %{
         schema_version: pos_integer(),
+        kind: String.t(),
         id: String.t(),
         metadata: %{optional(String.t()) => term()},
         screens: [screen()],
@@ -315,6 +357,7 @@ survives:
 ```json
 {
   "schema_version": 1,
+  "kind": "screens",
   "id": "edoc_signup_screens",
   "metadata": { "name": "Signup screens", "description": "...", "domain": "signup" },
   "screens": [
@@ -357,4 +400,7 @@ survives:
 
 ---
 
-Recorded 2026-09-14, campaign RF049, bead rd-n0j.
+Recorded 2026-09-14, campaign RF049, bead rd-n0j. Rewritten in place while
+still proposed on 2026-09-15, campaign RF049, bead rd-9wd: the record is now
+the screens kind's document, the envelope carries an optional `kind`, and the
+rules that are screen-only are named as such.
