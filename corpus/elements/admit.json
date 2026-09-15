@@ -1,0 +1,713 @@
+{
+  "capability": "elements.admit",
+  "cases": [
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": "not a document"
+      },
+      "name": "A value that is not an object is not an element document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "metadata": {
+            "name": "Signup screens"
+          },
+          "schema_version": 1
+        }
+      },
+      "name": "A value declaring no screens at all is not an element document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": "three of them"
+        }
+      },
+      "name": "A value carrying no list of screens is not an element document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            "account"
+          ]
+        }
+      },
+      "name": "A screen that is not an object is not an element document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A screen carrying no list of nodes is not an element document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                "a heading"
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A node that is not an object is not an element document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_card_notice",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "card_notice",
+                  "nodes": "three of them",
+                  "type": "variant"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        }
+      },
+      "name": "A container whose candidates are not a list is not an element document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "metadata": "signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Metadata that is not an object is not an element document"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A screen whose every node is conditional may declare no node at all, and is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "metadata": {
+            "description": "The three screens the signup wizard shows: collect a name and email, choose a plan, confirm.",
+            "domain": "signup",
+            "name": "Signup screens"
+          },
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "key": "account_intro",
+                  "text": "Two questions and you are in. We never share an address with anyone.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "placeholder": "Ada",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "format": "email",
+                  "key": "email",
+                  "label": "Work email",
+                  "placeholder": "ada@example.com",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_heading",
+                  "level": 1,
+                  "text": "Pick a plan",
+                  "type": "heading"
+                },
+                {
+                  "key": "plan_intro",
+                  "text": "You can change this later. Nothing is charged today.",
+                  "type": "text"
+                },
+                {
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "placeholder": "1",
+                  "required": false,
+                  "type": "text_question"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "plan_business_hint",
+                  "text": "More than one seat puts you on the business plan, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "condition": "responses.seats <= 1",
+                  "key": "plan_personal",
+                  "label": "Take the personal plan",
+                  "outcome": "personal_chosen",
+                  "type": "button",
+                  "writes": {
+                    "responses.plan": [
+                      "const",
+                      "personal"
+                    ]
+                  }
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "plan_business",
+                  "label": "Take the business plan",
+                  "outcome": "business_chosen",
+                  "type": "button",
+                  "writes": {
+                    "responses.plan": [
+                      "const",
+                      "business"
+                    ]
+                  }
+                },
+                {
+                  "key": "plan_back",
+                  "label": "Back",
+                  "outcome": "went_back",
+                  "type": "button"
+                }
+              ],
+              "title": "Pick a plan"
+            },
+            {
+              "key": "confirm",
+              "nodes": [
+                {
+                  "key": "confirm_heading",
+                  "level": 1,
+                  "text": "Confirm and finish",
+                  "type": "heading"
+                },
+                {
+                  "key": "confirm_summary",
+                  "text": "We will send a verification link to {{ responses.email }}. Open it within a day and the account is live.",
+                  "type": "text"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "confirm_referral_heading",
+                  "level": 2,
+                  "text": "One more thing, {{ responses.first_name }}",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "referral",
+                  "label": "Who told you about us?",
+                  "placeholder": "A colleague",
+                  "required": false,
+                  "type": "text_question"
+                },
+                {
+                  "key": "confirm_finish",
+                  "label": "Finish",
+                  "outcome": "signup_confirmed",
+                  "type": "button"
+                }
+              ],
+              "title": "Confirm and finish"
+            }
+          ]
+        }
+      },
+      "name": "The signup wizard's three screens are admitted with no finding against them"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.unknown_type",
+            "field": "type",
+            "node_key": "plan_pictures"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_pictures",
+                  "type": "carousel"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A node type no runtime knows is refused, naming the type and the node"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.duplicate_key",
+            "field": "key",
+            "node_key": "plan_intro"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_intro",
+                  "text": "You can change this later.",
+                  "type": "text"
+                },
+                {
+                  "key": "plan_intro",
+                  "text": "Nothing is charged today.",
+                  "type": "text"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A key used twice anywhere in the document is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_key",
+            "field": "key",
+            "node_key": "Account_Heading"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "Account_Heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A key that is not lower snake case is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.missing_field",
+            "field": "text",
+            "node_key": "account_heading"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "type": "heading"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A field the node's type requires and the node does not carry is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.level_out_of_range",
+            "field": "level",
+            "node_key": "account_heading"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 9,
+                  "text": "Create your account",
+                  "type": "heading"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A heading level outside 1 to 6 is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_condition",
+            "field": "condition",
+            "node_key": "plan_intro"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "condition": "responses.seats >",
+                  "key": "plan_intro",
+                  "text": "You can change this later.",
+                  "type": "text"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A condition that does not parse is refused before any visitor arrives"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "field": "include",
+            "node_key": "plan_intro"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_intro",
+                  "text": "{% include 'footer' %}",
+                  "type": "text"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A template field holding a construct outside the subset is refused, naming the construct"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_writes",
+            "field": "writes",
+            "node_key": "plan_business"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_business",
+                  "label": "Take the business plan",
+                  "outcome": "business_chosen",
+                  "type": "button",
+                  "writes": {
+                    "plan": [
+                      "const",
+                      "business"
+                    ]
+                  }
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A write that does not address a response is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.unknown_format",
+            "field": "format",
+            "node_key": "email"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "e-mail",
+                  "key": "email",
+                  "label": "Work email",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A validation format no runtime knows is refused while the author is still authoring"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.empty_variant",
+            "field": "nodes",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_card_notice",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "card_notice",
+                  "nodes": [],
+                  "type": "variant"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        }
+      },
+      "name": "A container with no candidate is refused, because it would disappear silently"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.unreachable_variant_candidate",
+            "field": "nodes",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_card_notice",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "key": "card_notice_default",
+                      "text": "We will charge the card on file.",
+                      "type": "text"
+                    },
+                    {
+                      "condition": "context.last_charge_status == 'declined'",
+                      "key": "card_notice_declined",
+                      "text": "The card on file was declined. Try another one.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        }
+      },
+      "name": "An unconditional candidate that is not last is refused, because it buries every candidate after it"
+    }
+  ],
+  "name": "Admission: what makes a value an element document, and every reason a document is refused"
+}
