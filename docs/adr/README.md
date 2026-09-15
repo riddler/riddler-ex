@@ -2,8 +2,8 @@
 
 | # | Decision | Status |
 |---|---|---|
-| [0001](0001-riddler-one-package.md) | Riddler is one package that consumes the statifier family, and the element document is its contract | proposed |
-| [0002](0002-element-document.md) | The element document v1 | proposed |
+| [0001](0001-riddler-one-package.md) | Riddler is one package: a dynamic content runtime that consumes the statifier family, and the content document is its contract | proposed |
+| [0002](0002-element-document.md) | The screen document v1 | proposed |
 | [0003](0003-template-subset.md) | The template subset | proposed |
 
 New ADRs: next number, same three-section format (Context, Decision,
