@@ -1,5 +1,5 @@
 {
-  "capability": "elements.validate_responses",
+  "capability": "screens.validate_responses",
   "cases": [
     {
       "expected": {

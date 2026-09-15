@@ -1,6 +1,6 @@
-defmodule Riddler.Elements.Document do
+defmodule Riddler.Screens.Document do
   @moduledoc """
-  The element document: what a host declares, and why one is refused.
+  The screen document: what a host declares, and why one is refused.
 
   A document is the contract between a host that authors content and any
   runtime that shows it. This module is the two halves of admitting one.
@@ -26,7 +26,13 @@ defmodule Riddler.Elements.Document do
   map by declaration, and a host may put what it likes beside `name`,
   `description` and `domain`.
 
-  `admit/1` answers `nil` for an input that is not an element document - not
+  The envelope's `kind` names the content kind the document belongs to, and
+  a document that omits it is a screen document: the admitted struct carries
+  `"screens"` for it, so a document authored before kinds existed is
+  admitted unchanged. A `kind` this package has no runtime for is carried as
+  it was written and refused by `validate/1`.
+
+  `admit/1` answers `nil` for an input that is not a screen document - not
   a map, or a map whose spine is not a document's: no list of screens, a
   screen that is not an object, a screen with no list of nodes, a node that
   is not an object, a variant whose candidates are not a list. That is the
@@ -46,6 +52,9 @@ defmodule Riddler.Elements.Document do
   One code per check, stable, and a host switches on the code rather than on
   the wording:
 
+    * `document.unknown_kind` - the envelope names a content kind this
+      package has no runtime for. The finding carries the value and no node
+      key, because the envelope is the document's and not any one node's.
     * `document.unknown_type` - the registry has no such type.
     * `document.duplicate_key` - a key used twice anywhere in the document.
     * `document.invalid_key` - a key missing, or not matching
@@ -65,37 +74,51 @@ defmodule Riddler.Elements.Document do
 
   ## Examples
 
-      iex> doc = Riddler.Elements.Document.admit(%{
+      iex> doc = Riddler.Screens.Document.admit(%{
       ...>   "schema_version" => 1,
       ...>   "id" => "edoc_signup",
       ...>   "screens" => [%{"key" => "account", "title" => "Create your account", "nodes" => [
       ...>     %{"type" => "heading", "key" => "account_heading", "level" => 1, "text" => "Create your account"}
       ...>   ]}]
       ...> })
-      iex> {:ok, ^doc} = Riddler.Elements.Document.validate(doc)
+      iex> {:ok, ^doc} = Riddler.Screens.Document.validate(doc)
       iex> hd(hd(doc.screens).nodes).key
       "account_heading"
 
-      iex> Riddler.Elements.Document.admit("not a document")
+      iex> Riddler.Screens.Document.admit("not a document")
       nil
   """
 
-  alias Riddler.Elements.Registry
   alias Riddler.Finding
+  alias Riddler.Screens.Registry
   alias Riddler.Template
 
+  # The content kind this module is the runtime for, and the kind a document
+  # that names none belongs to. A document authored before kinds existed is
+  # a screen document, so the default is what keeps every one of them
+  # admitted unchanged.
+  @default_kind "screens"
+
+  # The kinds this version has a runtime for. It is the registry of kinds,
+  # and it is the other half of the rule that makes `kind` an open string in
+  # the schema: the schema does not enumerate the kinds, and this does, so a
+  # kind no runtime knows is refused here rather than resolved by the wrong
+  # kind's rules.
+  @kinds [@default_kind]
+
   @typedoc "An admitted screen: its key, its title, and its nodes in order."
-  @type screen :: %{key: term(), title: term(), nodes: [Riddler.Elements.Type.node_t()]}
+  @type screen :: %{key: term(), title: term(), nodes: [Riddler.Screens.Type.node_t()]}
 
   @typedoc "An admitted document."
   @type t :: %__MODULE__{
           schema_version: term(),
+          kind: term(),
           id: term(),
           metadata: %{optional(String.t()) => term()},
           screens: [screen()]
         }
 
-  defstruct schema_version: nil, id: nil, metadata: %{}, screens: []
+  defstruct schema_version: nil, kind: @default_kind, id: nil, metadata: %{}, screens: []
 
   # The fields every node carries whatever its type is. The rest come from
   # the type's own `fields/0`.
@@ -116,13 +139,13 @@ defmodule Riddler.Elements.Document do
   Turns a decoded JSON document into the struct, or answers `nil`.
 
   Total: it never raises, whatever it is handed. `nil` means the input is not
-  an element document. A document that is wrong rather than absent is
+  a screen document. A document that is wrong rather than absent is
   admitted here and refused by `validate/1`.
 
-      iex> Riddler.Elements.Document.admit(%{"screens" => []})
-      %Riddler.Elements.Document{schema_version: nil, id: nil, metadata: %{}, screens: []}
+      iex> Riddler.Screens.Document.admit(%{"screens" => []})
+      %Riddler.Screens.Document{schema_version: nil, kind: "screens", id: nil, metadata: %{}, screens: []}
 
-      iex> Riddler.Elements.Document.admit(%{"screens" => "three of them"})
+      iex> Riddler.Screens.Document.admit(%{"screens" => "three of them"})
       nil
   """
   @spec admit(term()) :: t() | nil
@@ -132,6 +155,7 @@ defmodule Riddler.Elements.Document do
          {:ok, admitted} <- admit_each(screens, &admit_screen/1) do
       %__MODULE__{
         schema_version: Map.get(raw, "schema_version"),
+        kind: admit_kind(Map.get(raw, "kind")),
         id: Map.get(raw, "id"),
         metadata: metadata,
         screens: admitted
@@ -152,18 +176,22 @@ defmodule Riddler.Elements.Document do
   by node, with the duplicate keys first because they are about the document
   rather than about any one node.
 
-      iex> doc = Riddler.Elements.Document.admit(%{"screens" => [
+      iex> doc = Riddler.Screens.Document.admit(%{"screens" => [
       ...>   %{"key" => "account", "title" => "Create your account", "nodes" => [
       ...>     %{"type" => "carousel", "key" => "pictures"}
       ...>   ]}
       ...> ]})
-      iex> {:error, [finding]} = Riddler.Elements.Document.validate(doc)
+      iex> {:error, [finding]} = Riddler.Screens.Document.validate(doc)
       iex> {finding.code, finding.node_key}
       {"document.unknown_type", "pictures"}
   """
   @spec validate(t()) :: {:ok, t()} | {:error, [Finding.t()]}
   def validate(%__MODULE__{} = document) do
-    case duplicate_findings(document) ++ Enum.flat_map(document.screens, &screen_findings/1) do
+    findings =
+      kind_findings(document) ++
+        duplicate_findings(document) ++ Enum.flat_map(document.screens, &screen_findings/1)
+
+    case findings do
       [] -> {:ok, document}
       findings -> {:error, findings}
     end
@@ -174,6 +202,14 @@ defmodule Riddler.Elements.Document do
   def formats, do: @formats
 
   # -- admit ----------------------------------------------------------------
+
+  # An absent `kind` is the default rather than `nil`: the decided kind is
+  # carried through to the resolved document, so a host holding one can tell
+  # what it is holding without the document it came from. A kind that is
+  # there and wrong is carried as it was written, because `validate/1` has to
+  # name the value it refused.
+  defp admit_kind(nil), do: @default_kind
+  defp admit_kind(kind), do: kind
 
   defp admit_metadata(nil), do: {:ok, %{}}
   defp admit_metadata(map) when is_map(map) and not is_struct(map), do: {:ok, map}
@@ -242,6 +278,23 @@ defmodule Riddler.Elements.Document do
   end
 
   # -- validate -------------------------------------------------------------
+
+  # The envelope's kind comes first because it is about the whole document:
+  # a document resolved by the wrong kind's rules is worse than a document
+  # refused, so the kind is settled before anything inside it is read.
+  defp kind_findings(%__MODULE__{kind: kind}) when kind in @kinds, do: []
+
+  defp kind_findings(%__MODULE__{kind: kind}) do
+    [
+      %Finding{
+        code: "document.unknown_kind",
+        message:
+          "#{inspect(kind)} is not a content kind this package has a runtime for; the kinds are #{Enum.join(@kinds, ", ")}",
+        field: "kind",
+        node_key: nil
+      }
+    ]
+  end
 
   defp duplicate_findings(document) do
     document

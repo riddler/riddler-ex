@@ -1,5 +1,5 @@
 {
-  "capability": "elements.admit",
+  "capability": "screens.admit",
   "cases": [
     {
       "expected": {
@@ -9,7 +9,7 @@
       "input": {
         "document": "not a document"
       },
-      "name": "A value that is not an object is not an element document"
+      "name": "A value that is not an object is not a screen document"
     },
     {
       "expected": {
@@ -25,7 +25,7 @@
           "schema_version": 1
         }
       },
-      "name": "A value declaring no screens at all is not an element document"
+      "name": "A value declaring no screens at all is not a screen document"
     },
     {
       "expected": {
@@ -39,7 +39,7 @@
           "screens": "three of them"
         }
       },
-      "name": "A value carrying no list of screens is not an element document"
+      "name": "A value carrying no list of screens is not a screen document"
     },
     {
       "expected": {
@@ -55,7 +55,7 @@
           ]
         }
       },
-      "name": "A screen that is not an object is not an element document"
+      "name": "A screen that is not an object is not a screen document"
     },
     {
       "expected": {
@@ -74,7 +74,7 @@
           ]
         }
       },
-      "name": "A screen carrying no list of nodes is not an element document"
+      "name": "A screen carrying no list of nodes is not a screen document"
     },
     {
       "expected": {
@@ -96,7 +96,7 @@
           ]
         }
       },
-      "name": "A node that is not an object is not an element document"
+      "name": "A node that is not an object is not a screen document"
     },
     {
       "expected": {
@@ -122,7 +122,7 @@
           ]
         }
       },
-      "name": "A container whose candidates are not a list is not an element document"
+      "name": "A container whose candidates are not a list is not a screen document"
     },
     {
       "expected": {
@@ -143,7 +143,7 @@
           ]
         }
       },
-      "name": "Metadata that is not an object is not an element document"
+      "name": "Metadata that is not an object is not a screen document"
     },
     {
       "expected": {
@@ -707,7 +707,96 @@
         }
       },
       "name": "An unconditional candidate that is not last is refused, because it buries every candidate after it"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A document naming no kind is a screen document, and is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "kind": "screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A document naming the screens kind is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.unknown_kind",
+            "field": "kind",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "kind": "emails",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A kind no runtime knows is refused, naming the kind and no node"
     }
   ],
-  "name": "Admission: what makes a value an element document, and every reason a document is refused"
+  "name": "Admission: what makes a value a screen document, and every reason a document is refused"
 }

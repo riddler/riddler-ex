@@ -1,9 +1,9 @@
-defmodule Riddler.Elements.ValidationTest do
+defmodule Riddler.Screens.ValidationTest do
   use ExUnit.Case, async: true
 
-  alias Riddler.Elements
-  alias Riddler.Elements.Document
   alias Riddler.Finding
+  alias Riddler.Screens
+  alias Riddler.Screens.Document
 
   # test/fixtures/signup_screens.json is a verbatim copy of
   # priv/fixtures/signup_screens.json in the statifier_examples repository,
@@ -89,14 +89,14 @@ defmodule Riddler.Elements.ValidationTest do
   end
 
   defp check(question, response),
-    do: Elements.validate_responses(card_document(question), "card", %{"card_field" => response})
+    do: Screens.validate_responses(card_document(question), "card", %{"card_field" => response})
 
   describe "required over the signup fixture" do
     # Sabotage: made `blank?/1` answer `false` for `nil`; the unanswered name
     # raised no finding and this test went red.
     test "a required question with no response at all is a finding naming the node" do
       assert {:error, [finding]} =
-               Elements.validate_responses(fixture_document(), "account", %{
+               Screens.validate_responses(fixture_document(), "account", %{
                  "email" => @good_email
                })
 
@@ -110,7 +110,7 @@ defmodule Riddler.Elements.ValidationTest do
     # whitespace name was accepted and this test went red.
     test "a required question answered with whitespace is unanswered" do
       assert {:error, [finding]} =
-               Elements.validate_responses(fixture_document(), "account", %{
+               Screens.validate_responses(fixture_document(), "account", %{
                  "first_name" => "   ",
                  "email" => @good_email
                })
@@ -123,7 +123,7 @@ defmodule Riddler.Elements.ValidationTest do
     # test went red.
     test "every failing node on the screen is reported, in document order" do
       assert {:error, findings} =
-               Elements.validate_responses(fixture_document(), "account", %{})
+               Screens.validate_responses(fixture_document(), "account", %{})
 
       assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
     end
@@ -132,7 +132,7 @@ defmodule Riddler.Elements.ValidationTest do
     # response whatever `required` says; the unanswered optional seats question
     # raised one and this test went red.
     test "an optional question left blank is not a finding" do
-      assert :ok == Elements.validate_responses(fixture_document(), "plan", %{})
+      assert :ok == Screens.validate_responses(fixture_document(), "plan", %{})
     end
 
     # Sabotage: made `checks/2` run the format checks on a blank response as
@@ -148,13 +148,13 @@ defmodule Riddler.Elements.ValidationTest do
     # accepted and the second half of this test went red.
     test "the fixture's work email takes a good address and refuses a bad one" do
       assert :ok ==
-               Elements.validate_responses(fixture_document(), "account", %{
+               Screens.validate_responses(fixture_document(), "account", %{
                  "first_name" => "Ada",
                  "email" => @good_email
                })
 
       assert {:error, [finding]} =
-               Elements.validate_responses(fixture_document(), "account", %{
+               Screens.validate_responses(fixture_document(), "account", %{
                  "first_name" => "Ada",
                  "email" => "ada.example.com"
                })
@@ -170,7 +170,7 @@ defmodule Riddler.Elements.ValidationTest do
     # test went red.
     test "a question the visitor's responses hid cannot fail, blank or not" do
       assert :ok ==
-               Elements.validate_responses(referral_required_document(), "confirm", %{
+               Screens.validate_responses(referral_required_document(), "confirm", %{
                  "seats" => 1
                })
     end
@@ -181,7 +181,7 @@ defmodule Riddler.Elements.ValidationTest do
     # pair separates "hidden" from "not checked at all".
     test "the same question shown by the same responses does fail when blank" do
       assert {:error, [finding]} =
-               Elements.validate_responses(referral_required_document(), "confirm", %{
+               Screens.validate_responses(referral_required_document(), "confirm", %{
                  "seats" => 3
                })
 
@@ -195,7 +195,7 @@ defmodule Riddler.Elements.ValidationTest do
     # the blank name and this test went red.
     test "a Back button declaring validates false answers :ok without running" do
       assert :ok ==
-               Elements.validate_responses(
+               Screens.validate_responses(
                  account_with_back_document(),
                  "account",
                  %{},
@@ -207,7 +207,7 @@ defmodule Riddler.Elements.ValidationTest do
     # Continue press skipped the checks and this test went red.
     test "the Continue button on the same screen answers the finding" do
       assert {:error, [%Finding{node_key: "first_name"} | _rest]} =
-               Elements.validate_responses(
+               Screens.validate_responses(
                  account_with_back_document(),
                  "account",
                  %{},
@@ -219,7 +219,7 @@ defmodule Riddler.Elements.ValidationTest do
     # arity-3 form skipped every check and this test went red.
     test "the arity-3 form presses no button and validates" do
       assert {:error, _findings} =
-               Elements.validate_responses(account_with_back_document(), "account", %{})
+               Screens.validate_responses(account_with_back_document(), "account", %{})
     end
 
     # Sabotage: made `opted_out?/2` answer `true` for a key naming no button;
@@ -227,7 +227,7 @@ defmodule Riddler.Elements.ValidationTest do
     # red.
     test "a key naming no button on the screen validates, because true is the default" do
       assert {:error, _findings} =
-               Elements.validate_responses(
+               Screens.validate_responses(
                  account_with_back_document(),
                  "account",
                  %{},
@@ -343,10 +343,10 @@ defmodule Riddler.Elements.ValidationTest do
     # this test went red.
     test "comes straight back from resolve_screen/3" do
       assert {:error, :no_such_screen} =
-               Elements.validate_responses(fixture_document(), "billing", %{})
+               Screens.validate_responses(fixture_document(), "billing", %{})
 
       assert {:error, :no_such_screen} =
-               Elements.validate_responses(fixture_document(), "billing", %{}, "account_continue")
+               Screens.validate_responses(fixture_document(), "billing", %{}, "account_continue")
     end
   end
 end

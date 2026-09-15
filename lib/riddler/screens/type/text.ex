@@ -1,4 +1,4 @@
-defmodule Riddler.Elements.Type.Text do
+defmodule Riddler.Screens.Type.Text do
   @moduledoc """
   A block of authored prose.
 
@@ -7,11 +7,11 @@ defmodule Riddler.Elements.Type.Text do
   this type's to check: the template is compiled by the document, for every
   template field of every type, by the same code an editor calls.
 
-      iex> Riddler.Elements.Type.Text.validate(%{type: "text", key: "plan_intro", text: "Nothing is charged today."})
+      iex> Riddler.Screens.Type.Text.validate(%{type: "text", key: "plan_intro", text: "Nothing is charged today."})
       []
   """
 
-  @behaviour Riddler.Elements.Type
+  @behaviour Riddler.Screens.Type
 
   @impl true
   def fields, do: %{required: [:text], optional: []}

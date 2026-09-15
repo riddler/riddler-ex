@@ -1,13 +1,17 @@
-defmodule Riddler.Elements.Resolved do
+defmodule Riddler.Screens.Resolved do
   @moduledoc """
   A document resolved against one visitor's context and responses.
 
-  It is the same envelope the document carried - `schema_version`, `id` and
-  `metadata` - with the screens the visitor is actually shown, plus
+  It is the same envelope the document carried - `schema_version`, `kind`,
+  `id` and `metadata` - with the screens the visitor is actually shown, plus
   `diagnostics`. A resolved document with a non-empty `diagnostics` is still a
   resolved document: resolution reports what it could not decide, it does not
-  refuse. Refusing is `Riddler.Elements.Document.validate/1`'s job, and it
+  refuse. Refusing is `Riddler.Screens.Document.validate/1`'s job, and it
   happens before a visitor exists.
+
+  `kind` is the kind the document was decided to belong to, carried through
+  so that a host holding a resolved document can tell what it is holding
+  without the document it came from.
 
   ## The screens
 
@@ -42,10 +46,11 @@ defmodule Riddler.Elements.Resolved do
         }
 
   @typedoc "A resolved screen: the shape of the screen it came from."
-  @type screen :: %{key: term(), title: term(), nodes: [Riddler.Elements.Type.node_t()]}
+  @type screen :: %{key: term(), title: term(), nodes: [Riddler.Screens.Type.node_t()]}
 
   @type t :: %__MODULE__{
           schema_version: term(),
+          kind: term(),
           id: term(),
           metadata: %{optional(String.t()) => term()},
           screens: [screen()],
@@ -53,6 +58,7 @@ defmodule Riddler.Elements.Resolved do
         }
 
   defstruct schema_version: nil,
+            kind: nil,
             id: nil,
             metadata: %{},
             screens: [],

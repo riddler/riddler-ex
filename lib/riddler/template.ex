@@ -2,7 +2,7 @@ defmodule Riddler.Template do
   @moduledoc """
   The safe template subset: a deliberately small slice of Liquid.
 
-  An element document carries authored prose that is not fixed text - a label
+  A screen document carries authored prose that is not fixed text - a label
   that greets a visitor by the name they just gave, a summary line that reads
   back what they chose. Those strings are templates, and this module is what
   decides which templates a document may carry.

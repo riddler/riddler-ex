@@ -1,4 +1,4 @@
-defmodule Riddler.Elements.Type do
+defmodule Riddler.Screens.Type do
   @moduledoc """
   What a node type has to tell the document about itself.
 
@@ -6,12 +6,12 @@ defmodule Riddler.Elements.Type do
   and it checks the ones only it knows how to check - a heading's level, a
   button's writes, a variant's candidates. Everything a node needs that is
   not particular to its type - the key, the condition, the templates, the
-  duplicate check - belongs to `Riddler.Elements.Document` and is done once
+  duplicate check - belongs to `Riddler.Screens.Document` and is done once
   for every node whatever its type is.
 
   The split is what keeps a sixth type from being a change to the document.
   Adding one is a module implementing this behaviour and a line in
-  `Riddler.Elements.Registry`; nothing in the document's own checks moves.
+  `Riddler.Screens.Registry`; nothing in the document's own checks moves.
 
   ## `fields/0`
 

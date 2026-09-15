@@ -4,13 +4,19 @@
 > it. Pinning to an exact minor - `~> X.Y.0` - is the recommended way to
 > consume the package until 1.0.
 
-`riddler`: the element document and what can be decided from it. An element
-document is a host application's JSON declaration of the dynamic content and
-forms a visitor is shown - a screen of a signup wizard, a set of questions, a
-block of copy that varies by audience. The document carries a schema version
-and is the contract between the host that authors content and any runtime that
-renders it; this package is the Elixir runtime for that contract, as pure
-functions over a decoded document and a context map.
+`riddler` is a dynamic content runtime: a host authors content as JSON
+documents - screens now; emails, images and feature flags forthcoming - and
+Riddler resolves each against a visitor's context; the host renders, sends or
+serves what comes back.
+
+A content kind is a document shape, a resolved shape, a registry and a corpus
+capability, and this version ships exactly one: `screens`. A screen document is
+a host application's JSON declaration of the content and forms a visitor is
+shown - a screen of a signup wizard, a set of questions, a block of copy that
+varies by audience. It carries a `schema_version` and a `kind`, and it is the
+contract between the host that authors content and any runtime that shows it;
+this package is the Elixir runtime for that contract, as pure functions over a
+decoded document and a context map.
 
 Conditions are evaluated by [predicator](https://hex.pm/packages/predicator)
 and templates are parsed by [solid](https://hex.pm/packages/solid). There is no
@@ -37,16 +43,16 @@ no `iex>` prompt and is not an example.
 
 ### Is this a document, and is it right?
 
-`Riddler.Elements.Document.admit/1` turns decoded JSON - string keys
+`Riddler.Screens.Document.admit/1` turns decoded JSON - string keys
 throughout, as `Jason.decode!/1` gives - into the struct the rest of the
-package reads, and answers `nil` for an input that is not an element document
-at all. `Riddler.Elements.Document.validate/1` takes that struct and returns
+package reads, and answers `nil` for an input that is not a screen document
+at all. `Riddler.Screens.Document.validate/1` takes that struct and returns
 *every* reason the document is wrong, so an author fixing what they wrote
 learns everything in one pass. Neither consults a context: a document is wrong
 or right before a visitor exists, which is what lets an editor answer an author
 while the author is still looking at it.
 
-    iex> alias Riddler.Elements.Document
+    iex> alias Riddler.Screens.Document
     iex> document =
     ...>   Document.admit(%{
     ...>     "schema_version" => 1,
@@ -79,7 +85,7 @@ answers. `admit/1` refuses only a spine that is not a document's; everything
 else is admitted and refused by `validate/1`, one finding per thing wrong, each
 carrying a stable `code` a host switches on rather than wording.
 
-    iex> alias Riddler.Elements.Document
+    iex> alias Riddler.Screens.Document
     iex> Document.admit("a string is not a document")
     nil
     iex> wrong =
@@ -95,9 +101,28 @@ carrying a stable `code` a host switches on rather than wording.
     iex> Enum.map(findings, &{&1.code, &1.field})
     [{"document.invalid_key", "key"}, {"document.missing_field", "label"}]
 
+The envelope's `kind` names the content kind the document belongs to. It is
+optional and it defaults to `screens`, so a document that names none is a
+screen document and is admitted unchanged; the decided kind is carried through
+to the resolved document. A kind this package has no runtime for is a finding
+naming the value rather than a document resolved by the wrong kind's rules.
+
+    iex> alias Riddler.Screens.Document
+    iex> screens = %{
+    ...>   "schema_version" => 1,
+    ...>   "id" => "edoc_signup",
+    ...>   "screens" => [%{"key" => "account", "title" => "Create your account",
+    ...>     "nodes" => []}]
+    ...> }
+    iex> Document.admit(screens).kind
+    "screens"
+    iex> {:error, [finding]} = Document.validate(Document.admit(Map.put(screens, "kind", "emails")))
+    iex> {finding.code, finding.field, finding.node_key}
+    {"document.unknown_kind", "kind", nil}
+
 ### What does one visitor see?
 
-`Riddler.Elements.resolve/2` answers the other question: given a root of
+`Riddler.Screens.resolve/2` answers the other question: given a root of
 `"context"` - what the host knows - and `"responses"` - what the visitor has
 submitted so far - which nodes are shown, what do their templates say, and
 which container won. It is total, and it reports rather than refuses: a node
@@ -106,7 +131,7 @@ condition doing its job, while a node whose condition could not be evaluated at
 all is hidden *and* reported in `diagnostics.undecidable_conditions`. A visitor
 is not shown a node on a guess.
 
-    iex> alias Riddler.Elements.Document
+    iex> alias Riddler.Screens.Document
     iex> document =
     ...>   Document.admit(%{
     ...>     "schema_version" => 1,
@@ -127,12 +152,12 @@ is not shown a node on a guess.
     ...>     ]
     ...>   })
     iex> known = %{"context" => %{"returning" => "yes", "first_name" => "Ada"}}
-    iex> {:ok, resolved} = Riddler.Elements.resolve(document, known)
+    iex> {:ok, resolved} = Riddler.Screens.resolve(document, known)
     iex> Enum.map(hd(resolved.screens).nodes, &{&1.key, &1.text})
     [{"account_greeting", "Welcome back, Ada."}]
     iex> resolved.diagnostics
     %{missing_variables: [], undecidable_conditions: []}
-    iex> {:ok, unknown} = Riddler.Elements.resolve(document, %{})
+    iex> {:ok, unknown} = Riddler.Screens.resolve(document, %{})
     iex> hd(unknown.screens).nodes
     []
     iex> Enum.map(unknown.diagnostics.undecidable_conditions, & &1.key)
@@ -143,7 +168,7 @@ first whose condition holds replaces the container in the output, so nothing
 downstream needs to know a container was ever there. A candidate with no
 condition wins if it is reached, which is how an author writes a default.
 
-    iex> alias Riddler.Elements.Document
+    iex> alias Riddler.Screens.Document
     iex> document =
     ...>   Document.admit(%{
     ...>     "schema_version" => 1,
@@ -165,23 +190,23 @@ condition wins if it is reached, which is how an author writes a default.
     ...>     ]
     ...>   })
     iex> declined = %{"context" => %{"last_charge_status" => "declined"}}
-    iex> {:ok, resolved} = Riddler.Elements.resolve(document, declined)
+    iex> {:ok, resolved} = Riddler.Screens.resolve(document, declined)
     iex> Enum.map(hd(resolved.screens).nodes, & &1.key)
     ["card_notice_declined"]
-    iex> {:ok, resolved} = Riddler.Elements.resolve(document, %{"context" => %{"last_charge_status" => "ok"}})
+    iex> {:ok, resolved} = Riddler.Screens.resolve(document, %{"context" => %{"last_charge_status" => "ok"}})
     iex> Enum.map(hd(resolved.screens).nodes, & &1.key)
     ["card_notice_default"]
 
 ### Are these responses enough to submit?
 
-`Riddler.Elements.validate_responses/3` runs over the *resolved* screen and
+`Riddler.Screens.validate_responses/3` runs over the *resolved* screen and
 nothing else, resolving it against these same responses first: a question a
 condition hid is a question the visitor never saw and cannot be held to. What
 is checked is what the node declares - `required`, `format`, and `min` and
 `max` on the numeric formats - and every finding names the node, the field and
 a stable code.
 
-    iex> alias Riddler.Elements.Document
+    iex> alias Riddler.Screens.Document
     iex> document =
     ...>   Document.admit(%{
     ...>     "schema_version" => 1,
@@ -203,24 +228,24 @@ a stable code.
     ...>       }
     ...>     ]
     ...>   })
-    iex> Riddler.Elements.validate_responses(document, "card", %{"billing_email" => "ada@example.com"})
+    iex> Riddler.Screens.validate_responses(document, "card", %{"billing_email" => "ada@example.com"})
     :ok
-    iex> {:error, [finding]} = Riddler.Elements.validate_responses(document, "card", %{"billing_email" => "ada"})
+    iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{"billing_email" => "ada"})
     iex> {finding.code, finding.node_key, finding.field}
     {"response.format", "billing_email", "format"}
-    iex> {:error, [finding]} = Riddler.Elements.validate_responses(document, "card", %{})
+    iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{})
     iex> finding.code
     "response.required"
-    iex> Riddler.Elements.validate_responses(document, "billing", %{})
+    iex> Riddler.Screens.validate_responses(document, "billing", %{})
     {:error, :no_such_screen}
 
-`Riddler.Elements.validate_responses/4` takes the key of the button the visitor
+`Riddler.Screens.validate_responses/4` takes the key of the button the visitor
 pressed and honours its `validates`. It defaults to true, so a button that says
 nothing validates the screen it submits; a button declaring `false` answers
 `:ok` without running a check, which is what lets a Back button leave a
 half-filled screen.
 
-    iex> alias Riddler.Elements.Document
+    iex> alias Riddler.Screens.Document
     iex> document =
     ...>   Document.admit(%{
     ...>     "schema_version" => 1,
@@ -240,9 +265,9 @@ half-filled screen.
     ...>       }
     ...>     ]
     ...>   })
-    iex> Riddler.Elements.validate_responses(document, "card", %{}, "card_back")
+    iex> Riddler.Screens.validate_responses(document, "card", %{}, "card_back")
     :ok
-    iex> {:error, [finding]} = Riddler.Elements.validate_responses(document, "card", %{}, "card_pay")
+    iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{}, "card_pay")
     iex> finding.code
     "response.required"
 
@@ -265,7 +290,7 @@ enough to fix the template.
     iex> {finding.code, finding.field}
     {"template.tag_not_allowed", "include"}
 
-A refused template is a document finding too: `Riddler.Elements.Document.validate/1`
+A refused template is a document finding too: `Riddler.Screens.Document.validate/1`
 puts every `text`, `label` and `placeholder` through the same subset and raises
 `document.invalid_template` naming the construct and the node.
 
@@ -302,7 +327,7 @@ the passage of time.
 ## Architecture decisions
 
 The records in [`docs/adr/`](docs/adr/README.md) carry the decisions this
-package is built on - what the element document is, what the template subset
+package is built on - what the screen document is, what the template subset
 admits, and where the boundary between this package and its hosts runs.
 
 ## License

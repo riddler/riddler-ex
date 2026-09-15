@@ -36,9 +36,9 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
       written = Path.wildcard(Path.join(first, "**/*.json")) |> relative_to(first)
 
       assert written == [
-               "corpus/elements/admit.json",
-               "corpus/elements/resolve.json",
-               "corpus/elements/validate_responses.json",
+               "corpus/screens/admit.json",
+               "corpus/screens/resolve.json",
+               "corpus/screens/validate_responses.json",
                "corpus/templates/render.json",
                "schemas/corpus-case.schema.json",
                "schemas/element-document.schema.json"
@@ -120,10 +120,10 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
       Task.run(["--to", target])
       assert Task.run(["--check", "--to", target]) == :ok
 
-      one = Path.join(target, "corpus/elements/admit.json")
-      File.write!(one, String.replace(File.read!(one), "elements.admit", "elements.admitted"))
+      one = Path.join(target, "corpus/screens/admit.json")
+      File.write!(one, String.replace(File.read!(one), "screens.admit", "screens.admitted"))
 
-      assert_raise Mix.Error, ~r/differs: corpus\/elements\/admit\.json/, fn ->
+      assert_raise Mix.Error, ~r/differs: corpus\/screens\/admit\.json/, fn ->
         Task.run(["--check", "--to", target])
       end
     end
@@ -135,7 +135,7 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
     test "names every file an empty checkout is missing" do
       target = tmp_dir!("empty")
 
-      assert_raise Mix.Error, ~r/missing: corpus\/elements\/admit\.json/, fn ->
+      assert_raise Mix.Error, ~r/missing: corpus\/screens\/admit\.json/, fn ->
         Task.run(["--check", "--to", target])
       end
     end
@@ -165,7 +165,7 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
       Task.run(["--to", chosen])
 
       assert File.ls!(ignored) == []
-      assert File.exists?(Path.join(chosen, "corpus/elements/admit.json"))
+      assert File.exists?(Path.join(chosen, "corpus/screens/admit.json"))
     end
 
     # Sabotage: dropped the RIDDLER_SPEC_PATH fallback, leaving only --to and
@@ -216,7 +216,7 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
       File.cp!(Path.join(root, source), Path.join(fake, source))
     end
 
-    plant_a_red_case!(Path.join(fake, "corpus/elements/admit.json"))
+    plant_a_red_case!(Path.join(fake, "corpus/screens/admit.json"))
 
     File.cd!(fake)
     on_exit(fn -> File.cd!(root) end)

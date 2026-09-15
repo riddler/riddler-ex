@@ -1,10 +1,10 @@
-defmodule Riddler.ElementsTest do
+defmodule Riddler.ScreensTest do
   use ExUnit.Case, async: true
 
-  doctest Riddler.Elements
+  doctest Riddler.Screens
 
-  alias Riddler.Elements
-  alias Riddler.Elements.Document
+  alias Riddler.Screens
+  alias Riddler.Screens.Document
 
   # test/fixtures/signup_screens.json is a verbatim copy of
   # priv/fixtures/signup_screens.json in the statifier_examples repository,
@@ -15,7 +15,7 @@ defmodule Riddler.ElementsTest do
   defp document, do: @fixture |> File.read!() |> Jason.decode!() |> Document.admit()
 
   defp resolve_screen!(screen_key, root) do
-    {:ok, screen} = Elements.resolve_screen(document(), screen_key, root)
+    {:ok, screen} = Screens.resolve_screen(document(), screen_key, root)
     screen
   end
 
@@ -85,7 +85,7 @@ defmodule Riddler.ElementsTest do
                "account_continue"
              ]
 
-      {:ok, resolved} = Elements.resolve(document(), root(%{}))
+      {:ok, resolved} = Screens.resolve(document(), root(%{}))
       refute Enum.any?(resolved.diagnostics.missing_variables, &(&1.key in keys(screen)))
     end
 
@@ -127,7 +127,7 @@ defmodule Riddler.ElementsTest do
       assert node(screen, "plan_business_hint").text ==
                "More than one seat puts you on the business plan, Ada."
 
-      {:ok, resolved} = Elements.resolve(document(), root)
+      {:ok, resolved} = Screens.resolve(document(), root)
       refute Enum.any?(resolved.diagnostics.missing_variables, &(&1.key == "plan_business_hint"))
     end
 
@@ -141,7 +141,7 @@ defmodule Riddler.ElementsTest do
       assert node(screen, "plan_business_hint").text ==
                "More than one seat puts you on the business plan, ."
 
-      {:ok, resolved} = Elements.resolve(document(), root)
+      {:ok, resolved} = Screens.resolve(document(), root)
 
       assert %{key: "plan_business_hint", variable: "responses.first_name"} in resolved.diagnostics.missing_variables
     end
@@ -181,7 +181,7 @@ defmodule Riddler.ElementsTest do
     # key matched nothing; the error tuple never came back and this test went
     # red.
     test "a screen key the document does not declare is an error" do
-      assert Elements.resolve_screen(document(), "billing", root(%{})) ==
+      assert Screens.resolve_screen(document(), "billing", root(%{})) ==
                {:error, :no_such_screen}
     end
   end
@@ -190,7 +190,7 @@ defmodule Riddler.ElementsTest do
     # Sabotage: made the undecidable branch report nothing; the diagnostics
     # list came back empty and this test went red.
     test "an undecidable condition hides its node and names it" do
-      {:ok, resolved} = Elements.resolve(document(), root(%{}))
+      {:ok, resolved} = Screens.resolve(document(), root(%{}))
       plan = Enum.find(resolved.screens, &(&1.key == "plan"))
 
       refute "plan_business_hint" in keys(plan)
@@ -206,7 +206,7 @@ defmodule Riddler.ElementsTest do
     # write map came back absent and this test went red.
     test "a resolved screen carries no condition and every write intact" do
       root = root(%{"seats" => 2, "first_name" => "Ada", "email" => "ada@example.com"})
-      {:ok, resolved} = Elements.resolve(document(), root)
+      {:ok, resolved} = Screens.resolve(document(), root)
       nodes = Enum.flat_map(resolved.screens, & &1.nodes)
 
       refute Enum.any?(nodes, &Map.has_key?(&1, :condition))
@@ -220,7 +220,7 @@ defmodule Riddler.ElementsTest do
     # from the document; the id and the metadata came back wrong and this test
     # went red.
     test "the resolved document keeps the envelope and every screen in order" do
-      {:ok, resolved} = Elements.resolve(document(), root(%{"seats" => 1}))
+      {:ok, resolved} = Screens.resolve(document(), root(%{"seats" => 1}))
 
       assert resolved.schema_version == 1
       assert resolved.id == "edoc_signup_screens"
@@ -235,7 +235,7 @@ defmodule Riddler.ElementsTest do
     # test went red.
     test "the first candidate whose condition holds replaces the container" do
       root = root(%{}, %{"last_charge_status" => "declined", "card_expires_within_days" => 9})
-      {:ok, resolved} = Elements.resolve(card_document(), root)
+      {:ok, resolved} = Screens.resolve(card_document(), root)
 
       assert keys(hd(resolved.screens)) == ["card_notice_declined"]
 
@@ -248,7 +248,7 @@ defmodule Riddler.ElementsTest do
     # test went red.
     test "the last candidate with no condition is the default" do
       root = root(%{}, %{"last_charge_status" => "ok", "card_expires_within_days" => 90})
-      {:ok, resolved} = Elements.resolve(card_document(), root)
+      {:ok, resolved} = Screens.resolve(card_document(), root)
 
       assert keys(hd(resolved.screens)) == ["card_notice_default"]
     end
@@ -259,7 +259,7 @@ defmodule Riddler.ElementsTest do
     test "a container's own condition hides it before any candidate is tried" do
       document = card_document(%{"condition" => "context.has_card_on_file == true"})
       root = root(%{}, %{"has_card_on_file" => false})
-      {:ok, resolved} = Elements.resolve(document, root)
+      {:ok, resolved} = Screens.resolve(document, root)
 
       assert hd(resolved.screens).nodes == []
       assert resolved.diagnostics.undecidable_conditions == []
@@ -269,7 +269,7 @@ defmodule Riddler.ElementsTest do
     # instead of being passed over; the declined notice was shown against a
     # context that carried nothing and this test went red.
     test "an undecidable candidate is passed over and reported" do
-      {:ok, resolved} = Elements.resolve(card_document(), root(%{}))
+      {:ok, resolved} = Screens.resolve(card_document(), root(%{}))
 
       assert keys(hd(resolved.screens)) == ["card_notice_default"]
 
@@ -311,7 +311,7 @@ defmodule Riddler.ElementsTest do
           ]
         })
 
-      {:ok, resolved} = Elements.resolve(document, root(%{}, %{"last_charge_status" => "ok"}))
+      {:ok, resolved} = Screens.resolve(document, root(%{}, %{"last_charge_status" => "ok"}))
 
       assert hd(resolved.screens).nodes == []
     end
@@ -342,7 +342,7 @@ defmodule Riddler.ElementsTest do
         })
 
       root = %{"responses" => %{}, "visitor" => %{"name" => "Acme"}}
-      {:ok, resolved} = Elements.resolve(document, root)
+      {:ok, resolved} = Screens.resolve(document, root)
 
       assert hd(hd(resolved.screens).nodes).text == "Charging ."
 

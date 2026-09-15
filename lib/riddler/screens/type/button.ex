@@ -1,4 +1,4 @@
-defmodule Riddler.Elements.Type.Button do
+defmodule Riddler.Screens.Type.Button do
   @moduledoc """
   A control a visitor presses, and what pressing it means.
 
@@ -13,16 +13,16 @@ defmodule Riddler.Elements.Type.Button do
   leave a half-filled screen without an error.
 
       iex> node = %{type: "button", key: "plan_business", label: "Take the business plan", outcome: "business_chosen", writes: %{"responses.plan" => ["const", "business"]}}
-      iex> Riddler.Elements.Type.Button.validate(node)
+      iex> Riddler.Screens.Type.Button.validate(node)
       []
 
       iex> node = %{type: "button", key: "plan_business", label: "Go", outcome: "chosen", writes: %{"plan" => ["const", "business"]}}
-      iex> [finding] = Riddler.Elements.Type.Button.validate(node)
+      iex> [finding] = Riddler.Screens.Type.Button.validate(node)
       iex> finding.code
       "document.invalid_writes"
   """
 
-  @behaviour Riddler.Elements.Type
+  @behaviour Riddler.Screens.Type
 
   alias Riddler.Finding
 

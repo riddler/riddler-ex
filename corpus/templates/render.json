@@ -295,7 +295,7 @@
       "input": {
         "source": "{% include 'footer' %}"
       },
-      "name": "include is refused: it reaches for a file an element document does not have"
+      "name": "include is refused: it reaches for a file a screen document does not have"
     },
     {
       "expected": {

@@ -1,4 +1,4 @@
-defmodule Riddler.Elements.Type.Variant do
+defmodule Riddler.Screens.Type.Variant do
   @moduledoc """
   A container that shows one of several candidates: first match wins.
 
@@ -19,15 +19,15 @@ defmodule Riddler.Elements.Type.Variant do
       ...>   %{type: "text", key: "card_notice_declined", condition: "context.last_charge_status == 'declined'", text: "Try another card."},
       ...>   %{type: "text", key: "card_notice_default", text: "We will charge the card on file."}
       ...> ]}
-      iex> Riddler.Elements.Type.Variant.validate(node)
+      iex> Riddler.Screens.Type.Variant.validate(node)
       []
 
-      iex> [finding] = Riddler.Elements.Type.Variant.validate(%{type: "variant", key: "card_notice", nodes: []})
+      iex> [finding] = Riddler.Screens.Type.Variant.validate(%{type: "variant", key: "card_notice", nodes: []})
       iex> finding.code
       "document.empty_variant"
   """
 
-  @behaviour Riddler.Elements.Type
+  @behaviour Riddler.Screens.Type
 
   alias Riddler.Finding
 

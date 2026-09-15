@@ -1,4 +1,4 @@
-defmodule Riddler.Elements.Type.Heading do
+defmodule Riddler.Screens.Type.Heading do
   @moduledoc """
   A section title: a level and the text of the heading.
 
@@ -8,11 +8,11 @@ defmodule Riddler.Elements.Type.Heading do
   means is its depth in the document; how big it looks is the renderer's.
 
       iex> node = %{type: "heading", key: "account_heading", level: 1, text: "Create your account"}
-      iex> Riddler.Elements.Type.Heading.validate(node)
+      iex> Riddler.Screens.Type.Heading.validate(node)
       []
   """
 
-  @behaviour Riddler.Elements.Type
+  @behaviour Riddler.Screens.Type
 
   alias Riddler.Finding
 

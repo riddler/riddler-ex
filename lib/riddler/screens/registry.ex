@@ -1,4 +1,4 @@
-defmodule Riddler.Elements.Registry do
+defmodule Riddler.Screens.Registry do
   @moduledoc """
   The node types this version of the runtime knows, by the name a document
   spells them with.
@@ -13,17 +13,17 @@ defmodule Riddler.Elements.Registry do
   The v1 types are `heading`, `text`, `text_question`, `button` and
   `variant`.
 
-      iex> Riddler.Elements.Registry.types()
+      iex> Riddler.Screens.Registry.types()
       ["button", "heading", "text", "text_question", "variant"]
 
-      iex> Riddler.Elements.Registry.fetch("heading")
-      {:ok, Riddler.Elements.Type.Heading}
+      iex> Riddler.Screens.Registry.fetch("heading")
+      {:ok, Riddler.Screens.Type.Heading}
 
-      iex> Riddler.Elements.Registry.fetch("carousel")
+      iex> Riddler.Screens.Registry.fetch("carousel")
       :error
   """
 
-  alias Riddler.Elements.Type
+  alias Riddler.Screens.Type
 
   @types %{
     "button" => Type.Button,
