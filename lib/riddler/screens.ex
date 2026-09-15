@@ -1,9 +1,9 @@
-defmodule Riddler.Elements do
+defmodule Riddler.Screens do
   @moduledoc """
   A document against one visitor: what they are shown, and what could not be
   decided.
 
-  `Riddler.Elements.Document` answers whether a document is well formed, on its
+  `Riddler.Screens.Document` answers whether a document is well formed, on its
   own, before anyone arrives. This module answers the other question: given a
   host's `context` and a visitor's `responses`, which nodes are shown, what do
   their templates say, and which container won. `resolve/2` answers it for a
@@ -61,7 +61,7 @@ defmodule Riddler.Elements do
   that question and so cannot fail it.
 
       iex> document =
-      ...>   Riddler.Elements.Document.admit(%{
+      ...>   Riddler.Screens.Document.admit(%{
       ...>     "schema_version" => 1,
       ...>     "id" => "edoc_checkout",
       ...>     "screens" => [
@@ -85,17 +85,17 @@ defmodule Riddler.Elements do
       ...>     ]
       ...>   })
       iex> root = %{"context" => %{"tenant_name" => "Acme", "card_expires_within_days" => 9}}
-      iex> {:ok, resolved} = Riddler.Elements.resolve(document, root)
+      iex> {:ok, resolved} = Riddler.Screens.resolve(document, root)
       iex> Enum.map(hd(resolved.screens).nodes, & &1.text)
       ["Charging Acme.", "The card on file expires soon."]
       iex> resolved.diagnostics
       %{missing_variables: [], undecidable_conditions: []}
   """
 
-  alias Riddler.Elements.Document
-  alias Riddler.Elements.Resolved
-  alias Riddler.Elements.Validation
   alias Riddler.Finding
+  alias Riddler.Screens.Document
+  alias Riddler.Screens.Resolved
+  alias Riddler.Screens.Validation
   alias Riddler.Template
 
   # The string fields a document writes as templates. Every other string in a
@@ -116,7 +116,7 @@ defmodule Riddler.Elements do
   one absent is the same as it being empty.
 
       iex> document =
-      ...>   Riddler.Elements.Document.admit(%{
+      ...>   Riddler.Screens.Document.admit(%{
       ...>     "schema_version" => 1,
       ...>     "id" => "edoc_signup",
       ...>     "screens" => [
@@ -134,7 +134,7 @@ defmodule Riddler.Elements do
       ...>       }
       ...>     ]
       ...>   })
-      iex> {:ok, resolved} = Riddler.Elements.resolve(document, %{})
+      iex> {:ok, resolved} = Riddler.Screens.resolve(document, %{})
       iex> {hd(resolved.screens).nodes, resolved.diagnostics.undecidable_conditions}
       {[], [%{key: "account_greeting", condition: "responses.first_name != ''"}]}
   """
@@ -148,6 +148,7 @@ defmodule Riddler.Elements do
     {:ok,
      %Resolved{
        schema_version: document.schema_version,
+       kind: document.kind,
        id: document.id,
        metadata: document.metadata,
        screens: screens,
@@ -163,15 +164,15 @@ defmodule Riddler.Elements do
   not a visitor's, and is worth an error rather than an empty screen.
 
       iex> document =
-      ...>   Riddler.Elements.Document.admit(%{
+      ...>   Riddler.Screens.Document.admit(%{
       ...>     "schema_version" => 1,
       ...>     "id" => "edoc_signup",
       ...>     "screens" => [%{"key" => "account", "title" => "Create your account", "nodes" => []}]
       ...>   })
-      iex> {:ok, screen} = Riddler.Elements.resolve_screen(document, "account", %{})
+      iex> {:ok, screen} = Riddler.Screens.resolve_screen(document, "account", %{})
       iex> {screen.key, screen.title, screen.nodes}
       {"account", "Create your account", []}
-      iex> Riddler.Elements.resolve_screen(document, "plan", %{})
+      iex> Riddler.Screens.resolve_screen(document, "plan", %{})
       {:error, :no_such_screen}
   """
   @spec resolve_screen(Document.t(), term(), map()) ::
@@ -198,7 +199,7 @@ defmodule Riddler.Elements do
 
   What is checked is what the node declares. `required` is unanswered when the
   response is absent or is a string of whitespace. `format` names one of the
-  validation formats `Riddler.Elements.Document.formats/0` lists, and a blank
+  validation formats `Riddler.Screens.Document.formats/0` lists, and a blank
   response that is not required is not put to it - a format has nothing to say
   about text a visitor did not type. The numeric formats also honour `min` and
   `max` where the question declares them.
@@ -214,7 +215,7 @@ defmodule Riddler.Elements do
   than told its responses are fine.
 
       iex> document =
-      ...>   Riddler.Elements.Document.admit(%{
+      ...>   Riddler.Screens.Document.admit(%{
       ...>     "schema_version" => 1,
       ...>     "id" => "edoc_checkout",
       ...>     "screens" => [
@@ -233,15 +234,15 @@ defmodule Riddler.Elements do
       ...>       }
       ...>     ]
       ...>   })
-      iex> Riddler.Elements.validate_responses(document, "card", %{"billing_email" => "ada@example.com"})
+      iex> Riddler.Screens.validate_responses(document, "card", %{"billing_email" => "ada@example.com"})
       :ok
-      iex> {:error, [finding]} = Riddler.Elements.validate_responses(document, "card", %{"billing_email" => "ada"})
+      iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{"billing_email" => "ada"})
       iex> {finding.code, finding.node_key, finding.field}
       {"response.format", "billing_email", "format"}
-      iex> {:error, [finding]} = Riddler.Elements.validate_responses(document, "card", %{})
+      iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{})
       iex> finding.code
       "response.required"
-      iex> Riddler.Elements.validate_responses(document, "billing", %{})
+      iex> Riddler.Screens.validate_responses(document, "billing", %{})
       {:error, :no_such_screen}
   """
   @spec validate_responses(Document.t(), term(), map()) ::
@@ -270,14 +271,14 @@ defmodule Riddler.Elements do
       ...>   ]
       ...> }
       iex> document =
-      ...>   Riddler.Elements.Document.admit(%{
+      ...>   Riddler.Screens.Document.admit(%{
       ...>     "schema_version" => 1,
       ...>     "id" => "edoc_checkout",
       ...>     "screens" => [screen]
       ...>   })
-      iex> Riddler.Elements.validate_responses(document, "card", %{}, "card_back")
+      iex> Riddler.Screens.validate_responses(document, "card", %{}, "card_back")
       :ok
-      iex> {:error, [finding]} = Riddler.Elements.validate_responses(document, "card", %{}, "card_pay")
+      iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{}, "card_pay")
       iex> finding.code
       "response.required"
   """

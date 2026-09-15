@@ -28,9 +28,9 @@ defmodule Riddler.CorpusTest do
   use ExUnit.Case, async: true
 
   @corpus_files [
-    "corpus/elements/admit.json",
-    "corpus/elements/resolve.json",
-    "corpus/elements/validate_responses.json",
+    "corpus/screens/admit.json",
+    "corpus/screens/resolve.json",
+    "corpus/screens/validate_responses.json",
     "corpus/templates/render.json"
   ]
 
@@ -46,9 +46,9 @@ defmodule Riddler.CorpusTest do
   # so the count is part of what this version pins: a case lost in a rebase is
   # a case a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
-    "corpus/elements/admit.json" => 21,
-    "corpus/elements/resolve.json" => 20,
-    "corpus/elements/validate_responses.json" => 27,
+    "corpus/screens/admit.json" => 24,
+    "corpus/screens/resolve.json" => 20,
+    "corpus/screens/validate_responses.json" => 27,
     "corpus/templates/render.json" => 29
   }
 
@@ -68,7 +68,7 @@ defmodule Riddler.CorpusTest do
       assert drift == []
     end
 
-    # Sabotage: renamed "capability" to "kind" in corpus/elements/admit.json;
+    # Sabotage: renamed "capability" to "kind" in corpus/screens/admit.json;
     # the required-property check failed and this test went red.
     test "every corpus file satisfies the corpus case schema" do
       schema = resolved_schema(@case_schema)
@@ -109,7 +109,7 @@ defmodule Riddler.CorpusTest do
     # Sabotage: renamed the two "Liquid filter chain" cases; the substance was
     # no longer findable by name and this test went red.
     test "the four substances the 2019 corpus carried are present by name" do
-      names = Enum.map(cases("corpus/elements/resolve.json"), & &1["name"])
+      names = Enum.map(cases("corpus/screens/resolve.json"), & &1["name"])
 
       for substance <- ["Basic text:", "Include condition:", "Liquid filter chain:", "Variant:"] do
         assert Enum.any?(names, &String.starts_with?(&1, substance)),
@@ -134,20 +134,20 @@ defmodule Riddler.CorpusTest do
     # Sabotage: made admit/1 answer nil for a document carrying metadata; the
     # fixture case came back unadmitted and this test went red.
     test "every admission case answers what the corpus states" do
-      assert mismatches("corpus/elements/admit.json") == []
+      assert mismatches("corpus/screens/admit.json") == []
     end
 
     # Sabotage: handed a container's candidates to the walk reversed, so the
     # last match won; the three variant cases came back with the wrong candidate
     # and this test went red.
     test "every resolution case answers what the corpus states" do
-      assert mismatches("corpus/elements/resolve.json") == []
+      assert mismatches("corpus/screens/resolve.json") == []
     end
 
     # Sabotage: made an absent response count as answered rather than blank; the
     # unanswered cases came back :ok and this test went red.
     test "every response validation case answers what the corpus states" do
-      assert mismatches("corpus/elements/validate_responses.json") == []
+      assert mismatches("corpus/screens/validate_responses.json") == []
     end
 
     # Sabotage: added "cycle" to the template allowlist; the cycle refusal case
@@ -157,7 +157,7 @@ defmodule Riddler.CorpusTest do
     end
   end
 
-  describe "the element document schema" do
+  describe "the screen document schema" do
     # Sabotage: dropped "screens" from the schema's required list; the cases
     # that are not documents validated against it and this test went red.
     test "admits exactly the values the admission corpus calls documents" do
@@ -165,7 +165,7 @@ defmodule Riddler.CorpusTest do
 
       disagreements =
         for %{"name" => name, "input" => input, "expected" => expected} <-
-              cases("corpus/elements/admit.json"),
+              cases("corpus/screens/admit.json"),
             valid = ExJsonSchema.Validator.valid?(schema, input["document"]),
             valid != expected["admitted"],
             do: {name, valid, expected["admitted"]}
@@ -204,19 +204,19 @@ defmodule Riddler.CorpusTest do
   end
 
   defp admitted_documents do
-    for one <- cases("corpus/elements/admit.json"),
+    for one <- cases("corpus/screens/admit.json"),
         one["expected"]["admitted"],
         do: {one["name"], one["input"]["document"]}
   end
 
   defp carried_documents do
-    for path <- ["corpus/elements/resolve.json", "corpus/elements/validate_responses.json"],
+    for path <- ["corpus/screens/resolve.json", "corpus/screens/validate_responses.json"],
         one <- cases(path),
         do: {one["name"], one["input"]["document"]}
   end
 
   defp resolved_documents do
-    for one <- cases("corpus/elements/resolve.json"),
+    for one <- cases("corpus/screens/resolve.json"),
         is_nil(one["input"]["screen"]),
         do: {one["name"] <> " (resolved)", one["expected"]}
   end

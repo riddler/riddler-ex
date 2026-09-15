@@ -4,29 +4,35 @@ This file provides instructions and context for AI coding agents working on this
 
 ## What this project is
 
-`riddler`: one hex package, and the Elixir runtime for the element document.
+`riddler`: one hex package, and a dynamic content runtime.
 
-An element document is a host application's JSON declaration of the dynamic
-content and forms a visitor is shown - a screen of a signup wizard, a set of
-questions, a block of copy that varies by audience. It carries a
-`schema_version`, and it is the contract between a host that authors content
-and any runtime that renders it. Everything this package does is decided from
+A host authors content as JSON documents - screens now; emails, images and
+feature flags forthcoming - and Riddler resolves each against a visitor's
+context; the host renders, sends or serves what comes back. The document is
+the contract: it carries a `schema_version` and a `kind`, and it is what both
+sides of the boundary agree on. Everything this package does is decided from
 that document: what the vocabulary admits, what a container resolves to
 against a context, what a template may interpolate, and what a set of
 responses has to satisfy.
 
-The runtime is three pure functions over decoded data:
+A content kind is a document shape, a resolved shape, a registry and a corpus
+capability. This version ships exactly one, `screens`; `emails`, `images` and
+`flags` are forthcoming, and a kind is added by a record, never by a commit.
+A document that names no `kind` is a screen document; a `kind` this package
+has no runtime for is a `document.unknown_kind` finding.
 
-- `Riddler.Elements.Document.admit/1` and `Riddler.Elements.Document.validate/1`
+The screens kind is three pure functions over decoded data:
+
+- `Riddler.Screens.Document.admit/1` and `Riddler.Screens.Document.validate/1`
   - what the vocabulary admits, and why a document is refused.
-- `Riddler.Elements.resolve/2` - the document against a context.
-- `Riddler.Elements.validate_responses/3` - what a set of responses has to
+- `Riddler.Screens.resolve/2` - the document against a context.
+- `Riddler.Screens.validate_responses/3` - what a set of responses has to
   satisfy before a host accepts it.
 
-Elements, the template subset and, later, feature flags are modules in this one
-package rather than packages of their own. The seams are `Riddler.Elements`,
-`Riddler.Template` and `Riddler.Corpus`, and the package is split along them
-only when something outside it needs one without the others.
+The content kinds, the template subset and, later, feature flags are modules
+in this one package rather than packages of their own. The seams are
+`Riddler.Screens`, `Riddler.Template` and `Riddler.Corpus`, and the package is
+split along them only when something outside it needs one without the others.
 
 This package **consumes** the statifier family from a host application and
 never depends on it here. `statifier_blocks`, `statifier-ex` and the rest are
@@ -120,7 +126,7 @@ An agent may draft the change; it does not adopt it.
 - Errors are events: the pure functions that can fail return
   `{:ok, v} | {:error, e}` and never raise on input a host can produce. Never
   rescue-to-default at a leaf. The one deliberate exception is an admission
-  step: a total normalizer returns `nil` for an input that is not an element
+  step: a total normalizer returns `nil` for an input that is not a screen
   document, so that *not a document* stays distinguishable from *a document
   declaring nothing*.
 - Structs + `@spec` on every public function; pattern matching over multiple

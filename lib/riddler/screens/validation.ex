@@ -1,17 +1,17 @@
-defmodule Riddler.Elements.Validation do
+defmodule Riddler.Screens.Validation do
   @moduledoc false
 
   # What a set of responses has to satisfy before a host accepts it.
   #
-  # The public entry points are `Riddler.Elements.validate_responses/3` and
+  # The public entry points are `Riddler.Screens.validate_responses/3` and
   # `/4`; this module holds the checks behind them and is not part of the
   # package's surface. It is handed a screen that has already been resolved,
   # which is the whole of why it can be this small: a node that is here is a
   # node the visitor was shown, every container has already collapsed to its
   # winner, and there is no condition left to consult.
 
-  alias Riddler.Elements.Resolved
   alias Riddler.Finding
+  alias Riddler.Screens.Resolved
 
   # A node a response answers is a node that declares something about the
   # response: whether it is required, or the format it has to be in. A node

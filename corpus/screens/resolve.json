@@ -1,5 +1,5 @@
 {
-  "capability": "elements.resolve",
+  "capability": "screens.resolve",
   "cases": [
     {
       "expected": {
@@ -13,6 +13,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_signup_greeting",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -61,6 +62,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_signup_greeting",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -116,6 +118,7 @@
           ]
         },
         "id": "edoc_signup_greeting",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -159,6 +162,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_signup_greeting",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -210,6 +214,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_signup_greeting",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -258,6 +263,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_signup_greeting",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -308,6 +314,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_card_notice",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -376,6 +383,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_card_notice",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -444,6 +452,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_card_notice",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -512,6 +521,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_card_notice",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -563,6 +573,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_card_notice",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -619,6 +630,7 @@
           "undecidable_conditions": []
         },
         "id": "edoc_card_notice",
+        "kind": "screens",
         "metadata": {},
         "schema_version": 1,
         "screens": [
@@ -1358,6 +1370,7 @@
           ]
         },
         "id": "edoc_signup_screens",
+        "kind": "screens",
         "metadata": {
           "description": "The three screens the signup wizard shows: collect a name and email, choose a plan, confirm.",
           "domain": "signup",
@@ -1622,5 +1635,5 @@
       "name": "The whole signup wizard against a visitor who has answered nothing keeps the envelope and every screen in order, and reports each condition it could not decide"
     }
   ],
-  "name": "Resolution: an element document against one visitor's context and responses"
+  "name": "Resolution: a screen document against one visitor's context and responses"
 }

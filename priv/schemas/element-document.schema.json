@@ -48,10 +48,14 @@
       "type": "object"
     }
   },
-  "description": "The structural contract of an element document: the envelope, the screen, and the common node fields. It describes exactly what makes a JSON value an element document at all, and nothing more. Everything a document can be wrong about - a key that is not lower snake case, a field a node's type requires, a heading level outside 1 to 6, a condition that does not parse, a template outside the subset, a type no runtime knows - is a finding a runtime raises against an admitted document, not a reason the value is not a document. A validator holding this schema and a runtime admitting the same value therefore agree: schema-valid means admitted.",
+  "description": "The structural contract of a screen document: the envelope, the screen, and the common node fields. It describes exactly what makes a JSON value a screen document at all, and nothing more. Everything a document can be wrong about - a key that is not lower snake case, a field a node's type requires, a heading level outside 1 to 6, a condition that does not parse, a template outside the subset, a type no runtime knows - is a finding a runtime raises against an admitted document, not a reason the value is not a document. A validator holding this schema and a runtime admitting the same value therefore agree: schema-valid means admitted.",
   "properties": {
     "id": {
       "description": "The name of the document.",
+      "type": "string"
+    },
+    "kind": {
+      "description": "The content kind the document belongs to. An open string, and absent means screens: this schema deliberately does not enumerate the kinds, for the same reason it does not enumerate the node types - a host carrying a document through a validator older than one of its kinds should not have it rejected on the way. The runtime keeps the other half of the rule: it does enumerate the kinds it has a runtime for, and a kind it does not know is a finding against an admitted document naming the value, never a document resolved by the wrong kind's rules.",
       "type": "string"
     },
     "metadata": {
@@ -73,6 +77,6 @@
   "required": [
     "screens"
   ],
-  "title": "Element document",
+  "title": "Screen document",
   "type": "object"
 }

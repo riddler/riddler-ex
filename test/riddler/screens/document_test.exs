@@ -1,20 +1,20 @@
-defmodule Riddler.Elements.DocumentTest do
+defmodule Riddler.Screens.DocumentTest do
   use ExUnit.Case, async: true
 
-  doctest Riddler.Elements.Document
-  doctest Riddler.Elements.Registry
-  doctest Riddler.Elements.Type.Button
-  doctest Riddler.Elements.Type.Heading
-  doctest Riddler.Elements.Type.Text
-  doctest Riddler.Elements.Type.TextQuestion
-  doctest Riddler.Elements.Type.Variant
+  doctest Riddler.Screens.Document
+  doctest Riddler.Screens.Registry
+  doctest Riddler.Screens.Type.Button
+  doctest Riddler.Screens.Type.Heading
+  doctest Riddler.Screens.Type.Text
+  doctest Riddler.Screens.Type.TextQuestion
+  doctest Riddler.Screens.Type.Variant
 
-  alias Riddler.Elements.Document
+  alias Riddler.Screens.Document
 
   # test/fixtures/signup_screens.json is a verbatim copy of
   # priv/fixtures/signup_screens.json in the statifier_examples repository,
   # read at 9d288c9. It is the signup wizard a host already authors by hand,
-  # and it is the worked case the element document has to admit.
+  # and it is the worked case the screen document has to admit.
   @fixture "test/fixtures/signup_screens.json"
 
   defp fixture_json, do: @fixture |> File.read!() |> Jason.decode!()
@@ -45,7 +45,9 @@ defmodule Riddler.Elements.DocumentTest do
   # that the two can be compared. A leaf field is: each of the two envelope
   # fields the document carries, each entry of `metadata`, each screen's
   # `key` and `title`, and each field of each node - with a `writes` map
-  # contributing one leaf per entry rather than one for the map.
+  # contributing one leaf per entry rather than one for the map. The
+  # envelope's `kind` is decided rather than carried - it defaults to
+  # "screens" when the document omits it - so it is a leaf on neither side.
   defp raw_leaves(raw) do
     envelope = Enum.count(["schema_version", "id"], &Map.has_key?(raw, &1))
     metadata = map_size(Map.get(raw, "metadata", %{}))
@@ -124,7 +126,7 @@ defmodule Riddler.Elements.DocumentTest do
   describe "admit/1" do
     # Sabotage: remove the `admit(_raw), do: nil` catch-all and admitting a
     # binary raises instead of answering nil.
-    test "answers nil for anything that is not an element document" do
+    test "answers nil for anything that is not a screen document" do
       assert Document.admit(nil) == nil
       assert Document.admit("not a document") == nil
       assert Document.admit([%{"key" => "account"}]) == nil
@@ -191,6 +193,74 @@ defmodule Riddler.Elements.DocumentTest do
 
       assert [%{nodes: [variant]}] = document.screens
       assert variant.nodes == [%{type: "text", key: "account_notice_default", text: "Welcome"}]
+    end
+  end
+
+  describe "the envelope's kind" do
+    # Sabotage: made `admit_kind/1` answer nil for an absent kind; the
+    # defaulted document came back with no kind at all and this went red,
+    # with every other document that names no kind red beside it.
+    test "defaults to screens when the document names none, and the document is admitted" do
+      raw = document([%{"type" => "text", "key" => "account_intro", "text" => "Hello"}])
+      document = Document.admit(raw)
+
+      refute Map.has_key?(raw, "kind")
+      assert document.kind == "screens"
+      assert {:ok, ^document} = Document.validate(document)
+    end
+
+    # Sabotage: dropped the `kind in @kinds` clause of `kind_findings/1`; the
+    # screens kind raised a finding about itself and this went red, with every
+    # other clean-validation test red beside it.
+    test "is admitted with no finding when the document names the screens kind" do
+      document =
+        Document.admit(
+          Map.put(
+            document([%{"type" => "text", "key" => "account_intro", "text" => "Hello"}]),
+            "kind",
+            "screens"
+          )
+        )
+
+      assert document.kind == "screens"
+      assert {:ok, ^document} = Document.validate(document)
+    end
+
+    # Sabotage: made `kind_findings/1` return `[]` for every kind and a
+    # document declaring a kind with no runtime validated clean, so this went
+    # red.
+    test "a kind this package has no runtime for is a finding naming the value and no node" do
+      raw =
+        Map.put(
+          document([%{"type" => "text", "key" => "account_intro", "text" => "Hello"}]),
+          "kind",
+          "emails"
+        )
+
+      document = Document.admit(raw)
+
+      assert document.kind == "emails"
+      assert [finding] = findings(raw)
+      assert finding.code == "document.unknown_kind"
+      assert finding.field == "kind"
+      assert finding.node_key == nil
+      assert finding.message =~ "emails"
+    end
+
+    # Sabotage: dropped `kind: document.kind` from the resolved envelope and
+    # the resolved document came back with a nil kind, so this went red.
+    test "is carried through to the resolved document" do
+      document =
+        Document.admit(
+          Map.put(
+            document([%{"type" => "text", "key" => "account_intro", "text" => "Hello"}]),
+            "kind",
+            "screens"
+          )
+        )
+
+      assert {:ok, resolved} = Riddler.Screens.resolve(document, %{})
+      assert resolved.kind == "screens"
     end
   end
 

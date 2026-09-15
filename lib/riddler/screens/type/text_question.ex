@@ -1,4 +1,4 @@
-defmodule Riddler.Elements.Type.TextQuestion do
+defmodule Riddler.Screens.Type.TextQuestion do
   @moduledoc """
   A question a visitor answers with a line of text.
 
@@ -19,19 +19,19 @@ defmodule Riddler.Elements.Type.TextQuestion do
   hold a response between. A question that declares one without the format
   that reads it declares something nothing consults.
 
-      iex> Riddler.Elements.Type.TextQuestion.validate(%{type: "text_question", key: "email", label: "Work email", format: "email"})
+      iex> Riddler.Screens.Type.TextQuestion.validate(%{type: "text_question", key: "email", label: "Work email", format: "email"})
       []
 
       iex> node = %{type: "text_question", key: "email", label: "Work email", format: "e-mail"}
-      iex> [finding] = Riddler.Elements.Type.TextQuestion.validate(node)
+      iex> [finding] = Riddler.Screens.Type.TextQuestion.validate(node)
       iex> finding.code
       "document.unknown_format"
   """
 
-  @behaviour Riddler.Elements.Type
+  @behaviour Riddler.Screens.Type
 
-  alias Riddler.Elements.Document
   alias Riddler.Finding
+  alias Riddler.Screens.Document
 
   @impl true
   def fields,

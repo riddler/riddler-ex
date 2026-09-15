@@ -1,18 +1,22 @@
 defmodule Riddler do
   @moduledoc """
-  Riddler: the element document and what can be decided from it.
+  Riddler: a dynamic content runtime.
 
-  An element document is a host application's declaration of the dynamic
-  content and forms a visitor is shown - a screen of a signup wizard, a set of
-  questions, a block of copy that varies by audience. It is JSON, it carries a
-  schema version, and it is the contract between a host that authors content
-  and any runtime that renders it. This package is the Elixir runtime for that
-  contract: pure functions over a decoded document and a context map, with no
-  renderer, no persistence and no editor inside them.
+  A host authors content as JSON documents - screens now; emails, images and
+  feature flags forthcoming - and Riddler resolves each against a visitor's
+  context; the host renders, sends or serves what comes back. The document is
+  the contract: it is JSON, it carries a `schema_version` and a `kind`, and it
+  is what both sides of the boundary agree on. This package is the Elixir
+  runtime for that contract - pure functions over a decoded document and a
+  context map, with no renderer, no persistence and no editor inside them.
+
+  A content kind is a document shape, a resolved shape, a registry and a
+  corpus capability. This version ships exactly one, `screens`; each
+  forthcoming kind is decided by its own record before it is code.
 
   Three seams divide the package, and each one arrives as its own module:
 
-    * `Riddler.Elements` - the document itself. What the vocabulary admits,
+    * `Riddler.Screens` - the screens kind. What the vocabulary admits,
       what a container resolves to against a context, and what a set of
       responses has to satisfy to be accepted.
 

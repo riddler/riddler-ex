@@ -16,16 +16,16 @@ defmodule Riddler.Corpus do
   # files and the schemas are not in the package tarball, so this module is
   # meaningful in a checkout of this repository and nowhere else.
 
-  alias Riddler.Elements
-  alias Riddler.Elements.Document
+  alias Riddler.Screens
+  alias Riddler.Screens.Document
   alias Riddler.Template
 
   @version Mix.Project.config()[:version]
 
   @case_files [
-    "corpus/elements/admit.json",
-    "corpus/elements/resolve.json",
-    "corpus/elements/validate_responses.json",
+    "corpus/screens/admit.json",
+    "corpus/screens/resolve.json",
+    "corpus/screens/validate_responses.json",
     "corpus/templates/render.json"
   ]
 
@@ -91,30 +91,30 @@ defmodule Riddler.Corpus do
         do: {path, name}
   end
 
-  defp run("elements.admit", input) do
+  defp run("screens.admit", input) do
     case Document.admit(input["document"]) do
       nil -> %{"admitted" => false, "findings" => []}
       document -> %{"admitted" => true, "findings" => admit_findings(document)}
     end
   end
 
-  defp run("elements.resolve", input) do
+  defp run("screens.resolve", input) do
     document = admitted(input["document"])
 
     case input["screen"] do
       nil ->
-        {:ok, resolved} = Elements.resolve(document, input["root"])
+        {:ok, resolved} = Screens.resolve(document, input["root"])
         encode(resolved)
 
       screen_key ->
-        case Elements.resolve_screen(document, screen_key, input["root"]) do
+        case Screens.resolve_screen(document, screen_key, input["root"]) do
           {:ok, screen} -> encode(screen)
           {:error, :no_such_screen} -> %{"error" => "no_such_screen"}
         end
     end
   end
 
-  defp run("elements.validate_responses", input) do
+  defp run("screens.validate_responses", input) do
     input["document"]
     |> admitted()
     |> validate_responses(input)
@@ -145,10 +145,10 @@ defmodule Riddler.Corpus do
   defp validate_responses(document, input) do
     case Map.fetch(input, "pressed_button") do
       {:ok, key} ->
-        Elements.validate_responses(document, input["screen"], input["responses"], key)
+        Screens.validate_responses(document, input["screen"], input["responses"], key)
 
       :error ->
-        Elements.validate_responses(document, input["screen"], input["responses"])
+        Screens.validate_responses(document, input["screen"], input["responses"])
     end
   end
 

@@ -13,7 +13,7 @@ defmodule Riddler.MixProject do
       deps: deps(),
       name: "Riddler",
       description:
-        "Riddler: the element document and what can be decided from it - the typed element vocabulary, the template subset, resolution against a context, and response validation - pure functions over decoded maps, with the conformance corpus authored here and emitted into riddler_spec",
+        "Riddler is a dynamic content runtime: a host authors content as JSON documents - screens now; emails, images and feature flags forthcoming - and Riddler resolves each against a visitor's context; the host renders, sends or serves what comes back",
       source_url: @source_url,
       docs: docs(),
       package: package(),
@@ -45,7 +45,7 @@ defmodule Riddler.MixProject do
       source_url: @source_url,
       main: "readme",
       # The records ship as extras because this package's decisions are its
-      # reference: a reader deciding what an element document admits, or which
+      # reference: a reader deciding what a screen document admits, or which
       # template constructs are in the subset, reads the record. The glob takes
       # the numbered records and not `docs/adr/README.md`, whose page id would
       # collide with the front page's.
@@ -54,7 +54,7 @@ defmodule Riddler.MixProject do
         "Architecture decisions": ~r{docs/adr/}
       ],
       # The groups follow the package's own seams so the sidebar reads as the
-      # architecture rather than as the alphabet: the element document and the
+      # architecture rather than as the alphabet: the screen document and the
       # vocabulary it admits, the template subset, and the corpus the package
       # emits. Order matters: ex_doc assigns each module to the first group
       # whose pattern matches. `Riddler` itself matches none of them on
@@ -63,7 +63,7 @@ defmodule Riddler.MixProject do
       # before the modules exist so that each seam lands in its own group the
       # day it arrives, rather than in the alphabet.
       groups_for_modules: [
-        Elements: [~r/^Riddler\.Elements($|\.)/],
+        Screens: [~r/^Riddler\.Screens($|\.)/],
         Template: [~r/^Riddler\.Template($|\.)/],
         Corpus: [~r/^Riddler\.Corpus($|\.)/, ~r/^Mix\.Tasks\.Riddler\.Corpus$/]
       ],
@@ -84,7 +84,7 @@ defmodule Riddler.MixProject do
   end
 
   # Two runtime dependencies and no more. `predicator` evaluates the
-  # conditions an element document declares and `solid` parses the template
+  # conditions a screen document declares and `solid` parses the template
   # subset; both are pure libraries over decoded data. Nothing in the
   # statifier family is a dependency here and nothing here may become one:
   # this package consumes that family from a host application, not from its
