@@ -1,0 +1,609 @@
+{
+  "capability": "templates.render",
+  "cases": [
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "Business"
+      },
+      "input": {
+        "assigns": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "invitees": [
+              "bo",
+              "cy",
+              "di"
+            ],
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "{% if responses.plan == 'business' %}Business{% elsif responses.plan == 'personal' %}Personal{% else %}None{% endif %}"
+      },
+      "name": "The if tag, with elsif and else, is in the subset and renders the branch that holds"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "You are on the business plan."
+      },
+      "input": {
+        "assigns": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "invitees": [
+              "bo",
+              "cy",
+              "di"
+            ],
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "{% unless responses.plan == 'personal' %}You are on the business plan.{% endunless %}"
+      },
+      "name": "The unless tag is in the subset"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "Business"
+      },
+      "input": {
+        "assigns": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "invitees": [
+              "bo",
+              "cy",
+              "di"
+            ],
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "{% case responses.plan %}{% when 'business' %}Business{% when 'personal' %}Personal{% endcase %}"
+      },
+      "name": "The case tag, with when, is in the subset"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "bo;cy;di;"
+      },
+      "input": {
+        "assigns": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "invitees": [
+              "bo",
+              "cy",
+              "di"
+            ],
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "{% for name in responses.invitees %}{{ name }};{% endfor %}"
+      },
+      "name": "The for tag is in the subset"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "cy;di;"
+      },
+      "input": {
+        "assigns": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "invitees": [
+              "bo",
+              "cy",
+              "di"
+            ],
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "{% for name in responses.invitees limit: 2 offset: 1 %}{{ name }};{% endfor %}"
+      },
+      "name": "The for tag takes its limit and offset arguments"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "Hello, Ada."
+      },
+      "input": {
+        "assigns": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "invitees": [
+              "bo",
+              "cy",
+              "di"
+            ],
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "{% assign greeting = 'Hello' %}{{ greeting }}, {{ responses.first_name }}."
+      },
+      "name": "The assign tag is in the subset"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "Ada <ada@example.com>"
+      },
+      "input": {
+        "assigns": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "invitees": [
+              "bo",
+              "cy",
+              "di"
+            ],
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "{% capture line %}{{ responses.first_name }} <{{ responses.email }}>{% endcapture %}{{ line }}"
+      },
+      "name": "The capture tag is in the subset"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "BeforeAfter"
+      },
+      "input": {
+        "assigns": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "invitees": [
+              "bo",
+              "cy",
+              "di"
+            ],
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "Before{% comment %}an aside for the author{% endcomment %}After"
+      },
+      "name": "The comment tag is in the subset and renders nothing"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "{{ responses.first_name }}"
+      },
+      "input": {
+        "assigns": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "invitees": [
+              "bo",
+              "cy",
+              "di"
+            ],
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "{% raw %}{{ responses.first_name }}{% endraw %}"
+      },
+      "name": "The raw tag is in the subset and renders its contents verbatim"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "ADA!"
+      },
+      "input": {
+        "assigns": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "invitees": [
+              "bo",
+              "cy",
+              "di"
+            ],
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "{{ responses.first_name | upcase | append: '!' }}"
+      },
+      "name": "An output tag carrying a chain of admitted filters is in the subset"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "include",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% include 'footer' %}"
+      },
+      "name": "include is refused: it reaches for a file an element document does not have"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "render",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% render 'footer' %}"
+      },
+      "name": "render is refused, for the same reason as include"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "increment",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% increment seats %}"
+      },
+      "name": "increment is refused: it carries state between renders"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "decrement",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% decrement seats %}"
+      },
+      "name": "decrement is refused: it carries state between renders"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "cycle",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% cycle 'a' %}"
+      },
+      "name": "cycle is refused: it makes a render depend on how many times it has been rendered"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "tablerow",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% tablerow name in responses.invitees %}{{ name }}{% endtablerow %}"
+      },
+      "name": "tablerow is refused: it emits markup, and rendered output is text"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "liquid",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% liquid assign greeting = 'Hello' %}"
+      },
+      "name": "liquid is refused: it is an alternate spelling for constructs already in the subset"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "echo",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% echo responses.first_name %}"
+      },
+      "name": "echo is refused: it is an alternate spelling for an output tag"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "acme_widget",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% acme_widget id: 1 %}"
+      },
+      "name": "A vendor-specific construct is refused: no second runtime can be held to it"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.filter_not_allowed",
+            "field": "escape",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{{ responses.first_name | escape }}"
+      },
+      "name": "The escape filter is refused: this package does not escape"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.filter_not_allowed",
+            "field": "escape_once",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{{ responses.first_name | escape_once }}"
+      },
+      "name": "The escape_once filter is refused"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.filter_not_allowed",
+            "field": "newline_to_br",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{{ responses.first_name | newline_to_br }}"
+      },
+      "name": "The newline_to_br filter is refused: output is text, never markup"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.filter_not_allowed",
+            "field": "strip_html",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{{ responses.first_name | strip_html }}"
+      },
+      "name": "The strip_html filter is refused: it knows about markup"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.filter_not_allowed",
+            "field": "shout",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{{ responses.first_name | shout }}"
+      },
+      "name": "A filter outside the subset is refused even when no runtime has heard of it"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "cycle",
+            "node_key": null
+          },
+          {
+            "code": "template.filter_not_allowed",
+            "field": "escape",
+            "node_key": null
+          },
+          {
+            "code": "template.tag_not_allowed",
+            "field": "render",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% cycle 'a' %}{{ responses.email | escape }}{% render 'footer' %}"
+      },
+      "name": "Compilation reports one finding per refused construct, in source order, not the first"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [
+          "responses.first_name"
+        ],
+        "rendered": true,
+        "text": "Nice to meet you, ."
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {}
+        },
+        "mode": "lenient",
+        "source": "Nice to meet you, {{ responses.first_name }}."
+      },
+      "name": "Lenient mode renders a variable the root does not carry as the empty string and names it"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [
+          "responses.first_name"
+        ],
+        "rendered": false
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {}
+        },
+        "mode": "strict",
+        "source": "Nice to meet you, {{ responses.first_name }}."
+      },
+      "name": "Strict mode returns the same variable as an error instead of rendering"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "We will send a verification link to your inbox."
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {}
+        },
+        "mode": "both",
+        "source": "We will send a verification link to {{ responses.email | default: 'your inbox' }}."
+      },
+      "name": "A variable guarded by default is missing in neither mode: default is how an author says a field is optional"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "Nice to meet you, <b>Ada</b>."
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {
+            "first_name": "<b>Ada</b>"
+          }
+        },
+        "mode": "both",
+        "source": "Nice to meet you, {{ responses.first_name }}."
+      },
+      "name": "A value carrying markup renders as the literal characters of that markup, in both modes"
+    }
+  ],
+  "name": "The template subset: what compiles, what is refused, and what the two render modes do"
+}

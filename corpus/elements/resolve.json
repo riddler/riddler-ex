@@ -1,0 +1,1626 @@
+{
+  "capability": "elements.resolve",
+  "cases": [
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "account_greeting",
+              "variable": "responses.first_name"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_greeting",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "key": "account_greeting",
+                "text": "Hello !",
+                "type": "text"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_greeting",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_greeting",
+                  "text": "Hello {{ responses.first_name }}!",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "Basic text: a template naming a response the visitor has not given renders as empty and the variable is reported"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_greeting",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "key": "account_greeting",
+                "text": "Hello Ada!",
+                "type": "text"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_greeting",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_greeting",
+                  "text": "Hello {{ responses.first_name }}!",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "Ada"
+          }
+        }
+      },
+      "name": "Basic text: the same template renders the response once the visitor has given it"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": [
+            {
+              "condition": "responses.first_name == 'Ada'",
+              "key": "account_greeting"
+            }
+          ]
+        },
+        "id": "edoc_signup_greeting",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_greeting",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "condition": "responses.first_name == 'Ada'",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you again.",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "Include condition: the node is hidden and its condition reported when the root carries nothing to decide it with"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_greeting",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "key": "account_greeting",
+                "text": "Nice to meet you again.",
+                "type": "text"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_greeting",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "condition": "responses.first_name == 'Ada'",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you again.",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "Ada"
+          }
+        }
+      },
+      "name": "Include condition: the node is shown, and carries no condition, once the condition holds"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_greeting",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "key": "account_greeting",
+                "text": "Hello Friend!",
+                "type": "text"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_greeting",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_greeting",
+                  "text": "Hello {{ responses.first_name | default: 'FRIEND' | downcase | split: ' ' | first | capitalize | append: '!' }}",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "Liquid filter chain: default, downcase, split, first, capitalize and append render the author's fallback when the response is absent, and default keeps it out of the missing list"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_greeting",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "key": "account_greeting",
+                "text": "Hello Ada!",
+                "type": "text"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_greeting",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_greeting",
+                  "text": "Hello {{ responses.first_name | default: 'FRIEND' | downcase | split: ' ' | first | capitalize | append: '!' }}",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "ADA LOVELACE"
+          }
+        }
+      },
+      "name": "Liquid filter chain: the same chain reduces a full name to its capitalized first word"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_card_notice",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "card",
+            "nodes": [
+              {
+                "key": "card_notice_declined",
+                "text": "The card on file was declined. Try another one.",
+                "type": "text"
+              }
+            ],
+            "title": "Your card"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_card_notice",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.last_charge_status == 'declined'",
+                      "key": "card_notice_declined",
+                      "text": "The card on file was declined. Try another one.",
+                      "type": "text"
+                    },
+                    {
+                      "condition": "context.last_charge_status == 'expiring'",
+                      "key": "card_notice_expiring",
+                      "text": "The card on file expires soon.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_default",
+                      "text": "We will charge the card on file.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "last_charge_status": "declined"
+          },
+          "responses": {}
+        }
+      },
+      "name": "Variant: at the first value of the selecting variable the first candidate wins and replaces the container"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_card_notice",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "card",
+            "nodes": [
+              {
+                "key": "card_notice_expiring",
+                "text": "The card on file expires soon.",
+                "type": "text"
+              }
+            ],
+            "title": "Your card"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_card_notice",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.last_charge_status == 'declined'",
+                      "key": "card_notice_declined",
+                      "text": "The card on file was declined. Try another one.",
+                      "type": "text"
+                    },
+                    {
+                      "condition": "context.last_charge_status == 'expiring'",
+                      "key": "card_notice_expiring",
+                      "text": "The card on file expires soon.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_default",
+                      "text": "We will charge the card on file.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "last_charge_status": "expiring"
+          },
+          "responses": {}
+        }
+      },
+      "name": "Variant: at the second value of the selecting variable the second candidate wins"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_card_notice",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "card",
+            "nodes": [
+              {
+                "key": "card_notice_default",
+                "text": "We will charge the card on file.",
+                "type": "text"
+              }
+            ],
+            "title": "Your card"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_card_notice",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.last_charge_status == 'declined'",
+                      "key": "card_notice_declined",
+                      "text": "The card on file was declined. Try another one.",
+                      "type": "text"
+                    },
+                    {
+                      "condition": "context.last_charge_status == 'expiring'",
+                      "key": "card_notice_expiring",
+                      "text": "The card on file expires soon.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_default",
+                      "text": "We will charge the card on file.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "last_charge_status": "settled"
+          },
+          "responses": {}
+        }
+      },
+      "name": "Variant: at a third value the unconditional last candidate is the default"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_card_notice",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "card",
+            "nodes": [],
+            "title": "Your card"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_card_notice",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "condition": "context.has_card_on_file == true",
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "key": "card_notice_default",
+                      "text": "We will charge the card on file.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "has_card_on_file": false
+          },
+          "responses": {}
+        }
+      },
+      "name": "A container whose own condition is false is hidden before any candidate is tried"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_card_notice",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "card",
+            "nodes": [],
+            "title": "Your card"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_card_notice",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.last_charge_status == 'declined'",
+                      "key": "card_notice_declined",
+                      "text": "The card on file was declined.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "last_charge_status": "settled"
+          },
+          "responses": {}
+        }
+      },
+      "name": "A container no candidate wins resolves to nothing"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "card_intro",
+              "variable": "visitor.name"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_card_notice",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "card",
+            "nodes": [
+              {
+                "key": "card_intro",
+                "text": "Charging .",
+                "type": "text"
+              }
+            ],
+            "title": "Your card"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_card_notice",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "card_intro",
+                  "text": "Charging {{ visitor.name }}.",
+                  "type": "text"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "root": {
+          "responses": {},
+          "visitor": {
+            "name": "Acme"
+          }
+        }
+      },
+      "name": "The root is exactly context and responses: a third root is read by nothing and its path is reported missing"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "key": "account_heading",
+            "level": 1,
+            "text": "Create your account",
+            "type": "heading"
+          },
+          {
+            "key": "account_intro",
+            "text": "Two questions and you are in. We never share an address with anyone.",
+            "type": "text"
+          },
+          {
+            "key": "first_name",
+            "label": "First name",
+            "placeholder": "Ada",
+            "required": true,
+            "type": "text_question"
+          },
+          {
+            "format": "email",
+            "key": "email",
+            "label": "Work email",
+            "placeholder": "ada@example.com",
+            "required": true,
+            "type": "text_question"
+          },
+          {
+            "key": "account_continue",
+            "label": "Continue",
+            "outcome": "account_submitted",
+            "type": "button"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "key": "account_intro",
+                  "text": "Two questions and you are in. We never share an address with anyone.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "placeholder": "Ada",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "format": "email",
+                  "key": "email",
+                  "label": "Work email",
+                  "placeholder": "ada@example.com",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "screen": "account"
+      },
+      "name": "The signup wizard's account screen with no responses hides the greeting whose condition cannot be decided"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "key": "account_heading",
+            "level": 1,
+            "text": "Create your account",
+            "type": "heading"
+          },
+          {
+            "key": "account_intro",
+            "text": "Two questions and you are in. We never share an address with anyone.",
+            "type": "text"
+          },
+          {
+            "key": "first_name",
+            "label": "First name",
+            "placeholder": "Ada",
+            "required": true,
+            "type": "text_question"
+          },
+          {
+            "format": "email",
+            "key": "email",
+            "label": "Work email",
+            "placeholder": "ada@example.com",
+            "required": true,
+            "type": "text_question"
+          },
+          {
+            "key": "account_greeting",
+            "text": "Nice to meet you, Ada.",
+            "type": "text"
+          },
+          {
+            "key": "account_continue",
+            "label": "Continue",
+            "outcome": "account_submitted",
+            "type": "button"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "key": "account_intro",
+                  "text": "Two questions and you are in. We never share an address with anyone.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "placeholder": "Ada",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "format": "email",
+                  "key": "email",
+                  "label": "Work email",
+                  "placeholder": "ada@example.com",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "Ada"
+          }
+        },
+        "screen": "account"
+      },
+      "name": "The signup wizard's account screen with a first name shows the greeting and renders it"
+    },
+    {
+      "expected": {
+        "key": "plan",
+        "nodes": [
+          {
+            "key": "plan_heading",
+            "level": 1,
+            "text": "Pick a plan",
+            "type": "heading"
+          },
+          {
+            "key": "plan_intro",
+            "text": "You can change this later. Nothing is charged today.",
+            "type": "text"
+          },
+          {
+            "key": "seats",
+            "label": "How many seats?",
+            "placeholder": "1",
+            "required": false,
+            "type": "text_question"
+          },
+          {
+            "key": "plan_personal",
+            "label": "Take the personal plan",
+            "outcome": "personal_chosen",
+            "type": "button",
+            "writes": {
+              "responses.plan": [
+                "const",
+                "personal"
+              ]
+            }
+          },
+          {
+            "key": "plan_back",
+            "label": "Back",
+            "outcome": "went_back",
+            "type": "button"
+          }
+        ],
+        "title": "Pick a plan"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_heading",
+                  "level": 1,
+                  "text": "Pick a plan",
+                  "type": "heading"
+                },
+                {
+                  "key": "plan_intro",
+                  "text": "You can change this later. Nothing is charged today.",
+                  "type": "text"
+                },
+                {
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "placeholder": "1",
+                  "required": false,
+                  "type": "text_question"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "plan_business_hint",
+                  "text": "More than one seat puts you on the business plan, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "condition": "responses.seats <= 1",
+                  "key": "plan_personal",
+                  "label": "Take the personal plan",
+                  "outcome": "personal_chosen",
+                  "type": "button",
+                  "writes": {
+                    "responses.plan": [
+                      "const",
+                      "personal"
+                    ]
+                  }
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "plan_business",
+                  "label": "Take the business plan",
+                  "outcome": "business_chosen",
+                  "type": "button",
+                  "writes": {
+                    "responses.plan": [
+                      "const",
+                      "business"
+                    ]
+                  }
+                },
+                {
+                  "key": "plan_back",
+                  "label": "Back",
+                  "outcome": "went_back",
+                  "type": "button"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "Ada",
+            "seats": 1
+          }
+        },
+        "screen": "plan"
+      },
+      "name": "The signup wizard's plan screen at one seat shows the personal plan button and hides the business hint"
+    },
+    {
+      "expected": {
+        "key": "plan",
+        "nodes": [
+          {
+            "key": "plan_heading",
+            "level": 1,
+            "text": "Pick a plan",
+            "type": "heading"
+          },
+          {
+            "key": "plan_intro",
+            "text": "You can change this later. Nothing is charged today.",
+            "type": "text"
+          },
+          {
+            "key": "seats",
+            "label": "How many seats?",
+            "placeholder": "1",
+            "required": false,
+            "type": "text_question"
+          },
+          {
+            "key": "plan_business_hint",
+            "text": "More than one seat puts you on the business plan, Ada.",
+            "type": "text"
+          },
+          {
+            "key": "plan_business",
+            "label": "Take the business plan",
+            "outcome": "business_chosen",
+            "type": "button",
+            "writes": {
+              "responses.plan": [
+                "const",
+                "business"
+              ]
+            }
+          },
+          {
+            "key": "plan_back",
+            "label": "Back",
+            "outcome": "went_back",
+            "type": "button"
+          }
+        ],
+        "title": "Pick a plan"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_heading",
+                  "level": 1,
+                  "text": "Pick a plan",
+                  "type": "heading"
+                },
+                {
+                  "key": "plan_intro",
+                  "text": "You can change this later. Nothing is charged today.",
+                  "type": "text"
+                },
+                {
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "placeholder": "1",
+                  "required": false,
+                  "type": "text_question"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "plan_business_hint",
+                  "text": "More than one seat puts you on the business plan, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "condition": "responses.seats <= 1",
+                  "key": "plan_personal",
+                  "label": "Take the personal plan",
+                  "outcome": "personal_chosen",
+                  "type": "button",
+                  "writes": {
+                    "responses.plan": [
+                      "const",
+                      "personal"
+                    ]
+                  }
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "plan_business",
+                  "label": "Take the business plan",
+                  "outcome": "business_chosen",
+                  "type": "button",
+                  "writes": {
+                    "responses.plan": [
+                      "const",
+                      "business"
+                    ]
+                  }
+                },
+                {
+                  "key": "plan_back",
+                  "label": "Back",
+                  "outcome": "went_back",
+                  "type": "button"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "Ada",
+            "seats": 2
+          }
+        },
+        "screen": "plan"
+      },
+      "name": "The signup wizard's plan screen at two seats shows the business plan button and renders the hint, with the write carried through untouched"
+    },
+    {
+      "expected": {
+        "key": "confirm",
+        "nodes": [
+          {
+            "key": "confirm_heading",
+            "level": 1,
+            "text": "Confirm and finish",
+            "type": "heading"
+          },
+          {
+            "key": "confirm_summary",
+            "text": "We will send a verification link to ada@example.com. Open it within a day and the account is live.",
+            "type": "text"
+          },
+          {
+            "key": "confirm_finish",
+            "label": "Finish",
+            "outcome": "signup_confirmed",
+            "type": "button"
+          }
+        ],
+        "title": "Confirm and finish"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "confirm",
+              "nodes": [
+                {
+                  "key": "confirm_heading",
+                  "level": 1,
+                  "text": "Confirm and finish",
+                  "type": "heading"
+                },
+                {
+                  "key": "confirm_summary",
+                  "text": "We will send a verification link to {{ responses.email }}. Open it within a day and the account is live.",
+                  "type": "text"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "confirm_referral_heading",
+                  "level": 2,
+                  "text": "One more thing, {{ responses.first_name }}",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "referral",
+                  "label": "Who told you about us?",
+                  "placeholder": "A colleague",
+                  "required": false,
+                  "type": "text_question"
+                },
+                {
+                  "key": "confirm_finish",
+                  "label": "Finish",
+                  "outcome": "signup_confirmed",
+                  "type": "button"
+                }
+              ],
+              "title": "Confirm and finish"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "email": "ada@example.com",
+            "seats": 1
+          }
+        },
+        "screen": "confirm"
+      },
+      "name": "The signup wizard's confirm screen at one seat hides the referral question and renders the address back to the visitor"
+    },
+    {
+      "expected": {
+        "key": "confirm",
+        "nodes": [
+          {
+            "key": "confirm_heading",
+            "level": 1,
+            "text": "Confirm and finish",
+            "type": "heading"
+          },
+          {
+            "key": "confirm_summary",
+            "text": "We will send a verification link to ada@example.com. Open it within a day and the account is live.",
+            "type": "text"
+          },
+          {
+            "key": "confirm_referral_heading",
+            "level": 2,
+            "text": "One more thing, Ada",
+            "type": "heading"
+          },
+          {
+            "key": "referral",
+            "label": "Who told you about us?",
+            "placeholder": "A colleague",
+            "required": false,
+            "type": "text_question"
+          },
+          {
+            "key": "confirm_finish",
+            "label": "Finish",
+            "outcome": "signup_confirmed",
+            "type": "button"
+          }
+        ],
+        "title": "Confirm and finish"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "confirm",
+              "nodes": [
+                {
+                  "key": "confirm_heading",
+                  "level": 1,
+                  "text": "Confirm and finish",
+                  "type": "heading"
+                },
+                {
+                  "key": "confirm_summary",
+                  "text": "We will send a verification link to {{ responses.email }}. Open it within a day and the account is live.",
+                  "type": "text"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "confirm_referral_heading",
+                  "level": 2,
+                  "text": "One more thing, {{ responses.first_name }}",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "referral",
+                  "label": "Who told you about us?",
+                  "placeholder": "A colleague",
+                  "required": false,
+                  "type": "text_question"
+                },
+                {
+                  "key": "confirm_finish",
+                  "label": "Finish",
+                  "outcome": "signup_confirmed",
+                  "type": "button"
+                }
+              ],
+              "title": "Confirm and finish"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "email": "ada@example.com",
+            "first_name": "Ada",
+            "seats": 2
+          }
+        },
+        "screen": "confirm"
+      },
+      "name": "The signup wizard's confirm screen at two seats shows the referral question, and no node carries a condition"
+    },
+    {
+      "expected": {
+        "error": "no_such_screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "screen": "billing"
+      },
+      "name": "A screen key the document does not declare is an error, not an empty screen"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "confirm_summary",
+              "variable": "responses.email"
+            }
+          ],
+          "undecidable_conditions": [
+            {
+              "condition": "responses.first_name != ''",
+              "key": "account_greeting"
+            },
+            {
+              "condition": "responses.seats > 1",
+              "key": "plan_business_hint"
+            },
+            {
+              "condition": "responses.seats <= 1",
+              "key": "plan_personal"
+            },
+            {
+              "condition": "responses.seats > 1",
+              "key": "plan_business"
+            },
+            {
+              "condition": "responses.seats > 1",
+              "key": "confirm_referral_heading"
+            },
+            {
+              "condition": "responses.seats > 1",
+              "key": "referral"
+            }
+          ]
+        },
+        "id": "edoc_signup_screens",
+        "metadata": {
+          "description": "The three screens the signup wizard shows: collect a name and email, choose a plan, confirm.",
+          "domain": "signup",
+          "name": "Signup screens"
+        },
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "key": "account_heading",
+                "level": 1,
+                "text": "Create your account",
+                "type": "heading"
+              },
+              {
+                "key": "account_intro",
+                "text": "Two questions and you are in. We never share an address with anyone.",
+                "type": "text"
+              },
+              {
+                "key": "first_name",
+                "label": "First name",
+                "placeholder": "Ada",
+                "required": true,
+                "type": "text_question"
+              },
+              {
+                "format": "email",
+                "key": "email",
+                "label": "Work email",
+                "placeholder": "ada@example.com",
+                "required": true,
+                "type": "text_question"
+              },
+              {
+                "key": "account_continue",
+                "label": "Continue",
+                "outcome": "account_submitted",
+                "type": "button"
+              }
+            ],
+            "title": "Create your account"
+          },
+          {
+            "key": "plan",
+            "nodes": [
+              {
+                "key": "plan_heading",
+                "level": 1,
+                "text": "Pick a plan",
+                "type": "heading"
+              },
+              {
+                "key": "plan_intro",
+                "text": "You can change this later. Nothing is charged today.",
+                "type": "text"
+              },
+              {
+                "key": "seats",
+                "label": "How many seats?",
+                "placeholder": "1",
+                "required": false,
+                "type": "text_question"
+              },
+              {
+                "key": "plan_back",
+                "label": "Back",
+                "outcome": "went_back",
+                "type": "button"
+              }
+            ],
+            "title": "Pick a plan"
+          },
+          {
+            "key": "confirm",
+            "nodes": [
+              {
+                "key": "confirm_heading",
+                "level": 1,
+                "text": "Confirm and finish",
+                "type": "heading"
+              },
+              {
+                "key": "confirm_summary",
+                "text": "We will send a verification link to . Open it within a day and the account is live.",
+                "type": "text"
+              },
+              {
+                "key": "confirm_finish",
+                "label": "Finish",
+                "outcome": "signup_confirmed",
+                "type": "button"
+              }
+            ],
+            "title": "Confirm and finish"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "metadata": {
+            "description": "The three screens the signup wizard shows: collect a name and email, choose a plan, confirm.",
+            "domain": "signup",
+            "name": "Signup screens"
+          },
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "key": "account_intro",
+                  "text": "Two questions and you are in. We never share an address with anyone.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "placeholder": "Ada",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "format": "email",
+                  "key": "email",
+                  "label": "Work email",
+                  "placeholder": "ada@example.com",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_heading",
+                  "level": 1,
+                  "text": "Pick a plan",
+                  "type": "heading"
+                },
+                {
+                  "key": "plan_intro",
+                  "text": "You can change this later. Nothing is charged today.",
+                  "type": "text"
+                },
+                {
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "placeholder": "1",
+                  "required": false,
+                  "type": "text_question"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "plan_business_hint",
+                  "text": "More than one seat puts you on the business plan, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "condition": "responses.seats <= 1",
+                  "key": "plan_personal",
+                  "label": "Take the personal plan",
+                  "outcome": "personal_chosen",
+                  "type": "button",
+                  "writes": {
+                    "responses.plan": [
+                      "const",
+                      "personal"
+                    ]
+                  }
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "plan_business",
+                  "label": "Take the business plan",
+                  "outcome": "business_chosen",
+                  "type": "button",
+                  "writes": {
+                    "responses.plan": [
+                      "const",
+                      "business"
+                    ]
+                  }
+                },
+                {
+                  "key": "plan_back",
+                  "label": "Back",
+                  "outcome": "went_back",
+                  "type": "button"
+                }
+              ],
+              "title": "Pick a plan"
+            },
+            {
+              "key": "confirm",
+              "nodes": [
+                {
+                  "key": "confirm_heading",
+                  "level": 1,
+                  "text": "Confirm and finish",
+                  "type": "heading"
+                },
+                {
+                  "key": "confirm_summary",
+                  "text": "We will send a verification link to {{ responses.email }}. Open it within a day and the account is live.",
+                  "type": "text"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "confirm_referral_heading",
+                  "level": 2,
+                  "text": "One more thing, {{ responses.first_name }}",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "referral",
+                  "label": "Who told you about us?",
+                  "placeholder": "A colleague",
+                  "required": false,
+                  "type": "text_question"
+                },
+                {
+                  "key": "confirm_finish",
+                  "label": "Finish",
+                  "outcome": "signup_confirmed",
+                  "type": "button"
+                }
+              ],
+              "title": "Confirm and finish"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "The whole signup wizard against a visitor who has answered nothing keeps the envelope and every screen in order, and reports each condition it could not decide"
+    }
+  ],
+  "name": "Resolution: an element document against one visitor's context and responses"
+}

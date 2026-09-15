@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "case": {
+      "additionalProperties": false,
+      "description": "One case: what it is called, what it is given, and what every runtime has to answer.",
+      "properties": {
+        "expected": {
+          "description": "What every runtime has to answer.",
+          "type": "object"
+        },
+        "input": {
+          "description": "What the capability is given. elements.admit takes document. elements.resolve takes document and root, and screen where only one screen is resolved. elements.validate_responses takes document, screen and responses, and pressed_button where a button was pressed. templates.render takes source, and assigns and mode where the case renders; mode is lenient, strict, or both, and both means the case is run in each mode and both runs have to give the stated answer.",
+          "type": "object"
+        },
+        "name": {
+          "description": "The rule the case pins, in prose. A case that fails is read by its name before it is read by its data.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "input",
+        "expected"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "One capability's conformance cases. A case is an input and the answer every runtime has to give for it, so a runtime in a second language is held to the same behavior as the reference one. Two conventions hold across every file. A finding in an expected answer carries code, field and node_key and no message: the code is the stable thing a host switches on and the message is prose a second runtime is not obliged to reproduce word for word. And the author writes name, capability and cases; the emitter that copies these files into the corpus repository adds its own provenance header beside them, which is why this schema does not forbid further keys at the top level.",
+  "properties": {
+    "capability": {
+      "description": "The behavior every case in the file exercises. elements.admit runs the input document through admission and reports whether it is a document and every finding against it. elements.resolve resolves a document against a root, or one named screen of it. elements.validate_responses resolves the named screen against the responses and reports what they have to satisfy. templates.render compiles template source against the subset and, where the case names a mode, renders it.",
+      "enum": [
+        "elements.admit",
+        "elements.resolve",
+        "elements.validate_responses",
+        "templates.render"
+      ],
+      "type": "string"
+    },
+    "cases": {
+      "items": {
+        "$ref": "#/definitions/case"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "generated_by": {
+      "description": "Written by the emitter when the file is copied into the corpus repository. An authored file does not carry it.",
+      "type": "string"
+    },
+    "name": {
+      "description": "What this file's cases are about, in a sentence.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "capability",
+    "cases"
+  ],
+  "title": "Conformance corpus file",
+  "type": "object"
+}

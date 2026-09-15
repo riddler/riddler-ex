@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "node": {
+      "description": "A node. Only the fields every node shares are described here; the fields a type names are the type's own and are carried through untouched.",
+      "properties": {
+        "condition": {
+          "description": "An expression over context.* and responses.*. Whether it parses is a runtime finding.",
+          "type": "string"
+        },
+        "key": {
+          "description": "How everything else names the node. A runtime holds it to [a-z][a-z0-9_]* and to being unique across the whole document; both are findings against an admitted document rather than reasons this is not a document.",
+          "type": "string"
+        },
+        "nodes": {
+          "description": "The candidates of a container, considered in order.",
+          "items": {
+            "$ref": "#/definitions/node"
+          },
+          "type": "array"
+        },
+        "type": {
+          "description": "An open string. This schema deliberately does not enumerate the node types: a host carrying a document through a validator older than one of its types should not have it rejected on the way. The runtime's registry is the other half of the rule - it does enumerate the types, and a type it does not know is a finding naming the type and the node, never a node quietly passed through.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "screen": {
+      "description": "A screen: its key, its title, and its nodes in order.",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/definitions/node"
+          },
+          "type": "array"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "nodes"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "The structural contract of an element document: the envelope, the screen, and the common node fields. It describes exactly what makes a JSON value an element document at all, and nothing more. Everything a document can be wrong about - a key that is not lower snake case, a field a node's type requires, a heading level outside 1 to 6, a condition that does not parse, a template outside the subset, a type no runtime knows - is a finding a runtime raises against an admitted document, not a reason the value is not a document. A validator holding this schema and a runtime admitting the same value therefore agree: schema-valid means admitted.",
+  "properties": {
+    "id": {
+      "description": "The name of the document.",
+      "type": "string"
+    },
+    "metadata": {
+      "description": "An open map. It carries name, description and domain as strings and a host may put what it likes beside them; a runtime neither interprets nor refuses the extras.",
+      "type": "object"
+    },
+    "schema_version": {
+      "description": "The version of this contract the document was authored against. 1 in this version.",
+      "type": "integer"
+    },
+    "screens": {
+      "description": "The screens of the document, in the order a visitor is shown them.",
+      "items": {
+        "$ref": "#/definitions/screen"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "screens"
+  ],
+  "title": "Element document",
+  "type": "object"
+}

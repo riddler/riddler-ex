@@ -1,0 +1,1026 @@
+{
+  "capability": "elements.validate_responses",
+  "cases": [
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "first_name"
+          },
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "email"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "format": "email",
+                  "key": "email",
+                  "label": "Work email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "account"
+      },
+      "name": "Every required question the visitor left unanswered is a finding, in the order the screen declares them"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "first_name"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "format": "email",
+                  "key": "email",
+                  "label": "Work email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "email": "ada@example.com",
+          "first_name": "   "
+        },
+        "screen": "account"
+      },
+      "name": "A required question answered with whitespace is unanswered"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "format": "email",
+                  "key": "email",
+                  "label": "Work email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "email": "ada@example.com",
+          "first_name": "Ada"
+        },
+        "screen": "account"
+      },
+      "name": "A screen whose required questions are all answered is ready to be submitted"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "field": "format",
+            "node_key": "email"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "email",
+                  "label": "Work email",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "email": "ada"
+        },
+        "screen": "account"
+      },
+      "name": "An email format refuses a response that is not an address"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "required": false,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "plan"
+      },
+      "name": "An optional question the visitor left blank is not a finding"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "billing_email",
+                  "label": "Where should the receipt go?",
+                  "required": false,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {
+          "billing_email": "   "
+        },
+        "screen": "card"
+      },
+      "name": "A blank response that is not required is never put to its format"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "format": "phone",
+                  "key": "billing_phone",
+                  "label": "Billing phone",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {
+          "billing_phone": "+1 (555) 010-1234"
+        },
+        "screen": "card"
+      },
+      "name": "A phone format takes the punctuation a visitor chose around enough digits"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "field": "format",
+            "node_key": "billing_phone"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "format": "phone",
+                  "key": "billing_phone",
+                  "label": "Billing phone",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {
+          "billing_phone": "555-12"
+        },
+        "screen": "card"
+      },
+      "name": "A phone format refuses too few digits however it is punctuated"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "format": "pattern",
+                  "key": "card_last_four",
+                  "label": "Last four digits",
+                  "pattern": "[0-9]{4}",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {
+          "card_last_four": "4242"
+        },
+        "screen": "card"
+      },
+      "name": "A pattern format holds the response to the author's expression"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "field": "format",
+            "node_key": "card_last_four"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "format": "pattern",
+                  "key": "card_last_four",
+                  "label": "Last four digits",
+                  "pattern": "[0-9]{4}",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {
+          "card_last_four": "4242 4242"
+        },
+        "screen": "card"
+      },
+      "name": "A pattern format holds the response to the whole expression, not to a match somewhere inside it"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "field": "pattern",
+            "node_key": "card_last_four"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "format": "pattern",
+                  "key": "card_last_four",
+                  "label": "Last four digits",
+                  "pattern": "[0-9",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {
+          "card_last_four": "4242"
+        },
+        "screen": "card"
+      },
+      "name": "A pattern no runtime can use is a finding against the question, because nothing could satisfy it"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "seats": "3"
+        },
+        "screen": "plan"
+      },
+      "name": "An integer format takes a whole number the visitor typed"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "field": "format",
+            "node_key": "seats"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "seats": "three"
+        },
+        "screen": "plan"
+      },
+      "name": "An integer format refuses text that is not a whole number"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "format": "number",
+                  "key": "monthly_spend",
+                  "label": "Expected monthly spend",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {
+          "monthly_spend": "19.50"
+        },
+        "screen": "card"
+      },
+      "name": "A number format takes a decimal the visitor typed"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "field": "format",
+            "node_key": "monthly_spend"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "format": "number",
+                  "key": "monthly_spend",
+                  "label": "Expected monthly spend",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {
+          "monthly_spend": "nineteen fifty"
+        },
+        "screen": "card"
+      },
+      "name": "A number format refuses text that is not a number"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.out_of_range",
+            "field": "min",
+            "node_key": "seats"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "min": 5,
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "seats": "2"
+        },
+        "screen": "plan"
+      },
+      "name": "A numeric response below the question's minimum is out of range"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "min": 5,
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "seats": "5"
+        },
+        "screen": "plan"
+      },
+      "name": "The minimum itself is in range"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.out_of_range",
+            "field": "max",
+            "node_key": "seats"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "max": 25,
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "seats": "50"
+        },
+        "screen": "plan"
+      },
+      "name": "A numeric response above the question's maximum is out of range"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "max": 25,
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "seats": "25"
+        },
+        "screen": "plan"
+      },
+      "name": "The maximum itself is in range"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "min": 5,
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "seats": "2"
+        },
+        "screen": "plan"
+      },
+      "name": "A bound on a question with no numeric format is consulted by nothing"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "confirm",
+              "nodes": [
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "referral",
+                  "label": "Who told you about us?",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Confirm and finish"
+            }
+          ]
+        },
+        "responses": {
+          "seats": 1
+        },
+        "screen": "confirm"
+      },
+      "name": "A question the visitor's own responses hid cannot fail, blank or not"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "referral"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "confirm",
+              "nodes": [
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "referral",
+                  "label": "Who told you about us?",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Confirm and finish"
+            }
+          ]
+        },
+        "responses": {
+          "seats": 2
+        },
+        "screen": "confirm"
+      },
+      "name": "The same question shown by the same responses does fail when it is blank"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "billing_email",
+                  "label": "Where should the receipt go?",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "card_back",
+                  "label": "Back",
+                  "outcome": "went_back",
+                  "type": "button",
+                  "validates": false
+                },
+                {
+                  "key": "card_pay",
+                  "label": "Pay",
+                  "outcome": "paid",
+                  "type": "button"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "pressed_button": "card_back",
+        "responses": {},
+        "screen": "card"
+      },
+      "name": "A button declaring that it does not validate answers without running a check, which is what lets a Back button leave a half-filled screen"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "billing_email"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "billing_email",
+                  "label": "Where should the receipt go?",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "card_back",
+                  "label": "Back",
+                  "outcome": "went_back",
+                  "type": "button",
+                  "validates": false
+                },
+                {
+                  "key": "card_pay",
+                  "label": "Pay",
+                  "outcome": "paid",
+                  "type": "button"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "pressed_button": "card_pay",
+        "responses": {},
+        "screen": "card"
+      },
+      "name": "The button that submits the same screen answers the finding"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "billing_email"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "billing_email",
+                  "label": "Where should the receipt go?",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "card_back",
+                  "label": "Back",
+                  "outcome": "went_back",
+                  "type": "button",
+                  "validates": false
+                },
+                {
+                  "key": "card_pay",
+                  "label": "Pay",
+                  "outcome": "paid",
+                  "type": "button"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "card"
+      },
+      "name": "A screen validated with no button pressed at all validates"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "billing_email"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "billing_email",
+                  "label": "Where should the receipt go?",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "card_back",
+                  "label": "Back",
+                  "outcome": "went_back",
+                  "type": "button",
+                  "validates": false
+                },
+                {
+                  "key": "card_pay",
+                  "label": "Pay",
+                  "outcome": "paid",
+                  "type": "button"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "pressed_button": "card_cancel",
+        "responses": {},
+        "screen": "card"
+      },
+      "name": "A key naming no button on the screen validates, because validating is what a button that is not there carries"
+    },
+    {
+      "expected": {
+        "error": "no_such_screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_checkout",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "billing_email",
+                  "label": "Where should the receipt go?",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "billing"
+      },
+      "name": "A screen the document does not declare is an error, not a set of responses that is fine"
+    }
+  ],
+  "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"
+}
