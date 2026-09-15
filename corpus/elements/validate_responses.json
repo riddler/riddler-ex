@@ -845,7 +845,7 @@
         "responses": {},
         "screen": "card"
       },
-      "name": "A button declaring that it does not validate answers without running a check, which is what lets a Back button leave a half-filled screen"
+      "name": "A button declaring that it does not validate responses without running a check, which is what lets a Back button leave a half-filled screen"
     },
     {
       "expected": {
@@ -894,7 +894,7 @@
         "responses": {},
         "screen": "card"
       },
-      "name": "The button that submits the same screen answers the finding"
+      "name": "The button that submits the same screen returns the finding"
     },
     {
       "expected": {
