@@ -1,6 +1,6 @@
 # ADR-0002: The screen document v1
 
-Status: proposed
+Status: accepted
 
 ## Context
 
@@ -404,3 +404,26 @@ Recorded 2026-09-14, campaign RF049, bead rd-n0j. Rewritten in place while
 still proposed on 2026-09-15, campaign RF049, bead rd-9wd: the record is now
 the screens kind's document, the envelope carries an optional `kind`, and the
 rules that are screen-only are named as such.
+
+Accepted 2026-09-15, campaign RF049, bead rd-5c3, after a claim-by-claim
+reading against `main` at `b790db1` (riddler 0.1.0, published). The code halves
+that built what this record decides: `Riddler.Screens.Document.admit/1`,
+`validate/1` and the type registry (PR 6), `resolve/2` and `resolve_screen/3`
+(PR 7), and `validate_responses/3` and `/4` (PR 8), with the corpus and its
+`screens.*` capabilities (PR 9) and the rename and the `kind` envelope field
+(PR 15). The paragraph above, recording a rewrite made before this record was
+accepted, describes the state this Note ends: the record is accepted from this
+date, and a further change to what it decides is an amendment, not an edit in
+place.
+
+Four places where this record and the code it describes do not yet line up are
+carried as notes by addition rather than as corrections, each with a bead:
+the envelope shapes this record states - `schema_version` an integer, `id` a
+string, `required` and `validates` booleans, `style` a string - are stated here
+and not yet checked by `validate/1`, which is a gap in the code and not in this
+record (rd-xxb); the code raises a finding for an unreachable variant candidate,
+which this record describes as dead weight without saying it is refused
+(rd-d8e); `resolve_screen/3` returns a screen without the diagnostics its
+resolution produced, which this record does not decide either way (rd-439); and
+`metadata`'s `name`, `description` and `domain` are named here as what the block
+carries without a requiredness rule, and none is required in the code (rd-xvv).
