@@ -1,6 +1,6 @@
 # ADR-0001: Riddler is one package: a dynamic content runtime that consumes the statifier family, and the content document is its contract
 
-Status: proposed
+Status: accepted
 
 ## Context
 
@@ -201,3 +201,20 @@ still proposed on 2026-09-15, campaign RF049, bead rd-9wd: the record now
 frames Riddler as a dynamic content runtime with content kinds, names the
 screens kind's modules and corpus capabilities, and delegates the screen
 document to ADR-0002 and the shared machinery to a forthcoming ADR-0004.
+
+Accepted 2026-09-15, campaign RF049, bead rd-v1w, after a claim-by-claim
+reading against `main` at `0d1979b` (riddler 0.1.0, published). The code halves
+that built what this record asserts: the package boundary and the two runtime
+dependencies (PR 1), the template subset (PR 5), `Riddler.Screens.Document`
+and its registry (PR 6), `resolve/2` and `resolve_screen/3` (PR 7),
+`validate_responses/3` and `/4` (PR 8), the corpus and its four capabilities
+(PR 9), the emitter and the drift check (PR 10), and the rename to
+`Riddler.Screens` (PR 15). The paragraph above, recording a rewrite made
+"while still proposed", describes the state this Note ends: the record is
+accepted from this date, and a further change to what it decides is an
+amendment, not an edit in place. Two sentences it states as rules are still
+prospective at 0.1.0 and are carried as notes by addition rather than as
+corrections: the shared condition and container machinery it says carries no
+kind in its name still lives under `Riddler.Screens` (rd-2b2), and the
+`<kind>.<function>` capability rule wants a clause for the shared
+`templates.render` (rd-c6t).
