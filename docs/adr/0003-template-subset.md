@@ -1,6 +1,6 @@
 # ADR-0003: The template subset
 
-Status: proposed
+Status: accepted
 
 ## Context
 
@@ -185,3 +185,22 @@ Recorded 2026-09-14, campaign RF049, bead rd-61p. Rewritten in place while
 still proposed on 2026-09-15, campaign RF049, bead rd-9wd: the text-only rule
 became the output-mode rule, which each content kind declares, and each kind's
 record now names its own render-mode default.
+
+Accepted 2026-09-15, campaign RF049, bead rd-x59, after a claim-by-claim
+reading against `main` (riddler 0.1.0, published). The code half that built
+what this record decides is `Riddler.Template.compile/1` and `render/3` behind
+the allowlist (PR 5), with the `templates.render` corpus (PR 9); the
+output-mode rule and the per-kind render-mode default arrived with the
+content-runtime reframe (PR 14). The paragraph above, recording a rewrite made
+before this record was accepted, describes the state this Note ends: the record
+is accepted from this date, and a further change to what it decides is an
+amendment, not an edit in place.
+
+The reading found no claim this record makes that the code does not hold to,
+and both of the Consequences claims about the corpus check out: there is a
+refusal case for every excluded construct, and every render case is stated in
+both modes except the missing-variable pair, which is the one case the modes
+are defined to answer differently. One question this record leaves open is
+carried as a note by addition: strict mode is stated for a missing variable
+and a missing filter, and a variable used only as an `if` or `unless` condition
+is neither plainly one nor plainly outside the rule (rd-1jj).
