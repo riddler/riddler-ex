@@ -391,8 +391,9 @@ defmodule Riddler.Screens.ValidationTest do
     test "a blank required question the host's context showed is a finding" do
       root = %{"context" => %{"is_business" => true}, "responses" => %{}}
 
-      {:ok, shown} = Screens.resolve_screen(checkout_document(), "checkout", root)
+      {:ok, shown, diagnostics} = Screens.resolve_screen(checkout_document(), "checkout", root)
       assert Enum.map(shown.nodes, & &1.key) == ["full_name", "vat_id"]
+      assert diagnostics.undecidable_conditions == []
 
       submitted = put_in(root, ["responses"], %{"full_name" => "Ada"})
 
@@ -415,8 +416,9 @@ defmodule Riddler.Screens.ValidationTest do
 
     # The other half of the pair: under a context that does not carry
     # `is_business` the question is undecidable and hidden, so the visitor is
-    # never shown it. Asserted through the diagnostics `resolve/2` carries,
-    # because `resolve_screen/3` still drops the diagnostics it computes.
+    # never shown it. Asserted through the diagnostics the single-screen call
+    # now answers with, beside the whole-document ones, because the two are the
+    # same report about the same screen.
     #
     # Sabotage: made `shown/3` answer the node for an undecidable condition
     # instead of `nil`; the question appeared on the screen the visitor would
@@ -424,14 +426,18 @@ defmodule Riddler.Screens.ValidationTest do
     test "the same screen under an empty context hides the question entirely" do
       root = %{"context" => %{}, "responses" => %{}}
 
-      {:ok, resolved} = Screens.resolve(checkout_document(), root)
-      screen = hd(resolved.screens)
+      {:ok, screen, diagnostics} = Screens.resolve_screen(checkout_document(), "checkout", root)
 
       assert Enum.map(screen.nodes, & &1.key) == ["full_name"]
 
-      assert resolved.diagnostics.undecidable_conditions == [
+      assert diagnostics.undecidable_conditions == [
                %{key: "vat_id", condition: "context.is_business == true"}
              ]
+
+      {:ok, resolved} = Screens.resolve(checkout_document(), root)
+
+      assert hd(resolved.screens) == screen
+      assert resolved.diagnostics == diagnostics
     end
   end
 end
