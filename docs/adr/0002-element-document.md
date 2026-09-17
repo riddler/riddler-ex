@@ -718,6 +718,38 @@ question (`lib/riddler/screens/type/heading.ex`, `validate/1`, and
 `lib/riddler/screens/type/text_question.ex`, the `format` branch of
 `validate/1`, both read at `342c790`).
 
+**Three passages state the schema version, and the check took the narrowest
+of them.** The Decision above says `schema_version` is "an integer, `1` in
+this version"; the Typespecs section writes `pos_integer()`; and the gap Note
+above, in the sentence that names this bead, lists "the envelope shapes this
+record states - `schema_version` an integer, `id` a string, `required` and
+`validates` booleans, `style` a string - are stated here and not yet checked
+by `validate/1`". Two of those three say only that it is an integer.
+`document.invalid_schema_version` implements the narrowest reading: an integer
+other than 1 carries the finding. **The implementation therefore went
+narrower than the sentence that commissioned it**, and this note records that
+rather than leaving a reader to discover it from the code. The Decision is
+what governs where the three differ, on the Typespecs section's own terms - it
+opens by calling itself "Minimal, and a contract for the code half rather than
+a second source of truth" - and the gap Note's list is a summary of what was
+unchecked rather than a fourth statement of the contract. A version that is
+the runtime for a second schema version widens the check by amending the
+Decision, which is the passage that decides. That same list names five of the
+six shapes checked here; a screen's `title` is the sixth, and it comes from
+the screen rule in the Decision and from the `screen` type in the Typespecs
+rather than from that list.
+
+The schema is the fourth reading and it is wider still: it types
+`schema_version` as `integer` with no `const`
+(`priv/schemas/element-document.schema.json`, read at `342c790`), so a
+document declaring 2 is schema-valid and carries a finding here. That is not a
+disagreement between the schema and the runtime but the thing the schema's own
+description already says, that a validator holding it and a runtime admitting
+the same value agree because schema-valid means **admitted** - not that an
+admitted document is free of findings. `kind` is the standing precedent: an
+open string in the schema, enumerated by the runtime, and a kind no runtime
+knows is schema-valid and a finding.
+
 **Each is a shape check and none of them is a requiredness check.** A field
 this record types but the document omits raises nothing: the schema requires
 `screens` of a document and `nodes` of a screen and nothing else
@@ -726,12 +758,23 @@ document with no `schema_version`, no `id` or no screen `title` is a document
 this version admits and validates clean, exactly as before. That is the same
 reading the note above takes for `metadata`'s three names, and for the same
 reason: requiring a field this record names would be a new refusal of
-documents 0.1.0 admits, which is an amendment's work and not a note's. One
-consequence is worth stating, because the struct cannot see it: an omitted
-field and a field written as JSON `null` both reach the runtime as `nil`, so a
-`null` `id` is read as an absent one and raises nothing, while the schema
-above types it and refuses it. A host that wants either field present enforces
-that itself, or holds the document to the schema.
+documents 0.1.0 admits, which is an amendment's work and not a note's; the
+question is carried as rd-5v2. One
+consequence is worth stating, because the struct cannot see it and because it
+is not symmetrical across the six. On the envelope and on the screen an
+omitted field and a field written as JSON `null` both reach the runtime as
+`nil`, so a `null` `schema_version`, `id` or `title` reads as an absent one
+and raises nothing, while the schema above types each of the three and refuses
+the null. The three node fields answer the other way: `required`, `validates`
+and `style` are read with `Map.fetch/2` from a node that carries only the
+fields it declared, so an explicit `null` arrives as a value that is present
+and is neither a boolean nor a string, and each raises its own finding. The
+same `null` is therefore refused on three of the six fields and accepted on
+the other three in one call - probed on all six rather than reasoned about.
+Which of the two answers should hold for all of them is carried as rd-6kl and
+is not settled here, because making them agree either adds a refusal or
+removes one. A host that wants a field present enforces that itself, or holds
+the document to the schema.
 
 **`style` is checked for being a string and for nothing more.** The rule above
 that a style this package does not recognize is passed through rather than
@@ -740,6 +783,20 @@ has something to render, and any other name reaches the renderer untouched.
 What the check adds is that the name is a name - a renderer handed a number
 has nothing to look up - and it is the narrow counterpart of the open set
 rather than an exception to it.
+
+The Consequences section above has to be read with this note beside it. It
+says that renderers own `style` and that "this package neither validates a
+style value nor ships a default for one", and from this note's date that
+sentence is true of only half of the distinction drawn here: **which** style a
+value names is still never validated - no name is refused, no default is
+supplied, and `primary` and `secondary` stay offers rather than an enumeration
+- while **that** the value is a name at all now is. A reader arriving at that
+sentence should read "validates a style value" as "judges which style it is",
+which is what it was written to promise and what the check leaves untouched.
+The gap Note above already authorizes the check, by listing `style` a string
+among the shapes this record states and the code did not check and naming this
+bead for it; what it did not do, and what this paragraph does, is say that the
+Consequences sentence reads the other way.
 
 **Nothing in the conformance corpus changes.** Every case in the three
 screens capability files was enumerated field by field - 71 of them, 70 with
