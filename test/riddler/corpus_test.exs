@@ -56,7 +56,9 @@ defmodule Riddler.CorpusTest do
 
   # The three spellings the vocabulary retired. They are named here, and only
   # here, so that the corpus can be held to not carrying them: a document
-  # accepted under two spellings is a document authored under both.
+  # accepted under two spellings is a document authored under both. Naming them
+  # as the data a guard checks against is the rule quoting itself, not a use of
+  # them.
   @retired_spellings ["payload", "action", "answers"]
 
   describe "the corpus files themselves" do
@@ -117,16 +119,82 @@ defmodule Riddler.CorpusTest do
       end
     end
 
-    # Sabotage: pointed the walk at "capability", a key every corpus file does
-    # carry; the walk found it and this test went red.
-    test "no corpus file and no schema carries a key the vocabulary retired" do
+    # A key was only ever half of it. A retired spelling names a thing just as
+    # much when it is a value - a case name, a finding code, a field name, a
+    # capability - as when it is a key, and a walk that reads keys only reports
+    # a corpus clean while the spelling sits in the name of every case that
+    # exercises it. This walk reads both, and a case name is not exempt: the
+    # name is how a second runtime refers to the case, so it is vocabulary.
+    #
+    # Sabotage: put "action" back into the name of the first admission case in
+    # corpus/screens/admit.json; the walk found it and this test went red.
+    test "no corpus file and no schema carries a retired spelling, in a key or in any string value" do
       carried =
         for path <- @json_files,
-            key <- path |> read() |> every_key(),
-            key in @retired_spellings,
-            do: {path, key}
+            {at, string, word} <- path |> read() |> retired_spellings_in(),
+            do: {path, at, word, string}
 
       assert carried == []
+    end
+
+    # The walk reads a list, so a file this list forgets is a file nothing holds
+    # to the vocabulary rule - the failure mode of every guard that enumerates
+    # its own inputs, and one assertion to close.
+    #
+    # Sabotage: dropped corpus/templates/render.json from @corpus_files; the
+    # list no longer matched the tree and this test went red.
+    test "the walk reads every corpus and schema file the repository carries" do
+      on_disk = Path.wildcard("corpus/**/*.json") ++ Path.wildcard("priv/schemas/*.json")
+
+      assert Enum.sort(on_disk) == Enum.sort(@json_files)
+    end
+  end
+
+  describe "the retired-spelling walk" do
+    # Whole words, because the rule retires three spellings and not every string
+    # that contains their letters. A substring walk would report `transaction`
+    # and `answer_options`, and a guard that cries wolf is a guard someone turns
+    # off.
+    #
+    # Sabotage: matched with String.contains?/2 instead of cutting the string
+    # into words; the two innocent identifiers came back as hits and this test
+    # went red.
+    test "a word that merely contains a retired spelling is not a hit" do
+      assert retired_spellings_in(%{"transaction" => "answer_options"}) == []
+    end
+
+    # The compound is the case a regular expression would have missed, and it is
+    # the likelier one: a document that carried `on_action` carried the retired
+    # vocabulary just as much as one that carried `action`.
+    #
+    # Sabotage: cut words on whitespace only, which is what `\b` amounts to for
+    # an underscore; `on_action` stayed one word and this test went red.
+    test "a compound identifier naming a retired spelling is a hit, key or value" do
+      assert [{"nodes.0.on_action", "on_action", "action"}] =
+               retired_spellings_in(%{"nodes" => [%{"on_action" => true}]})
+
+      assert [{"expected.code", "button.on_action", "action"}] =
+               retired_spellings_in(%{"expected" => %{"code" => "button.on_action"}})
+    end
+
+    # What the walk CANNOT do, stated as a test so that nobody reads the guard
+    # as cleverer than it is. The rule exempts ordinary English prose and the
+    # verb "answers" above all, but inside a JSON string there is nothing to
+    # tell the verb in a sentence from the noun that names a field - and a case
+    # name, which the rule counts as vocabulary, is written as a sentence. So
+    # the walk is deliberately stricter than the rule: every string is held to
+    # the three spellings, prose included. The corpus carries no such prose
+    # today, and if a case name ever needs the English verb, the way to allow it
+    # is a reviewed change here that says which string and why - never a quieter
+    # match, and never respelling the verb.
+    #
+    # Sabotage: exempted any string carrying a space, on the theory that a space
+    # means prose; the sentence came back clean and this test went red.
+    test "prose is held to the rule too, the walk not being able to tell it apart" do
+      assert [{"name", _sentence, "answers"}] =
+               retired_spellings_in(%{
+                 "name" => "a required question answers a finding when blank"
+               })
     end
   end
 
@@ -238,10 +306,43 @@ defmodule Riddler.CorpusTest do
 
   # -- the retired spellings --------------------------------------------------
 
-  defp every_key(map) when is_map(map) do
-    Map.keys(map) ++ Enum.flat_map(Map.values(map), &every_key/1)
+  # Every hit of a retired spelling in a JSON tree, as `{at, string, word}`,
+  # where `at` is the dotted path the string sits at so that a reader can find
+  # it.
+  #
+  # Matching is by WORD, not by substring: each string is cut into words on
+  # everything that is not a letter or a digit, and each word is compared whole.
+  # So `on_action` and "Action taken" are hits, while `transaction` and
+  # `answer_options` are not. A regular expression is the obvious way to say
+  # "whole word" and the wrong one here, because `\b` counts `_` as a word
+  # character: `~r/\baction\b/` matches "Action taken" but misses `on_action`,
+  # which is the compound a document is likeliest to carry.
+  defp retired_spellings_in(value) do
+    for {at, string} <- strings(value, []),
+        word <- words(string),
+        word in @retired_spellings,
+        do: {at, string, word}
   end
 
-  defp every_key(list) when is_list(list), do: Enum.flat_map(list, &every_key/1)
-  defp every_key(_value), do: []
+  defp strings(map, path) when is_map(map) do
+    Enum.flat_map(map, fn {key, value} ->
+      at = path ++ [key]
+      [{location(at), key} | strings(value, at)]
+    end)
+  end
+
+  defp strings(list, path) when is_list(list) do
+    list
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {value, index} -> strings(value, path ++ [index]) end)
+  end
+
+  defp strings(value, path) when is_binary(value), do: [{location(path), value}]
+  defp strings(_value, _path), do: []
+
+  defp location(path), do: Enum.join(path, ".")
+
+  defp words(string) do
+    string |> String.downcase() |> String.split(~r/[^a-z0-9]+/, trim: true)
+  end
 end
