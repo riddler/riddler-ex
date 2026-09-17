@@ -6,9 +6,16 @@ defmodule Riddler.Screens.Validation do
   # The public entry points are `Riddler.Screens.validate_screen/3` and
   # `/4`; this module holds the checks behind them and is not part of the
   # package's surface. It is handed a screen that has already been resolved,
-  # which is the whole of why it can be this small: a node that is here is a
-  # node the visitor was shown, every container has already collapsed to its
-  # winner, and there is no condition left to consult.
+  # which is the whole of why the response checks can be this small: a node
+  # that is here is a node the visitor was shown, every container has already
+  # collapsed to its winner, and there is no condition left to consult.
+  #
+  # The one thing it is told about resolution rather than about the screen is
+  # what resolution could not decide, which `undecidable_findings/1` turns into
+  # findings. That is why the entry point takes the diagnostics beside the
+  # screen: both halves of the answer sit behind one opt-out check, so a button
+  # that declares it does not validate leaves by the same door whichever half
+  # would otherwise have spoken.
 
   alias Riddler.Finding
   alias Riddler.Screens.Resolved
@@ -23,16 +30,59 @@ defmodule Riddler.Screens.Validation do
   @email ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/
   @phone ~r/^\+?[0-9][0-9 ()\.\-]*$/
 
-  @spec validate_responses(Resolved.screen(), map(), term()) :: :ok | {:error, [Finding.t()]}
-  def validate_responses(screen, responses, pressed_button_key) do
+  # The undecidable findings come first: they are about whether the screen could
+  # be resolved at all, which precedes anything about a response, and the nodes
+  # they name are not on the resolved screen, so there is no document order to
+  # interleave them into.
+  @spec validate(Resolved.screen(), Resolved.diagnostics(), map(), term()) ::
+          :ok | {:error, [Finding.t()]}
+  def validate(screen, diagnostics, responses, pressed_button_key) do
     if opted_out?(screen, pressed_button_key) do
       :ok
     else
-      case Enum.flat_map(screen.nodes, &node_findings(&1, responses)) do
+      case undecidable_findings(diagnostics) ++
+             Enum.flat_map(screen.nodes, &node_findings(&1, responses)) do
         [] -> :ok
         findings -> {:error, findings}
       end
     end
+  end
+
+  # -- what resolution could not decide ---------------------------------------
+
+  # A condition the root could not decide, as one finding per node resolution
+  # reported. The amendment to `docs/adr/0002-element-document.md` headed "the
+  # screen validated is the screen shown" decides that such a screen answers a
+  # finding rather than `:ok` where the press validates: once
+  # validation resolves against the host's real root, a condition that cannot be
+  # decided says the root the host handed in does not carry what the document
+  # asks about, which is a defect in the call and not a property of the visitor.
+  # Answering `:ok` would treat the node as hidden, which is the false pass that
+  # amendment removes.
+  #
+  # `missing_variables`, the other half of the diagnostics, is deliberately not
+  # here. A variable a template wanted and the root did not carry renders as the
+  # empty string on purpose, so that a visitor sees a screen rather than an
+  # error page, and that record leaves the lenient rendering unchanged. Only a
+  # condition decides whether a question was asked at all.
+  #
+  # This is reached only from inside `validate/4`'s else branch, which is the
+  # amendment headed "the per-button opt-out covers an undecidable condition":
+  # a press through a button declaring `validates` as `false` answers `:ok` whatever
+  # resolution could not decide, because a visitor can always press Back and a
+  # host's defect is not theirs to be held at the screen by.
+  defp undecidable_findings(diagnostics) do
+    Enum.map(diagnostics.undecidable_conditions, &undecidable_finding/1)
+  end
+
+  defp undecidable_finding(%{key: key, condition: condition}) do
+    %Finding{
+      code: "response.undecidable",
+      message:
+        "the condition #{inspect(condition)} could not be decided against the root this screen was validated with, so whether this question was asked of the visitor is not established",
+      field: "condition",
+      node_key: key
+    }
   end
 
   # -- the per-button opt-out -------------------------------------------------

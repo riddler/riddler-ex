@@ -130,15 +130,24 @@ defmodule Riddler.Screens.ValidationTest do
     # Sabotage: made `blank?/1` answer `false` for `nil`; the unanswered name
     # raised no finding and this test went red.
     test "a required question with no response at all is a finding naming the node" do
-      assert {:error, [finding]} =
+      assert {:error, findings} =
                Screens.validate_screen(fixture_document(), "account", %{
                  "responses" => %{"email" => @good_email}
                })
 
-      assert %Finding{code: "response.required", field: "required", node_key: "first_name"} =
-               finding
+      # A root with no `first_name` at all is also a root the fixture's greeting
+      # condition cannot be decided against, so the screen reports that beside
+      # the unanswered question. Both are asserted rather than one filtered out,
+      # so that a change to either is visible here.
+      assert Enum.map(findings, &{&1.code, &1.node_key}) == [
+               {"response.undecidable", "account_greeting"},
+               {"response.required", "first_name"}
+             ]
 
-      assert finding.message =~ "First name"
+      required = Enum.find(findings, &(&1.code == "response.required"))
+
+      assert %Finding{field: "required", node_key: "first_name"} = required
+      assert required.message =~ "First name"
     end
 
     # Sabotage: made `blank?/1` answer `false` for a string of spaces; the
@@ -157,16 +166,27 @@ defmodule Riddler.Screens.ValidationTest do
     # test went red.
     test "every failing node on the screen is reported, in document order" do
       assert {:error, findings} =
-               Screens.validate_screen(fixture_document(), "account", %{})
+               Screens.validate_screen(fixture_document(), "account", %{
+                 "responses" => %{"first_name" => ""}
+               })
 
       assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
     end
 
+    # The confirm screen rather than the plan screen, because the question has
+    # to be SHOWN and blank for the case to say anything: the root carries the
+    # seats the referral question is conditional on, so the condition decides
+    # true, the optional question is on the screen, and the blank is what is
+    # under test.
+    #
     # Sabotage: made `checks/2` raise the required finding for every blank
-    # response whatever `required` says; the unanswered optional seats question
+    # response whatever `required` says; the shown optional referral question
     # raised one and this test went red.
     test "an optional question left blank is not a finding" do
-      assert :ok == Screens.validate_screen(fixture_document(), "plan", %{})
+      assert :ok ==
+               Screens.validate_screen(fixture_document(), "confirm", %{
+                 "responses" => %{"seats" => 3}
+               })
     end
 
     # Sabotage: made `checks/2` run the format checks on a blank response as
@@ -222,6 +242,13 @@ defmodule Riddler.Screens.ValidationTest do
   end
 
   describe "the per-button opt-out" do
+    # The root carries `first_name` blank rather than not at all, so that the
+    # fixture's conditional greeting decides false instead of going undecidable:
+    # this case is about the opt-out reaching the response checks, and keeping
+    # the condition decidable keeps it about that alone. The opt-out's effect on
+    # an undecidable condition is the pair of cases in the "a condition that
+    # could not be decided" block below.
+    #
     # Sabotage: made `opted_out?/2` compare `validates` against a value it
     # never holds, so no button ever opts out; the Back press ran the checks on
     # the blank name and this test went red.
@@ -230,7 +257,7 @@ defmodule Riddler.Screens.ValidationTest do
                Screens.validate_screen(
                  account_with_back_document(),
                  "account",
-                 %{},
+                 %{"responses" => %{"first_name" => ""}},
                  "account_back"
                )
     end
@@ -242,7 +269,7 @@ defmodule Riddler.Screens.ValidationTest do
                Screens.validate_screen(
                  account_with_back_document(),
                  "account",
-                 %{},
+                 %{"responses" => %{"first_name" => ""}},
                  "account_continue"
                )
     end
@@ -250,21 +277,27 @@ defmodule Riddler.Screens.ValidationTest do
     # Sabotage: made `opted_out?/2` answer `true` when no button matched; the
     # arity-3 form skipped every check and this test went red.
     test "the arity-3 form presses no button and validates" do
-      assert {:error, _findings} =
-               Screens.validate_screen(account_with_back_document(), "account", %{})
+      assert {:error, findings} =
+               Screens.validate_screen(account_with_back_document(), "account", %{
+                 "responses" => %{"first_name" => ""}
+               })
+
+      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
     end
 
     # Sabotage: made `opted_out?/2` answer `true` for a key naming no button;
     # a key the screen does not carry skipped the checks and this test went
     # red.
     test "a key naming no button on the screen validates, because true is the default" do
-      assert {:error, _findings} =
+      assert {:error, findings} =
                Screens.validate_screen(
                  account_with_back_document(),
                  "account",
-                 %{},
+                 %{"responses" => %{"first_name" => ""}},
                  "no_such_button"
                )
+
+      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
     end
   end
 
@@ -483,6 +516,166 @@ defmodule Riddler.Screens.ValidationTest do
 
       assert hd(resolved.screens) == screen
       assert resolved.diagnostics == diagnostics
+    end
+  end
+
+  describe "a condition that could not be decided" do
+    # Sabotage: dropped `undecidable_findings/1` from `validate/4`'s finding
+    # list, leaving the response findings alone; validation answered `:ok` for a
+    # screen whose condition it could not decide and this test went red.
+    test "is a finding rather than a silent pass" do
+      root = %{"context" => %{}, "responses" => %{"full_name" => "Ada"}}
+
+      {:ok, screen, diagnostics} = Screens.resolve_screen(checkout_document(), "checkout", root)
+
+      assert Enum.map(screen.nodes, & &1.key) == ["full_name"]
+
+      assert diagnostics.undecidable_conditions == [
+               %{key: "vat_id", condition: "context.is_business == true"}
+             ]
+
+      assert {:error, [finding]} =
+               Screens.validate_screen(checkout_document(), "checkout", root)
+
+      assert %Finding{code: "response.undecidable", field: "condition", node_key: "vat_id"} =
+               finding
+
+      assert finding.message =~ "context.is_business == true"
+    end
+
+    # The two reasons a node is not on the screen stay different things. A
+    # condition the root decides false hides its node silently and validation
+    # is `:ok`; the same condition the root cannot decide is reported and
+    # validation is not.
+    #
+    # Sabotage: made `undecidable_findings/1` raise a finding for every hidden
+    # node rather than for the reported ones; the decidable half answered
+    # findings and this test went red.
+    test "reports where a decidable false condition stays silent" do
+      decided = %{"responses" => %{"seats" => 1}}
+
+      {:ok, _screen, diagnostics} =
+        Screens.resolve_screen(referral_required_document(), "confirm", decided)
+
+      assert diagnostics.undecidable_conditions == []
+      assert :ok == Screens.validate_screen(referral_required_document(), "confirm", decided)
+
+      {:ok, _screen, diagnostics} =
+        Screens.resolve_screen(referral_required_document(), "confirm", %{})
+
+      assert Enum.map(diagnostics.undecidable_conditions, & &1.key) ==
+               ["confirm_referral_heading", "referral"]
+
+      assert {:error, findings} =
+               Screens.validate_screen(referral_required_document(), "confirm", %{})
+
+      assert Enum.map(findings, &{&1.code, &1.node_key}) == [
+               {"response.undecidable", "confirm_referral_heading"},
+               {"response.undecidable", "referral"}
+             ]
+    end
+
+    # The per-button opt-out is carved out of the rule above. A button that
+    # declares it does not validate answers `:ok` even for a screen carrying a
+    # condition this root could not decide: a visitor can always press Back,
+    # and a defect in the host's call is not theirs to be held at the screen
+    # by.
+    #
+    # Sabotage: moved `undecidable_findings/1` back outside `validate/4`'s
+    # opt-out branch, so the Back press reported them again; the press answered
+    # the finding instead of `:ok` and this test went red.
+    test "is not reported when the button pressed declares it does not validate" do
+      assert :ok ==
+               Screens.validate_screen(
+                 account_with_back_document(),
+                 "account",
+                 %{},
+                 "account_back"
+               )
+    end
+
+    # The other half of the carve-out, and the reason the test above is never
+    # on its own: a test asserting only the `:ok` would stay green under a
+    # change that disabled the finding altogether. The same document under the
+    # same root, pressed through a button that does validate, still reports it.
+    #
+    # Sabotage: made `validate/4` answer `:ok` whenever the diagnostics carried
+    # an undecidable condition; this test went red and the one above stayed
+    # green, which is the pair working.
+    test "is reported for the same document when the button pressed does validate" do
+      assert {:error, findings} =
+               Screens.validate_screen(
+                 account_with_back_document(),
+                 "account",
+                 %{},
+                 "account_continue"
+               )
+
+      assert {"response.undecidable", "account_greeting"} in Enum.map(
+               findings,
+               &{&1.code, &1.node_key}
+             )
+    end
+
+    # A variable a template wanted and the root did not carry is the other
+    # diagnostic, and it is deliberately lenient: the visitor sees a screen
+    # rather than an error page. Only a condition becomes a finding.
+    #
+    # Sabotage: made `undecidable_findings/1` read `missing_variables` as well;
+    # the unrendered greeting became a finding and this test went red.
+    test "a missing variable is not one" do
+      document =
+        Document.admit(%{
+          "schema_version" => 1,
+          "id" => "edoc_greeting",
+          "screens" => [
+            %{
+              "key" => "greeting",
+              "title" => "Hello",
+              "nodes" => [
+                %{
+                  "type" => "text",
+                  "key" => "greeting_line",
+                  "text" => "Hello {{ context.tenant_name }}."
+                },
+                %{
+                  "type" => "text_question",
+                  "key" => "full_name",
+                  "label" => "Your name",
+                  "required" => true
+                }
+              ]
+            }
+          ]
+        })
+
+      root = %{"responses" => %{"full_name" => "Ada"}}
+
+      {:ok, _screen, diagnostics} = Screens.resolve_screen(document, "greeting", root)
+
+      assert diagnostics.missing_variables == [
+               %{key: "greeting_line", variable: "context.tenant_name"}
+             ]
+
+      assert diagnostics.undecidable_conditions == []
+      assert :ok == Screens.validate_screen(document, "greeting", root)
+    end
+
+    # A screen can carry both at once, and a host is told both.
+    #
+    # Sabotage: dropped the `node_findings/2` half from `validate/4`'s finding
+    # list, leaving the undecidable findings alone; the blank name went
+    # unreported and this test went red.
+    test "is reported beside the findings about the responses" do
+      root = %{"context" => %{}, "responses" => %{}}
+
+      assert {:error, findings} =
+               Screens.validate_screen(checkout_document(), "checkout", root)
+
+      assert Enum.map(findings, &{&1.code, &1.node_key}) == [
+               {"response.undecidable", "vat_id"},
+               {"response.required", "full_name"}
+             ]
     end
   end
 end

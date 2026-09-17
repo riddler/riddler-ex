@@ -60,7 +60,10 @@ defmodule Riddler.Screens do
   They take the same root `resolve/2` and `resolve_screen/3` take, and the
   responses they check are the ones inside it. The screen validated is the
   screen shown: a question the host's `context` made visible to this visitor
-  is a question this visitor can fail.
+  is a question this visitor can fail. A condition that root could not decide
+  is a finding rather than a pass wherever the press validates, because a node
+  hidden from the validator and not from the visitor is the one case this
+  cannot guess at.
 
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
@@ -242,9 +245,26 @@ defmodule Riddler.Screens do
 
   Every finding names the node it is about in `node_key`, the field that was
   not satisfied in `field`, and a stable `code`: `response.required`,
-  `response.format` or `response.out_of_range`. There is one finding per
-  failing node, because an empty field is one thing wrong with a screen and
-  not three.
+  `response.format`, `response.out_of_range` or `response.undecidable`. There
+  is one finding per failing node, because an empty field is one thing wrong
+  with a screen and not three.
+
+  `response.undecidable` is the one that is not about a response. A condition
+  this root could not decide - a variable the root does not carry, an operand
+  of the wrong type - is reported as a finding on the node that carries it,
+  with `field` `"condition"`, and the screen is never `:ok`. A condition that
+  could not be decided says the root the host handed in does not carry what
+  the document asks about, which is a defect in the call rather than a
+  property of the visitor, so treating the node as hidden and answering `:ok`
+  would accept a submission nobody checked. It is reported wherever the press
+  validates, which is every call this function's arity-3 form makes. The one
+  press that does not validate is a button declaring `validates` as `false`,
+  and that press runs no check at all - see `validate_screen/4`.
+
+  A condition this root *decides* false is a different thing and stays silent:
+  the node is hidden, and a question the visitor was never asked cannot fail.
+  So is a variable a template wanted and the root did not carry - that renders
+  as the empty string, is reported in `missing_variables`, and is no finding.
 
   `{:error, :no_such_screen}` comes straight back from `resolve_screen/3`: a
   host asking about a screen the document does not declare is told so rather
@@ -325,8 +345,8 @@ defmodule Riddler.Screens do
     root = normalize(root)
 
     case resolve_screen(document, screen_key, root) do
-      {:ok, screen, _diagnostics} ->
-        Validation.validate_responses(screen, root["responses"], pressed_button_key)
+      {:ok, screen, diagnostics} ->
+        Validation.validate(screen, diagnostics, root["responses"], pressed_button_key)
 
       {:error, :no_such_screen} = no_such_screen ->
         no_such_screen
