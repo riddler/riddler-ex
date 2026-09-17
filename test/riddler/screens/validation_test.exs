@@ -324,6 +324,23 @@ defmodule Riddler.Screens.ValidationTest do
                check(question, "4242")
     end
 
+    # The other side of the narrowing: a pattern on a question that asks for no
+    # format is inert at BOTH layers, as it was before this bead. The document
+    # says nothing about it, and there is no format here to hold a response to,
+    # so a response is accepted. Widening the document check would have made
+    # this document carry a finding it never carried.
+    #
+    # Sabotage: dropped the `format == "pattern"` guard from
+    # `pattern_findings/1`; the document carried `document.invalid_pattern` and
+    # this test went red on its first assertion.
+    test "a pattern with no format to read it is inert at both layers" do
+      question = %{"pattern" => "[0-9"}
+      document = card_document(question)
+
+      assert {:ok, ^document} = Document.validate(document)
+      assert :ok == check(question, "4242")
+    end
+
     # Sabotage: made `parse/2` for :integer accept a partial parse (dropping
     # the `""` rest match); "3 seats" and "3.5" were accepted and this test
     # went red.

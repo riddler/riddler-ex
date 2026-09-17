@@ -15,10 +15,12 @@ defmodule Riddler.Screens.Type.TextQuestion do
   Three fields belong to a format rather than to the question, and each is
   read only by the format that owns it. `pattern` is the regular expression
   the `pattern` format holds a response to, and it has to match the whole
-  response; whether it is an expression this package can compile is checked
-  here, for the same reason the format name is - nothing a visitor could type
-  would satisfy one that is not, so the author is told while they are
-  authoring rather than when a visitor submits. `min` and `max` are the bounds
+  response; where the question asks for that format, whether the expression
+  compiles at all is checked here, for the same reason the format name is -
+  nothing a visitor could type would satisfy one that does not, so the author
+  is told while they are authoring rather than when a visitor submits. On a
+  question that does not ask for the `pattern` format, a `pattern` is a field
+  nothing consults and nothing here reads it. `min` and `max` are the bounds
   the `integer` and `number` formats hold a response between. A question that
   declares one without the format that reads it declares something nothing
   consults.
@@ -99,33 +101,44 @@ defmodule Riddler.Screens.Type.TextQuestion do
     end
   end
 
-  # `pattern` is a regular expression the author wrote and this package
-  # compiles, which is what a template field is too, so one it cannot compile
-  # is a defect in the document and is reported here rather than when a
-  # visitor submits: nothing a visitor could type would satisfy it, so there
-  # is nothing about a response to report. Not a string is not a regular
-  # expression either, and it is the same defect under the same code. Checked
-  # only where the question declares a pattern; a question declaring none
-  # declares no expression for this check to read.
+  # `pattern` is an expression the author wrote and the `pattern` format
+  # compiles, so one that will not compile is a defect in the document and is
+  # reported here rather than when a visitor submits: nothing a visitor could
+  # type would satisfy it, so there is nothing about a response to report.
+  #
+  # Only where the format that reads it is declared. A `pattern` on a question
+  # that does not ask for the `pattern` format is a field nothing consults,
+  # which is what the record says of it, and a finding about an inert field
+  # would be noise. So the check follows the format, not the field: no format,
+  # or another format, and this raises nothing whatever the pattern says.
   defp pattern_findings(node) do
-    case Map.fetch(node, :pattern) do
-      {:ok, pattern} ->
-        if usable?(pattern) do
-          []
-        else
-          [
-            %Finding{
-              code: "document.invalid_pattern",
-              message:
-                "the pattern #{inspect(pattern)} is not a regular expression this package can use, so nothing could satisfy it",
-              field: "pattern",
-              node_key: Finding.node_key(node[:key])
-            }
-          ]
-        end
+    if Map.get(node, :format) == "pattern" do
+      declared_pattern_findings(node, Map.fetch(node, :pattern))
+    else
+      []
+    end
+  end
 
-      :error ->
-        []
+  # A question asking for the format and declaring no pattern at all declares
+  # no expression for this check to read; response validation is where that
+  # one is answered. Not a string is not an expression either, and it is the
+  # same defect under the same code: the question declares something nothing
+  # can compile.
+  defp declared_pattern_findings(_node, :error), do: []
+
+  defp declared_pattern_findings(node, {:ok, pattern}) do
+    if usable?(pattern) do
+      []
+    else
+      [
+        %Finding{
+          code: "document.invalid_pattern",
+          message:
+            "the pattern #{inspect(pattern)} is not an expression the pattern format can compile, so nothing could satisfy it",
+          field: "pattern",
+          node_key: Finding.node_key(node[:key])
+        }
+      ]
     end
   end
 

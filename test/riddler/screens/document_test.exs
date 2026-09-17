@@ -584,6 +584,37 @@ defmodule Riddler.Screens.DocumentTest do
       assert {:ok, ^clean} = Document.validate(clean)
     end
 
+    # The narrowing, pinned so that it is not widened back by accident. The
+    # check follows the format that reads the field, not the field: a question
+    # that does not ask for the `pattern` format declares, in this record's
+    # words, something nothing consults, and this version says nothing about
+    # it. Both shapes are here because they fail differently if the guard goes:
+    # no format at all, and another format that does not read a pattern.
+    #
+    # Sabotage: dropped the `format == "pattern"` guard from
+    # `pattern_findings/1`, so the check keyed on the field alone; both
+    # questions carried `document.invalid_pattern` and this test went red.
+    test "an uncompilable pattern on a question that does not ask for that format is not a finding" do
+      for format <- [%{}, %{"format" => "email"}] do
+        raw =
+          document([
+            Map.merge(
+              %{
+                "type" => "text_question",
+                "key" => "card_last_four",
+                "label" => "Last four digits",
+                "pattern" => "[0-9"
+              },
+              format
+            )
+          ])
+
+        admitted = Document.admit(raw)
+
+        assert {:ok, ^admitted} = Document.validate(admitted)
+      end
+    end
+
     # Sabotage: treat `{:ok, []}` as a variant with candidates and an empty
     # container is admitted.
     test "a variant with no candidates" do
