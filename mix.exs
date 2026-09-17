@@ -75,7 +75,13 @@ defmodule Riddler.MixProject do
     [
       name: "riddler",
       licenses: ["MIT"],
-      files: ~w(lib mix.exs .formatter.exs README.md LICENSE CHANGELOG.md),
+      # `priv/schemas` is named rather than the whole of `priv/` on purpose: a
+      # host that validates a document against the JSON schema at runtime reads
+      # it out of the installed application directory, so the schemas have to be
+      # in the tarball - but a later `priv/` addition should have to say that it
+      # ships rather than ship by being in the right folder. `test/packaging_test.exs`
+      # fails on a schema this list does not cover.
+      files: ~w(lib priv/schemas mix.exs .formatter.exs README.md LICENSE CHANGELOG.md),
       links: %{
         "GitHub" => @source_url,
         "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md"
