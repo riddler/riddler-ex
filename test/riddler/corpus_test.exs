@@ -34,7 +34,7 @@ defmodule Riddler.CorpusTest do
     "corpus/templates/render.json"
   ]
 
-  @document_schema "priv/schemas/element-document.schema.json"
+  @document_schema "priv/schemas/screen-document.schema.json"
   @case_schema "priv/schemas/corpus-case.schema.json"
   @json_files @corpus_files ++ [@document_schema, @case_schema]
 

@@ -30,7 +30,7 @@ defmodule Riddler.Corpus do
   ]
 
   @schema_files [
-    "priv/schemas/element-document.schema.json",
+    "priv/schemas/screen-document.schema.json",
     "priv/schemas/corpus-case.schema.json"
   ]
 
