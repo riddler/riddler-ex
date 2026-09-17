@@ -310,6 +310,86 @@ defmodule Riddler.Screens.DocumentTest do
       assert missing.node_key == nil
     end
 
+    # Sabotage: delete the non-string clause of `key_findings/2` and the
+    # integer key falls through to the absent-key clause, which tells the
+    # author the node carries no key when it carries one of the wrong form.
+    test "a key that is there and is not a string" do
+      [finding] = findings(document([%{"type" => "text", "key" => 7, "text" => "Hi"}]))
+
+      assert finding.code == "document.invalid_key"
+      assert finding.field == "key"
+      assert finding.node_key == nil
+      assert finding.message =~ "7"
+      assert finding.message =~ "string"
+      refute finding.message =~ "carries no key"
+    end
+
+    # Sabotage: drop the `is_binary/1` filter from `every_key/1` and the two
+    # nodes keyed 7 are reported as a duplicate key as well as an invalid one,
+    # which says the document uses one key twice when it has no usable key.
+    test "a non-string key used twice is not a duplicate" do
+      raw = %{
+        "screens" => [
+          screen([
+            %{"type" => "text", "key" => 7, "text" => "One"},
+            %{"type" => "text", "key" => 7, "text" => "Two"}
+          ])
+        ]
+      }
+
+      assert codes(raw) == ["document.invalid_key", "document.invalid_key"]
+      refute "document.duplicate_key" in codes(raw)
+    end
+
+    # Sabotage: write `node_key: node[:key]` back into any one raise site and
+    # that finding carries the integer key, which the Finding typespec does not
+    # admit and a host reading the key cannot use.
+    test "no finding carries a non-string node key" do
+      raw = %{
+        "screens" => [
+          %{
+            "key" => 1,
+            "title" => 2,
+            "nodes" => [
+              %{"type" => "carousel", "key" => 7},
+              %{
+                "type" => "heading",
+                "key" => 8,
+                "level" => 9,
+                "text" => "Hi",
+                "condition" => "&&"
+              },
+              %{
+                "type" => "button",
+                "key" => 9,
+                "label" => "{% include \"x\" %}",
+                "outcome" => "went_back",
+                "style" => 3,
+                "validates" => 4,
+                "writes" => "not a map"
+              },
+              %{"type" => "text_question", "key" => 10, "label" => "Name", "required" => 5},
+              %{"type" => "variant", "key" => 11, "nodes" => []}
+            ]
+          }
+        ]
+      }
+
+      raised = findings(raw)
+
+      # Every branch that puts a key on a finding is exercised here: the
+      # unknown type, the invalid key itself, the screen title, a condition
+      # that does not parse, a heading level, a refused template, a button's
+      # writes, style and validates, a question's required, and an empty
+      # variant.
+      assert length(raised) >= 10
+
+      for finding <- raised do
+        assert is_binary(finding.node_key) or is_nil(finding.node_key),
+               "#{finding.code} carries node_key #{inspect(finding.node_key)}"
+      end
+    end
+
     # Sabotage: return `[]` from `missing_findings/3` and a button with no
     # outcome is admitted.
     test "a field the node's type requires" do

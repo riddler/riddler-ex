@@ -37,9 +37,11 @@ defmodule Riddler.Screens.Type.Button do
   end
 
   defp writes_findings(node) do
+    key = Finding.node_key(node[:key])
+
     case Map.fetch(node, :writes) do
-      {:ok, writes} when is_map(writes) -> Enum.flat_map(writes, &write_findings(&1, node[:key]))
-      {:ok, writes} -> [not_a_map(writes, node[:key])]
+      {:ok, writes} when is_map(writes) -> Enum.flat_map(writes, &write_findings(&1, key))
+      {:ok, writes} -> [not_a_map(writes, key)]
       :error -> []
     end
   end
@@ -60,7 +62,7 @@ defmodule Riddler.Screens.Type.Button do
             message:
               "a style is the name a renderer looks up, a string, not #{inspect(style)}; which names there are is the renderer's",
             field: "style",
-            node_key: node[:key]
+            node_key: Finding.node_key(node[:key])
           }
         ]
 
@@ -85,7 +87,7 @@ defmodule Riddler.Screens.Type.Button do
             message:
               "validates says whether pressing this button validates the screen first, true or false, not #{inspect(validates)}",
             field: "validates",
-            node_key: node[:key]
+            node_key: Finding.node_key(node[:key])
           }
         ]
 
