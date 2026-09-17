@@ -842,7 +842,7 @@ compile.
 
 **The check follows the format, not the field.** It raises only where the
 question declares `format` as `pattern`. A `pattern` on a question that asks
-for another format, or for none, stays exactly what the note below already
+for another format, or for none, stays exactly what the note above already
 says it is - a field nothing consults - and carries no finding at either
 layer. This amendment deliberately decides the narrower thing: it moves
 which layer refuses an expression the `pattern` format cannot use, and it
@@ -854,7 +854,7 @@ JSON `null`, which reaches an admitted node as `nil` - is not an expression
 either, and it carries the same code and the same field. One code covers both
 because they are one defect from the document's side: the question declares
 something nothing can compile. This is the same kind of shape check the note
-below names one code each for, and it is stated in the same way, so that a
+above names one code each for, and it is stated in the same way, so that a
 reader learns it from the record rather than from a clause of the
 implementation.
 
@@ -874,22 +874,38 @@ and the first attempt at this change rested on two of them misread; they are
 set out plainly here so that the next reader does not have to rediscover it.
 
 **The record does not say a `pattern` is a regular expression.** The phrase
-appears nowhere in it. What it says is that "`pattern` is the expression the
-`pattern` format holds a response to", that `pattern`, `min` and `max` "are
+appears nowhere in what this record decided, nor in any note on it; once this
+amendment lands it occurs in the record exactly once, in the sentence you are
+reading, which is a report of the phrase and not a use of it. What the record
+says is that "`pattern` is the expression the `pattern` format holds a
+response to", that `pattern`, `min` and `max` "are
 parameters of the validation formats the rule above delegates to", and that
 "each is read only by the format that owns it, so a question declaring one
 without the format that reads it declares something nothing consults" (the
-note below, read at `27f9d91`). Every clause of that places the field on the
+note above, read at `27f9d91`). Every clause of that places the field on the
 **format's** side and says nothing about this package compiling anything at
-admit. The regular-expression wording is the code's, in
-`Riddler.Screens.Type.TextQuestion`'s own documentation, and a sentence in a
-moduledoc is not this record deciding something.
+admit. The regular-expression wording is the code's, and at the SHA cited
+above it is in two places rather than one: the moduledoc of
+`Riddler.Screens.Type.TextQuestion`, and - the more telling of the two - the
+text of the finding response validation raised, which is what a host's caller
+actually read (`lib/riddler/screens/validation.ex`, the private
+`pattern_finding/1`, read at `27f9d91`). Neither is this record deciding
+anything: a sentence in a moduledoc and a sentence in a runtime message are
+both the code describing itself, and the second is the code describing itself
+to a visitor's host. That second occurrence is gone as this bead leaves the
+tree - the same commit reworded that message, because after the move it only
+ever answers a question declaring no pattern at all - so a reader looking for
+it reads it at the SHA cited here rather than on the current default branch.
 
 **The templates rule does not extend to it, and its next sentence says so.**
-That rule reads in full: "`text`, `label` and `placeholder` are templates in
-the ADR-0003 subset. They are compiled by the same code an editor calls, so a
-template this package refuses is refused at admit time, with the node's key on
-the finding. **Any other string field in a document is literal text.**" A
+That rule reads in full, word for word, with the record's own bold on the
+first sentence and the bold on the last sentence mine: "**`text`, `label` and
+`placeholder` are templates in the ADR-0003 subset.** They are compiled by the
+same code an editor calls, so a template this package refuses is refused at
+admit time, with the node's key on the finding. **Any other string field in a
+document is literal text.**" The record emphasises the rule; the emphasis
+added here is on its limit, which is the clause the first attempt at this
+change quoted around. A
 `pattern` is another string field. Read whole, that passage does not license
 treating a `pattern` as compiled-at-admit - it classes it as literal text as
 far as the document is concerned, which is the opposite. So this amendment
@@ -910,7 +926,7 @@ field `pattern` against whatever the visitor typed
 (`lib/riddler/screens/validation.ex`, the private `pattern/2` and
 `pattern_finding/1`, read at `27f9d91`).
 
-**The test the record sets for itself is met.** The note below, deciding a
+**The test the record sets for itself is met.** The note above, deciding a
 narrower question, states it: requiring a field this record names "would be a
 new refusal of documents 0.1.0 admits", and naming a code for a question this
 record leaves open "would change what this record decides, and that is an
@@ -933,7 +949,7 @@ still admits and validates with zero findings. Nothing about
 ### Consequences
 
 The check is `text_question`'s, beside the `format` and `required` checks and
-for the reason the note below gives for that division - the type that names
+for the reason the note above gives for that division - the type that names
 the field owns the check on it. It compiles through the same function the
 format compiles through rather than carrying a second copy of the anchors,
 because a document check holding an expression to anchors the format did not
