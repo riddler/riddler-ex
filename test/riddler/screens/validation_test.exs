@@ -288,12 +288,40 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, [%Finding{field: "format"}]} = check(four_digits, "42")
     end
 
-    # Sabotage: made `compile_pattern/1` answer `{:ok, ~r/.*/}` for a source it
-    # could not compile; the unusable pattern admitted everything and this test
-    # went red.
-    test "a pattern that is not a usable regular expression is a finding, not a pass" do
-      assert {:error, [finding]} = check(%{"format" => "pattern", "pattern" => "[0-9"}, "4242")
-      assert %Finding{code: "response.format", field: "pattern"} = finding
+    # The admit-versus-validate boundary, pinned from this side. A pattern this
+    # package cannot compile is a defect in the document, and the document says
+    # so: `document.invalid_pattern`, raised before a visitor arrives. There is
+    # nothing left here for a response to be wrong about, and this layer no
+    # longer reports it a second time - a defect reported from two layers is
+    # worse than one reported in the right place.
+    #
+    # Sabotage: made `unreadable_pattern/1` answer the response finding for a
+    # declared pattern as well as for an absent one; the response carried
+    # `response.format` again and this test went red.
+    test "a pattern that is not a usable regular expression is the document's finding, not a response's" do
+      question = %{"format" => "pattern", "pattern" => "[0-9"}
+
+      assert :ok == check(question, "4242")
+
+      assert {:error, [%Finding{code: "document.invalid_pattern", field: "pattern"}]} =
+               Document.validate(card_document(question))
+    end
+
+    # The case this layer keeps: a question asking for the `pattern` format and
+    # declaring no pattern at all. There is no expression for the document
+    # check to read, so it raises nothing there, and a response cannot satisfy
+    # a form the question never states.
+    #
+    # Sabotage: made `unreadable_pattern/1` answer `[]` for an absent pattern
+    # as well; the response was accepted against a question nothing could
+    # satisfy and this test went red.
+    test "the pattern format with no pattern at all is still answered here" do
+      question = %{"format" => "pattern"}
+
+      assert {:ok, %Document{}} = Document.validate(card_document(question))
+
+      assert {:error, [%Finding{code: "response.format", field: "pattern"}]} =
+               check(question, "4242")
     end
 
     # Sabotage: made `parse/2` for :integer accept a partial parse (dropping
