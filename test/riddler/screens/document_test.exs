@@ -492,6 +492,164 @@ defmodule Riddler.Screens.DocumentTest do
       assert finding.node_key == "notice_default"
     end
 
+    # The envelope and boolean shapes the record states. Each is checked only
+    # where the document carries the field: the schema requires `screens` and
+    # nothing else, so requiredness is not what these checks answer.
+
+    # Sabotage: dropped the `schema_version_findings(@schema_version)` clause
+    # and every document in the suite raised a finding about its own version,
+    # so this went red with most of the file red beside it; then widened the
+    # remaining clause to `when is_integer(version)` and a document declaring
+    # version 2 validated clean, so this went red alone.
+    test "a schema_version this package is not the runtime for" do
+      raw =
+        Map.put(
+          document([%{"type" => "text", "key" => "account_intro", "text" => "Hi"}]),
+          "schema_version",
+          2
+        )
+
+      [finding] = findings(raw)
+
+      assert finding.code == "document.invalid_schema_version"
+      assert finding.field == "schema_version"
+      assert finding.node_key == nil
+      assert finding.message =~ "2"
+    end
+
+    # Sabotage: widened `id_findings/1`'s second clause to `when not is_nil(id)`
+    # and an id of 7 validated clean, so this went red.
+    test "an id that is there and is not a string" do
+      raw =
+        Map.put(
+          document([%{"type" => "text", "key" => "account_intro", "text" => "Hi"}]),
+          "id",
+          7
+        )
+
+      [finding] = findings(raw)
+
+      assert finding.code == "document.invalid_id"
+      assert finding.field == "id"
+      assert finding.node_key == nil
+      assert finding.message =~ "7"
+    end
+
+    # Sabotage: dropped `title_findings/1` from `screen_findings/1` and a
+    # screen titled with a number validated clean, so this went red.
+    test "a screen title that is there and is not a string" do
+      raw =
+        document([%{"type" => "text", "key" => "account_intro", "text" => "Hi"}], %{"title" => 3})
+
+      [finding] = findings(raw)
+
+      assert finding.code == "document.invalid_title"
+      assert finding.field == "title"
+      assert finding.node_key == "account"
+      assert finding.message =~ "3"
+    end
+
+    # Sabotage: widened `required_findings/1`'s match to `when not is_nil(required)`
+    # and a question required by the string "yes" validated clean, so this went
+    # red.
+    test "a question's required that is not a boolean" do
+      raw =
+        document([
+          %{
+            "type" => "text_question",
+            "key" => "email",
+            "label" => "Work email",
+            "required" => "yes"
+          }
+        ])
+
+      [finding] = findings(raw)
+
+      assert finding.code == "document.invalid_required"
+      assert finding.field == "required"
+      assert finding.node_key == "email"
+      assert finding.message =~ "yes"
+    end
+
+    # Sabotage: dropped `validates_findings/1` from `Type.Button.validate/1`
+    # and a button validating by the string "always" validated clean, so this
+    # went red.
+    test "a button's validates that is not a boolean" do
+      raw =
+        document([
+          %{
+            "type" => "button",
+            "key" => "account_continue",
+            "label" => "Continue",
+            "outcome" => "account_submitted",
+            "validates" => "always"
+          }
+        ])
+
+      [finding] = findings(raw)
+
+      assert finding.code == "document.invalid_validates"
+      assert finding.field == "validates"
+      assert finding.node_key == "account_continue"
+      assert finding.message =~ "always"
+    end
+
+    # Sabotage: dropped `style_findings/1` from `Type.Button.validate/1` and a
+    # button styled `1` validated clean, so this went red.
+    test "a button's style that is not a string" do
+      raw =
+        document([
+          %{
+            "type" => "button",
+            "key" => "account_continue",
+            "label" => "Continue",
+            "outcome" => "account_submitted",
+            "style" => 1
+          }
+        ])
+
+      [finding] = findings(raw)
+
+      assert finding.code == "document.invalid_style"
+      assert finding.field == "style"
+      assert finding.node_key == "account_continue"
+      assert finding.message =~ "1"
+    end
+
+    # Sabotage: dropped the `nil` clause of `schema_version_findings/1`,
+    # `id_findings/1` and `title_findings/1`, so an absent field was refused
+    # as a wrong one; the document that declares none of the three came back
+    # with three findings and this went red, with the duplicate-key test red
+    # beside it because its document declares none of them either. It is the
+    # guard that keeps these checks about shape rather than about
+    # requiredness, which the schema decides and this version leaves where it
+    # found it.
+    test "and refuses none of them for a document that declares them not at all" do
+      raw = %{
+        "screens" => [
+          %{
+            "key" => "account",
+            "nodes" => [
+              %{"type" => "text_question", "key" => "email", "label" => "Work email"},
+              %{
+                "type" => "button",
+                "key" => "account_continue",
+                "label" => "Continue",
+                "outcome" => "account_submitted"
+              }
+            ]
+          }
+        ]
+      }
+
+      document = Document.admit(raw)
+
+      assert document.schema_version == nil
+      assert document.id == nil
+      assert hd(document.screens).title == nil
+      assert {:ok, ^document} = Document.validate(document)
+    end
+
     # Sabotage: return only the first finding and the second reason is lost.
     test "and reports every reason at once" do
       codes =

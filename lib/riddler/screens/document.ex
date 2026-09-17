@@ -55,10 +55,17 @@ defmodule Riddler.Screens.Document do
     * `document.unknown_kind` - the envelope names a content kind this
       package has no runtime for. The finding carries the value and no node
       key, because the envelope is the document's and not any one node's.
+    * `document.invalid_schema_version` - the envelope declares a
+      `schema_version` other than the one this package implements. No node
+      key, for the same reason.
+    * `document.invalid_id` - the envelope's `id` is there and is not a
+      string. No node key.
     * `document.unknown_type` - the registry has no such type.
     * `document.duplicate_key` - a key used twice anywhere in the document.
     * `document.invalid_key` - a key missing, or not matching
       `[a-z][a-z0-9_]*`.
+    * `document.invalid_title` - a screen's `title` is there and is not a
+      string. The finding carries the screen's key.
     * `document.missing_field` - a field the node's type requires.
     * `document.level_out_of_range` - a heading level outside 1 to 6.
     * `document.invalid_condition` - a condition that does not parse.
@@ -67,6 +74,13 @@ defmodule Riddler.Screens.Document do
       template refused, and the node's key.
     * `document.invalid_writes` - a write that does not address a response,
       or whose value is not the constant form.
+    * `document.invalid_style` - a button's `style` is there and is not a
+      string. Which string it is stays the renderer's business; that it is a
+      string is this package's.
+    * `document.invalid_validates` - a button's `validates` is there and is
+      not a boolean.
+    * `document.invalid_required` - a question's `required` is there and is
+      not a boolean.
     * `document.unknown_format` - a format name this package does not know.
     * `document.empty_variant` - a variant with no candidates.
     * `document.unreachable_variant_candidate` - an unconditional candidate
@@ -98,6 +112,12 @@ defmodule Riddler.Screens.Document do
   # a screen document, so the default is what keeps every one of them
   # admitted unchanged.
   @default_kind "screens"
+
+  # The version of this contract this package implements. The envelope's
+  # `schema_version` is an integer and it is this integer in this version, so
+  # a document authored against a contract this package is not the runtime for
+  # says so in one field rather than by failing somewhere inside.
+  @schema_version 1
 
   # The kinds this version has a runtime for. It is the registry of kinds,
   # and it is the other half of the rule that makes `kind` an open string in
@@ -189,6 +209,7 @@ defmodule Riddler.Screens.Document do
   def validate(%__MODULE__{} = document) do
     findings =
       kind_findings(document) ++
+        envelope_findings(document) ++
         duplicate_findings(document) ++ Enum.flat_map(document.screens, &screen_findings/1)
 
     case findings do
@@ -296,6 +317,46 @@ defmodule Riddler.Screens.Document do
     ]
   end
 
+  # The rest of the envelope, checked for the shapes the record states: the
+  # `schema_version` this package is the runtime for, and an `id` that is a
+  # string. Each is checked only where the document carries it. An absent
+  # field is `nil` in the admitted struct and is not a finding here: the
+  # schema requires `screens` and nothing else, so whether either field is
+  # required is a question this check does not answer, and answering it would
+  # refuse documents this version admits.
+  defp envelope_findings(%__MODULE__{} = document) do
+    schema_version_findings(document.schema_version) ++ id_findings(document.id)
+  end
+
+  defp schema_version_findings(nil), do: []
+  defp schema_version_findings(@schema_version), do: []
+
+  defp schema_version_findings(version) do
+    [
+      %Finding{
+        code: "document.invalid_schema_version",
+        message:
+          "a document this package is the runtime for declares schema_version #{@schema_version}, not #{inspect(version)}",
+        field: "schema_version",
+        node_key: nil
+      }
+    ]
+  end
+
+  defp id_findings(nil), do: []
+  defp id_findings(id) when is_binary(id), do: []
+
+  defp id_findings(id) do
+    [
+      %Finding{
+        code: "document.invalid_id",
+        message: "a document's id is the string that names it, not #{inspect(id)}",
+        field: "id",
+        node_key: nil
+      }
+    ]
+  end
+
   defp duplicate_findings(document) do
     document
     |> every_key()
@@ -334,7 +395,28 @@ defmodule Riddler.Screens.Document do
 
   defp screen_findings(screen) do
     key_findings(screen.key, "the screen #{inspect(screen.title)}") ++
+      title_findings(screen) ++
       Enum.flat_map(screen.nodes, &node_findings/1)
+  end
+
+  # A screen's title is a string, checked only where the screen carries one:
+  # `admit/1` writes `nil` for a screen that declares none, and the schema
+  # requires only `nodes` of a screen, so an absent title is not this check's
+  # to refuse. The finding names the screen by its key, because the screen is
+  # what the author has to fix.
+  defp title_findings(%{title: nil}), do: []
+  defp title_findings(%{title: title}) when is_binary(title), do: []
+
+  defp title_findings(screen) do
+    [
+      %Finding{
+        code: "document.invalid_title",
+        message:
+          "a screen's title is the string a visitor is shown, not #{inspect(screen.title)}",
+        field: "title",
+        node_key: if(is_binary(screen.key), do: screen.key)
+      }
+    ]
   end
 
   defp node_findings(node) do
