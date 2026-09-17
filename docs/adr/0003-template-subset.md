@@ -204,3 +204,64 @@ are defined to answer differently. One question this record leaves open is
 carried as a note by addition: strict mode is stated for a missing variable
 and a missing filter, and a variable used only as an `if` or `unless` condition
 is neither plainly one nor plainly outside the rule (rd-1jj).
+
+Note, 2026-09-17, campaign RF051, bead rd-1jj. The question the paragraph above
+carries by addition - whether a variable that appears only as an `if` or
+`unless` condition is a missing variable under strict mode - is decided here.
+
+**Strict mode covers output and iteration positions. A condition operand is a
+truthiness test: a variable used only in a condition is not missing when the
+root does not carry it, it is `false`.** A template reading
+`{% if responses.newsletter %}...{% endif %}` against a root without
+`responses.newsletter` renders the branch that holds, in strict mode exactly as
+in lenient mode: no error, and nothing named in either mode's missing list.
+
+The rule is positional, not expressional. The condition of an `if`, an `elsif`
+or an `unless` is one position, whatever expression stands in it: a bare path, a
+comparison such as `{% if responses.plan == "business" %}`, a chain joined by
+`and` or `or`. A path the root does not carry, anywhere inside such a condition,
+is `false` there and the condition is evaluated with it. `unless` is a condition
+position on this rule exactly as `if` is; the tag's name does not change what
+its condition is. Positions this rule does not reach keep what they do today: a
+`case` subject and an `assign` or `capture` right-hand side read a value rather
+than test one, and a missing variable in them is reported under strict mode.
+
+Two things decide it this way. The first is what a visitor should see. A
+conditional block is how an author asks whether an optional field was filled,
+and when it was not, the right outcome is that the block does not render - a
+screen without its optional block, not a screen replaced by an error. Strict
+mode exists to tell an author and a conformance case that a template asked for
+a value that was not there; a condition did not ask for a value, it asked a
+question, and an absent value makes that question false. The second is the
+porting bill. Stated by position, the rule is one a second runtime implements
+by looking at where the path appears in its own parse tree. Stated by what a
+particular engine happens to report, it would be a rule no two runtimes could
+agree on.
+
+What the code does today, read at `27faac3`: `Riddler.Template.render/3` in
+`lib/riddler/template.ex` passes `strict_variables: true` to `solid` (`1.3.4`,
+as this repository's `mix.lock` resolves it) in both modes and sorts what comes
+back in its private `missing/2`, so mode decides only whether a missing variable
+is an error or a list beside the text. That engine reports a missing `for`
+operand, `case` subject and `assign` right-hand side, and does not report a
+missing `if` or `elsif` condition. The `if` half therefore already behaves as
+decided above, and the asymmetry between a loop operand and a condition operand
+is the observation this note settles rather than a behavior it introduces.
+
+`unless` is the one place the code does not yet match, and that is a defect in
+the code half rather than a second semantics. At `1.3.4` the engine evaluates an
+`if` and an `unless` condition through the same call but keeps that evaluation's
+recorded errors only when the branch it renders is the branch that call threw,
+so `{% unless b %}A{% endunless %}` against a root without `b` renders `A` and
+also reports `b`, where `{% if b %}A{% endif %}` reports nothing. The difference
+is the engine's error bookkeeping, not the meaning of the two tags, and this
+record decides the meaning. Under this note
+`{% unless b %}A{% endunless %}` renders `A` with nothing missing in either
+mode, and bringing the code to that is the code half's work, not a change to
+what is decided here.
+
+The conformance corpus carries the pair (rd-alj): a variable used only as an
+`if` condition and one used only as an `unless` condition, each rendered against
+a root that does not carry it, each stated in both modes, each expecting an
+empty missing list, a render that succeeds, and the text of the branch that
+holds. A second runtime that reports either of them fails the corpus.
