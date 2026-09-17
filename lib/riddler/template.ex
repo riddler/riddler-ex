@@ -279,10 +279,26 @@ defmodule Riddler.Template do
 
     # The general walk stops at the `{condition, body}` tuple, so an `elsif`
     # body's own nested tags are reached from here instead.
-    reduce_nodes(bodies, collected, fn node, positions -> conditional(node, positions) end)
+    branch_bodies(bodies, collected)
+  end
+
+  # A `case` branch is a `{values, body}` tuple, or `{:else, body}` for its
+  # else, so the general walk stops before those bodies exactly as it does
+  # before an `elsif`'s. Only the bodies are followed: the tag's own
+  # `argument` is the subject, which reads a value rather than tests one, and
+  # stays reported.
+  defp conditional(%Solid.Tags.CaseTag{cases: cases}, acc) do
+    cases |> Enum.map(&elem(&1, 1)) |> branch_bodies(acc)
   end
 
   defp conditional(_node, acc), do: acc
+
+  # The two tuple-wrapped body positions among the admitted tags -
+  # `if_tag.elsifs` and `case_tag.cases` - and no others: every other
+  # admitted tag holds its body in a plain list the general walk follows.
+  defp branch_bodies(bodies, acc) do
+    reduce_nodes(bodies, acc, fn node, positions -> conditional(node, positions) end)
+  end
 
   # A condition's own traversal, because the general one above stops at a
   # tuple and `and` / `or` chains hang off `child_condition` as `{:and, next}`.
