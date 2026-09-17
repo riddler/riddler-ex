@@ -1013,6 +1013,42 @@
         "screen": "billing"
       },
       "name": "A screen the document does not declare is an error, not a set of responses that is fine"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.undecidable",
+            "field": "condition",
+            "node_key": "company"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_plan_seats",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "condition": "responses.seats > 1",
+                  "key": "company",
+                  "label": "Company name",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your plan"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "plan"
+      },
+      "name": "A condition the root cannot decide is a finding, not a silent pass: the question is neither held to its requirement nor let through"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"

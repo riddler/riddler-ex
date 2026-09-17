@@ -48,7 +48,7 @@ defmodule Riddler.CorpusTest do
   @case_counts %{
     "corpus/screens/admit.json" => 24,
     "corpus/screens/resolve.json" => 20,
-    "corpus/screens/validate_responses.json" => 27,
+    "corpus/screens/validate_responses.json" => 28,
     "corpus/templates/render.json" => 29
   }
 

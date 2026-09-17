@@ -1013,3 +1013,134 @@ deliberately untouched**, by both this note and the change that carries it:
 this record's own filename, which is how a record is cited and is fixed by its
 number, and the row that links to it from the index in `docs/adr/README.md`.
 Neither names the schema; both name this record.
+
+---
+
+## Amendment, 2026-09-17: the per-button opt-out covers an undecidable condition
+
+Status: proposed
+
+Two amendments sit above this one. Every reference here to "the amendment
+above" means the first of them, headed "the screen validated is the screen
+shown"; the second, on an uncompilable pattern, is named in full where it is
+cited.
+
+The amendment above decides that a condition the root could not decide is a
+finding rather than `:ok`. It states that rule without qualification and it
+never names the per-button opt-out, so it left open what a press that declares
+it does not validate answers for such a screen. This amendment decides that:
+the opt-out covers it.
+
+### What the record now decides
+
+**A button declaring `validates` as `false` answers `:ok` for the screen it
+submits even when that screen carries a condition the root could not decide.**
+The finding the amendment above introduces is raised where the pressed button
+validates, which is every press but that one. A press through a button that
+says nothing, through a key naming no button on the resolved screen, or through
+no button at all still reports it.
+
+The Decision above already says what the opt-out is for: a button "may carry
+`validates`, a boolean defaulting to true: a button that submits a screen
+validates that screen's responses first, and the opt-out is what lets a Back
+button leave a half-filled screen without an error." That sentence is about
+navigation. A visitor pressing Back is leaving the screen, not submitting it,
+and there is nothing yet to be right or wrong about.
+
+### Why the opt-out wins here
+
+The amendment above gives its own reason for the finding, and read closely that
+reason is what carves this case out rather than what swallows it. It says:
+"Once validation resolves against the host's real root, an undecidable
+condition means the root the host handed in does not carry what the document
+asks about - which is a defect in the call, not a property of the visitor."
+
+A defect in the call is the host's. A Back press is the visitor's, and it is
+their navigation rather than their submission. Holding a visitor at a screen
+they are trying to leave, in order to report a mistake in the host's root,
+charges the wrong party for it: the visitor cannot fix the root, cannot see the
+finding, and has not claimed that anything on the screen is finished. The host
+still learns of the defect, from the same finding, the moment a press that does
+validate arrives - and from `resolve/2` and `resolve_screen/3`, which report
+`undecidable_conditions` in their diagnostics on every call whatever is pressed.
+Nothing is hidden by this; one door out of the screen stops being blocked.
+
+The reading the other way is defensible and was implemented first. The
+amendment's rule is stated flat; an undecidable condition is not something a
+visitor typed their way into; and the sentence that follows the one quoted
+above presses the point - "Answering `:ok` would return the package to the
+behaviour this amendment removes, in a narrower case." What decides between
+the two readings is what that removed behaviour was: a *submission accepted
+unchecked*. A non-validating press accepts no submission, so answering `:ok`
+to one does not return the package to it. That is the case the amendment's
+reasoning does not reach, and the record above neither reached it nor said so.
+
+It did not say so anywhere else either. The amendment above names `validates`
+nowhere and the opt-out nowhere. A button reaches it twice and both times as
+the `pressed_button_key` argument of the surface it declares - once in the
+signature and once in the argument about which positions are taken - which is
+an argument's name and not a rule about what pressing one does. Its
+"What is unchanged" list - "The document, the node vocabulary, the resolved
+shape, the `writes` and `outcome` fields, the lenient template rendering, the
+`missing_variables` and `undecidable_conditions` diagnostics and what goes in
+them, and the rule that checks run over the resolved screen and nothing else" -
+does not name the opt-out among what it preserves. So the question was open in
+both directions rather than decided in one, which is the condition this
+amendment exists to end.
+
+### Why an amendment and not a note
+
+Because it decides a question the record left open, which is this record's own
+stated test. The note above that decides what becomes of a node field this
+version does not know declines to decide whether such a field should also
+raise a finding, and gives its reason in these words: "naming a code for it
+would change what this record decides, and that is an amendment's work, not a
+note's."
+
+The other test this record uses points the other way and is not the governing
+one. The amendment on an uncompilable pattern asks whether a change is "a new
+refusal of documents 0.1.0 admits". This is not: it takes nothing away that 0.1.0
+allowed, and restores for one press exactly the `:ok` that 0.1.0 always
+answered there. That test is a sufficient reason for an amendment, not a
+necessary one, and a change can fail it and still be an amendment's work.
+
+Two further reasons, both practical. This qualifies a rule stated by an
+amendment that is itself at `proposed`; a note cannot be accepted or rejected
+with the text it qualifies, while a second amendment beside the first can be
+read and ruled on as one. And what it settles is a behaviour a host writes code
+against, not a consequence of a rule already decided - the rule above and this
+one give a different answer to the same call.
+
+### What is unchanged
+
+Everything the amendment above lists as unchanged, and the amendment itself
+apart from the one qualification stated here: a validating press still answers
+the finding, `missing_variables` still becomes no finding, a condition the root
+*decides* false still hides its node silently, and the order of the findings is
+untouched. `validates` keeps its default of true, its meaning, and its
+admit-time shape check. `resolve/2` and `resolve_screen/3` are not touched:
+their diagnostics report an undecidable condition whatever button is pressed,
+because no button is pressed at resolution.
+
+**The public documentation of the opt-out needed no change.** The `@doc` on
+`Riddler.Screens.validate_screen/4` (`lib/riddler/screens.ex`, read at
+`4208433d6f318acd00870cf2b5929cb2ccd97a69`) and the matching passage in
+`README.md` (read at the same SHA) both already say that a button declaring
+`false` answers `:ok` without running a check, which is what lets a Back button
+leave a half-filled screen. Under the first implementation of the amendment
+above that sentence had become false. The code moving to what this amendment
+decides is what makes it true again, so neither sentence is edited by the
+commit this amendment lands in.
+
+**The conformance corpus gains nothing and loses nothing here.** The one case
+the finding's bead adds to `corpus/screens/validate_responses.json` presses no
+button, so its stated answer is what this amendment leaves it. A case pressing
+a non-validating button on a screen with an undecidable condition would pin
+this amendment from the corpus side and is left for the corpus pass.
+
+The code half is the same bead as the finding itself, whose commit is the one
+that adds both the entry point taking the diagnostics behind the opt-out check
+and the pair of tests pinning the two halves against one document, so neither
+is citable at any earlier SHA. The behaviour is in `Riddler.Screens.Validation`,
+which is `@moduledoc false` and no part of this package's surface, reached from
+`Riddler.Screens.validate_screen/4` in `lib/riddler/screens.ex`.
