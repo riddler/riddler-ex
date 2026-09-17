@@ -88,16 +88,51 @@ defmodule Riddler.Screens.ValidationTest do
     })
   end
 
-  defp check(question, response),
-    do: Screens.validate_responses(card_document(question), "card", %{"card_field" => response})
+  defp check(question, response) do
+    Screens.validate_screen(card_document(question), "card", %{
+      "responses" => %{"card_field" => response}
+    })
+  end
+
+  # The case the ADR-0002 amendment of 2026-09-17 demonstrates: a screen with
+  # one unconditional required question and one required question conditional
+  # on the host's `context`. The host resolves it under a root whose `context`
+  # satisfies that condition, so the visitor is shown both.
+  defp checkout_document do
+    Document.admit(%{
+      "schema_version" => 1,
+      "id" => "edoc_checkout",
+      "screens" => [
+        %{
+          "key" => "checkout",
+          "title" => "Checkout",
+          "nodes" => [
+            %{
+              "type" => "text_question",
+              "key" => "full_name",
+              "label" => "Your name",
+              "required" => true
+            },
+            %{
+              "type" => "text_question",
+              "key" => "vat_id",
+              "label" => "VAT identifier",
+              "condition" => "context.is_business == true",
+              "required" => true
+            }
+          ]
+        }
+      ]
+    })
+  end
 
   describe "required over the signup fixture" do
     # Sabotage: made `blank?/1` answer `false` for `nil`; the unanswered name
     # raised no finding and this test went red.
     test "a required question with no response at all is a finding naming the node" do
       assert {:error, [finding]} =
-               Screens.validate_responses(fixture_document(), "account", %{
-                 "email" => @good_email
+               Screens.validate_screen(fixture_document(), "account", %{
+                 "responses" => %{"email" => @good_email}
                })
 
       assert %Finding{code: "response.required", field: "required", node_key: "first_name"} =
@@ -110,20 +145,19 @@ defmodule Riddler.Screens.ValidationTest do
     # whitespace name was accepted and this test went red.
     test "a required question answered with whitespace is unanswered" do
       assert {:error, [finding]} =
-               Screens.validate_responses(fixture_document(), "account", %{
-                 "first_name" => "   ",
-                 "email" => @good_email
+               Screens.validate_screen(fixture_document(), "account", %{
+                 "responses" => %{"first_name" => "   ", "email" => @good_email}
                })
 
       assert finding.node_key == "first_name"
     end
 
-    # Sabotage: made `validate_responses/3` collect only the first node's
+    # Sabotage: made `validate_screen/3` collect only the first node's
     # findings instead of every node's; the email finding was lost and this
     # test went red.
     test "every failing node on the screen is reported, in document order" do
       assert {:error, findings} =
-               Screens.validate_responses(fixture_document(), "account", %{})
+               Screens.validate_screen(fixture_document(), "account", %{})
 
       assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
     end
@@ -132,7 +166,7 @@ defmodule Riddler.Screens.ValidationTest do
     # response whatever `required` says; the unanswered optional seats question
     # raised one and this test went red.
     test "an optional question left blank is not a finding" do
-      assert :ok == Screens.validate_responses(fixture_document(), "plan", %{})
+      assert :ok == Screens.validate_screen(fixture_document(), "plan", %{})
     end
 
     # Sabotage: made `checks/2` run the format checks on a blank response as
@@ -148,15 +182,13 @@ defmodule Riddler.Screens.ValidationTest do
     # accepted and the second half of this test went red.
     test "the fixture's work email takes a good address and refuses a bad one" do
       assert :ok ==
-               Screens.validate_responses(fixture_document(), "account", %{
-                 "first_name" => "Ada",
-                 "email" => @good_email
+               Screens.validate_screen(fixture_document(), "account", %{
+                 "responses" => %{"first_name" => "Ada", "email" => @good_email}
                })
 
       assert {:error, [finding]} =
-               Screens.validate_responses(fixture_document(), "account", %{
-                 "first_name" => "Ada",
-                 "email" => "ada.example.com"
+               Screens.validate_screen(fixture_document(), "account", %{
+                 "responses" => %{"first_name" => "Ada", "email" => "ada.example.com"}
                })
 
       assert %Finding{code: "response.format", field: "format", node_key: "email"} = finding
@@ -170,8 +202,8 @@ defmodule Riddler.Screens.ValidationTest do
     # test went red.
     test "a question the visitor's responses hid cannot fail, blank or not" do
       assert :ok ==
-               Screens.validate_responses(referral_required_document(), "confirm", %{
-                 "seats" => 1
+               Screens.validate_screen(referral_required_document(), "confirm", %{
+                 "responses" => %{"seats" => 1}
                })
     end
 
@@ -181,8 +213,8 @@ defmodule Riddler.Screens.ValidationTest do
     # pair separates "hidden" from "not checked at all".
     test "the same question shown by the same responses does fail when blank" do
       assert {:error, [finding]} =
-               Screens.validate_responses(referral_required_document(), "confirm", %{
-                 "seats" => 3
+               Screens.validate_screen(referral_required_document(), "confirm", %{
+                 "responses" => %{"seats" => 3}
                })
 
       assert finding.node_key == "referral"
@@ -195,7 +227,7 @@ defmodule Riddler.Screens.ValidationTest do
     # the blank name and this test went red.
     test "a Back button declaring validates false answers :ok without running" do
       assert :ok ==
-               Screens.validate_responses(
+               Screens.validate_screen(
                  account_with_back_document(),
                  "account",
                  %{},
@@ -207,7 +239,7 @@ defmodule Riddler.Screens.ValidationTest do
     # Continue press skipped the checks and this test went red.
     test "the Continue button on the same screen answers the finding" do
       assert {:error, [%Finding{node_key: "first_name"} | _rest]} =
-               Screens.validate_responses(
+               Screens.validate_screen(
                  account_with_back_document(),
                  "account",
                  %{},
@@ -219,7 +251,7 @@ defmodule Riddler.Screens.ValidationTest do
     # arity-3 form skipped every check and this test went red.
     test "the arity-3 form presses no button and validates" do
       assert {:error, _findings} =
-               Screens.validate_responses(account_with_back_document(), "account", %{})
+               Screens.validate_screen(account_with_back_document(), "account", %{})
     end
 
     # Sabotage: made `opted_out?/2` answer `true` for a key naming no button;
@@ -227,7 +259,7 @@ defmodule Riddler.Screens.ValidationTest do
     # red.
     test "a key naming no button on the screen validates, because true is the default" do
       assert {:error, _findings} =
-               Screens.validate_responses(
+               Screens.validate_screen(
                  account_with_back_document(),
                  "account",
                  %{},
@@ -338,15 +370,68 @@ defmodule Riddler.Screens.ValidationTest do
   end
 
   describe "a screen the document does not declare" do
-    # Sabotage: made `validate_responses/4` answer `:ok` for a screen key it
+    # Sabotage: made `validate_screen/4` answer `:ok` for a screen key it
     # could not find; the host's mistake was reported as a clean screen and
     # this test went red.
     test "comes straight back from resolve_screen/3" do
       assert {:error, :no_such_screen} =
-               Screens.validate_responses(fixture_document(), "billing", %{})
+               Screens.validate_screen(fixture_document(), "billing", %{})
 
       assert {:error, :no_such_screen} =
-               Screens.validate_responses(fixture_document(), "billing", %{}, "account_continue")
+               Screens.validate_screen(fixture_document(), "billing", %{}, "account_continue")
+    end
+  end
+
+  describe "the screen validated is the screen shown" do
+    # Sabotage: hard-coded the empty context back into `validate_screen/4`
+    # (resolving against `%{"context" => %{}, "responses" => root["responses"]}`
+    # the way the removed `validate_responses/4` did); the conditional question
+    # was hidden from the validator, the blank went unreported, this assertion
+    # got `:ok`, and the test went red.
+    test "a blank required question the host's context showed is a finding" do
+      root = %{"context" => %{"is_business" => true}, "responses" => %{}}
+
+      {:ok, shown} = Screens.resolve_screen(checkout_document(), "checkout", root)
+      assert Enum.map(shown.nodes, & &1.key) == ["full_name", "vat_id"]
+
+      submitted = put_in(root, ["responses"], %{"full_name" => "Ada"})
+
+      assert {:error, [%Finding{code: "response.required", node_key: "vat_id"}]} =
+               Screens.validate_screen(checkout_document(), "checkout", submitted)
+    end
+
+    # Sabotage: made `checks/2` raise the required finding whatever the response
+    # holds; the answered VAT identifier raised one and this test went red. It is
+    # the control for the test above: it shows the finding tracks the blank and
+    # not merely the question being shown.
+    test "the same question answered under the same context is :ok" do
+      root = %{
+        "context" => %{"is_business" => true},
+        "responses" => %{"full_name" => "Ada", "vat_id" => "DE123"}
+      }
+
+      assert :ok == Screens.validate_screen(checkout_document(), "checkout", root)
+    end
+
+    # The other half of the pair: under a context that does not carry
+    # `is_business` the question is undecidable and hidden, so the visitor is
+    # never shown it. Asserted through the diagnostics `resolve/2` carries,
+    # because `resolve_screen/3` still drops the diagnostics it computes.
+    #
+    # Sabotage: made `shown/3` answer the node for an undecidable condition
+    # instead of `nil`; the question appeared on the screen the visitor would
+    # have been shown and this test went red.
+    test "the same screen under an empty context hides the question entirely" do
+      root = %{"context" => %{}, "responses" => %{}}
+
+      {:ok, resolved} = Screens.resolve(checkout_document(), root)
+      screen = hd(resolved.screens)
+
+      assert Enum.map(screen.nodes, & &1.key) == ["full_name"]
+
+      assert resolved.diagnostics.undecidable_conditions == [
+               %{key: "vat_id", condition: "context.is_business == true"}
+             ]
     end
   end
 end

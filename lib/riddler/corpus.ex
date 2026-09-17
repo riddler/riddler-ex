@@ -143,12 +143,14 @@ defmodule Riddler.Corpus do
   end
 
   defp validate_responses(document, input) do
+    root = %{"responses" => input["responses"]}
+
     case Map.fetch(input, "pressed_button") do
       {:ok, key} ->
-        Screens.validate_responses(document, input["screen"], input["responses"], key)
+        Screens.validate_screen(document, input["screen"], root, key)
 
       :error ->
-        Screens.validate_responses(document, input["screen"], input["responses"])
+        Screens.validate_screen(document, input["screen"], root)
     end
   end
 
