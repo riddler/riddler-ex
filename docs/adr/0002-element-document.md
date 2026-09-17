@@ -580,3 +580,100 @@ checks run over the resolved screen and nothing else. `resolve/2` keeps its
 arity and its return. Earlier prose in this record and in ADR-0001 that names
 `validate_responses` describes what v1 did and stays as the historical record
 of it.
+
+---
+
+Noted 2026-09-17, campaign RF051, beads rd-gwn, rd-d8e, rd-xvv and rd-xva.
+Four notes by addition, each read against `main` at `7a2dd8f`. They record
+what this record was silent on; none of them changes what it decides, and
+none of them bears on the amendment above.
+
+**A decoded document reaches the runtime atom-keyed, except `metadata`.** The
+Typespecs section above writes `metadata` as `%{optional(String.t()) =>
+term()}` while a screen and a node are atom-keyed, and never says which of
+those two forms a host's decoded JSON arrives in. Both do, and the boundary
+is `admit/1`. What a host hands in is the decoded JSON map, string keys
+throughout, as `Jason.decode!/1` gives it; what the rest of the package reads
+is the struct `admit/1` builds (`lib/riddler/screens/document.ex`, `admit/1`,
+read at `7a2dd8f`). In that struct the envelope fields, every screen
+(`%{key: ..., title: ..., nodes: [...]}`) and every node are atom-keyed, and
+`metadata` alone is carried through with its string keys exactly as written.
+The reason for the exception is the envelope rule above that `metadata` is an
+open map: a host may put what it likes beside `name`, `description` and
+`domain`, so its keys are not drawn from any vocabulary this package knows,
+and string keys are the only form that can hold them without this package
+turning host input into atoms. The typespec is right as it stands; this note
+says which side of `admit/1` each form lives on. The same reasoning is why no
+unrecognized node field becomes an atom either: `admit/1` copies a field onto
+a node only when that field's own name, as a string, is a key of the raw
+node, so every atom in an admitted node comes from this package's vocabulary
+and none from the document.
+
+**An unconditional variant candidate that is not last is an admit finding.**
+The variant rule above says such a candidate makes every candidate after it
+dead and stops there, while the empty variant beside it is explicitly a
+finding. This note decides that the unreachable case is one too, on the
+reasoning the Context already gives: the loss is silent, and a vocabulary
+that can lose part of a document without saying so is what this record is
+written against. The code is `document.unreachable_variant_candidate`, one
+finding per unconditional candidate that is not last, carrying the variant's
+own key as the node key and `nodes` as the field, with the buried candidate
+named in the message - the variant is the node the author has to fix. It is
+raised by `Riddler.Screens.Type.Variant.validate/1`
+(`lib/riddler/screens/type/variant.ex`, the private `unreachable/2`, read at
+`7a2dd8f`), listed with the other codes in `Riddler.Screens.Document`'s
+moduledoc (`lib/riddler/screens/document.ex`, read at `7a2dd8f`), and pinned
+by a test and by the corpus case "An unconditional candidate that is not last
+is refused, because it buries every candidate after it"
+(`corpus/screens/admit.json`). The record and the code already agreed on the
+behaviour; what this note closes is that the record did not say it.
+
+**None of `metadata`'s `name`, `description` and `domain` is required.** The
+envelope rule above names the three as what the block carries and types them
+as strings without stating a requiredness rule, which leaves a reader free to
+read the naming as a requirement. It is not one. A document with no
+`metadata` at all is admitted, and so is one whose `metadata` carries none of
+the three: `admit/1` takes the block whole when it is a map and substitutes
+the empty map when it is absent (`lib/riddler/screens/document.ex`,
+`admit_metadata/1`, read at `7a2dd8f`), and `validate/1` raises no finding
+about `metadata`, having no check over the block at all. The three names are
+a convention this record offers so that hosts and editors spell one idea one
+way, not a schema this package enforces; a host that needs one of them
+present enforces that itself. This note decides the open reading rather than
+merely reporting the code: requiring any of the three would be a new refusal
+of documents 0.1.0 admits, and the reason this record gives for naming them -
+so that an editor has something to offer - is served without one.
+
+**A node field this version does not know is dropped at admit, with no
+finding.** This record enumerates each type's fields and is silent on what
+becomes of a field outside that enumeration on a node whose `type` is known.
+It is dropped: `admit/1` copies the common fields and the fields the type's
+own `fields/0` names, and nothing else reaches the admitted node
+(`lib/riddler/screens/document.ex`, `admit_typed/3` and the private `take/2`,
+read at `7a2dd8f`); `validate/1` raises nothing about it. That is the narrow
+counterpart of the loud refusal of an unknown `type` rather than an exception
+to it: an unknown type means this package cannot say what the node is, while
+an unknown field on a known type is a field this package can say is no part
+of the type. Dropping it rather than carrying it is also what keeps host
+input out of the atom table. `metadata` is the declared place for what a host
+wants to keep beside the vocabulary. Whether such a field should in addition
+raise a finding is left open here exactly as it was before this note: naming
+a code for it would change what this record decides, and that is an
+amendment's work, not a note's.
+
+`answer_options` is that rule's likeliest case, and this note names it. While
+the select question types are unbuilt, a document carrying `answer_options` on
+a `text_question` is admitted and the field is dropped, with no finding: the
+reservation above reserves the spelling, not a behaviour. A host authoring
+choices before those types exist is authoring something this version will not
+show and will not mention.
+
+The same enumeration under-names `text_question` in one further way, which
+this note closes. That type also admits `pattern`, `min` and `max`
+(`lib/riddler/screens/type/text_question.ex`, `fields/0`, read at `7a2dd8f`).
+They are parameters of the validation formats the rule above delegates to -
+`pattern` is the expression the `pattern` format holds a response to, and
+`min` and `max` are the bounds the `integer` and `number` formats hold one
+between - and each is read only by the format that owns it, so a question
+declaring one without the format that reads it declares something nothing
+consults.
