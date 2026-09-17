@@ -146,9 +146,17 @@ An agent may draft the change; it does not adopt it.
   multi-tenant host application doing credit-card processing, and a signup
   wizard with A/B testing - and no others.
 - The vocabulary is `writes`, `outcome`, `responses` and `context`. The
-  spellings `payload`, `action` and `answers` name the same things in older
-  drafts and appear nowhere here - not in `lib/`, not in a record, not in a
-  corpus case, not in a document fixture.
+  spellings `payload`, `action` and `answers` name the same things in
+  older drafts and are retired. **The rule is about vocabulary, not
+  about the English language**: a retired spelling must not appear
+  as a key, a field name, a value, a corpus case name, or any other
+  identifier - not in `lib/`, not in a record, not in a corpus case, not
+  in a schema, not in a document fixture, not on a bead. **A corpus case
+  name is vocabulary.** Ordinary English prose is exempt, including the
+  verb "answers", which this repo's documentation uses freely and
+  correctly ("`admit/1` answers `nil`"). The guard in
+  `test/riddler/corpus_test.exs` enforces the vocabulary half over the
+  corpus.
 - ASCII only in prose: hyphens, not typographic dashes.
 - Commit messages: title < 50 chars, simple present tense ("Adds ...",
   "Fixes ..."), body wrapped at ~72 chars, with a `Refs: <bead>` trailer. No
