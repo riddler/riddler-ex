@@ -388,14 +388,7 @@
     },
     {
       "expected": {
-        "findings": [
-          {
-            "code": "response.format",
-            "field": "pattern",
-            "node_key": "card_last_four"
-          }
-        ],
-        "ok": false
+        "ok": true
       },
       "input": {
         "document": {
@@ -423,7 +416,7 @@
         },
         "screen": "card"
       },
-      "name": "A pattern no runtime can use is a finding against the question, because nothing could satisfy it"
+      "name": "A pattern no runtime can use is a finding against the document, so a response is not held to it as well"
     },
     {
       "expected": {

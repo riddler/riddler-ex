@@ -808,3 +808,93 @@ instead, by seven tests this bead's commit adds to
 `test/riddler/screens/document_test.exs`: one per shape, each red before the
 check it names existed, plus one that holds the checks to saying nothing about
 a field the document omits.
+
+---
+
+Noted 2026-09-17, campaign RF051, bead rd-m0n. One note by addition, read
+against `main` at `27f9d91`. It names the code for a check this record already
+places on the admit side, and moves nothing this record decides.
+
+**A `pattern` a runtime cannot compile is a document finding,
+`document.invalid_pattern`, and no longer a response one.** The Decision above
+delegates the formats' own checks to response validation, and `pattern` is a
+parameter of one of them: the note of earlier today that closed the
+`text_question` enumeration calls it "the expression the `pattern` format
+holds a response to". v1 read that delegation to cover the expression as well
+as the check, and compiled the expression when a visitor submitted: a question
+whose `pattern` was `[0-9` validated clean as a document and answered
+`response.format` with the field `pattern` against whatever the visitor typed
+(`lib/riddler/screens/validation.ex`, the private `pattern/2` and
+`pattern_finding/1`, read at `27f9d91`). That told the wrong person at the
+wrong time about the wrong thing. Nothing a visitor could type would satisfy
+an expression that does not compile, so the response was never what was wrong;
+the document was, and it was wrong before any visitor existed.
+
+This record already decides that side of the line for the one other field it
+names that this package compiles: "`text`, `label` and `placeholder` are
+templates in the ADR-0003 subset ... so a template this package refuses is
+refused at admit time, with the node's key on the finding". A `pattern` is the
+same kind of thing - an expression the author wrote and this package compiles
+- and it is now refused the same way, with the node's key on the finding. The
+`format` name beside it was already on that side
+(`document.unknown_format`), and for the reason this note extends: an author
+who misspells a format, or writes an expression that will not compile, should
+be told while they are authoring.
+
+**At admit means an admit-time finding, not a refusal to admit.** A document
+carrying an uncompilable pattern is still a document: `admit/1` is unchanged
+and still answers the struct for it, and the finding comes from `validate/1`.
+That is what the Decision above means throughout by an admit finding, and what
+the schema says of itself in its own description - everything a document can
+be wrong about "is a finding a runtime raises against an admitted document,
+not a reason the value is not a document", so that schema-valid means admitted
+(`priv/schemas/element-document.schema.json`, read at `27f9d91`). Reading it
+the other way would have made a mistyped expression stop the document being a
+document, which is a far larger change than this one and one this record does
+not license.
+
+**Why a note and not an amendment.** Naming a code for a category this record
+leaves open would change what it decides, and the note above says so of the
+unknown-node-field case. This is not that: the record states that `pattern`
+**is** a regular expression, and states that an expression this package
+compiles and cannot is refused at admit. What was missing was a check for a
+shape already stated and a code to report it by, which is the same ground the
+note above stands on for the envelope and boolean shapes. The check is
+`text_question`'s, beside the `format` and `required` checks and for the same
+reason - the type that names the field owns the check on it - and it is added
+by this bead's own commit, so it is not citable at the SHA this note was read
+against: the private `pattern_findings/1` and `usable?/1` in
+`lib/riddler/screens/type/text_question.ex`. One thing about that check is
+worth recording because it is a coupling and not a detail: it does not compile
+the expression itself. It asks the format's own compiler, which the same
+commit stops keeping private for the purpose
+(`compile_pattern/1` in `lib/riddler/screens/validation.ex`, a module that is
+`@moduledoc false` and no part of this package's surface, as its own
+moduledoc says). Two compilers would drift, and a document check holding an
+expression to anchors the format did not apply would admit a pattern the
+format cannot use, or refuse one it can - which is the defect this bead fixes,
+reintroduced from the other end.
+
+**Response validation stops reporting it, and that is half the change.** A
+defect reported from two layers is worse than one reported late, so the same
+commit takes the case out of response validation: a declared pattern that will
+not compile answers nothing there now, exactly as an unknown format name
+already answered nothing there. One case stays behind: a question naming the
+`pattern` format and declaring no pattern at all. There is no expression for
+the document check to read, so it raises nothing, and response validation
+still answers `response.format` with the field `pattern` - a response cannot
+be in a form the question never states. Whether a format declared without the
+parameter it reads should itself be a document finding is a question this
+record does not decide, and this note does not decide it either.
+
+**One conformance case moves side, and the corpus gains none.** The response
+validation corpus carried a case for the old behaviour - a checkout document
+whose `card_last_four` pattern was `[0-9`, stated as `ok: false` with a
+`response.format` finding. Under this bead that capability answers `ok: true`
+for it, so the case now states that, and its name says why: a pattern no
+runtime can use is a finding against the document, so a response is not held
+to it as well. That is the one corpus edit here; the case count of every file
+is unchanged, no case is added, and a second runtime reading the corpus is
+held to the same boundary this note draws. A case stating
+`document.invalid_pattern` against the admit capability would pin the other
+half of it, and is left for the corpus pass.

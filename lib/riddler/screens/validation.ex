@@ -139,24 +139,44 @@ defmodule Riddler.Screens.Validation do
   defp pattern(node, response) do
     case compile_pattern(Map.get(node, :pattern)) do
       {:ok, regex} -> matching(regex, node, response, "in the form this question asks for")
-      :error -> [pattern_finding(node)]
+      :error -> unreadable_pattern(node)
     end
   end
 
-  defp compile_pattern(source) when is_binary(source) do
+  # A pattern the package cannot compile is already a document finding -
+  # `document.invalid_pattern`, raised before a visitor arrives - so there is
+  # nothing left for a response to be wrong about, exactly as for a format name
+  # the package does not know. Reporting it here as well would tell an author
+  # about one defect from two layers. The case that is left is a question
+  # asking for the `pattern` format and declaring no pattern at all: the
+  # document check has no expression to read, and no response can be in a form
+  # the question never states.
+  defp unreadable_pattern(node) do
+    if Map.has_key?(node, :pattern), do: [], else: [pattern_finding(node)]
+  end
+
+  # The one place a `pattern` source becomes a regular expression. The document
+  # check on the same field calls it too, which is the whole reason it is not
+  # private: two compilers would drift, and a document check holding an
+  # expression to anchors this format did not apply would admit a pattern the
+  # format cannot use, or refuse one it can. No part of the package's surface,
+  # as nothing in this module is.
+  @doc false
+  @spec compile_pattern(term()) :: {:ok, Regex.t()} | :error
+  def compile_pattern(source) when is_binary(source) do
     case Regex.compile("\\A(?:" <> source <> ")\\z") do
       {:ok, regex} -> {:ok, regex}
       {:error, _reason} -> :error
     end
   end
 
-  defp compile_pattern(_source), do: :error
+  def compile_pattern(_source), do: :error
 
   defp pattern_finding(node) do
     %Finding{
       code: "response.format",
       message:
-        "the pattern #{inspect(Map.get(node, :pattern))} is not a regular expression this package can use, so nothing can satisfy it",
+        "this question asks for a response in the form of a pattern and declares none, so nothing can satisfy it",
       field: "pattern",
       node_key: node[:key]
     }

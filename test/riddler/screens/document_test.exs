@@ -511,6 +511,79 @@ defmodule Riddler.Screens.DocumentTest do
       assert finding.node_key == "email"
     end
 
+    # A `pattern` is an expression the author wrote and this package compiles,
+    # exactly as a template field is, so one it cannot compile is a defect in
+    # the document rather than something a visitor could be wrong about.
+    #
+    # Sabotage: dropped `pattern_findings/1` from `TextQuestion.validate/1` and
+    # a question holding a response to "[0-9" validated clean, so this went red.
+    test "a question's pattern that is not a regular expression this package can use" do
+      [finding] =
+        findings(
+          document([
+            %{
+              "type" => "text_question",
+              "key" => "card_last_four",
+              "label" => "Last four digits",
+              "format" => "pattern",
+              "pattern" => "[0-9"
+            }
+          ])
+        )
+
+      assert finding.code == "document.invalid_pattern"
+      assert finding.field == "pattern"
+      assert finding.node_key == "card_last_four"
+      assert finding.message =~ "[0-9"
+    end
+
+    # Not a string is not a regular expression either, and it is the same
+    # defect under the same code: the question declares an expression nothing
+    # can read.
+    #
+    # Sabotage: matched `pattern_findings/1` on `is_binary(pattern)` only, so a
+    # pattern declared as the number 4 validated clean, and this went red.
+    test "a question's pattern that is not a string at all is the same finding" do
+      [finding] =
+        findings(
+          document([
+            %{
+              "type" => "text_question",
+              "key" => "card_last_four",
+              "label" => "Last four digits",
+              "format" => "pattern",
+              "pattern" => 4
+            }
+          ])
+        )
+
+      assert finding.code == "document.invalid_pattern"
+      assert finding.field == "pattern"
+      assert finding.node_key == "card_last_four"
+      assert finding.message =~ "4"
+    end
+
+    # The control for the two above: a pattern that compiles is a question this
+    # package can hold a response to, and it validates clean.
+    #
+    # Sabotage: made `pattern_findings/1` raise for every declared pattern; the
+    # four-digit question carried a finding and this test went red.
+    test "a question's pattern that compiles validates clean" do
+      clean =
+        document([
+          %{
+            "type" => "text_question",
+            "key" => "card_last_four",
+            "label" => "Last four digits",
+            "format" => "pattern",
+            "pattern" => "[0-9]{4}"
+          }
+        ])
+        |> Document.admit()
+
+      assert {:ok, ^clean} = Document.validate(clean)
+    end
+
     # Sabotage: treat `{:ok, []}` as a variant with candidates and an empty
     # container is admitted.
     test "a variant with no candidates" do

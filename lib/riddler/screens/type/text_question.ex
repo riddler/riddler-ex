@@ -15,9 +15,18 @@ defmodule Riddler.Screens.Type.TextQuestion do
   Three fields belong to a format rather than to the question, and each is
   read only by the format that owns it. `pattern` is the regular expression
   the `pattern` format holds a response to, and it has to match the whole
-  response. `min` and `max` are the bounds the `integer` and `number` formats
-  hold a response between. A question that declares one without the format
-  that reads it declares something nothing consults.
+  response; whether it is an expression this package can compile is checked
+  here, for the same reason the format name is - nothing a visitor could type
+  would satisfy one that is not, so the author is told while they are
+  authoring rather than when a visitor submits. `min` and `max` are the bounds
+  the `integer` and `number` formats hold a response between. A question that
+  declares one without the format that reads it declares something nothing
+  consults.
+
+      iex> node = %{type: "text_question", key: "pin", label: "PIN", format: "pattern", pattern: "[0-9"}
+      iex> [finding] = Riddler.Screens.Type.TextQuestion.validate(node)
+      iex> finding.code
+      "document.invalid_pattern"
 
       iex> Riddler.Screens.Type.TextQuestion.validate(%{type: "text_question", key: "email", label: "Work email", format: "email"})
       []
@@ -32,6 +41,7 @@ defmodule Riddler.Screens.Type.TextQuestion do
 
   alias Riddler.Finding
   alias Riddler.Screens.Document
+  alias Riddler.Screens.Validation
 
   @impl true
   def fields,
@@ -39,7 +49,7 @@ defmodule Riddler.Screens.Type.TextQuestion do
 
   @impl true
   def validate(node) do
-    required_findings(node) ++ format_findings(node)
+    required_findings(node) ++ format_findings(node) ++ pattern_findings(node)
   end
 
   # `required` says whether an empty response is acceptable, so a value that
@@ -88,4 +98,40 @@ defmodule Riddler.Screens.Type.TextQuestion do
         []
     end
   end
+
+  # `pattern` is a regular expression the author wrote and this package
+  # compiles, which is what a template field is too, so one it cannot compile
+  # is a defect in the document and is reported here rather than when a
+  # visitor submits: nothing a visitor could type would satisfy it, so there
+  # is nothing about a response to report. Not a string is not a regular
+  # expression either, and it is the same defect under the same code. Checked
+  # only where the question declares a pattern; a question declaring none
+  # declares no expression for this check to read.
+  defp pattern_findings(node) do
+    case Map.fetch(node, :pattern) do
+      {:ok, pattern} ->
+        if usable?(pattern) do
+          []
+        else
+          [
+            %Finding{
+              code: "document.invalid_pattern",
+              message:
+                "the pattern #{inspect(pattern)} is not a regular expression this package can use, so nothing could satisfy it",
+              field: "pattern",
+              node_key: Finding.node_key(node[:key])
+            }
+          ]
+        end
+
+      :error ->
+        []
+    end
+  end
+
+  # Usable means usable by the format that reads it, so the question is asked
+  # of the format's own compiler rather than of a second one here: the anchors
+  # are part of what it compiles, and a check with its own copy of them would
+  # drift from the one that runs when a visitor submits.
+  defp usable?(pattern), do: match?({:ok, _regex}, Validation.compile_pattern(pattern))
 end
