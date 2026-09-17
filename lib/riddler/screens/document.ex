@@ -62,8 +62,18 @@ defmodule Riddler.Screens.Document do
       string. No node key.
     * `document.unknown_type` - the registry has no such type.
     * `document.duplicate_key` - a key used twice anywhere in the document.
-    * `document.invalid_key` - a key missing, or not matching
-      `[a-z][a-z0-9_]*`.
+      Only the keys that are strings are compared. A key that is not a string
+      is already `document.invalid_key`, and two nodes carrying the same
+      non-string key are never reported as a duplicate: there is no key there
+      to have been used twice, and saying there is would tell the author to
+      rename one of them when what each of them needs is a key.
+    * `document.invalid_key` - a key missing, a key that is there and is not
+      a string, or a key not matching `[a-z][a-z0-9_]*`. One code, three
+      messages, because all three are the same mistake from the document's
+      side: the node has no name anything else can use. The first two carry
+      no node key - `node_key` is how a host looks the node up, and neither
+      an absent key nor a key of the wrong form is a name to look one up by -
+      and the key the document did write is named in the message.
     * `document.invalid_title` - a screen's `title` is there and is not a
       string. The finding carries the screen's key.
     * `document.missing_field` - a field the node's type requires.
@@ -374,6 +384,11 @@ defmodule Riddler.Screens.Document do
     end)
   end
 
+  # Only the keys that are strings. A key of any other form is not a key this
+  # document has, and `document.invalid_key` has already said so about each
+  # one of them; counting them here would report the same absence a second
+  # time under a code that means something else - that the author used one
+  # name twice - and send them to rename a key rather than to write one.
   defp every_key(document) do
     document.screens
     |> Enum.flat_map(fn screen ->
@@ -414,7 +429,7 @@ defmodule Riddler.Screens.Document do
         message:
           "a screen's title is the string a visitor is shown, not #{inspect(screen.title)}",
         field: "title",
-        node_key: if(is_binary(screen.key), do: screen.key)
+        node_key: Finding.node_key(screen.key)
       }
     ]
   end
@@ -428,14 +443,14 @@ defmodule Riddler.Screens.Document do
             message:
               "#{inspect(node.type)} is not a node type this package knows; the types are #{Enum.join(Registry.types(), ", ")}",
             field: "type",
-            node_key: node[:key]
+            node_key: Finding.node_key(node[:key])
           }
         ]
 
       {:ok, module} ->
-        key = node[:key]
+        key = Finding.node_key(node[:key])
 
-        key_findings(key, "the #{node.type} node") ++
+        key_findings(node[:key], "the #{node.type} node") ++
           condition_findings(node, key) ++
           missing_findings(node, module, key) ++
           template_findings(node, key) ++
@@ -460,11 +475,27 @@ defmodule Riddler.Screens.Document do
     end
   end
 
-  defp key_findings(_key, what) do
+  defp key_findings(nil, what) do
     [
       %Finding{
         code: "document.invalid_key",
         message: "#{what} carries no key, and a key is how everything else names a node",
+        field: "key",
+        node_key: nil
+      }
+    ]
+  end
+
+  # A key that is there and is not a string is a different mistake from an
+  # absent one, and the author fixing it needs to be told which: they wrote a
+  # key, and they wrote it in a form nothing can name a node by. The value is
+  # named here and not put on `node_key`, for the reason the moduledoc gives.
+  defp key_findings(key, what) do
+    [
+      %Finding{
+        code: "document.invalid_key",
+        message:
+          "#{what} carries #{inspect(key)} as its key, and a key is the string that names a node",
         field: "key",
         node_key: nil
       }

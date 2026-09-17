@@ -31,7 +31,7 @@ defmodule Riddler.Screens.Type.Heading do
             code: "document.level_out_of_range",
             message: "a heading level is an integer from 1 to 6, not #{inspect(level)}",
             field: "level",
-            node_key: node[:key]
+            node_key: Finding.node_key(node[:key])
           }
         ]
 

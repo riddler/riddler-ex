@@ -43,12 +43,12 @@ defmodule Riddler.Screens.Type.Variant do
             code: "document.empty_variant",
             message: "a variant carries at least one candidate; this one carries none",
             field: "nodes",
-            node_key: node[:key]
+            node_key: Finding.node_key(node[:key])
           }
         ]
 
       {:ok, candidates} when is_list(candidates) ->
-        unreachable(candidates, node[:key])
+        unreachable(candidates, Finding.node_key(node[:key]))
 
       _other ->
         []

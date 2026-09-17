@@ -58,7 +58,7 @@ defmodule Riddler.Screens.Type.TextQuestion do
             message:
               "required says whether an empty response is acceptable, true or false, not #{inspect(required)}",
             field: "required",
-            node_key: node[:key]
+            node_key: Finding.node_key(node[:key])
           }
         ]
 
@@ -79,7 +79,7 @@ defmodule Riddler.Screens.Type.TextQuestion do
               message:
                 "#{inspect(format)} is not a validation format this package knows; the formats are #{Enum.join(Document.formats(), ", ")}",
               field: "format",
-              node_key: node[:key]
+              node_key: Finding.node_key(node[:key])
             }
           ]
         end
