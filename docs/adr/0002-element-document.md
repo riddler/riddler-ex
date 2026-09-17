@@ -677,3 +677,77 @@ They are parameters of the validation formats the rule above delegates to -
 between - and each is read only by the format that owns it, so a question
 declaring one without the format that reads it declares something nothing
 consults.
+
+---
+
+Noted 2026-09-17, campaign RF051, bead rd-xxb. One note by addition, read
+against `main` at `342c790`. It records the codes that check the envelope and
+boolean shapes this record already states; it changes nothing this record
+decides, and it does not bear on the amendment above.
+
+**The envelope and boolean shapes this record states are checked, one code
+each, and only where the document carries the field.** The Decision above
+types `schema_version` as an integer and `1` in this version, `id` as a string
+that names the document, a screen's `title` as a string, `required` and
+`validates` as booleans, and `style` as a string from an open set the renderer
+owns; the Typespecs section writes the first three as `pos_integer()` and
+`String.t()`. v1 carried every one of them from the decoded JSON onto the
+admitted struct without reading it, so a document declaring a `schema_version`
+of 2, an `id` of 7 or a screen titled with a number validated clean. It no
+longer does. The codes are `document.invalid_schema_version` for a
+`schema_version` that is not the one this package implements,
+`document.invalid_id` for an `id` that is not a string,
+`document.invalid_title` for a screen `title` that is not a string,
+`document.invalid_required` for a question's `required` that is not a boolean,
+`document.invalid_validates` for a button's `validates` that is not a boolean,
+and `document.invalid_style` for a button's `style` that is not a string. The
+first two carry the field and no node key, because the envelope is the
+document's and not any one node's; `document.invalid_title` carries the
+screen's key, because the screen is what the author has to fix; the other
+three carry the node's key. Each check is added by this bead's own commit, so
+none of them is citable at the `342c790` this note was read against: the
+envelope and title checks are `Riddler.Screens.Document`'s (the private
+`envelope_findings/1` and `title_findings/1` in
+`lib/riddler/screens/document.ex`), and the three field checks belong to the
+types that name the fields (the private `required_findings/1` in
+`lib/riddler/screens/type/text_question.ex`, and the private
+`validates_findings/1` and `style_findings/1` in
+`lib/riddler/screens/type/button.ex`). That is the same division that already
+puts a heading's level range in the heading and a format's name in the
+question (`lib/riddler/screens/type/heading.ex`, `validate/1`, and
+`lib/riddler/screens/type/text_question.ex`, the `format` branch of
+`validate/1`, both read at `342c790`).
+
+**Each is a shape check and none of them is a requiredness check.** A field
+this record types but the document omits raises nothing: the schema requires
+`screens` of a document and `nodes` of a screen and nothing else
+(`priv/schemas/element-document.schema.json`, read at `342c790`), so a
+document with no `schema_version`, no `id` or no screen `title` is a document
+this version admits and validates clean, exactly as before. That is the same
+reading the note above takes for `metadata`'s three names, and for the same
+reason: requiring a field this record names would be a new refusal of
+documents 0.1.0 admits, which is an amendment's work and not a note's. One
+consequence is worth stating, because the struct cannot see it: an omitted
+field and a field written as JSON `null` both reach the runtime as `nil`, so a
+`null` `id` is read as an absent one and raises nothing, while the schema
+above types it and refuses it. A host that wants either field present enforces
+that itself, or holds the document to the schema.
+
+**`style` is checked for being a string and for nothing more.** The rule above
+that a style this package does not recognize is passed through rather than
+refused is unchanged: `primary` and `secondary` are named there so that a host
+has something to render, and any other name reaches the renderer untouched.
+What the check adds is that the name is a name - a renderer handed a number
+has nothing to look up - and it is the narrow counterpart of the open set
+rather than an exception to it.
+
+**Nothing in the conformance corpus changes.** Every case in the three
+screens capability files was enumerated field by field - 71 of them, 70 with
+an object for a document and one whose input is not an object at all. All 70
+declare `schema_version` 1 and a string `id`, every screen title in them is a
+string, and not one `required`, `validates` or `style` in them is off-shape,
+so no case's stated answer moves and the case counts are untouched. The corpus gains no case here. The shapes are pinned by the suite
+instead, by seven tests this bead's commit adds to
+`test/riddler/screens/document_test.exs`: one per shape, each red before the
+check it names existed, plus one that holds the checks to saying nothing about
+a field the document omits.

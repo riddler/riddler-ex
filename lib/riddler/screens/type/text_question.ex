@@ -39,6 +39,35 @@ defmodule Riddler.Screens.Type.TextQuestion do
 
   @impl true
   def validate(node) do
+    required_findings(node) ++ format_findings(node)
+  end
+
+  # `required` says whether an empty response is acceptable, so a value that
+  # is not a boolean is a question whose emptiness rule nothing can read.
+  # Checked only where the question declares one; an absent `required` is
+  # false, which the moduledoc states and response validation applies.
+  defp required_findings(node) do
+    case Map.fetch(node, :required) do
+      {:ok, required} when is_boolean(required) ->
+        []
+
+      {:ok, required} ->
+        [
+          %Finding{
+            code: "document.invalid_required",
+            message:
+              "required says whether an empty response is acceptable, true or false, not #{inspect(required)}",
+            field: "required",
+            node_key: node[:key]
+          }
+        ]
+
+      :error ->
+        []
+    end
+  end
+
+  defp format_findings(node) do
     case Map.fetch(node, :format) do
       {:ok, format} ->
         if format in Document.formats() do

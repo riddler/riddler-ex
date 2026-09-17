@@ -33,10 +33,64 @@ defmodule Riddler.Screens.Type.Button do
 
   @impl true
   def validate(node) do
+    writes_findings(node) ++ style_findings(node) ++ validates_findings(node)
+  end
+
+  defp writes_findings(node) do
     case Map.fetch(node, :writes) do
       {:ok, writes} when is_map(writes) -> Enum.flat_map(writes, &write_findings(&1, node[:key]))
       {:ok, writes} -> [not_a_map(writes, node[:key])]
       :error -> []
+    end
+  end
+
+  # Which style it is stays the renderer's, as the moduledoc says; that it is
+  # a string is this package's, because a renderer handed a number has no name
+  # to look up. Checked only where the button declares one: `style` is
+  # optional and an absent field never reaches the admitted node.
+  defp style_findings(node) do
+    case Map.fetch(node, :style) do
+      {:ok, style} when is_binary(style) ->
+        []
+
+      {:ok, style} ->
+        [
+          %Finding{
+            code: "document.invalid_style",
+            message:
+              "a style is the name a renderer looks up, a string, not #{inspect(style)}; which names there are is the renderer's",
+            field: "style",
+            node_key: node[:key]
+          }
+        ]
+
+      :error ->
+        []
+    end
+  end
+
+  # `validates` is the opt-out of validating the screen this button submits,
+  # so a value that is not a boolean is a button whose submission rule nothing
+  # can read. Checked only where the button declares one; an absent
+  # `validates` is true, which the moduledoc states and the resolver applies.
+  defp validates_findings(node) do
+    case Map.fetch(node, :validates) do
+      {:ok, validates} when is_boolean(validates) ->
+        []
+
+      {:ok, validates} ->
+        [
+          %Finding{
+            code: "document.invalid_validates",
+            message:
+              "validates says whether pressing this button validates the screen first, true or false, not #{inspect(validates)}",
+            field: "validates",
+            node_key: node[:key]
+          }
+        ]
+
+      :error ->
+        []
     end
   end
 
