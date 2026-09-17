@@ -15,7 +15,7 @@ defmodule Riddler.ScreensTest do
   defp document, do: @fixture |> File.read!() |> Jason.decode!() |> Document.admit()
 
   defp resolve_screen!(screen_key, root) do
-    {:ok, screen} = Screens.resolve_screen(document(), screen_key, root)
+    {:ok, screen, _diagnostics} = Screens.resolve_screen(document(), screen_key, root)
     screen
   end
 
@@ -175,6 +175,55 @@ defmodule Riddler.ScreensTest do
 
       assert node(screen, "confirm_referral_heading").text == "One more thing, Ada"
       refute Enum.any?(screen.nodes, &Map.has_key?(&1, :condition))
+    end
+
+    # Sabotage: made `resolve_screen/3` answer the empty diagnostics instead of
+    # the ones its own resolution produced; the three undecidable conditions
+    # came back as an empty list and this test went red.
+    test "the plan screen at an empty root answers with the diagnostics it produced" do
+      assert {:ok, screen, diagnostics} = Screens.resolve_screen(document(), "plan", root(%{}))
+
+      assert keys(screen) == ["plan_heading", "plan_intro", "seats", "plan_back"]
+
+      assert diagnostics == %{
+               missing_variables: [],
+               undecidable_conditions: [
+                 %{key: "plan_business_hint", condition: "responses.seats > 1"},
+                 %{key: "plan_personal", condition: "responses.seats <= 1"},
+                 %{key: "plan_business", condition: "responses.seats > 1"}
+               ]
+             }
+    end
+
+    # Sabotage: made `resolve_screen/3` carry only the undecidable half through
+    # and answer the empty list for the other; the missing variable the confirm
+    # summary wants came back absent and this test went red.
+    test "the confirm screen names the template variable the root does not carry" do
+      root = root(%{"seats" => 1})
+
+      assert {:ok, _screen, diagnostics} = Screens.resolve_screen(document(), "confirm", root)
+
+      assert diagnostics.missing_variables == [
+               %{key: "confirm_summary", variable: "responses.email"}
+             ]
+    end
+
+    # Sabotage: made `resolve_screen/3` answer the diagnostics of the whole
+    # document rather than of the screen it resolved; the account screen's
+    # entry appeared in the plan screen's diagnostics and this test went red.
+    test "a screen's diagnostics are its own, and are the shape resolve/2 carries" do
+      root = root(%{})
+
+      assert {:ok, _screen, diagnostics} = Screens.resolve_screen(document(), "plan", root)
+      {:ok, resolved} = Screens.resolve(document(), root)
+
+      assert Map.keys(diagnostics) == Map.keys(resolved.diagnostics)
+
+      refute %{key: "account_greeting", condition: "responses.first_name != ''"} in diagnostics.undecidable_conditions
+
+      for entry <- diagnostics.undecidable_conditions do
+        assert entry in resolved.diagnostics.undecidable_conditions
+      end
     end
 
     # Sabotage: made `resolve_screen/3` fall back to the first screen when the

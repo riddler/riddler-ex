@@ -108,7 +108,7 @@ defmodule Riddler.Corpus do
 
       screen_key ->
         case Screens.resolve_screen(document, screen_key, input["root"]) do
-          {:ok, screen} -> encode(screen)
+          {:ok, screen, _diagnostics} -> encode(screen)
           {:error, :no_such_screen} -> %{"error" => "no_such_screen"}
         end
     end

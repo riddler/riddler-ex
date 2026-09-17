@@ -12,7 +12,9 @@ defmodule Riddler.Screens do
 
   Both are pure and total over anything an admitted document can hold: they
   consult no store, raise on nothing, and report what they could not decide
-  rather than refusing it.
+  rather than refusing it. Both report through the same pair of diagnostics:
+  `resolve/2` carries them on the resolved document, `resolve_screen/3` answers
+  with them beside the screen.
 
   ## The root
 
@@ -159,6 +161,14 @@ defmodule Riddler.Screens do
   @doc """
   Resolves the one screen a host is about to render.
 
+  `{:ok, screen, diagnostics}`: the screen, and what resolving *that* screen
+  could not decide. The diagnostics are the shape `resolve/2` carries on a
+  resolved document - `missing_variables` and `undecidable_conditions`, both in
+  document order - narrowed to the one screen. A caller is never handed a
+  screen whose resolution reported something without being handed the report,
+  which is what lets a single-screen host tell a node hidden by a condition
+  that held from a node hidden because the condition could not be decided.
+
   Returns `{:error, :no_such_screen}` when the document declares no screen
   under that key: asking for a screen that is not there is the host's mistake,
   not a visitor's, and is worth an error rather than an empty screen.
@@ -167,24 +177,44 @@ defmodule Riddler.Screens do
       ...>   Riddler.Screens.Document.admit(%{
       ...>     "schema_version" => 1,
       ...>     "id" => "edoc_signup",
-      ...>     "screens" => [%{"key" => "account", "title" => "Create your account", "nodes" => []}]
+      ...>     "screens" => [
+      ...>       %{
+      ...>         "key" => "account",
+      ...>         "title" => "Create your account",
+      ...>         "nodes" => [
+      ...>           %{
+      ...>             "type" => "text",
+      ...>             "key" => "account_greeting",
+      ...>             "condition" => "responses.first_name != ''",
+      ...>             "text" => "Nice to meet you."
+      ...>           }
+      ...>         ]
+      ...>       }
+      ...>     ]
       ...>   })
-      iex> {:ok, screen} = Riddler.Screens.resolve_screen(document, "account", %{})
+      iex> {:ok, screen, diagnostics} = Riddler.Screens.resolve_screen(document, "account", %{})
       iex> {screen.key, screen.title, screen.nodes}
       {"account", "Create your account", []}
+      iex> diagnostics
+      %{
+        missing_variables: [],
+        undecidable_conditions: [
+          %{key: "account_greeting", condition: "responses.first_name != ''"}
+        ]
+      }
       iex> Riddler.Screens.resolve_screen(document, "plan", %{})
       {:error, :no_such_screen}
   """
   @spec resolve_screen(Document.t(), term(), map()) ::
-          {:ok, Resolved.screen()} | {:error, :no_such_screen}
+          {:ok, Resolved.screen(), Resolved.diagnostics()} | {:error, :no_such_screen}
   def resolve_screen(%Document{} = document, screen_key, root) when is_map(root) do
     case Enum.find(document.screens, &(&1.key == screen_key)) do
       nil ->
         {:error, :no_such_screen}
 
       screen ->
-        {resolved, _diagnostics} = resolve_one(screen, normalize(root), @empty_diagnostics)
-        {:ok, resolved}
+        {resolved, diagnostics} = resolve_one(screen, normalize(root), @empty_diagnostics)
+        {:ok, resolved, order(diagnostics)}
     end
   end
 
@@ -295,7 +325,7 @@ defmodule Riddler.Screens do
     root = normalize(root)
 
     case resolve_screen(document, screen_key, root) do
-      {:ok, screen} ->
+      {:ok, screen, _diagnostics} ->
         Validation.validate_responses(screen, root["responses"], pressed_button_key)
 
       {:error, :no_such_screen} = no_such_screen ->
