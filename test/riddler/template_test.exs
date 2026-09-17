@@ -394,6 +394,45 @@ defmodule Riddler.TemplateTest do
       assert {:ok, "B", []} = render!(source, @assigns, :strict)
     end
 
+    # Mutation: drop the CaseTag clause of conditional/2 - a `case` branch's
+    # body is a {values, body} tuple, so the general walk stops before it and
+    # the nested condition re-reports.
+    test "an unless in a when body is a condition position too" do
+      source =
+        ~s({% case context.tenant %}{% when "acme" %}) <>
+          "{% unless responses.newsletter %}B{% endunless %}{% endcase %}"
+
+      assert {:ok, "B", []} = render!(source, @assigns, :lenient)
+      assert {:ok, "B", []} = render!(source, @assigns, :strict)
+    end
+
+    # Mutation: the same. A `case` else branch is an {:else, body} tuple, so
+    # it needs the same clause and a case of its own.
+    test "an unless in a case else body is a condition position too" do
+      source =
+        ~s({% case context.tenant %}{% when "other" %}A{% else %}) <>
+          "{% unless responses.newsletter %}B{% endunless %}{% endcase %}"
+
+      assert {:ok, "B", []} = render!(source, @assigns, :lenient)
+      assert {:ok, "B", []} = render!(source, @assigns, :strict)
+    end
+
+    # The distinction the CaseTag clause has to keep: the tag's own argument is
+    # the subject and reads a value, while a condition inside one of its branch
+    # bodies tests one. Both appear here and only the subject is reported.
+    #
+    # Mutation: have the CaseTag clause reduce over the whole tag rather than
+    # over its branch bodies - the subject is then excluded and this goes red
+    # while every other case test stays green.
+    test "a case subject reports even when its body holds a condition" do
+      source =
+        "{% case responses.audience %}{% else %}" <>
+          "{% unless responses.newsletter %}B{% endunless %}{% endcase %}"
+
+      assert {:ok, "B", ["responses.audience"]} = render!(source, @assigns, :lenient)
+      assert {:error, ["responses.audience"]} = render!(source, @assigns, :strict)
+    end
+
     # Mutation: exclude by variable NAME rather than by source position - the
     # output position inside the body is then swallowed too.
     test "a path in a condition is still reported where it is also read" do
