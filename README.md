@@ -199,9 +199,10 @@ condition wins if it is reached, which is how an author writes a default.
 
 ### Are these responses enough to submit?
 
-`Riddler.Screens.validate_responses/3` runs over the *resolved* screen and
-nothing else, resolving it against these same responses first: a question a
-condition hid is a question the visitor never saw and cannot be held to. What
+`Riddler.Screens.validate_screen/3` runs over the *resolved* screen and
+nothing else, resolving it against the same root the host resolved with: a
+question a condition hid is a question the visitor never saw and cannot be
+held to, and a question the host's `context` showed is one that can fail. What
 is checked is what the node declares - `required`, `format`, and `min` and
 `max` on the numeric formats - and every finding names the node, the field and
 a stable code.
@@ -228,18 +229,18 @@ a stable code.
     ...>       }
     ...>     ]
     ...>   })
-    iex> Riddler.Screens.validate_responses(document, "card", %{"billing_email" => "ada@example.com"})
+    iex> Riddler.Screens.validate_screen(document, "card", %{"responses" => %{"billing_email" => "ada@example.com"}})
     :ok
-    iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{"billing_email" => "ada"})
+    iex> {:error, [finding]} = Riddler.Screens.validate_screen(document, "card", %{"responses" => %{"billing_email" => "ada"}})
     iex> {finding.code, finding.node_key, finding.field}
     {"response.format", "billing_email", "format"}
-    iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{})
+    iex> {:error, [finding]} = Riddler.Screens.validate_screen(document, "card", %{})
     iex> finding.code
     "response.required"
-    iex> Riddler.Screens.validate_responses(document, "billing", %{})
+    iex> Riddler.Screens.validate_screen(document, "billing", %{})
     {:error, :no_such_screen}
 
-`Riddler.Screens.validate_responses/4` takes the key of the button the visitor
+`Riddler.Screens.validate_screen/4` takes the key of the button the visitor
 pressed and honours its `validates`. It defaults to true, so a button that says
 nothing validates the screen it submits; a button declaring `false` answers
 `:ok` without running a check, which is what lets a Back button leave a
@@ -265,9 +266,9 @@ half-filled screen.
     ...>       }
     ...>     ]
     ...>   })
-    iex> Riddler.Screens.validate_responses(document, "card", %{}, "card_back")
+    iex> Riddler.Screens.validate_screen(document, "card", %{}, "card_back")
     :ok
-    iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{}, "card_pay")
+    iex> {:error, [finding]} = Riddler.Screens.validate_screen(document, "card", %{}, "card_pay")
     iex> finding.code
     "response.required"
 

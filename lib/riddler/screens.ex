@@ -48,17 +48,17 @@ defmodule Riddler.Screens do
 
   ## What a set of responses has to satisfy
 
-  `validate_responses/3` and `validate_responses/4` answer the last question:
+  `validate_screen/3` and `validate_screen/4` answer the last question:
   whether what the visitor typed is enough to submit the screen. They resolve
   the screen first and check only what came back, so a question a condition hid
   cannot fail, and they consult what the node declares - `required`, `format`,
   and `min` and `max` on the numeric formats. The arity-4 form takes the key of
   the button the visitor pressed and honours its `validates`.
 
-  They build their own root from the responses they are handed, with an empty
-  `context`: a screen whose question is conditional on `context` resolves the
-  same way it would for a visitor the host knows nothing about, which hides
-  that question and so cannot fail it.
+  They take the same root `resolve/2` and `resolve_screen/3` take, and the
+  responses they check are the ones inside it. The screen validated is the
+  screen shown: a question the host's `context` made visible to this visitor
+  is a question this visitor can fail.
 
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
@@ -193,9 +193,15 @@ defmodule Riddler.Screens do
 
   `:ok`, or every reason the screen is not ready to be submitted. Checks run
   over the *resolved* screen and nothing else: the screen is resolved against
-  these same responses first, so a node a condition hid is a node the visitor
-  never saw and cannot be held to. A question the visitor was never asked
-  cannot fail.
+  the root the host resolved with, so a node a condition hid is a node the
+  visitor never saw and cannot be held to. A question the visitor was never
+  asked cannot fail.
+
+  The root is the one `resolve/2` and `resolve_screen/3` take, read for
+  `"context"` and `"responses"` and nothing else, and the responses that are
+  checked are the ones inside it. A screen validated is the screen shown: a
+  question a `context` condition made visible to this visitor is a question
+  this visitor can fail.
 
   What is checked is what the node declares. `required` is unanswered when the
   response is absent or is a string of whitespace. `format` names one of the
@@ -234,26 +240,26 @@ defmodule Riddler.Screens do
       ...>       }
       ...>     ]
       ...>   })
-      iex> Riddler.Screens.validate_responses(document, "card", %{"billing_email" => "ada@example.com"})
+      iex> Riddler.Screens.validate_screen(document, "card", %{"responses" => %{"billing_email" => "ada@example.com"}})
       :ok
-      iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{"billing_email" => "ada"})
+      iex> {:error, [finding]} = Riddler.Screens.validate_screen(document, "card", %{"responses" => %{"billing_email" => "ada"}})
       iex> {finding.code, finding.node_key, finding.field}
       {"response.format", "billing_email", "format"}
-      iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{})
+      iex> {:error, [finding]} = Riddler.Screens.validate_screen(document, "card", %{})
       iex> finding.code
       "response.required"
-      iex> Riddler.Screens.validate_responses(document, "billing", %{})
+      iex> Riddler.Screens.validate_screen(document, "billing", %{})
       {:error, :no_such_screen}
   """
-  @spec validate_responses(Document.t(), term(), map()) ::
+  @spec validate_screen(Document.t(), term(), map()) ::
           :ok | {:error, [Finding.t()]} | {:error, :no_such_screen}
-  def validate_responses(%Document{} = document, screen_key, responses) when is_map(responses),
-    do: validate_responses(document, screen_key, responses, nil)
+  def validate_screen(%Document{} = document, screen_key, root) when is_map(root),
+    do: validate_screen(document, screen_key, root, nil)
 
   @doc """
   Validates the responses the way the button the visitor pressed asks for.
 
-  The same checks as `validate_responses/3`, with one addition: the pressed
+  The same checks as `validate_screen/3`, with one addition: the pressed
   button's `validates`. It defaults to true, so a button that says nothing
   validates the screen it submits; a button that declares `false` answers
   `:ok` without running a check, which is what lets a Back button leave a
@@ -276,19 +282,24 @@ defmodule Riddler.Screens do
       ...>     "id" => "edoc_checkout",
       ...>     "screens" => [screen]
       ...>   })
-      iex> Riddler.Screens.validate_responses(document, "card", %{}, "card_back")
+      iex> Riddler.Screens.validate_screen(document, "card", %{}, "card_back")
       :ok
-      iex> {:error, [finding]} = Riddler.Screens.validate_responses(document, "card", %{}, "card_pay")
+      iex> {:error, [finding]} = Riddler.Screens.validate_screen(document, "card", %{}, "card_pay")
       iex> finding.code
       "response.required"
   """
-  @spec validate_responses(Document.t(), term(), map(), term()) ::
+  @spec validate_screen(Document.t(), term(), map(), term()) ::
           :ok | {:error, [Finding.t()]} | {:error, :no_such_screen}
-  def validate_responses(%Document{} = document, screen_key, responses, pressed_button_key)
-      when is_map(responses) do
-    case resolve_screen(document, screen_key, %{"context" => %{}, "responses" => responses}) do
-      {:ok, screen} -> Validation.validate_responses(screen, responses, pressed_button_key)
-      {:error, :no_such_screen} = no_such_screen -> no_such_screen
+  def validate_screen(%Document{} = document, screen_key, root, pressed_button_key)
+      when is_map(root) do
+    root = normalize(root)
+
+    case resolve_screen(document, screen_key, root) do
+      {:ok, screen} ->
+        Validation.validate_responses(screen, root["responses"], pressed_button_key)
+
+      {:error, :no_such_screen} = no_such_screen ->
+        no_such_screen
     end
   end
 

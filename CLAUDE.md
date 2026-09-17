@@ -26,7 +26,7 @@ The screens kind is three pure functions over decoded data:
 - `Riddler.Screens.Document.admit/1` and `Riddler.Screens.Document.validate/1`
   - what the vocabulary admits, and why a document is refused.
 - `Riddler.Screens.resolve/2` - the document against a context.
-- `Riddler.Screens.validate_responses/3` - what a set of responses has to
+- `Riddler.Screens.validate_screen/3` - what a set of responses has to
   satisfy before a host accepts it.
 
 The content kinds, the template subset and, later, feature flags are modules
