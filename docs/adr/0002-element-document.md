@@ -811,90 +811,142 @@ a field the document omits.
 
 ---
 
-Noted 2026-09-17, campaign RF051, bead rd-m0n. One note by addition, read
-against `main` at `27f9d91`. It names the code for a check this record already
-places on the admit side, and moves nothing this record decides.
+## Amendment, 2026-09-17: an uncompilable pattern is the document's defect
 
-**A `pattern` a runtime cannot compile is a document finding,
-`document.invalid_pattern`, and no longer a response one.** The Decision above
-delegates the formats' own checks to response validation, and `pattern` is a
-parameter of one of them: the note of earlier today that closed the
-`text_question` enumeration calls it "the expression the `pattern` format
-holds a response to". v1 read that delegation to cover the expression as well
-as the check, and compiled the expression when a visitor submitted: a question
-whose `pattern` was `[0-9` validated clean as a document and answered
-`response.format` with the field `pattern` against whatever the visitor typed
+Status: proposed
+
+This record decided which string fields of a document this package compiles,
+and it decided that a validation format's own check belongs to response
+validation. A `pattern` sits between those two rules, and v1 read it as
+entirely the second one's. This amendment changes what the record decides
+about one half of it.
+
+### What the record now decides
+
+**A `pattern` a question declares for the `pattern` format is an expression
+the document is held to being compilable, and one that is not is refused at
+admit, as `document.invalid_pattern` carrying the field `pattern` and the
+node's key.** Refused at admit means an admit-time finding and not a refusal
+to admit: `admit/1` is unchanged, a document carrying such a pattern is still
+a document, and the finding comes from `validate/1`. That is what this record
+means by an admit finding throughout, and it is what the schema says of
+itself - everything a document can be wrong about "is a finding a runtime
+raises against an admitted document, not a reason the value is not a
+document", so that schema-valid means admitted
+(`priv/schemas/element-document.schema.json`, read at `27f9d91`).
+
+**Response validation no longer reports that case.** A defect reported from
+two layers is worse than one reported late, and the response was never what
+was wrong: nothing a visitor could type satisfies an expression that does not
+compile.
+
+**The check follows the format, not the field.** It raises only where the
+question declares `format` as `pattern`. A `pattern` on a question that asks
+for another format, or for none, stays exactly what the note below already
+says it is - a field nothing consults - and carries no finding at either
+layer. This amendment deliberately decides the narrower thing: it moves
+which layer refuses an expression the `pattern` format cannot use, and it
+does not widen which patterns are looked at.
+
+**The shape check is part of it, and is named here rather than left to the
+code.** A `pattern` that is not a string at all - a number, a boolean, or a
+JSON `null`, which reaches an admitted node as `nil` - is not an expression
+either, and it carries the same code and the same field. One code covers both
+because they are one defect from the document's side: the question declares
+something nothing can compile. This is the same kind of shape check the note
+below names one code each for, and it is stated in the same way, so that a
+reader learns it from the record rather than from a clause of the
+implementation.
+
+**One case stays with response validation.** A question that declares
+`format` as `pattern` and declares no `pattern` at all. There is no
+expression for the document check to read, so it raises nothing, and response
+validation answers `response.format` with the field `pattern` - a response
+cannot be in a form the question never states. Whether a format declared
+without the parameter it reads should itself be a document finding is a
+question this amendment does not decide.
+
+### Why an amendment and not a note
+
+Because this reverses the layer the Decision assigns, and because it refuses
+documents this version admitted. Three passages have to be read to see that,
+and the first attempt at this change rested on two of them misread; they are
+set out plainly here so that the next reader does not have to rediscover it.
+
+**The record does not say a `pattern` is a regular expression.** The phrase
+appears nowhere in it. What it says is that "`pattern` is the expression the
+`pattern` format holds a response to", that `pattern`, `min` and `max` "are
+parameters of the validation formats the rule above delegates to", and that
+"each is read only by the format that owns it, so a question declaring one
+without the format that reads it declares something nothing consults" (the
+note below, read at `27f9d91`). Every clause of that places the field on the
+**format's** side and says nothing about this package compiling anything at
+admit. The regular-expression wording is the code's, in
+`Riddler.Screens.Type.TextQuestion`'s own documentation, and a sentence in a
+moduledoc is not this record deciding something.
+
+**The templates rule does not extend to it, and its next sentence says so.**
+That rule reads in full: "`text`, `label` and `placeholder` are templates in
+the ADR-0003 subset. They are compiled by the same code an editor calls, so a
+template this package refuses is refused at admit time, with the node's key on
+the finding. **Any other string field in a document is literal text.**" A
+`pattern` is another string field. Read whole, that passage does not license
+treating a `pattern` as compiled-at-admit - it classes it as literal text as
+far as the document is concerned, which is the opposite. So this amendment
+does not extend an existing rule by analogy. It carves a third kind of string
+out of that sentence: not a template, not literal text, but an expression one
+format compiles, which the document is held to having written compilably. The
+templates rule stands unchanged for the three fields it names, and "any other
+string field is literal text" now has this one stated exception.
+
+**And the Consequences section assigns the other side to response
+validation:** it commissions the half that builds
+`Riddler.Screens.validate_responses/3` "and its arity-4 form, which is where
+`required` and `format` are enforced". The compilability of a `pattern` was
+part of enforcing `format` there, and this amendment takes it out. v1
+implemented exactly what that sentence said: a question whose `pattern` was
+`[0-9` validated clean as a document and answered `response.format` with the
+field `pattern` against whatever the visitor typed
 (`lib/riddler/screens/validation.ex`, the private `pattern/2` and
-`pattern_finding/1`, read at `27f9d91`). That told the wrong person at the
-wrong time about the wrong thing. Nothing a visitor could type would satisfy
-an expression that does not compile, so the response was never what was wrong;
-the document was, and it was wrong before any visitor existed.
+`pattern_finding/1`, read at `27f9d91`).
 
-This record already decides that side of the line for the one other field it
-names that this package compiles: "`text`, `label` and `placeholder` are
-templates in the ADR-0003 subset ... so a template this package refuses is
-refused at admit time, with the node's key on the finding". A `pattern` is the
-same kind of thing - an expression the author wrote and this package compiles
-- and it is now refused the same way, with the node's key on the finding. The
-`format` name beside it was already on that side
-(`document.unknown_format`), and for the reason this note extends: an author
-who misspells a format, or writes an expression that will not compile, should
-be told while they are authoring.
+**The test the record sets for itself is met.** The note below, deciding a
+narrower question, states it: requiring a field this record names "would be a
+new refusal of documents 0.1.0 admits", and naming a code for a question this
+record leaves open "would change what this record decides, and that is an
+amendment's work, not a note's". A document whose pattern does not compile
+validated clean in 0.1.0 and now carries a finding. That is a new refusal of
+a document this version admitted, and it changes which layer the record
+assigns a check to. It is an amendment's work on both counts, and it lands at
+proposed.
 
-**At admit means an admit-time finding, not a refusal to admit.** A document
-carrying an uncompilable pattern is still a document: `admit/1` is unchanged
-and still answers the struct for it, and the finding comes from `validate/1`.
-That is what the Decision above means throughout by an admit finding, and what
-the schema says of itself in its own description - everything a document can
-be wrong about "is a finding a runtime raises against an admitted document,
-not a reason the value is not a document", so that schema-valid means admitted
-(`priv/schemas/element-document.schema.json`, read at `27f9d91`). Reading it
-the other way would have made a mistyped expression stop the document being a
-document, which is a far larger change than this one and one this record does
-not license.
+### What is unchanged
 
-**Why a note and not an amendment.** Naming a code for a category this record
-leaves open would change what it decides, and the note above says so of the
-unknown-node-field case. This is not that: the record states that `pattern`
-**is** a regular expression, and states that an expression this package
-compiles and cannot is refused at admit. What was missing was a check for a
-shape already stated and a code to report it by, which is the same ground the
-note above stands on for the envelope and boolean shapes. The check is
-`text_question`'s, beside the `format` and `required` checks and for the same
-reason - the type that names the field owns the check on it - and it is added
-by this bead's own commit, so it is not citable at the SHA this note was read
-against: the private `pattern_findings/1` and `usable?/1` in
-`lib/riddler/screens/type/text_question.ex`. One thing about that check is
-worth recording because it is a coupling and not a detail: it does not compile
-the expression itself. It asks the format's own compiler, which the same
-commit stops keeping private for the purpose
-(`compile_pattern/1` in `lib/riddler/screens/validation.ex`, a module that is
-`@moduledoc false` and no part of this package's surface, as its own
-moduledoc says). Two compilers would drift, and a document check holding an
-expression to anchors the format did not apply would admit a pattern the
-format cannot use, or refuse one it can - which is the defect this bead fixes,
-reintroduced from the other end.
+A compilable `pattern` is enforced at response validation exactly as before,
+against the whole response, anchored at both ends. `admit/1` refuses nothing
+new. No other format's parameters are read at admit: `min` and `max` are
+untouched, and a question declaring them without the formats that read them
+still declares something nothing consults. The fixture this record is held to
+still admits and validates with zero findings. Nothing about
+`resolve/2`, the resolved document, or the diagnostics it carries is touched.
 
-**Response validation stops reporting it, and that is half the change.** A
-defect reported from two layers is worse than one reported late, so the same
-commit takes the case out of response validation: a declared pattern that will
-not compile answers nothing there now, exactly as an unknown format name
-already answered nothing there. One case stays behind: a question naming the
-`pattern` format and declaring no pattern at all. There is no expression for
-the document check to read, so it raises nothing, and response validation
-still answers `response.format` with the field `pattern` - a response cannot
-be in a form the question never states. Whether a format declared without the
-parameter it reads should itself be a document finding is a question this
-record does not decide, and this note does not decide it either.
+### Consequences
 
-**One conformance case moves side, and the corpus gains none.** The response
-validation corpus carried a case for the old behaviour - a checkout document
-whose `card_last_four` pattern was `[0-9`, stated as `ok: false` with a
-`response.format` finding. Under this bead that capability answers `ok: true`
-for it, so the case now states that, and its name says why: a pattern no
-runtime can use is a finding against the document, so a response is not held
-to it as well. That is the one corpus edit here; the case count of every file
-is unchanged, no case is added, and a second runtime reading the corpus is
-held to the same boundary this note draws. A case stating
+The check is `text_question`'s, beside the `format` and `required` checks and
+for the reason the note below gives for that division - the type that names
+the field owns the check on it. It compiles through the same function the
+format compiles through rather than carrying a second copy of the anchors,
+because a document check holding an expression to anchors the format did not
+apply would admit a pattern the format cannot use, or refuse one it can, which
+is this defect reintroduced from the other end. That function is in
+`Riddler.Screens.Validation`, which is `@moduledoc false` and no part of this
+package's surface, as its own documentation says. Both are added by this
+bead's own commit and so are citable at no earlier SHA.
+
+**One conformance case changes side, and the corpus gains none.** The response
+validation corpus stated `ok: false` with a `response.format` finding for a
+checkout document whose `card_last_four` pattern was `[0-9`. That capability
+now answers `ok: true` for it, so the case states that and its name says why.
+No case is added and no case count moves. A case stating
 `document.invalid_pattern` against the admit capability would pin the other
-half of it, and is left for the corpus pass.
+half of this boundary and is left for the corpus pass.
