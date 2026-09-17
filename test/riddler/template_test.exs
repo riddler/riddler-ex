@@ -335,4 +335,137 @@ defmodule Riddler.TemplateTest do
       assert {:error, ["responses.address.city"]} = render!("{{ responses.address.city }}")
     end
   end
+
+  describe "render/3 condition positions" do
+    # A condition asks a question rather than reading a value, so a path the
+    # root does not carry is false there and is missing in neither mode. The
+    # engine gives that for `if` for free and not for `unless`: it keeps a
+    # condition's recorded errors when the branch it renders is the branch
+    # that evaluation threw, so an `unless` whose condition is false carried
+    # the error out with its body. These tests pin the rule for both tags.
+
+    # Mutation: delete the condition_positions/1 collector, or stop consulting
+    # it in missing/2 - the unless condition's path is then reported in
+    # lenient mode and returned as an error in strict.
+    test "a variable used only as an unless condition is missing in neither mode" do
+      source = "{% unless responses.newsletter %}Add a newsletter?{% endunless %}"
+
+      assert {:ok, "Add a newsletter?", []} = render!(source, @assigns, :lenient)
+      assert {:ok, "Add a newsletter?", []} = render!(source, @assigns, :strict)
+    end
+
+    # Mutation: stop consulting condition_positions/1 in missing/2 - the
+    # condition's path re-reports even though the branch that holds rendered.
+    test "an unless with an else branch is clean in both modes" do
+      source = "{% unless responses.newsletter %}A{% else %}B{% endunless %}"
+
+      assert {:ok, "A", []} = render!(source, @assigns, :lenient)
+      assert {:ok, "A", []} = render!(source, @assigns, :strict)
+    end
+
+    # Mutation: stop consulting condition_positions/1 in missing/2 - the
+    # comparison's left argument re-reports; it sits at its own position
+    # inside a BinaryCondition rather than at the condition's.
+    test "a comparison in an unless condition is one position" do
+      source = ~s({% unless responses.newsletter == "yes" %}A{% endunless %})
+
+      assert {:ok, "A", []} = render!(source, @assigns, :lenient)
+      assert {:ok, "A", []} = render!(source, @assigns, :strict)
+    end
+
+    # Mutation: stop following child_condition - the second operand of the
+    # chain re-reports.
+    test "an and-or chain in an unless condition is one position" do
+      source = "{% unless responses.newsletter and responses.nickname %}A{% endunless %}"
+
+      assert {:ok, "A", []} = render!(source, @assigns, :lenient)
+      assert {:ok, "A", []} = render!(source, @assigns, :strict)
+    end
+
+    # Mutation: drop the reduce over the elsif bodies in conditional/2 - the
+    # general walk stops at the {condition, body} tuple, so a tag nested in an
+    # elsif body is never reached and its own condition re-reports.
+    test "an unless nested in an elsif body is a condition position too" do
+      source =
+        "{% if responses.nickname %}A{% elsif responses.plan %}" <>
+          "{% unless responses.newsletter %}B{% endunless %}{% endif %}"
+
+      assert {:ok, "B", []} = render!(source, @assigns, :lenient)
+      assert {:ok, "B", []} = render!(source, @assigns, :strict)
+    end
+
+    # Mutation: exclude by variable NAME rather than by source position - the
+    # output position inside the body is then swallowed too.
+    test "a path in a condition is still reported where it is also read" do
+      source = "{% unless responses.newsletter %}{{ responses.newsletter }}{% endunless %}"
+
+      assert {:ok, "", ["responses.newsletter"]} = render!(source, @assigns, :lenient)
+      assert {:error, ["responses.newsletter"]} = render!(source, @assigns, :strict)
+    end
+
+    # Mutation: any change that makes the exclusion reach the `if` tag's body
+    # or drop its condition handling - the if half is what already worked and
+    # has to keep working.
+    test "the if behaviour is unchanged" do
+      assert {:ok, "B", []} = render!("{% if responses.newsletter %}A{% else %}B{% endif %}")
+
+      assert {:ok, "X", []} =
+               render!(
+                 "{% if responses.nickname %}Y{% elsif responses.newsletter %}Z{% else %}X{% endif %}"
+               )
+
+      assert {:ok, "", []} = render!(~s({% if responses.newsletter == "yes" %}A{% endif %}))
+    end
+
+    # The positions the rule does not reach. Each of these reads a value
+    # rather than testing one, and a missing variable in them stays reported
+    # in strict mode exactly as before. An exclusion that leaked from the
+    # condition walk into the surrounding tree turns every one of them green
+    # where it should be red, which is the failure this block guards.
+
+    # Mutation: hand the whole IfTag to the condition collector instead of its
+    # condition and elsif conditions - an output inside the body is excluded.
+    test "an output position still reports the missing variable" do
+      assert {:ok, "", ["responses.newsletter"]} =
+               render!("{{ responses.newsletter }}", @assigns, :lenient)
+
+      assert {:error, ["responses.newsletter"]} = render!("{{ responses.newsletter }}")
+    end
+
+    # Mutation: collect variables from every node rather than from condition
+    # sub-trees - the for operand is excluded.
+    test "a for operand still reports the missing variable" do
+      source = "{% for guest in responses.guests %}{{ guest }}{% endfor %}"
+
+      assert {:ok, "", ["responses.guests"]} = render!(source, @assigns, :lenient)
+      assert {:error, ["responses.guests"]} = render!(source)
+    end
+
+    # Mutation: treat a CaseTag's subject as a condition position - the case
+    # subject is excluded. The record names it as a read position.
+    test "a case subject still reports the missing variable" do
+      source = ~s({% case responses.newsletter %}{% when "yes" %}A{% endcase %})
+
+      assert {:ok, "", ["responses.newsletter"]} = render!(source, @assigns, :lenient)
+      assert {:error, ["responses.newsletter"]} = render!(source)
+    end
+
+    # Mutation: treat an AssignTag's right-hand side as a condition position -
+    # the assign is excluded. The record names it as a read position.
+    test "an assign right-hand side still reports the missing variable" do
+      source = "{% assign plan = responses.newsletter %}{{ plan }}"
+
+      assert {:ok, "", ["responses.newsletter"]} = render!(source, @assigns, :lenient)
+      assert {:error, ["responses.newsletter"]} = render!(source)
+    end
+
+    # A `when` operand is a read position today and stays one; whether the
+    # rule should reach it is a separate open question and not settled here.
+    test "a when operand still reports the missing variable" do
+      source = ~s({% case "yes" %}{% when responses.newsletter %}A{% endcase %})
+
+      assert {:ok, "", ["responses.newsletter"]} = render!(source, @assigns, :lenient)
+      assert {:error, ["responses.newsletter"]} = render!(source)
+    end
+  end
 end

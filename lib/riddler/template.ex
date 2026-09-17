@@ -53,6 +53,21 @@ defmodule Riddler.Template do
   how an author says a field is optional, and lenient mode's empty string is
   the fallback for what an author did not anticipate.
 
+  ## A condition tests a value rather than reading one
+
+  Neither mode reports a variable that appears only in the condition of an
+  `if`, an `elsif` or an `unless`. A condition asks a question, and a path the
+  roots do not carry makes that question false, so the branch that holds
+  renders and nothing is missing. The rule is positional: the whole condition
+  is one position, whatever expression stands in it - a bare path, a
+  comparison, a chain joined by `and` or `or` - and the same path read in an
+  output tag, iterated by `for`, taken as a `case` subject or assigned is
+  reported as it would be anywhere else.
+
+      iex> {:ok, compiled} = Riddler.Template.compile("{% unless responses.newsletter %}Sign up?{% endunless %}")
+      iex> Riddler.Template.render(compiled, %{}, :strict)
+      {:ok, "Sign up?", []}
+
   ## Assigns are string-keyed
 
   The map handed to `render/3` is the document's roots - `responses` and
@@ -156,7 +171,9 @@ defmodule Riddler.Template do
   Lenient returns `{:ok, text, missing}`, where a missing variable rendered as
   the empty string and its path is in the list. Strict returns
   `{:ok, text, []}` when nothing was missing and `{:error, missing}` when
-  something was. A variable guarded by `default` is missing in neither mode.
+  something was. A variable guarded by `default`, and a variable appearing
+  only in the condition of an `if`, an `elsif` or an `unless`, is missing in
+  neither mode.
 
       iex> {:ok, compiled} = Riddler.Template.compile("Hi {{ responses.first_name }}!")
       iex> Riddler.Template.render(compiled, %{}, :lenient)
@@ -173,7 +190,7 @@ defmodule Riddler.Template do
         {:ok, IO.iodata_to_binary(result), []}
 
       {:error, errors, partial} ->
-        case missing(errors, compiled.defaulted) do
+        case missing(errors, excluded_positions(compiled)) do
           [] -> {:ok, IO.iodata_to_binary(partial), []}
           missing when mode == :lenient -> {:ok, IO.iodata_to_binary(partial), missing}
           missing -> {:error, missing}
@@ -234,6 +251,62 @@ defmodule Riddler.Template do
   end
 
   defp guarded(_node, acc), do: acc
+
+  # -- a condition asks a question rather than reading a value --------------
+
+  # The condition of an `if`, an `elsif` or an `unless` is one position, and a
+  # path the roots do not carry is `false` in it rather than missing. The
+  # engine gives that for `if` and not for `unless`: an `if` and an `unless`
+  # condition go through the same evaluation, but the renderable
+  # implementation returns the outer context when no branch throws, so an `if`
+  # drops its condition's recorded error, and an `unless` whose condition is
+  # false renders the branch that evaluation threw and carries the error out
+  # with it. Collecting the positions inside every condition and subtracting
+  # them in `missing/2` makes the two tags mean the same thing, and because
+  # only the sub-trees under `condition` and under each `elsif` are walked,
+  # the exclusion cannot reach an output, a `for` operand, a `case` subject or
+  # an `assign` right-hand side, all of which read a value and stay reported.
+  #
+  # This is collected at render rather than at compile, and only on the branch
+  # where the engine reported something, so that the compiled struct a host
+  # caches and hands back keeps the shape it already has.
+  defp condition_positions(tree), do: reduce_nodes(tree, MapSet.new(), &conditional/2)
+
+  defp conditional(%Solid.Tags.IfTag{condition: condition, elsifs: elsifs}, acc) do
+    conditions = [condition | Enum.map(elsifs, &elem(&1, 0))]
+    bodies = Enum.map(elsifs, &elem(&1, 1))
+    collected = Enum.reduce(conditions, acc, &tested/2)
+
+    # The general walk stops at the `{condition, body}` tuple, so an `elsif`
+    # body's own nested tags are reached from here instead.
+    reduce_nodes(bodies, collected, fn node, positions -> conditional(node, positions) end)
+  end
+
+  defp conditional(_node, acc), do: acc
+
+  # A condition's own traversal, because the general one above stops at a
+  # tuple and `and` / `or` chains hang off `child_condition` as `{:and, next}`.
+  # An `elsif` is a `{condition, body}` tuple for the same reason, and only its
+  # condition half is passed in here - its body is an ordinary read position
+  # and the general walk visits it.
+  defp tested(%Solid.Variable{loc: %Solid.Parser.Loc{} = loc} = variable, acc) do
+    tested(variable.accesses, MapSet.put(acc, {loc.line, loc.column}))
+  end
+
+  defp tested(term, acc) when is_struct(term) do
+    term |> Map.from_struct() |> Map.values() |> Enum.reduce(acc, &tested/2)
+  end
+
+  defp tested(term, acc) when is_tuple(term) do
+    term |> Tuple.to_list() |> Enum.reduce(acc, &tested/2)
+  end
+
+  defp tested(term, acc) when is_list(term), do: Enum.reduce(term, acc, &tested/2)
+
+  defp tested(term, acc) when is_map(term),
+    do: term |> Map.values() |> Enum.reduce(acc, &tested/2)
+
+  defp tested(_other, acc), do: acc
 
   # -- the one construct the parse tree erases ------------------------------
 
@@ -308,11 +381,15 @@ defmodule Riddler.Template do
 
   # -- render support -------------------------------------------------------
 
-  defp missing(errors, defaulted) do
+  defp excluded_positions(%Compiled{defaulted: defaulted, parsed: parsed}) do
+    MapSet.union(defaulted, condition_positions(parsed.parsed_template))
+  end
+
+  defp missing(errors, excluded) do
     errors
     |> Enum.flat_map(fn
       %Solid.UndefinedVariableError{original_name: name, loc: loc} ->
-        if MapSet.member?(defaulted, {loc.line, loc.column}), do: [], else: [name]
+        if MapSet.member?(excluded, {loc.line, loc.column}), do: [], else: [name]
 
       %Solid.UndefinedFilterError{filter: filter} ->
         [filter]
