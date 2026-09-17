@@ -427,3 +427,156 @@ which this record describes as dead weight without saying it is refused
 resolution produced, which this record does not decide either way (rd-439); and
 `metadata`'s `name`, `description` and `domain` are named here as what the block
 carries without a requiredness rule, and none is required in the code (rd-xvv).
+
+## Amendment, 2026-09-17: the screen validated is the screen shown
+
+Status: proposed
+
+This record decided what a screen document is, what a resolved screen is, and
+that a set of responses is checked against the resolved screen and nothing
+else. That last rule is right. What v1 shipped got it wrong in one place, and
+this amendment changes what the record decides there.
+
+### What the record now decides
+
+**Validation resolves the screen against the same root the host resolved
+with.** A check on a visitor's responses takes the `context` and the
+`responses` the host had in hand when it showed the screen, resolves that
+screen against them, and checks what comes back. The empty `context` is not
+the contract. A screen resolved for validation and the screen the visitor was
+actually shown are the same screen, and a rule stated about one holds of the
+other.
+
+The principle this record already carries - that a node a condition hid is a
+node the visitor never saw and cannot be held to - is unchanged and is the
+reason for the amendment rather than a casualty of it. Hiding is decided by
+the host's root, because that is the root the visitor was shown through.
+
+### What v1 did, and why it was wrong
+
+`Riddler.Screens.validate_responses/3` and `/4` built their own root out of
+the responses they were handed and an empty `context`
+(`lib/riddler/screens.ex`, in the arity-4 body, read at
+`e7d76bf07f43e1ff0473d511857e42ff2b770b3e`). The module documentation stated
+that as the intent: a screen whose question is conditional on `context` was
+said to resolve the way it would for a visitor the host knows nothing about.
+
+The consequence is a false pass, and it is reproducible. Take a screen with
+two required text questions: `full_name`, unconditional, and `vat_id`, carrying
+the condition `context.is_business == true`. A host resolves that screen under
+the root `%{"context" => %{"is_business" => true}, "responses" => %{}}`. Both
+questions come back, with clean diagnostics, and the visitor is shown both. The
+visitor fills in `full_name`, leaves `vat_id` blank, and submits. Validation
+answers `:ok`.
+
+It answers `:ok` because validation did not resolve the screen the visitor saw.
+It resolved a different screen, against a root whose `context` is empty, on
+which `context.is_business == true` cannot be decided; an undecidable condition
+resolves to hidden; and a hidden question cannot fail. The same blank on
+`full_name`, which no condition guards, answers
+`{:error, [%Riddler.Finding{code: "response.required"}]}` - so the check works,
+and only the conditional question slips through it.
+
+The signal that something was wrong was already being produced and thrown away.
+Resolving against that internally built root yields
+`undecidable_conditions: [%{key: "vat_id", condition: "context.is_business == true"}]`.
+`resolve_screen/3` discards the diagnostics it computes into an
+underscore-bound tuple element, so validation never sees them. The node was
+hidden from the validator, not from the visitor, and nothing on the return
+distinguished those two cases.
+
+This was not a gap in the rules this record states. It was a defect, in that
+the code did not resolve against the root the record's own reasoning assumes,
+and a defect in this record too, in that it did not say which root validation
+resolves against and so left the empty one defensible. This amendment says it.
+
+### The surface
+
+The function is named `validate_screen`, and it takes the same root that
+`resolve/2` and `resolve_screen/3` take:
+
+    validate_screen(document, screen_key, root, pressed_button_key \\ nil)
+
+`root` carries `context` and `responses`, exactly as it does everywhere else in
+this package. The responses being checked are the ones inside that root; there
+is no second place to put them.
+
+**`validate_responses/3` and `/4` are removed, not deprecated.** Two reasons,
+and the first is the weaker one. A new positional argument cannot be added to
+the existing name: `validate_responses/4` already takes a bare guarded `map()`
+in the third position, so a root map added as a fourth positional would be
+indistinguishable from the pressed button key at the call site, and a root map
+added as a third would be indistinguishable from the responses map. The arity
+is taken. That forces a new name; it does not by itself force the old name out.
+
+What forces the old name out is that a lenient twin of a sound function invites
+exactly the mistake this amendment fixes. `validate_responses/3` is the shorter
+call, the one already in the documentation, and the one a host reaches for when
+it has responses and has not thought about the root. Keeping it alive under a
+deprecation notice keeps the false pass available to every caller who does not
+read the notice, and the failure mode is silent: a required question is not
+asked about, and the submission is accepted. A deprecation warning is the wrong
+instrument for a check that wrongly answers `:ok`. This package is at 0.1.0 and
+a breaking change before 1.0 is the cheap moment to make it, so the removal is
+the whole change and there is no transitional surface.
+
+This is a breaking change to a public function of 0.1.0. It ships in the next
+release cut after it lands.
+
+### An undecidable condition is a finding
+
+When the screen resolved for validation carries a condition that cannot be
+decided against the root it was given, validation answers a finding rather than
+`:ok`. It does not answer `:ok` by treating the node as hidden, and it does not
+answer `:ok` by treating the node as shown.
+
+This follows from the amendment above rather than standing beside it. Once
+validation resolves against the host's real root, an undecidable condition
+means the root the host handed in does not carry what the document asks about -
+which is a defect in the call, not a property of the visitor. Answering `:ok`
+would return the package to the behaviour this amendment removes, in a narrower
+case. The diagnostic already exists at the point it is currently discarded; the
+change is to surface it rather than to compute it.
+
+The code half is a separate bead (`rd-4a2` for the surface, and the finding
+itself behind it); this record decides that the behaviour is a finding and
+leaves the finding's code to the bead that raises it. This record does not
+introduce a finding-code registry: `Riddler.Finding` carries a `code` string and
+no enumeration, and nothing here changes that.
+
+### A single-screen call returns its diagnostics
+
+This record's foot note carried an open question: whether `resolve_screen/3`
+returns the screen's diagnostics beside the screen, which the record did not
+decide either way (`rd-439`). The question can no longer be deferred, because
+the validation surface this amendment decides is itself a single-screen call
+that now has diagnostics it must either return or drop, and dropping them is
+what produced the defect above.
+
+**It returns them.** A single-screen call answers with the screen and the
+diagnostics its resolution produced, so a caller is never handed a screen whose
+resolution reported something without being handed the report. `resolve_screen/3`
+answers `{:ok, screen, diagnostics}`, with `diagnostics` the same shape
+`resolve/2` already carries on its resolved document: `missing_variables` and
+`undecidable_conditions`.
+
+**This is a second breaking change in the same release, and it is recorded here
+so that it is not discovered as a surprise.** `resolve_screen/3` is public, is
+documented with executable examples that match on `{:ok, screen}`, is cited by
+ADR-0001 as the call that resolves one named screen, and is called inside this
+package by the corpus runner. Every one of those changes with the return. The
+alternative - leaving `resolve_screen/3` alone and giving only the new
+validation call its diagnostics - was rejected because it leaves two
+single-screen calls in one module disagreeing about whether a caller is told
+what resolution found, and that disagreement is the shape of the defect this
+amendment exists to close.
+
+### What is unchanged
+
+The document, the node vocabulary, the resolved shape, the `writes` and
+`outcome` fields, the lenient template rendering, the `missing_variables` and
+`undecidable_conditions` diagnostics and what goes in them, and the rule that
+checks run over the resolved screen and nothing else. `resolve/2` keeps its
+arity and its return. Earlier prose in this record and in ADR-0001 that names
+`validate_responses` describes what v1 did and stays as the historical record
+of it.
