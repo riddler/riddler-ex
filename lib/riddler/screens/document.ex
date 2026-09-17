@@ -92,10 +92,12 @@ defmodule Riddler.Screens.Document do
     * `document.invalid_required` - a question's `required` is there and is
       not a boolean.
     * `document.unknown_format` - a format name this package does not know.
-    * `document.invalid_pattern` - a question declares a `pattern` that is not
-      a regular expression this package can compile. Nothing a visitor could
-      type would satisfy it, so it is the document that is wrong and not a
-      response.
+    * `document.invalid_pattern` - a question that asks for the `pattern`
+      format declares a `pattern` that format cannot compile. Nothing a
+      visitor could type would satisfy it, so it is the document that is
+      wrong and not a response. Only where the question declares that format:
+      a `pattern` on a question asking for another format, or for none, is a
+      field nothing consults and raises nothing.
     * `document.empty_variant` - a variant with no candidates.
     * `document.unreachable_variant_candidate` - an unconditional candidate
       that is not last, which buries every candidate after it.
