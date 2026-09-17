@@ -41,7 +41,7 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
                "corpus/screens/validate_responses.json",
                "corpus/templates/render.json",
                "schemas/corpus-case.schema.json",
-               "schemas/element-document.schema.json"
+               "schemas/screen-document.schema.json"
              ]
 
       for relative <- written do
@@ -178,7 +178,7 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
 
       Task.run([])
 
-      assert File.exists?(Path.join(target, "schemas/element-document.schema.json"))
+      assert File.exists?(Path.join(target, "schemas/screen-document.schema.json"))
     end
   end
 
