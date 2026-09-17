@@ -173,6 +173,58 @@ defmodule Riddler.TemplateTest do
                render!("{% raw %}{% liquid echo x %}{% endraw %}")
     end
 
+    # Mutation: drop the string-literal masking in liquid_refusals/2 - the
+    # opener inside the output tag's literal is read as a construct again and
+    # the compile fails instead of rendering the characters.
+    test "a liquid opener inside an output tag's string literal is text" do
+      assert {:ok, "{% liquid %}", []} = render!(~S({{ "{% liquid %}" }}))
+    end
+
+    # Mutation: drop the string-literal masking in liquid_refusals/2 - the
+    # filter argument's literal is read as a construct and the compile fails.
+    test "a liquid opener inside a filter argument's literal is text" do
+      assert {:ok, "Ada{% liquid %}", []} =
+               render!(~S({{ responses.first_name | append: "{% liquid %}" }}))
+    end
+
+    # Mutation: make literal_locs/2 skip tuples (the clause that unwraps a
+    # `when` branch's {values, body} pair) - the `when` literal is not masked
+    # and the template is refused again.
+    test "a liquid opener inside a when branch's literal is text" do
+      assert {:ok, "no", []} =
+               render!(
+                 ~S({% case responses.plan %}{% when "{% liquid %}" %}yes{% else %}no{% endcase %})
+               )
+    end
+
+    # The exemption is the parse tree's, not the source's: these three pin
+    # that widening it did not let a real opener through.
+    #
+    # Mutation: mask every quoted span in the source rather than the spans the
+    # tree reports as literals - the quotes in this prose then swallow the
+    # opener and the refusal disappears.
+    test "quote characters in ordinary text do not exempt a liquid opener" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(~S(He said "hello {% liquid %} world" and left))
+    end
+
+    # Mutation: mask from a literal's opening quote to the end of the source
+    # instead of to its closing quote - the real opener after the literal is
+    # masked too and the refusal disappears.
+    test "a real liquid block beside a literal holding the opener is refused" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(~S({{ "{% liquid %}" }}{% liquid assign who = 1 %}))
+    end
+
+    # Mutation: mask from a literal's opening quote to the end of the source -
+    # the apostrophe is inside the span either way, so what this case adds is
+    # that a stray quote character inside a literal does not move where the
+    # span ends; the real opener past the literal stays refused.
+    test "an apostrophe inside a double-quoted literal masks nothing beyond it" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(~S({{ "it's fine" }}{% liquid assign who = 1 %}))
+    end
+
     # Mutation: add "echo" to @allowed_tags - the tag compiles.
     test "echo is refused" do
       assert [%Riddler.Finding{field: "echo"}] = refusal!("{% echo responses.first_name %}")

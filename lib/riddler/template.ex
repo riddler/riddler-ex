@@ -18,6 +18,14 @@ defmodule Riddler.Template do
   `escape`, `escape_once`, `newline_to_br` and `strip_html` - are refused,
   because this package does not emit markup and does not escape.
 
+  What is refused is a construct, never the characters of one. A template may
+  print the text of a tag this subset forbids - a screen telling an author
+  which tags it will not take - and that template renders those characters.
+
+      iex> {:ok, compiled} = Riddler.Template.compile(~S({{ "{% liquid %}" }} is refused))
+      iex> Riddler.Template.render(compiled, %{}, :strict)
+      {:ok, "{% liquid %} is refused", []}
+
   ## Refusal happens at compile, never at render
 
   `compile/1` takes template source and no context at all, so an editor can
@@ -116,8 +124,11 @@ defmodule Riddler.Template do
   # its lexer into a mode where the tags inside it parse as ordinary tag
   # nodes, and nothing in the resulting tree records that they arrived that
   # way - so the walk below cannot see it and the source is where it has to be
-  # found. Verbatim blocks are masked first, because a liquid opener written
-  # inside `{% raw %}` or `{% comment %}` is text, not a construct.
+  # found. Reading the source is what makes masking necessary: the characters
+  # of a liquid opener can appear in a template that holds no liquid tag at
+  # all. Verbatim blocks are masked because a liquid opener written inside
+  # `{% raw %}` or `{% comment %}` is text, and string literals are masked
+  # because an opener a template merely prints is text too.
   @liquid_opener ~r/\{%-?\s*liquid\b/
   @verbatim_block ~r/\{%-?\s*(raw|comment)\s*-?%\}.*?\{%-?\s*end\1\s*-?%\}/s
 
@@ -152,7 +163,7 @@ defmodule Riddler.Template do
   def compile(source) when is_binary(source) do
     case Solid.parse(source) do
       {:ok, %Solid.Template{parsed_template: tree} = parsed} ->
-        case refusals(tree) ++ liquid_refusals(source) do
+        case refusals(tree) ++ liquid_refusals(source, tree) do
           [] ->
             {:ok, %Compiled{source: source, parsed: parsed, defaulted: defaulted_positions(tree)}}
 
@@ -326,8 +337,11 @@ defmodule Riddler.Template do
 
   # -- the one construct the parse tree erases ------------------------------
 
-  defp liquid_refusals(source) do
-    masked = Regex.replace(@verbatim_block, source, fn match, _block -> mask(match) end)
+  defp liquid_refusals(source, tree) do
+    masked =
+      @verbatim_block
+      |> Regex.replace(source, fn match, _block -> mask(match) end)
+      |> mask_string_literals(tree)
 
     @liquid_opener
     |> Regex.scan(masked, return: :index)
@@ -337,7 +351,82 @@ defmodule Riddler.Template do
     end)
   end
 
+  # The exemption is the parse tree's, not the source's. A template that
+  # prints the characters of a liquid opener - a screen explaining to an
+  # author what the subset refuses - holds a string literal there and no tag,
+  # and the tree is what says so: the parser reports a `Solid.Literal` for a
+  # quoted argument and ordinary `Solid.Text` for prose that merely contains
+  # quotes. Masking the spans the tree calls literals therefore cannot hide a
+  # real opener, where masking every quoted span in the source could.
+  #
+  # Masking preserves length and newlines, so the offsets stay the ones the
+  # locs describe and the reported position is still the author's.
+  defp mask_string_literals(source, tree) do
+    tree
+    |> literal_locs([])
+    |> Enum.map(&literal_span(source, &1))
+    |> Enum.reject(&is_nil/1)
+    |> Enum.reduce(source, &mask_span(&2, &1))
+  end
+
+  # A literal's own traversal, because the general one stops at a tuple and
+  # two of the admitted tags hold a literal behind one: a `case` branch is a
+  # `{values, body}` pair and an `elsif` a `{condition, body}` pair. Widening
+  # the general reducer is a separate question about what that walk refuses;
+  # here the only effect is which literals are exempt.
+  defp literal_locs(%Solid.Literal{loc: %Solid.Parser.Loc{} = loc}, acc),
+    do: [{loc.line, loc.column} | acc]
+
+  defp literal_locs(term, acc) when is_struct(term),
+    do: term |> Map.from_struct() |> Map.values() |> Enum.reduce(acc, &literal_locs/2)
+
+  defp literal_locs(term, acc) when is_tuple(term),
+    do: term |> Tuple.to_list() |> Enum.reduce(acc, &literal_locs/2)
+
+  defp literal_locs(term, acc) when is_list(term), do: Enum.reduce(term, acc, &literal_locs/2)
+
+  defp literal_locs(term, acc) when is_map(term),
+    do: term |> Map.values() |> Enum.reduce(acc, &literal_locs/2)
+
+  defp literal_locs(_other, acc), do: acc
+
+  # A literal's source span runs from its opening quote to the next occurrence
+  # of that same character: `solid` at `1.3.4` has no escape inside a string
+  # literal - `"a\"b"` is a parse error, not an escaped quote - so the next
+  # one is the closing one. A loc whose character is not a quote belongs to a
+  # number, a boolean or a span a verbatim block has already masked, and is
+  # skipped.
+  defp literal_span(source, {line, column}) do
+    with offset when is_integer(offset) <- offset(source, line, column),
+         true <- offset < byte_size(source),
+         char when char in ["\"", "'"] <- binary_part(source, offset, 1),
+         from = offset + 1,
+         {at, 1} <-
+           :binary.match(source, char, scope: {from, byte_size(source) - from}) do
+      {offset, at - offset + 1}
+    else
+      _no_span -> nil
+    end
+  end
+
+  defp mask_span(source, {offset, length}) do
+    binary_part(source, 0, offset) <>
+      mask(binary_part(source, offset, length)) <>
+      binary_part(source, offset + length, byte_size(source) - offset - length)
+  end
+
   defp mask(text), do: String.replace(text, ~r/[^\n]/, " ")
+
+  # The inverse of `position/2`: a loc's line and column are one-based and
+  # count bytes, as the scan's offsets do.
+  defp offset(_source, 1, column), do: column - 1
+
+  defp offset(source, line, column) do
+    case Enum.at(:binary.matches(source, "\n"), line - 2) do
+      {at, 1} -> at + 1 + column - 1
+      nil -> nil
+    end
+  end
 
   defp position(source, offset) do
     prefix = binary_part(source, 0, offset)
