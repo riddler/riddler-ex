@@ -218,3 +218,68 @@ corrections: the shared condition and container machinery it says carries no
 kind in its name still lives under `Riddler.Screens` (rd-2b2), and the
 `<kind>.<function>` capability rule wants a clause for the shared
 `templates.render` (rd-c6t).
+
+Noted 2026-09-17, campaign RF051, beads rd-2b2, rd-c6t, rd-aya and rd-cpx, and
+one item carried out of the direction review of ADR-0002's amendment of the same
+date. Five notes by addition, each read against `main` at `27faac3`. Nothing
+above is changed; each paragraph below says what the text above means now.
+
+**The shared condition and container machinery still sits under the kind's
+namespace.** The module-layout rule above says that `Riddler.Template`,
+`Riddler.Finding` and the condition and container machinery are shared and carry
+no kind in their names. At `27faac3` the first two hold and the last two do not
+yet: condition evaluation lives in `Riddler.Screens` (`lib/riddler/screens.ex`,
+the private `evaluate/4` that calls `Predicator.evaluate/2`) and in
+`Riddler.Screens.Document` (`lib/riddler/screens/document.ex`,
+`compile_condition/2`), and the one container this version ships is
+`Riddler.Screens.Type.Variant` (`lib/riddler/screens/type/variant.ex`). Read that
+sentence prospectively: it states where the machinery belongs once it is shared,
+and lifting it out of the kind's namespace is work for the forthcoming ADR-0004,
+which the Consequences section already names as the record that decides the
+shared content machinery. `Riddler.Template`, `Riddler.Template.Compiled` and
+`Riddler.Finding` are the parts of it that carry no kind today (rd-2b2).
+
+**The capability-naming rule covers shared machinery under its own prefix.** The
+rule above is written `<kind>.<function>` and is immediately followed by
+`templates.render`, which is the shared template subset and not a content kind.
+The rule in full: a capability is named `<prefix>.<function>`, where the prefix
+is the kind for a kind's capability and the machinery's own name for shared
+machinery. The names ship as they are - at `27faac3` this version emits
+`screens.admit`, `screens.resolve` and `screens.validate_responses` under
+`corpus/screens/`, and `templates.render` in `corpus/templates/render.json` - and
+a shared-machinery prefix, like a kind's, is part of the contract and changes
+only by a record (rd-c6t).
+
+**The packages the no-statifier rule excludes, named.** "No statifier package
+appears in this repository's `mix.exs` or `mix.lock`" excludes the statifier
+family's own packages: `statifier` (the `statifier-ex` repository),
+`statifier_blocks`, `statifier_persistence`, `statifier_oban`,
+`opentelemetry_statifier`, `statifier_ui`, `statifier_datamodel` and
+`statifier_examples`. `predicator` and `solid` are outside that set and are the
+two runtime dependencies this record names; `predicator` is developed alongside
+the statifier family but is not one of its packages, and the rule does not reach
+it. At `27faac3` the rule holds literally: `mix.exs` names `predicator` and
+`solid` as the runtime dependencies, its one occurrence of the word "statifier"
+is the deps comment restating this prohibition, and `mix.lock` carries no package
+of that set (rd-aya).
+
+**The worked example elides two of the fixture's three screens.** The fixture is
+a signup wizard of three screens, keyed `account`, `plan` and `confirm` (read at
+`9d288c9`). The outline above shows `account` alone; `plan` and `confirm` are
+elided along with the `metadata` block and the node lists (rd-cpx).
+
+**`validate_responses/3` and its arity-4 form are removed by ADR-0002's
+amendment of 2026-09-17.** Two places above name them as current: the paragraph
+on the public runtime of the screens kind, and the sentence naming
+`validate_responses` as that kind's one kind-specific check. Both describe what
+0.1.0 shipped. That amendment decides that a check on a visitor's responses
+resolves the screen against the same root the host resolved with, names the
+replacement `validate_screen/3` and its arity-4 form naming the button that was
+pressed, and removes `validate_responses/3` and `/4` rather than deprecating
+them; it says in as many words that prose in this record naming
+`validate_responses` describes what v1 did and stays as the historical record of
+it. Read those two places here as history from that date. The removal is a
+breaking change to a public function of 0.1.0 and ships in the next release cut
+after its code half lands; at `27faac3` that code half has not landed and
+`Riddler.Screens.validate_responses/3` and `/4` are still present in
+`lib/riddler/screens.ex`.
