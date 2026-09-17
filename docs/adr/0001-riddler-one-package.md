@@ -283,3 +283,17 @@ breaking change to a public function of 0.1.0 and ships in the next release cut
 after its code half lands; at `27faac3` that code half has not landed and
 `Riddler.Screens.validate_responses/3` and `/4` are still present in
 `lib/riddler/screens.ex`.
+
+Noted 2026-09-17, campaign RF051, bead rd-9j0. One note by addition, read
+against `main` at `6658ae4`. Nothing above is changed.
+
+**`Riddler.Corpus` and the `mix riddler.corpus` task ship in the Hex tarball,
+and that is the decision, not an accident.** Both are files under `lib/`
+(`lib/riddler/corpus.ex` and `lib/mix/tasks/riddler.corpus.ex`, read at
+`6658ae4`), and `package/0`'s `files:` list in `mix.exs` names the whole `lib`
+directory, so a `mix hex.build` of 0.1.0 at that commit puts both in the
+package. They stay: they are small, they document to a reader of the published
+package what this package's conformance corpus is and how it reaches
+riddler_spec, and excluding individual `lib/` files by enumerating paths in
+`files:` is a list that has to be maintained against every future file under
+`lib/` (rd-9j0).
