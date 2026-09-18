@@ -228,13 +228,19 @@ defmodule Riddler.CorpusTest do
     # that what an entry would do is pinned without putting a real entry in
     # `@spelling_exemptions`, which is empty and stays empty until there is a
     # case for it. An entry exempts one file at one path: the same path in
-    # another file, and another path in the same file, are still hits.
+    # another file, and another path in the same file, are still hits. A path
+    # is compared whole and not as a prefix, which is the difference between
+    # exempting one named string and exempting a subtree nobody reviewed: an
+    # entry at `expected` must not carry `expected.code` with it.
     #
     # Sabotage: made `exempt?/3` compare the path only, ignoring the file; the
-    # second assertion came back one hit short and this test went red.
+    # second assertion came back one hit short and this test went red. And
+    # again with `exempt?/3` matching a path by String.starts_with?/2; the
+    # prefix entry swallowed the longer path and this test went red.
     test "an exemption entry exempts exactly its file and its path, and nothing else" do
       value = %{"name" => "an action", "expected" => %{"code" => "on_action"}}
       exemptions = [{"corpus/screens/admit.json", "name", "a fixture, not a real entry"}]
+      prefix = [{"corpus/screens/admit.json", "expected", "a fixture, not a real entry"}]
 
       assert [{"expected.code", "on_action", "action"}] =
                retired_spellings_in(value, "corpus/screens/admit.json", exemptions)
@@ -244,6 +250,9 @@ defmodule Riddler.CorpusTest do
 
       assert [{"expected.code", "on_action", "action"}, {"name", "an action", "action"}] =
                retired_spellings_in(value, "corpus/screens/admit.json", [])
+
+      assert [{"expected.code", "on_action", "action"}, {"name", "an action", "action"}] =
+               retired_spellings_in(value, "corpus/screens/admit.json", prefix)
     end
 
     # What the walk CANNOT do, stated as a test so that nobody reads the guard
