@@ -1423,3 +1423,101 @@ is left for the corpus pass.
 button hidden by its own undecidable condition should reach the opt-out is
 still unanswered, and this amendment does not reach it: that button carries a
 key, and the question there is about resolution rather than about naming.
+
+---
+
+Noted 2026-09-18, campaign RF055, beads rd-0yg, rd-uq9 and rd-pli. Three notes
+by addition, each read against `main` at `9e5d667`. They narrow a claim an
+amendment above makes about its own blast radius, say where the four places the
+acceptance note lists as not yet lined up are now answered, and record what a
+validation call does with the diagnostics of the resolution it performs. None
+of them changes what this record decides, and none bears on the amendment
+above.
+
+**Three of the four things the first 2026-09-17 amendment names changed with
+`resolve_screen/3`'s return, and one did not (rd-0yg).** That amendment's
+section "A single-screen call returns its diagnostics" names four - that the
+call is public, that it is "documented with executable examples that match on
+`{:ok, screen}`", that it is "cited by ADR-0001 as the call that resolves one
+named screen", and that it is "called inside this package by the corpus runner"
+- and then says "Every one of those changes with the return." That holds of the
+code and not of the record. In the one commit that carried the return
+(`fc69b8d`), what changed was `resolve_screen/3`'s `@spec` and body and the one
+`@doc` example that matched `{:ok, screen}`, which now matches
+`{:ok, screen, diagnostics}` and asserts the diagnostics beside the screen
+(`lib/riddler/screens.ex`, the `resolve_screen/3` `@doc`, `@spec` and clause,
+read at `9e5d667`); the second example in the same `@doc`, which matches
+`{:error, :no_such_screen}`, was untouched, that arm being unchanged. The corpus
+runner's call changed too: it matches `{:ok, screen, _diagnostics}` and still
+encodes the screen alone (`lib/riddler/corpus.ex`, the `"screens.resolve"`
+clause, read at `9e5d667`). ADR-0001 did not change, and had nothing to change.
+It cites the call twice - once as the function that "resolves one named screen
+of it", once in a provenance line naming the request that built it beside
+`resolve/2` - and neither sentence states a return shape. That commit touched
+`lib/riddler/screens.ex`, `lib/riddler/corpus.ex`, two test files and a
+changelog fragment, and no file under `docs/adr/`. Being public is why the
+change is breaking rather than a site that changed with it. This record's own
+earlier sentences naming `resolve_screen/3` are unchanged as well, and could not
+be otherwise: this record grows by addition, so an amendment governs over them
+where it says it does and nothing above it is reworded.
+
+**The four places the acceptance note lists as not yet lined up are each
+answered further down, and the list itself still reads as open (rd-uq9).** The
+2026-09-15 acceptance note above opens that list "Four places where this record
+and the code it describes do not yet line up are carried as notes by addition
+rather than as corrections, each with a bead". Four is still the count at this
+reading, and all four are answered below it. Nothing removes the list, because
+this record grows by addition, so this note is the pointer the list cannot carry
+itself. In the order the list gives them:
+
+- The envelope shapes "stated here and not yet checked by `validate/1`" (rd-xxb)
+  are answered by the entry opening "Noted 2026-09-17, campaign RF051, bead
+  rd-xxb.", whose one note is headed "The envelope and boolean shapes this
+  record states are checked, one code each, and only where the document carries
+  the field."
+- The unreachable variant candidate, "which this record describes as dead weight
+  without saying it is refused" (rd-d8e), is answered by the note headed "An
+  unconditional variant candidate that is not last is an admit finding." in the
+  entry opening "Noted 2026-09-17, campaign RF051, beads rd-gwn, rd-d8e, rd-xvv
+  and rd-xva."
+- `resolve_screen/3` returning "a screen without the diagnostics its resolution
+  produced, which this record does not decide either way" (rd-439) is decided by
+  the amendment headed "Amendment, 2026-09-17: the screen validated is the
+  screen shown", in its section "A single-screen call returns its diagnostics",
+  which answers "It returns them."
+- `metadata`'s `name`, `description` and `domain`, "named here as what the block
+  carries without a requiredness rule" (rd-xvv), are answered by the note headed
+  "None of `metadata`'s `name`, `description` and `domain` is required." in that
+  same four-note entry of 2026-09-17.
+
+Where a later entry answers an item on that list, that entry is where the answer
+now is; the list stands as the account of what was open on 2026-09-15.
+
+**A validation call returns no diagnostics, and the two halves of the
+diagnostics its resolution produced go different ways (rd-pli).**
+`Riddler.Screens.validate_screen/3` and `/4` answer
+`:ok | {:error, [Finding.t()]} | {:error, :no_such_screen}`
+(`lib/riddler/screens.ex`, both `@spec`s, read at `9e5d667`), and the arity-3
+form is the arity-4 form called with no button named. Neither return carries
+`missing_variables` or `undecidable_conditions`. That is not a discard. The
+arity-4 body resolves through `resolve_screen/3`, takes the `diagnostics` beside
+the screen and hands both to the check (`lib/riddler/screens.ex`, the
+`validate_screen/4` clause, read at `9e5d667`), which turns each undecidable
+condition into a `response.undecidable` finding on the node carrying it, with
+`field` `"condition"`, and never reads `missing_variables` at all
+(`lib/riddler/screens/validation.ex`, `validate/4` and the private
+`undecidable_findings/1`, read at `9e5d667`). A press that opted out reaches
+neither half and answers `:ok`, which is the qualification the third 2026-09-17
+amendment records. That amendment's "What is unchanged" states the other half -
+"`missing_variables` still becomes no finding" - and the reason is the lenient
+rendering this record already decides: a variable a template wanted and the root
+did not carry renders as the empty string, which the `@doc` on
+`validate_screen/3` puts as "So is a variable a template wanted and the root did
+not carry - that renders as the empty string, is reported in
+`missing_variables`, and is no finding." Only a condition decides whether a
+question was asked at all, and only that half bears on whether a visitor can be
+held to an answer. So the decided reading is that a call returning no screen
+surfaces the undecidable half as findings and lets the missing-variable half go
+unreported, and a caller who wants a screen's diagnostics asks `resolve_screen/3`
+for them, that being the call this record decides returns them. This note states
+the contract the package ships and changes nothing.
