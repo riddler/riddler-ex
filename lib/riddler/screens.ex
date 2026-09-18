@@ -252,14 +252,14 @@ defmodule Riddler.Screens do
   `response.undecidable` is the one that is not about a response. A condition
   this root could not decide - a variable the root does not carry, an operand
   of the wrong type - is reported as a finding on the node that carries it,
-  with `field` `"condition"`, and the screen is never `:ok`. A condition that
-  could not be decided says the root the host handed in does not carry what
-  the document asks about, which is a defect in the call rather than a
-  property of the visitor, so treating the node as hidden and answering `:ok`
-  would accept a submission nobody checked. It is reported wherever the press
-  validates, which is every call this function's arity-3 form makes. The one
-  press that does not validate is a button declaring `validates` as `false`,
-  and that press runs no check at all - see `validate_screen/4`.
+  with `field` `"condition"`. A condition that could not be decided says the
+  root the host handed in does not carry what the document asks about, which
+  is a defect in the call rather than a property of the visitor, so treating
+  the node as hidden and answering `:ok` would accept a submission nobody
+  checked. It is reported wherever the pressed button validates. The press
+  that does not is one through a button declaring `validates` as `false`,
+  which answers `:ok` without running a check at all - see
+  `validate_screen/4`.
 
   A condition this root *decides* false is a different thing and stays silent:
   the node is hidden, and a question the visitor was never asked cannot fail.
