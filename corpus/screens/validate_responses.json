@@ -1229,6 +1229,103 @@
         "screen": "seats"
       },
       "name": "The validating button on that same screen returns the finding the root could not decide"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.undecidable",
+            "field": "condition",
+            "node_key": "team_name"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_seat_review",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "seats",
+              "nodes": [
+                {
+                  "condition": "context.plan_tier == \"team\"",
+                  "key": "team_name",
+                  "label": "Team name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "seats_back",
+                  "label": "Back",
+                  "outcome": "went_back",
+                  "type": "button",
+                  "validates": false
+                },
+                {
+                  "key": "seats_continue",
+                  "label": "Continue",
+                  "outcome": "continued",
+                  "type": "button"
+                }
+              ],
+              "title": "Your seats"
+            }
+          ]
+        },
+        "pressed_button": "seats_cancel",
+        "responses": {},
+        "screen": "seats"
+      },
+      "name": "A key naming no button on the screen returns the finding the root could not decide, because the opt-out is carried by the button a press names and not by the screen"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "billing_email"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_card_review",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card",
+              "nodes": [
+                {
+                  "key": "billing_email",
+                  "label": "Where should the receipt go?",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "label": "Back",
+                  "outcome": "went_back",
+                  "type": "button",
+                  "validates": false
+                },
+                {
+                  "key": "card_pay",
+                  "label": "Pay",
+                  "outcome": "paid",
+                  "type": "button"
+                }
+              ],
+              "title": "Your card"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "card"
+      },
+      "name": "A screen carrying a button with no key declaring that it does not validate is checked in full when the call presses no button, because nothing can press a button nothing can name"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"

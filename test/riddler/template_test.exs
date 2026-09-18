@@ -656,6 +656,20 @@ defmodule Riddler.TemplateTest do
     # condition's recorded errors when the branch it renders is the branch
     # that evaluation threw, so an `unless` whose condition is false carried
     # the error out with its body. These tests pin the rule for both tags.
+    #
+    # Which corpus cases guard this mechanism HERE, and which only bind a
+    # second runtime. The corpus states the rule for five shapes, and they do
+    # not all do the same job against this engine. Collecting no `if` or
+    # `elsif` condition at all - the whole `IfTag` clause of `conditional/2`
+    # replaced by `acc` - turns exactly two of them red: "A variable used only
+    # as an unless condition ..." and "A condition inside a case branch body
+    # ...". The and-chained `if` case stays GREEN under that mutation, because
+    # the engine's own `if` renderable already drops its condition's recorded
+    # errors, so the exclusion never has to do anything for that source. It is
+    # a contract case rather than a regression guard here: a second runtime
+    # that reported either path fails it, and this repository would not
+    # notice the mechanism being deleted for `if` on its strength. A reader
+    # adding a sixth shape should say which of the two jobs it is for.
 
     # Mutation: delete the condition_positions/1 collector, or stop consulting
     # it in missing/2 - the unless condition's path is then reported in
