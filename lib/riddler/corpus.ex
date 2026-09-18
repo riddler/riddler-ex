@@ -147,7 +147,12 @@ defmodule Riddler.Corpus do
   end
 
   defp validate_responses(document, input) do
-    root = %{"responses" => input["responses"]}
+    # The root a case supplies, not a root built here: validation resolves the
+    # screen against the same root the host resolved with, so a case carrying a
+    # context is run under that context rather than under an empty one. A case
+    # that carries neither key gets the empty maps `Screens` normalizes an
+    # absent half to.
+    root = Map.take(input, ["context", "responses"])
 
     case Map.fetch(input, "pressed_button") do
       {:ok, key} ->
