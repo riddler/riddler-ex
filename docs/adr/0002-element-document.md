@@ -1036,9 +1036,21 @@ the opt-out covers it.
 **A button declaring `validates` as `false` answers `:ok` for the screen it
 submits even when that screen carries a condition the root could not decide.**
 The finding the amendment above introduces is raised where the pressed button
-validates, which is every press but that one. A press through a button that
-says nothing, through a key naming no button on the resolved screen, or through
-no button at all still reports it.
+validates. A press through a button that says nothing, and a press through a
+key naming no button on the resolved screen, both still report it.
+
+**One narrower case is named here rather than claimed away, and this amendment
+decides nothing about it.** `validates` is read from the button the pressed
+key names on the resolved screen, and a call naming no button passes a pressed
+key of `nil`. A button node carrying `validates` as `false` and no `key` at all
+therefore answers to that `nil`: a call naming no button is treated as a press
+through it, and the screen answers `:ok`. This version admits such a document
+and separately reports it as defective, because a button carries a key
+(`document.invalid_key`, `lib/riddler/screens/document.ex`, read at
+`4208433d6f318acd00870cf2b5929cb2ccd97a69`), so the case arises only for a
+document a host has already been told is wrong, and nothing here is the reason
+it behaves that way. Whether a keyless button should be able to opt out at all
+is left open exactly as this amendment found it.
 
 The Decision above already says what the opt-out is for: a button "may carry
 `validates`, a boolean defaulting to true: a button that submits a screen
@@ -1149,10 +1161,11 @@ at resolution.
 decides nothing about it.** A button's own `condition` may be the undecidable
 one. Resolution then drops that button from the screen, so nothing on the
 resolved screen declares `validates` at all, and the press falls to the
-default: it validates, and the finding is raised. That is the behaviour the
-`@doc` on
-`Riddler.Screens.validate_screen/4` already states for any key naming no button
-on the resolved screen, and it is not changed here. Whether a press through a
+default: it validates, and the finding is raised. That the press validates is
+what the `@doc` on `Riddler.Screens.validate_screen/4` already states for any
+key naming no button on the resolved screen; that the finding then follows is
+this amendment's rule applied to it, not something that `@doc` says. Neither is
+changed here. Whether a press through a
 button hidden by its own undecidable condition should reach the opt-out this
 amendment carves out is a question this amendment does not answer.
 
