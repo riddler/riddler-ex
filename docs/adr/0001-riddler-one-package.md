@@ -1052,3 +1052,29 @@ not the referent. That the code half changes what a host reads
 on one finding is not the test either, as this record says of itself elsewhere:
 "That a ruling was taken is not the test; if it were, every commit made under
 one would amend a record."
+
+---
+
+Noted 2026-09-18, campaign RF055, bead rd-hdm. One note by addition, read
+against `f2b4b2a`, this request's code commit rather than a SHA on `main`.
+Nothing above is changed; the paragraph below says where two functions the
+text above cites now live.
+
+**Two helpers the entries above cite moved to a neutral home.**
+`compile_pattern/1`, with the comment above it recording what was run against
+`Regex.compile/1`, and `error_position/1` are now in
+`Riddler.Screens.Compilers` (`lib/riddler/screens/compilers.ex`, both functions
+and that comment read there at `f2b4b2a`), a `@moduledoc false` module neither
+the document check nor the response check owns, and both layers call them
+there. Nothing else moved with them: the clauses, the specs, the `@doc false`
+and the comment are unchanged, and no documented surface was added. The entries
+above name both functions, and that comment, in
+`lib/riddler/screens/validation.ex`, which is where they were at the SHAs those
+entries label; `docs/adr/0002-element-document.md` names the pattern compiler
+in that same module as well, and the same holds of it. A cite whose file moved
+settles nothing by itself. The test these records state is whether an entry
+changes an answer the record gave, and this one changes none: no finding code,
+field, position or refusal moves with the file, and what each of those passages
+says is as true of the functions in their new module as it was in their old
+one. Read each as naming the function and the comment, which is the anchor it
+resolves by, rather than the file it was in on its date.
