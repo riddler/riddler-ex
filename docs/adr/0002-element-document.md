@@ -2049,7 +2049,7 @@ re-checking.** The defect is the author's, one layer reports it, and the layer
 the record names is document validation; re-checking compilability at
 submission would report one defect from two layers, which is the thing the
 amendment above refuses. What was missing was that nothing told a host to
-look, so the `@doc` on `Riddler.Screens.validate_screen/3` now carries it in a
+look, so the `@doc` on `Riddler.Screens.validate_screen/3` carries it in a
 sentence of its own, added by this bead's own commit and so citable at no
 earlier SHA. The checks beside the pattern are unaffected: a `required`
 question whose pattern does not compile is still unanswered when its response
