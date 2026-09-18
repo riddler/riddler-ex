@@ -159,6 +159,38 @@ defmodule Riddler.TemplateTest do
                refusal!("{% tablerow name in responses.invitees %}{{ name }}{% endtablerow %}")
     end
 
+    # The allowlist only holds where the walk reaches, and the two bodies the
+    # parse tree wraps in a tuple - an `if` tag's elsifs and a `case` tag's
+    # branches - were unreachable, so a refused tag written in either one
+    # compiled. These two pin the reach rather than the tag.
+    #
+    # Mutation: delete the is_tuple clause from reduce_nodes/3 - the elsif
+    # body is never visited, compile/1 returns {:ok, compiled}, and refusal!
+    # fails on its match.
+    test "a refused tag inside an elsif body is refused" do
+      assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "cycle"} = finding] =
+               refusal!(
+                 "{% if responses.plan %}pro{% elsif responses.tier %}" <>
+                   "{% cycle 'a', 'b' %}{% endif %}"
+               )
+
+      assert finding.message =~ "cycle"
+      assert finding.message =~ "line 1"
+    end
+
+    # Mutation: delete the is_tuple clause from reduce_nodes/3 - the `when`
+    # branch body is never visited and the template compiles.
+    test "a refused tag inside a case branch body is refused" do
+      assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "cycle"} = finding] =
+               refusal!(
+                 ~S({% case responses.plan %}{% when "pro" %}) <>
+                   "{% cycle 'a', 'b' %}{% endcase %}"
+               )
+
+      assert finding.message =~ "cycle"
+      assert finding.message =~ "line 1"
+    end
+
     # Mutation: delete the liquid_refusals/1 call from compile/1 - the parse
     # tree carries no trace of the liquid tag, so the finding disappears.
     test "liquid is refused" do
@@ -412,6 +444,34 @@ defmodule Riddler.TemplateTest do
 
       assert {:ok, "We will send a link to your inbox.", []} = render!(source, @assigns, :lenient)
       assert {:ok, "We will send a link to your inbox.", []} = render!(source, @assigns, :strict)
+    end
+
+    # The guard collector folds through the same general walk the allowlist
+    # does, so the two tuple-wrapped bodies were out of its reach too and a
+    # guarded path written in either one was reported missing anyway.
+    #
+    # Mutation: delete the is_tuple clause from reduce_nodes/3 - the guard
+    # inside the elsif body is not collected and strict mode returns
+    # {:error, ["responses.nickname"]}.
+    test "default inside an elsif body means the variable is missing in neither mode" do
+      source =
+        "{% if responses.newsletter %}A{% elsif responses.plan %}" <>
+          "{{ responses.nickname | default: 'friend' }}{% endif %}"
+
+      assert {:ok, "friend", []} = render!(source, @assigns, :lenient)
+      assert {:ok, "friend", []} = render!(source, @assigns, :strict)
+    end
+
+    # Mutation: delete the is_tuple clause from reduce_nodes/3 - the guard
+    # inside the `when` branch body is not collected and strict mode returns
+    # {:error, ["responses.nickname"]}.
+    test "default inside a case branch body means the variable is missing in neither mode" do
+      source =
+        ~S({% case responses.plan %}{% when "pro" %}) <>
+          "{{ responses.nickname | default: 'friend' }}{% endcase %}"
+
+      assert {:ok, "friend", []} = render!(source, @assigns, :lenient)
+      assert {:ok, "friend", []} = render!(source, @assigns, :strict)
     end
 
     # Mutation: have the default guard swallow every missing path rather than

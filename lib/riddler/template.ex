@@ -325,16 +325,18 @@ defmodule Riddler.Template do
     bodies = Enum.map(elsifs, &elem(&1, 1))
     collected = Enum.reduce(conditions, acc, &tested/2)
 
-    # The general walk stops at the `{condition, body}` tuple, so an `elsif`
-    # body's own nested tags are reached from here instead.
+    # The general walk descends the `{condition, body}` tuple itself now, so
+    # an `elsif` body's own nested tags are reached both ways. This fold is
+    # kept so that which positions a condition excludes does not depend on
+    # the general reducer's shape, and the accumulator is a `MapSet`, so a
+    # position reached twice is recorded once.
     branch_bodies(bodies, collected)
   end
 
   # A `case` branch is a `{values, body}` tuple, or `{:else, body}` for its
-  # else, so the general walk stops before those bodies exactly as it does
-  # before an `elsif`'s. Only the bodies are followed: the tag's own
-  # `argument` is the subject, which reads a value rather than tests one, and
-  # stays reported.
+  # else, which the general walk descends exactly as it does an `elsif`'s.
+  # Only the bodies are followed from here: the tag's own `argument` is the
+  # subject, which reads a value rather than tests one, and stays reported.
   defp conditional(%Solid.Tags.CaseTag{cases: cases}, acc) do
     cases |> Enum.map(&elem(&1, 1)) |> branch_bodies(acc)
   end
@@ -343,16 +345,19 @@ defmodule Riddler.Template do
 
   # The two tuple-wrapped body positions among the admitted tags -
   # `if_tag.elsifs` and `case_tag.cases` - and no others: every other
-  # admitted tag holds its body in a plain list the general walk follows.
+  # admitted tag holds its body in a plain list. The general walk follows
+  # both shapes now; this is the condition collector's own pass over the two
+  # tuple-wrapped ones.
   defp branch_bodies(bodies, acc) do
     reduce_nodes(bodies, acc, fn node, positions -> conditional(node, positions) end)
   end
 
-  # A condition's own traversal, because the general one above stops at a
-  # tuple and `and` / `or` chains hang off `child_condition` as `{:and, next}`.
-  # An `elsif` is a `{condition, body}` tuple for the same reason, and only its
-  # condition half is passed in here - its body is an ordinary read position
-  # and the general walk visits it.
+  # A condition's own traversal, because the general one reports struct nodes
+  # to the function it was given and what is wanted here is every `Variable`
+  # loc under a condition, `and` / `or` chains included - those hang off
+  # `child_condition` as `{:and, next}`. Only an `elsif`'s condition half is
+  # passed in here: its body is an ordinary read position, and the general
+  # walk reaches it through the `{condition, body}` tuple.
   defp tested(%Solid.Variable{loc: %Solid.Parser.Loc{} = loc} = variable, acc) do
     tested(variable.accesses, MapSet.put(acc, {loc.line, loc.column}))
   end
@@ -406,11 +411,12 @@ defmodule Riddler.Template do
     |> Enum.reduce(source, &mask_span(&2, &1))
   end
 
-  # A literal's own traversal, because the general one stops at a tuple and
-  # two of the admitted tags hold a literal behind one: a `case` branch is a
-  # `{values, body}` pair and an `elsif` a `{condition, body}` pair. Widening
-  # the general reducer is a separate question about what that walk refuses;
-  # here the only effect is which literals are exempt.
+  # A literal's own traversal, because the general one reports struct nodes to
+  # the function it was given and what is wanted here is a list of locs rather
+  # than a fold over nodes. Two of the admitted tags hold a literal behind a
+  # tuple - a `case` branch is a `{values, body}` pair and an `elsif` a
+  # `{condition, body}` pair - which is why this walk has a tuple clause of
+  # its own and had one before the general reducer grew its own.
   defp literal_locs(%Solid.Literal{loc: %Solid.Parser.Loc{} = loc}, acc),
     do: [{loc.line, loc.column} | acc]
 
@@ -561,9 +567,25 @@ defmodule Riddler.Template do
 
   # -- traversal ------------------------------------------------------------
 
-  # Visits every term in the parse tree, struct fields included, and folds
-  # `fun` over it. Both the allowlist walk and the `default` collector are
-  # just the function passed in here.
+  # Visits every term in the parse tree - struct fields, list elements, map
+  # values and tuple elements - and folds `fun` over it. Both the allowlist
+  # walk and the `default` collector are just the function passed in here.
+  #
+  # The walk has to be TOTAL for the allowlist to mean anything: a position it
+  # cannot reach is a position where a refused construct is admitted, whatever
+  # the allowlist says. Two of the admitted tags hold a body behind a tuple -
+  # an `if` tag's `elsifs` are `{condition, body}` pairs and a `case` tag's
+  # `cases` are `{values, body}`, with `{:else, body}` for the else - and
+  # without the tuple clause below a refused tag written inside either body
+  # was never visited and so compiled.
+  #
+  # `fun` is applied to structs only: a tuple, a list and a map are containers
+  # the walk descends through rather than nodes it reports, so the tuple
+  # clause widens what is reached without widening what is asked about. A
+  # tuple's first element is descended too - an elsif's condition, a `when`'s
+  # values, the `:else` atom - which reaches no node the other elements do not
+  # already reach through the same struct fields, and the collectors that fold
+  # into a `MapSet` are idempotent about being handed a position twice.
   defp reduce_nodes(node, acc, fun) when is_struct(node) do
     node
     |> Map.from_struct()
@@ -573,6 +595,10 @@ defmodule Riddler.Template do
 
   defp reduce_nodes(list, acc, fun) when is_list(list) do
     Enum.reduce(list, acc, &reduce_nodes(&1, &2, fun))
+  end
+
+  defp reduce_nodes(tuple, acc, fun) when is_tuple(tuple) do
+    tuple |> Tuple.to_list() |> Enum.reduce(acc, &reduce_nodes(&1, &2, fun))
   end
 
   defp reduce_nodes(map, acc, fun) when is_map(map) do
