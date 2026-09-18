@@ -290,6 +290,9 @@ enough to fix the template.
     iex> {:error, [finding]} = Riddler.Template.compile("{% include 'footer' %}")
     iex> {finding.code, finding.field}
     {"template.tag_not_allowed", "include"}
+    iex> {:error, [finding]} = Riddler.Template.compile("Nice to meet you, {{ responses.first_name")
+    iex> {finding.code, finding.field}
+    {"template.parse_error", nil}
 
 A refused template is a document finding too: `Riddler.Screens.Document.validate/1`
 puts every `text`, `label` and `placeholder` through the same subset and raises

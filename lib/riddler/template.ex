@@ -38,6 +38,38 @@ defmodule Riddler.Template do
       iex> Enum.map(findings, & &1.field)
       ["include"]
 
+  ## A source that does not parse is refused, and as what depends on the reason
+
+  A template the parser cannot read is refused like any other template, and
+  which code comes back depends on what the parser said about it. A refusal
+  whose reason names a tag - a stray `{% endif %}` standing on its own, for
+  example - is reported as that tag, `template.tag_not_allowed`, with the tag
+  in `field`: the author reached for a construct the subset does not admit,
+  and naming the construct is the answer they can act on. A refusal naming no
+  tag is a parse failure, `template.parse_error`, with a null `field` and the
+  parser's own reason carried in the message: there is no construct to name,
+  so a host shows the reason rather than looking for a tag that is not there.
+
+      iex> {:error, [finding]} = Riddler.Template.compile("done{% endif %}")
+      iex> {finding.code, finding.field}
+      {"template.tag_not_allowed", "endif"}
+      iex> {:error, [finding]} = Riddler.Template.compile("Nice to meet you, {{ responses.first_name")
+      iex> {finding.code, finding.field}
+      {"template.parse_error", nil}
+
+  A parse failure is also the one refusal that can arrive with no position on
+  it. It carries one when the parser named a place and `nil` when the parser
+  refused the source without naming one, so a host that points at a span
+  checks `position` for `nil` on this code where it need not on the others.
+
+  Both halves of the split are pinned by the conformance corpus, which is
+  where a second runtime meets the same rule: "A stray closing tag is refused
+  as a tag outside the subset, not as a parse error: a parse failure naming a
+  tag is reported as that tag", "An unterminated output tag is refused as a
+  parse error, and the finding names no field", and "A template the parser
+  refuses without saying where is refused as a parse error, and the finding
+  names no place".
+
   ## Output is text, never markup
 
   A template produces a string that means exactly the characters in it. A
