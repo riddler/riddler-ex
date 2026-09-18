@@ -265,3 +265,50 @@ The conformance corpus carries the pair (rd-alj): a variable used only as an
 a root that does not carry it, each stated in both modes, each expecting an
 empty missing list, a render that succeeds, and the text of the branch that
 holds. A second runtime that reports either of them fails the corpus.
+
+---
+
+Noted 2026-09-18, campaign RF055, bead rd-tmv. One note by addition, read
+against `main` at `90f5930`. Nothing above is changed.
+
+**A `when` operand is a read position, and the list of positions the rule above
+does not reach was not exhaustive.** The note above states its rule by position
+and then names both sides of it. On the one side, "The rule is positional, not
+expressional. The condition of an `if`, an `elsif` or an `unless` is one
+position, whatever expression stands in it". On the other, "Positions this rule
+does not reach keep what they do today: a `case` subject and an `assign` or
+`capture` right-hand side read a value rather than test one, and a missing
+variable in them is reported under strict mode." A `when` operand is named in
+neither list. It belongs with the second: a `when` operand is read and compared
+against the subject the `case` tag carries, and it reports its missing variable
+under strict mode exactly as that subject does.
+
+**What the code does, read at `90f5930`.** The test named "a when operand still
+reports the missing variable" (`test/riddler/template_test.exs`) pins both
+modes: `{% case "yes" %}{% when responses.newsletter %}A{% endcase %}` rendered
+through `Riddler.Template.render/3` against a root that does not carry
+`responses.newsletter` answers `{:ok, "", ["responses.newsletter"]}` in lenient
+mode and `{:error, ["responses.newsletter"]}` in strict mode. That is the answer
+a read position gives, and it is the answer the `case` subject beside it gives:
+the test named "a case subject still reports the missing variable", in the same
+file and read at the same commit, pins the subject in the same two modes.
+
+**The conformance corpus does not carry a `when` operand case, so nothing here
+is complete.** `corpus/templates/render.json`, read at `90f5930`, carries the
+case named "A case subject the root does not carry is still reported in strict
+mode: a subject reads a value rather than testing one", which states the subject
+in strict mode alone, and it carries no case in which a `when` operand is the
+missing variable. A second runtime is held to what this entry records only once
+the corpus carries it; today just this package's own test does. Whether the
+corpus should carry the case is not decided here.
+
+**Why a note and not an amendment.** The rule above answers a call about the
+condition of an `if`, an `elsif` or an `unless`, and it gave no answer about a
+`when` operand at all. Recording that the rule does not reach one, and that the
+position keeps what it does today, takes nothing away: no template that renders
+stops rendering, no missing list changes, and no refusal is added. What it fills
+is an enumeration that reads as exhaustive and is not, which is where a reader
+takes an omission for a decision. Whether a later amendment should bring a
+`when` operand under the condition rule - it is a test of a kind, compared
+against a subject rather than output - is a question this entry leaves open
+rather than settles.
