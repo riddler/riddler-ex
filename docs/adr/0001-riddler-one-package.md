@@ -393,53 +393,41 @@ against `main` at `63c432f`. Nothing above is changed.
 **`Riddler.Finding` carries a source position, and this record is where that
 is decided.** The struct gains a fifth field, `:position`, which is either
 `nil` or a map `%{line: line, column: column}` with both numbers one-based and
-counting bytes, as the parser's own locations do. Every template refusal sets
-it, and the reason is narrower than the rule sounds: a parse error reported
-without a place never reaches this package as a refusal at all. The parser
-builds its error by indexing the source with the line it was given, so an
-error whose metadata carries no line raises inside the parser, and
-`Riddler.Template` returns findings only where the parser returned an error it
-could index. That the parser never reports a placeless error is NOT
-established, and it is not what makes the universal hold.
-`Riddler.Finding.position/2` declines to build half a span regardless, which
-is defence rather than a case this package has been shown to meet. A document
-finding coded `document.invalid_template` sets it when it wraps a refusal:
-`lib/riddler/screens/document.ex` re-reports such a refusal against the
-template a node writes, and it carries that refusal's position as well as
-naming it in the sentence it builds, because the place is a place in source
-text the document supplied.
+counting bytes, as the parser's own locations do. Where a finding carries a
+position its `:message` names it too and goes on naming it: a person reading a
+finding reads one sentence, and the field is the same fact in the form an
+editor can act on without parsing that sentence.
 
-The field is `nil` everywhere else, and the rule is which checks OBTAIN a place
-rather than which inputs have source text. Those are not the same set, and
-obtaining a place is not the same as carrying one either.
-`document.invalid_condition` is built on two paths and only one of them obtains
-a place. Where the condition is source the compiler refused and gave a place
-for, `describe/1` in that same file takes the line and the column out of the
-compiler's error to build the message, so the sentence ends in a place the
-finding does not carry: that is a `nil` the field is OWED, named here so this
-rule is not read as a claim that a condition has no place. Where the condition
-is not source at all - a number where a string belongs, which is the malformed
-document this check exists to refuse - there is no compiler error, no place to
-take, and the message ends in the offending value instead; that is an ordinary
-`nil`. One code, two paths, so a host reading the code alone is promised
-neither. Everything else obtains no place at all: the checks about the document
-as data, which is what most document findings are, exactly as `:node_key` is
-`nil` for a template finding; a field refused for not being template source at
-all, which also carries the code `document.invalid_template`, so a host
-switching on that code alone is not promised a span by it; and the findings
-about a visitor's responses - `response.required`, `response.format`,
-`response.out_of_range` and `response.undecidable` - which report a submission
-against a screen rather than refusing authored source. `response.undecidable`
-is the one worth naming beside the condition cases above, because it too is a
-check over a condition and a reader who stopped at those would expect it here:
-it fires where a condition the document compiled cannot be DECIDED against the
-root a host handed in, so nothing was refused at a place and there is no place
-to obtain. Where there is a position the refusal's `:message` names
-it too and goes on naming it: a person reading a finding reads one sentence,
-and the field is the same fact in the form an editor can act on without parsing
-that sentence. The field and the checks that pin it are added by this request
-and so are citable at no earlier SHA; at `4208433` the struct carried four
-fields and the line and column existed only inside the message, although
+**Which findings carry it.** Three sites in `lib/` set the field and no others:
+the two clauses of `Riddler.Template` that build a template refusal, and the
+`document.invalid_template` finding in `lib/riddler/screens/document.ex` that
+re-reports a template refusal against the template a document node writes,
+which carries the position of the refusal it wraps. Every other finding this
+package builds leaves it `nil`: the document checks; the field refused for not
+being template source at all, which carries the `document.invalid_template`
+code as well, so that code alone does not tell a host whether a span is there;
+and the four response findings, `response.required`, `response.format`,
+`response.out_of_range` and `response.undecidable`.
+
+**Why some of those `nil`s are the way they are is filed rather than
+explained.** Three of them are defects in this package and not decisions of
+this record, and a record cannot be made true about behaviour that is wrong:
+`document.invalid_condition` obtains a place for a condition the compiler
+refused and does not carry it, and `document.invalid_pattern`'s place is
+discarded a layer below the finding (both rd-ai1); `response.undecidable`
+fires for several unrelated causes and discards a position it is handed
+(rd-d9n); and a template refusal whose parser metadata is malformed raises
+before any finding is built rather than producing one without a place
+(rd-9cc). That last one is why "every template refusal carries a position" is
+worth stating carefully: it is what this package's checks and a fuzz of 19,683
+templates and 43,253 adversarial inputs established, finding no template
+finding with a `nil` position, and not a guarantee the parser makes. A
+metadata carrying a line and no column would reach `Riddler.Finding.position/2`
+and yield `nil`; no input has been found that produces one.
+
+The field and the checks that pin it are added by this request and so are
+citable at no earlier SHA; at `4208433` the struct carried four fields and the
+line and column existed only inside the message, although
 `lib/riddler/template.ex` already carried them as a pair through its refusal
 tuples and formatted them in at the end.
 

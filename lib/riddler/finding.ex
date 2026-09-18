@@ -29,29 +29,21 @@ defmodule Riddler.Finding do
       a string is not a name it can find one by.
     * `:position` - where in some source text the refusal is, as
       `%{line: line, column: column}`, both one-based and counting bytes as
-      the parser's own locations do. Every template refusal sets it, because
-      a parse error reported without a place raises inside the parser rather
-      than arriving here as a refusal - not because the parser is known
-      never to report one. `position/2` declines half a span regardless, as
-      defence. So does a `document.invalid_template` finding that wraps a
-      refusal, because the place it names is a place in the template the
-      document node writes. It is `nil` everywhere else, and the rule is
-      which checks OBTAIN a place rather than which inputs have source text:
-      every check about the document as data, which has no place to carry; a
-      field refused for not being template source at all, which has none
-      either and carries the same `document.invalid_template` code, so that
-      code alone does not promise a span; the `response.*` findings, which
-      report a visitor's submission against a screen rather than refusing
-      authored source, `response.undecidable` included, because a condition
-      that cannot be decided against a host's root was refused at no place;
-      and `document.invalid_condition` where the compiler gave the refused
-      condition a place, whose message ends in a line and a column
-      the finding does not yet carry - a `nil` that is owed, where the same
-      code refusing a condition that is not source at all has no place to
-      take and leaves an ordinary one. Where there is a position the
-      `:message` names it too and goes on naming it, so that a person
-      reading a finding reads one sentence; this field is the same
-      fact in the form an editor can act on without parsing that sentence.
+      the parser's own locations do. Three places in this package set it: the
+      two template refusal clauses in `Riddler.Template`, and the
+      `document.invalid_template` finding that re-reports a template refusal
+      against the template a document node writes, which carries the position
+      of the refusal it wraps. Every other finding leaves it `nil` - the
+      document checks, a field refused for not being template source at all
+      (which carries that same code, so the code alone does not say whether a
+      span is there), and the `response.*` findings. Three of those `nil`s
+      are defects rather than decisions and are filed as such rather than
+      explained here: `document.invalid_condition` and
+      `document.invalid_pattern` (rd-ai1) and `response.undecidable`
+      (rd-d9n). Where there is a position the `:message` names it too and
+      goes on naming it, so that a person reading a finding reads one
+      sentence; this field is the same fact in the form an editor can act on
+      without parsing that sentence.
 
   ## Examples
 
