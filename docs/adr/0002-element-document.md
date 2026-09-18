@@ -430,7 +430,7 @@ carries without a requiredness rule, and none is required in the code (rd-xvv).
 
 ## Amendment, 2026-09-17: the screen validated is the screen shown
 
-Status: proposed
+Status: accepted (2026-09-18)
 
 This record decided what a screen document is, what a resolved screen is, and
 that a set of responses is checked against the resolved screen and nothing
@@ -813,7 +813,7 @@ a field the document omits.
 
 ## Amendment, 2026-09-17: an uncompilable pattern is the document's defect
 
-Status: proposed
+Status: accepted (2026-09-18)
 
 This record decided which string fields of a document this package compiles,
 and it decided that a validation format's own check belongs to response
@@ -1018,7 +1018,7 @@ Neither names the schema; both name this record.
 
 ## Amendment, 2026-09-17: the per-button opt-out covers an undecidable condition
 
-Status: proposed
+Status: accepted (2026-09-18)
 
 Two amendments sit above this one. Every reference here to "the amendment
 above" means the first of them, headed "the screen validated is the screen
@@ -1191,3 +1191,67 @@ and the pair of tests pinning the two halves against one document, so neither
 is citable at any earlier SHA. The behaviour is in `Riddler.Screens.Validation`,
 which is `@moduledoc false` and no part of this package's surface, reached from
 `Riddler.Screens.validate_screen/4` in `lib/riddler/screens.ex`.
+
+---
+
+Noted 2026-09-18. The three amendments above move from `proposed` to
+`accepted`, each Status line flipped in place and nothing else in them
+reworded. They are, in the order they appear: "the screen validated is the
+screen shown", "an uncompilable pattern is the document's defect", and "the
+per-button opt-out covers an undecidable condition".
+
+Each was verified against `main` at `015f209` before the flip rather than
+against the tree it was written on, because an amendment is accepted for what
+the package does now. What was read, by anchor:
+
+- The validation surface is `Riddler.Screens.validate_screen/3` and `/4`, taking
+  `(document, screen_key, root, pressed_button_key \\ nil)` and resolving the
+  screen against the root it is handed (`lib/riddler/screens.ex`, the two
+  `validate_screen` clauses and their `@spec`s). `validate_responses/3` and `/4`
+  are gone from the public surface; the name survives only as the corpus
+  capability `screens.validate_responses` and its case file, which name a
+  capability rather than a function.
+- `resolve_screen/3` answers `{:ok, screen, diagnostics}`
+  (`lib/riddler/screens.ex`, its `@spec` and body), so the single-screen call
+  returns the diagnostics its resolution produced.
+- An undecidable condition is the finding `response.undecidable` on the node
+  carrying it, with `field` `"condition"`, reported wherever the pressed button
+  validates (`lib/riddler/screens/validation.ex`).
+- A `pattern` a question declares for the `pattern` format is held to being
+  compilable at the document layer, as `document.invalid_pattern` on the field
+  `pattern` and the node's key, and only where that format is declared
+  (`lib/riddler/screens/type/text_question.ex`, `pattern_findings/1` and the
+  private clauses under it). Response validation no longer reports that case and
+  raises only for a question declaring the format and no pattern at all
+  (`lib/riddler/screens/validation.ex`, the private `unreadable_pattern/1`). The
+  shape check is the same code: a `pattern` that is not a string compiles to
+  `:error` through the one compiler both layers share.
+- A button declaring `validates` as `false` answers `:ok` for a screen carrying
+  an undecidable condition, and a button that says nothing, or a key naming no
+  button, still reports the finding (`lib/riddler/screens/validation.ex`, the
+  pressed-button lookup defaulting `validates` to true). The keyless-button edge
+  the third amendment names is still separately reported as
+  `document.invalid_key` (`lib/riddler/screens/document.ex`).
+- The `@doc` on `validate_screen/4` and the matching passage in `README.md` both
+  still state the opt-out as the amendments say they do, and the schema's own
+  description still reads as the second amendment quotes it, under the name the
+  note above gives it, `priv/schemas/screen-document.schema.json`.
+
+Two deferrals the amendments recorded have since been taken up or still stand,
+and neither changes what is accepted here. The corpus case pair the third
+amendment left "for the corpus pass" - a non-validating press and a validating
+press on one screen carrying a condition the root cannot decide - is in
+`corpus/screens/validate_responses.json`, stating exactly the rule that
+amendment decides. The admit-side case for `document.invalid_pattern` that the
+second amendment left for the same pass is not there yet; the response-validation
+case whose pattern is `[0-9` states `ok: true`, as that amendment says it now
+must.
+
+One reading is recorded because it could have gone the other way. A separate
+open defect has `Riddler.Template.compile/1` raising on some malformed input,
+which sits under ADR-0003's compile contract. It does not bear on the second
+amendment: the expression that amendment holds a document to is the `pattern`
+format's, compiled by the one private regular-expression compiler in
+`Riddler.Screens.Validation`, which answers `:error` rather than raising and
+never reaches the template compiler. The two compile paths are distinct, and the
+amendment's claim survives.
