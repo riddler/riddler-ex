@@ -1537,3 +1537,73 @@ surfaces the undecidable half as findings and lets the missing-variable half go
 unreported, and a caller who wants a screen's diagnostics asks
 `resolve_screen/3` for them, that being the call this record decides returns
 them. This note states the contract the package ships and changes nothing.
+
+---
+
+Noted 2026-09-18, campaign RF055, beads rd-cay, rd-qr5 and rd-x6t. Three notes
+by addition, read against `main` at `474a963`. Two of them settle and then
+record the one case the pattern amendment above leaves with response
+validation; the third re-states where a phrase the note above cites first
+appears. None of them changes what this record decides, and none changes what
+any amendment above decides.
+
+**A format declared without the parameter it reads stays a response-time
+finding (rd-cay).** The amendment above headed "an uncompilable pattern is the
+document's defect" closes its section "One case stays with response validation"
+on a question it declines: "Whether a format declared without the parameter it
+reads should itself be a document finding is a question this amendment does not
+decide." It is decided here, and the answer is no. A question that declares
+`format` as `pattern` and declares no `pattern` at all raises nothing at admit,
+exactly as that section describes, and response validation is where it is
+reported. The reason is the mark that amendment sets for itself: a new admit
+finding here would refuse documents this version admits, and would refuse them
+for a defect the response-time clause already reports, with the field naming
+the parameter the question left out. What is decided is only which layer
+reports the defect, and that is the layer reporting it today. The decided
+reading takes nothing away - no document that validates clean stops doing so,
+no finding is renamed or moved, and no new code is named - so this is a note
+and not an amendment, on the test the note above states when it declines to
+name a code for a question this record leaves open: doing so "would change what
+this record decides, and that is an amendment's work, not a note's". A recorded
+no names no code and changes nothing this record decided.
+
+**The finding that one case carries was reworded, and this is what it now says
+(rd-qr5).** The move the amendment above records leaves response validation
+answering a single case on the `pattern` field, and the wording that case
+inherited described a pattern as unusable where there is no pattern to be
+unusable. The change that carried the move reworded it. The finding is
+`response.format`, its `field` is `pattern`, and its message reads, character
+for character:
+
+> this question asks for a response in the form of a pattern and declares none, so nothing can satisfy it
+
+(`lib/riddler/screens/validation.ex`, the private `pattern_finding/1`, read at
+`474a963`). The amendment above says response validation "answers
+`response.format` with the field `pattern`", and says nothing about the
+message; this note is where that text is recorded, because a host may match on
+a message rather than on a code and this record is where a host reads what a
+finding means. The field is what marks this case out rather than the code:
+`response.format` is still what every other format check raises, and those
+carry the field `format` (the same file, the private `format_finding/2`, read
+at `474a963`), so the only response finding naming the field `pattern` is this
+one. Nothing here changes a finding, a code, a field or a message.
+
+**Where "schema-valid means admitted" first appears, and who adopts it
+(rd-x6t).** The note above of 2026-09-17 closes its third bullet by calling
+that phrase "the conclusion that passage draws from it in its own words, that
+schema-valid means admitted". The attribution points one step downstream of
+where the phrase originates. It is the document schema description's own
+closing words, which read "A validator holding this schema and a runtime
+admitting the same value therefore agree: schema-valid means admitted."
+(`priv/schemas/screen-document.schema.json`, read at `474a963`; the same
+sentence closes that description under the file's earlier name at both SHAs the
+bullets around it cite, `342c790` and `27f9d91`). This record adopts the phrase
+rather than coining it, and does so twice. The passage above beginning "The
+schema is the fourth reading and it is wider still" attributes it where it
+belongs, as "the thing the schema's own description already says"; the
+amendment above, under "What the record now decides", carries it forward as
+"so that schema-valid means admitted". So the chain reads: the schema's
+description states it, two passages of this record adopt it, and the note above
+cites the second of those two. Nothing that note presents as a quotation is
+inexact and its substance stands; what is corrected is the one clause of
+attribution, stated here once rather than adjusted again.
