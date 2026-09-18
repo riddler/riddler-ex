@@ -5,7 +5,7 @@
   without parsing the message. A template refusal sets it wherever the parser
   gave it a place, and a `document.invalid_template` finding carries the
   position of the template refusal it wraps. Every other finding leaves it
-  `nil`, including a parse error the parser could not locate and
-  `document.invalid_condition`, whose message names a line and a column the
-  finding does not carry. The message goes on naming the position in its own
-  words wherever there is one.
+  `nil`, including a parse error the parser could not locate and a
+  `document.invalid_condition` the compiler gave a place for, whose message
+  names a line and a column the finding does not carry. The message goes on
+  naming the position in its own words wherever there is one.
