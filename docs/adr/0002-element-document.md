@@ -2021,3 +2021,66 @@ document that validates clean stops doing so, no document that is refused stops
 being refused, no code, field, message or node key moves, no refusal is added,
 and no line of `lib/` changes with this entry. A recorded decision to leave
 behaviour where it stands is what these records treat as a note.
+
+---
+
+Noted 2026-09-18, campaign RF055, bead rd-ve3. One note by addition, read
+against `main` at `c05df20`. It records what the amendment above already
+decides looks like from the submission side, and changes no answer this record
+gave.
+
+**An uncompilable `pattern` is not re-checked at submission, so a host that
+does not validate the document accepts any response to that question's pattern
+check.** The amendment above headed "an uncompilable pattern is the document's
+defect", whose `Status:` line reads `accepted (2026-09-18)`, is what decides
+where the defect is reported: "A defect reported from two layers is worse than
+one reported late, and the response was never what was wrong: nothing a
+visitor could type satisfies an expression that does not compile." Response
+validation therefore answers nothing at all for such a question's pattern
+(`lib/riddler/screens/validation.ex`, the private `unreadable_pattern/1`, read
+at `c05df20`), and the finding a host reads is the document's
+`document.invalid_pattern` (`lib/riddler/screens/type/text_question.ex`, the
+private `declared_pattern_findings/2`, read at `c05df20`). A host that
+validates responses and not documents runs no check the author's expression
+was written to impose.
+
+**The decision is kept, and the gap is closed by saying it rather than by
+re-checking.** The defect is the author's, one layer reports it, and the layer
+the record names is document validation; re-checking compilability at
+submission would report one defect from two layers, which is the thing the
+amendment above refuses. What was missing was that nothing told a host to
+look, so the `@doc` on `Riddler.Screens.validate_screen/3` now carries it in a
+sentence of its own, added by this bead's own commit and so citable at no
+earlier SHA. The checks beside the pattern are unaffected: a `required`
+question whose pattern does not compile is still unanswered when its response
+is blank, and a sibling question's `format` still refuses what it refused.
+
+**What the package answers, driven at this reading.** A checkout screen
+carrying one `text_question` keyed `card_field` that declares `format` as
+`pattern`, `pattern` as `[0-9` and `required` as true, beside a Pay button
+declaring no `validates`. `Riddler.Screens.Document.validate/1` answers
+`{:error, _}` with one finding, `document.invalid_pattern`, whose `field` is
+`"pattern"`, whose `node_key` is `"card_field"` and whose `message` reads,
+character for character:
+
+> the pattern "[0-9" is not an expression the pattern format can compile, so nothing could satisfy it
+
+Under a root whose `responses` carry `card_field` as `"not digits at all"`,
+`Riddler.Screens.validate_screen/3` answers `:ok`, and so does the arity-4
+form pressing `card_pay`. Under a root whose `card_field` is a string of
+whitespace, the arity-3 call answers `{:error, _}` with one finding,
+`response.required` on `card_field`. That is pinned by the test named "an
+uncompilable pattern constrains no response here, and the checks beside it
+still run", in the describe block "the formats" of
+`test/riddler/screens/validation_test.exs`. The test above it in that block,
+named "a pattern that is not a usable regular expression is the document's
+finding, not a response's", pins the boundary itself; this one pins what
+follows from it for a host.
+
+**Why a note and not an amendment.** The test these records state for
+themselves is whether an entry changes an answer the record gave, and this
+entry gives the same answer the amendment above gives, from the other side of
+the same call. Nothing is taken away: no document that validates clean stops
+doing so, no document that is refused stops being refused, no code, field,
+message or node key moves, no refusal is added, and no behaviour in `lib/`
+changes with this entry.
