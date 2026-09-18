@@ -1933,10 +1933,11 @@ its own undecidable condition" of
 `test/riddler/screens/validation_test.exs`.
 
 **Where in the code the two halves meet, and why the drop comes first.**
-Resolution decides a node's condition before anything validates, and it is one
-path down through `lib/riddler/screens.ex` that does it. `resolve_one/3` hands
-the screen's nodes to `resolve_nodes/3`; `resolve_nodes/3` asks `shown/3` about
-each node in turn; `shown/3` asks `decide/3`; `decide/3` answers
+Resolution decides a node's condition before anything validates, and for a node
+sitting directly on the screen, which is the node this entry and its test are
+about, one path down through `lib/riddler/screens.ex` does it. `resolve_one/3`
+hands the screen's nodes to `resolve_nodes/3`; `resolve_nodes/3` asks `shown/3`
+about each node in turn; `shown/3` asks `decide/3`; `decide/3` answers
 `{true, diagnostics}` for a node carrying no `condition`, and otherwise calls
 `evaluate/4` with the condition and the node's key; and `evaluate/4` is where a
 condition that could not be decided answers false while recording the condition
@@ -1950,10 +1951,23 @@ reducing over the screen's nodes, its `{nil, diagnostics}` arm answers
 `{acc, diagnostics}` - the accumulator it was handed, unchanged, beside the
 diagnostics `shown/3` answered with, which in this case are the updated ones
 carrying the recorded condition - so the node never enters the list the
-resolved screen carries. Every function named so far in this paragraph is
-private, sits in `lib/riddler/screens.ex`, and is read at `26b52cc`.
-Validation is then handed that resolved screen, and the opt-out searches its
-nodes alone for a node that is a button and whose `key` equals the pressed key
+resolved screen carries. A node reached as a variant's candidate takes a second
+route to the same place: `decide/3`'s other caller is `winner/3`, which walks a
+variant's candidates in order, and a candidate whose condition is undecidable
+takes the false arm there too, so `winner/3` passes it over and considers the
+next with the diagnostics `decide/3` just updated - driven at this reading, a
+variant whose first candidate is a button declaring `validates` as `false` with
+the condition `context.is_business == true` and whose second is an
+unconditional Continue button resolves, under the root above, to the node keys
+`["first_name", "account_continue"]` with `undecidable_conditions` carrying
+`%{key: "account_back", condition: "context.is_business == true"}`, and the
+keyed press of `account_back` answers the findings a press of
+`account_continue` answers, so the condition is recorded, the candidate is not
+on the resolved screen, and the press validates in full exactly as above. Every
+function named so far in this paragraph is private, sits in
+`lib/riddler/screens.ex`, and is read at `26b52cc`. Validation is then handed
+that resolved screen, and the opt-out searches its nodes alone for a node that
+is a button and whose `key` equals the pressed key
 (`lib/riddler/screens/validation.ex`, the private `opted_out?/2` and
 `button?/2`, read at `26b52cc`). A dropped button is not among them, so the
 search finds nothing and the call takes the validating arm. The public
