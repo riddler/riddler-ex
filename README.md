@@ -297,23 +297,33 @@ puts every `text`, `label` and `placeholder` through the same subset and raises
 
 ## The conformance corpus
 
-The corpus that holds a Riddler runtime to this contract is authored here, in
-`corpus/`, beside the code that has to satisfy it, and emitted into
-[riddler_spec](https://github.com/riddler/riddler_spec) by `mix riddler.corpus`:
+The corpus that holds a Riddler runtime to this contract lives here: the cases
+in `corpus/`, beside the code that has to satisfy them, and the JSON schemas in
+`priv/schemas/`. There is no second repository to consult; a runtime written in
+another language vendors the corpus from a tag of this repository and records
+the tag it took.
+
+The gate is the corpus runner and its tests. `Riddler.Corpus` runs each case
+through the function its `capability` names and compares the answer to the one
+the case states, and `test/riddler/corpus_test.exs` runs every case in
+`corpus/` that way as part of `mix quality`, so a case this implementation does
+not satisfy is a red suite here rather than a contract someone else is held to.
+
+`mix riddler.corpus` exports a copy for a consumer that wants the cases as
+files:
 
 ```console
-$ mix riddler.corpus --to ../riddler_spec   # emit
-$ mix riddler.corpus --check                # the drift gate CI runs
+$ mix riddler.corpus --to ../somewhere   # write a copy
+$ mix riddler.corpus --check --to ../somewhere   # compare a copy without writing
 ```
 
-A corpus file is never edited by hand in that repository. It is generated from
-the cases in this one, so that a runtime written in another language and this
-one are held to the same behavior. The task runs every case through this
-implementation before it writes anything and refuses on the first red case - a
-corpus copied out of a repository whose own suite it does not describe would
-hold a second runtime to behavior the reference runtime does not have - and
-what it writes is byte-stable, so `--check` reports a real change rather than
-the passage of time.
+A copy is an artifact and is never edited by hand: it is generated from the
+cases in this repository. The task runs every case through this implementation
+before it writes anything and refuses on the first red case - a corpus copied
+out of a repository whose own suite it does not describe would hold a second
+runtime to behavior the reference runtime does not have - and what it writes is
+byte-stable, so a comparison reports a real change rather than the passage of
+time.
 
 ## What Riddler is not
 

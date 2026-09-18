@@ -47,12 +47,15 @@ Renderers, persistence, the admin and the editor are the host's or later
 packages'. Nothing in `lib/` renders anything, writes anything to a store, or
 knows that a browser exists.
 
-The conformance corpus is **authored here**, beside the code that has to
-satisfy it, and emitted into
-[riddler_spec](https://github.com/riddler/riddler_spec) by
-`mix riddler.corpus`. A corpus file is never edited by hand in that
-repository: it is generated from the cases in this one, so that a runtime
-written in another language and this one are held to the same behavior.
+The conformance corpus **lives here**: the cases in `corpus/`, beside the code
+that has to satisfy them, and the JSON schemas in `priv/schemas/`. There is no
+second repository holding a copy that has to be kept in step. The gate is the
+corpus runner and its tests - `test/riddler/corpus_test.exs` runs every case
+through `Riddler.Corpus` as part of `mix quality`. A runtime written in another
+language vendors the corpus from a tag of this repository and records the tag
+it took, so that it and this one are held to the same behavior.
+`mix riddler.corpus` exports a copy for such a consumer; an exported copy is an
+artifact and is never edited by hand.
 
 ## Agent authority in this repo
 
