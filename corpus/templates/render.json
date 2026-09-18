@@ -757,7 +757,7 @@
         "mode": "both",
         "source": "{% if context.beta_enabled and responses.plan == 'business' %}Beta{% elsif responses.plan == 'personal' %}Personal{% else %}Standard{% endif %}"
       },
-      "name": "A path the root does not carry inside an if or elsif condition, compared and chained with and, is missing in neither mode"
+      "name": "A path the root does not carry is missing in neither mode inside an if condition chained with and, nor inside a bare elsif comparison"
     },
     {
       "expected": {
