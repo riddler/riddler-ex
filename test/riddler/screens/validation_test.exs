@@ -487,21 +487,22 @@ defmodule Riddler.Screens.ValidationTest do
     end
   end
 
-  # The note at the foot of `docs/adr/0002-element-document.md` opening
-  # "Noted 2026-09-18, campaign RF055, bead rd-7ue.": a button the document
-  # says may not be shown is not on the resolved screen, so a press naming its
-  # key names no button on the resolved screen and validates in full. The
-  # amendment headed "a keyless button cannot opt out, and a call naming no
-  # button never does" leaves this edge open in as many words; the note records
-  # where the rule already decided renders on it.
+  # The note at the foot of `docs/adr/0002-element-document.md` headed "A button
+  # whose own condition the root could not decide is not on the resolved screen,
+  # so a press naming its key validates that screen in full.": the button is
+  # dropped by its own condition, so the press names no button on the resolved
+  # screen and validates in full. The two amendments above that note each leave
+  # this edge open in their own words; the note answers it by recording where
+  # the rule they already state renders on it.
   describe "a button hidden by its own undecidable condition" do
-    # Sabotage: made `shown/3` in `lib/riddler/screens.ex` answer
-    # `present(node, root, diagnostics)` for the undecidable arm of
-    # `evaluate/4` - that is, kept a node whose condition could not be decided
-    # on the resolved screen instead of dropping it. The Back button was then
-    # on the screen, `opted_out?/2` found it and read its `validates` as
-    # `false`, the keyed press answered `:ok`, and this test went red on its
-    # first assertion. Reverted from a copy taken before the edit.
+    # Sabotage: in `lib/riddler/screens.ex`, made the `_undecidable ->` arm of
+    # the `case` inside `evaluate/4`'s binary clause answer
+    # `{true, undecidable(diagnostics, key, condition)}` rather than
+    # `{false, ...}`, so a node whose condition could not be decided stayed on
+    # the resolved screen instead of being dropped. The Back button was then on
+    # the screen, `opted_out?/2` found it and read its `validates` as `false`,
+    # the keyed press answered `:ok`, and this test went red on its first
+    # assertion. Reverted from a copy taken before the edit.
     test "does not opt its keyed press out, because the press names no button that is there" do
       document = back_hidden_by_its_own_condition_document()
       root = %{"responses" => %{"first_name" => ""}}
