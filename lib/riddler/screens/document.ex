@@ -161,7 +161,9 @@ defmodule Riddler.Screens.Document do
   @common_fields [:type, :key, :condition]
 
   # The string fields a document writes as templates. Every other string in a
-  # document is literal text.
+  # document is literal text. This is the one declaration of the list: the
+  # admit-time refusal below and `Riddler.Screens`' resolve-time render are two
+  # passes over the same fields, and both read it through `template_fields/0`.
   @template_fields [:text, :label, :placeholder]
 
   # The validation formats this package will recognize when a response
@@ -233,6 +235,15 @@ defmodule Riddler.Screens.Document do
       findings -> {:error, findings}
     end
   end
+
+  # The template-field list belongs to the module that refuses a document, so a
+  # field only becomes a template by being named there. `Riddler.Screens`
+  # already depends on this module and reads the list through this accessor;
+  # the reverse reference would be a cycle. No part of the package's surface,
+  # exactly as `formats/0` is not.
+  @doc false
+  @spec template_fields() :: [atom()]
+  def template_fields, do: @template_fields
 
   @doc false
   @spec formats() :: [String.t()]

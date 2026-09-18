@@ -103,11 +103,6 @@ defmodule Riddler.Screens do
   alias Riddler.Screens.Validation
   alias Riddler.Template
 
-  # The string fields a document writes as templates. Every other string in a
-  # document is literal text. The list is the document's, repeated here because
-  # rendering and refusing are two different passes over the same fields.
-  @template_fields [:text, :label, :placeholder]
-
   @empty_diagnostics %{missing_variables: [], undecidable_conditions: []}
 
   @doc """
@@ -450,7 +445,10 @@ defmodule Riddler.Screens do
   # -- templates -------------------------------------------------------------
 
   defp render(node, root, diagnostics) do
-    Enum.reduce(@template_fields, {node, diagnostics}, fn field, {node, diagnostics} ->
+    # The list is the document's - `Riddler.Screens.Document.template_fields/0`.
+    # Rendering and refusing are two passes over the same fields, and a field
+    # added there is rendered here without a second edit.
+    Enum.reduce(Document.template_fields(), {node, diagnostics}, fn field, {node, diagnostics} ->
       case Map.fetch(node, field) do
         {:ok, source} when is_binary(source) ->
           render_field(node, field, source, root, diagnostics)
