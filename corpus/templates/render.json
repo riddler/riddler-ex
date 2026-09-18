@@ -549,6 +549,22 @@
     },
     {
       "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.parse_error",
+            "field": null,
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% render %}"
+      },
+      "name": "A template the parser refuses without saying where is refused as a parse error, and the finding names no place"
+    },
+    {
+      "expected": {
         "compiled": true,
         "missing": [
           "responses.first_name"

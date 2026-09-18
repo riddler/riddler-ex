@@ -437,6 +437,32 @@ defmodule Riddler.Screens.DocumentTest do
       assert finding.message =~ "does not parse"
     end
 
+    # Sabotage: restore the `meta[:line] - 1` arithmetic in Riddler.Template
+    # by calling `Solid.parse/2` straight from compile/1 - validate/1 raises
+    # out of the parser on a document admit/1 has already accepted, and the
+    # match in findings/1 never runs.
+    test "a template field the parser refuses without a place is a finding, not a raise" do
+      raw = %{
+        "schema_version" => 1,
+        "screens" => [
+          %{
+            "key" => "a",
+            "title" => "t",
+            "nodes" => [
+              %{"type" => "heading", "key" => "h", "level" => 1, "text" => "{% render %}"}
+            ]
+          }
+        ]
+      }
+
+      assert %Document{} = Document.admit(raw)
+      assert [finding] = findings(raw)
+      assert finding.code == "document.invalid_template"
+      assert finding.node_key == "h"
+      assert finding.position == nil
+      assert finding.message =~ "could not be parsed"
+    end
+
     # Sabotage: drop `:label` from the document's template fields and a label
     # holding a refused construct compiles as literal text.
     test "a template field holding a construct outside the subset" do

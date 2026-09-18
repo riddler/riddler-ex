@@ -301,6 +301,30 @@ defmodule Riddler.TemplateTest do
       assert finding.message =~ "could not be parsed"
     end
 
+    # Mutation: restore the `meta[:line] - 1` arithmetic by calling
+    # `Solid.parse/2` directly from compile/1 instead of parse/1 - the parser
+    # raises building its own error message and the assert on {:error, _}
+    # never runs.
+    test "a template the parser refuses without a place is a finding, not a raise" do
+      for source <- ["{% render %}", "{% assign e %}"] do
+        assert [%Riddler.Finding{code: "template.parse_error", field: nil} = finding] =
+                 refusal!(source)
+
+        assert finding.position == nil
+        assert finding.message =~ "could not be parsed"
+      end
+    end
+
+    # Mutation: have span/1 interpolate the line and the column whatever they
+    # are - a placeless refusal then reads "(line , column )", promising a
+    # place and naming none.
+    test "a refusal the parser did not locate names no place in its message" do
+      assert [finding] = refusal!("{% render %}")
+
+      refute finding.message =~ "line"
+      refute finding.message =~ "column"
+    end
+
     # Mutation: delete drop_derivative/1, or the uniq_by in to_findings/1 -
     # the parser reports the same refused tag twice and the orphaned block
     # terminator once more, and the list is then longer than the number of
