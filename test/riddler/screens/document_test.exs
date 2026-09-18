@@ -846,5 +846,20 @@ defmodule Riddler.Screens.DocumentTest do
       assert "document.invalid_key" in codes
       assert "document.level_out_of_range" in codes
     end
+
+    # Mutation: give Riddler.Finding a default position other than nil, or
+    # set one on a document check - a document has no source text, so a
+    # position on one of its findings is a span pointing at nothing.
+    test "and gives its findings no source position, because a document has no source" do
+      findings =
+        findings(
+          document([
+            %{"type" => "heading", "key" => "Account_Heading", "level" => 9, "text" => "Hi"}
+          ])
+        )
+
+      assert findings != []
+      assert Enum.all?(findings, &is_nil(&1.position))
+    end
   end
 end
