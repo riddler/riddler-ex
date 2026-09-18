@@ -293,7 +293,7 @@ a read position gives, and it is the answer the `case` subject beside it gives:
 the test named "a case subject still reports the missing variable", in the same
 file and read at the same commit, pins the subject in the same two modes.
 
-**The conformance corpus does not carry a `when` operand case, so nothing here
+**No corpus case has a `when` operand as its missing variable, so nothing here
 is complete.** `corpus/templates/render.json`, read at `90f5930`, carries the
 case named "A case subject the root does not carry is still reported in strict
 mode: a subject reads a value rather than testing one", which states the subject
@@ -302,9 +302,10 @@ missing variable. A second runtime is held to what this entry records only once
 the corpus carries it; today just this package's own test does. Whether the
 corpus should carry the case is not decided here.
 
-**Why a note and not an amendment.** The rule above answers a call about the
-condition of an `if`, an `elsif` or an `unless`, and it gave no answer about a
-`when` operand at all. Recording that the rule does not reach one, and that the
+**Why a note and not an amendment.** The rule above already answers for every
+position it does not reach - they "keep what they do today" - and this entry
+answers a `when` operand the same way that clause does; what was missing is the
+enumeration naming it. Recording that the rule does not reach one, and that the
 position keeps what it does today, takes nothing away: no template that renders
 stops rendering, no missing list changes, and no refusal is added. What it fills
 is an enumeration that reads as exhaustive and is not, which is where a reader
