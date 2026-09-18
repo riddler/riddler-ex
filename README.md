@@ -28,7 +28,7 @@ statifier family is a dependency of it.
 ```elixir
 def deps do
   [
-    {:riddler, "~> 0.1.0"}
+    {:riddler, "~> 0.2.0"}
   ]
 end
 ```
