@@ -175,6 +175,32 @@ defmodule Riddler.Screens.DocumentTest do
       assert node == %{type: "text", key: "account_intro", text: "Hello"}
     end
 
+    # The record reserves `answer_options` for the select question types and
+    # does not build them in this version, so a question carrying it today is
+    # a known type carrying a field this version does not know: admitted, the
+    # field dropped, and nothing said about it.
+    #
+    # Sabotage: add `:answer_options` to the text question type's optional
+    # fields and the reserved field is carried onto the admitted node.
+    test "does not carry answer_options, the field reserved for question types this version does not build" do
+      raw =
+        document([
+          %{
+            "type" => "text_question",
+            "key" => "account_plan",
+            "label" => "Which plan?",
+            "answer_options" => ["monthly", "yearly"]
+          }
+        ])
+
+      document = Document.admit(raw)
+
+      assert [%{nodes: [node]}] = document.screens
+      assert node == %{type: "text_question", key: "account_plan", label: "Which plan?"}
+      refute Map.has_key?(node, :answer_options)
+      assert {:ok, ^document} = Document.validate(document)
+    end
+
     # Sabotage: stop recursing into a variant's candidates and the inner node
     # keeps its string keys.
     test "admits a variant's candidates as nodes" do

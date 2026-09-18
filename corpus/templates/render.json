@@ -813,6 +813,43 @@
         "source": "{% assign greeted = responses.first_name %}Nice to meet you, {{ greeted }}."
       },
       "name": "An assign right-hand side the root does not carry is still reported in strict mode: it reads a value rather than testing one"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [
+          "responses.newsletter"
+        ],
+        "rendered": true,
+        "text": "Newsletter: "
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {}
+        },
+        "mode": "lenient",
+        "source": "{% capture line %}Newsletter: {{ responses.newsletter }}{% endcapture %}{{ line }}"
+      },
+      "name": "A capture right-hand side the root does not carry is named in lenient mode, and the captured text still renders where it is output"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [
+          "responses.newsletter"
+        ],
+        "rendered": false
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {}
+        },
+        "mode": "strict",
+        "source": "{% capture line %}Newsletter: {{ responses.newsletter }}{% endcapture %}{{ line }}"
+      },
+      "name": "A capture right-hand side the root does not carry is still reported in strict mode: a capture body reads a value rather than testing one"
     }
   ],
   "name": "The template subset: what compiles, what is refused, and what the two render modes do"
