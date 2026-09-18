@@ -465,3 +465,90 @@ build findings call it from another module. The map's shape carries a name of
 its own: this addition exports the type `Riddler.Finding.position/0`, defined as
 `%{line: pos_integer(), column: pos_integer()}`, and the struct's `:position`
 is typed `position() | nil` (rd-0pi).
+
+## Amendment, 2026-09-18: a placeless parse refusal is a finding with a nil position
+
+Status: proposed
+
+This record decided that a finding's `:position` is `nil` or a map of a line
+and a column, and it stated carefully that every template refusal carries a
+position - carefully, because the statement rested on a fuzz rather than on a
+guarantee, and because the one input class that would have falsified it raised
+instead of producing a finding at all. That raise is now gone. This amendment
+changes what the record decides about the shape a template refusal can take.
+
+The change it records is the one riddler-ex pull request 45 makes. At writing
+that request is open and held, and every cite below is read at its head
+`3ca3d745099636ee3e8f3468d467263fcaa3c34b`; the amendment lands at proposed
+and is flipped once both it and that request are on `main`.
+
+### What the record now decides
+
+**A template the parser refuses without saying where is a finding with no
+position.** The refusal reaches a host as the ordinary parse-failure finding,
+`template.parse_error` with `position: nil` and a message that names no place,
+from `Riddler.Template.compile/1`
+(`lib/riddler/template.ex:166`, the `{:error, :placeless}` clause at `:180`);
+and as `document.invalid_template` with `position: nil` at the document door,
+where the wrapping finding carries the position of the refusal it wraps and
+that position is now legitimately absent
+(`lib/riddler/screens/document.ex:586` and `:590`). Both are pinned by tests,
+and the first by a corpus case in `corpus/templates/render.json` that expects a
+refusal naming no place.
+
+**A `nil` position is a reachable shape, not only an unreached one.**
+`Riddler.Finding.position/2` is where it is answered: it builds the map only
+when both the line and the column are positive integers and answers `nil`
+otherwise (`lib/riddler/finding.ex:97` and the fallback clause at `:101`). It
+is reached with no line at all, because the parser can refuse a source without
+locating it and one call into the parser -
+`Riddler.Template`'s private `parse/1` at `lib/riddler/template.ex:210`, which
+wraps exactly `Solid.parse(source)` and names the two exceptions the parser
+raises inside its own line arithmetic, `ArithmeticError` and `CaseClauseError`
+(`:213`) - turns that into a refusal rather than an exception. The message and
+the field cannot disagree about it: the span is appended from the position
+rather than from the numbers it was built out of
+(`lib/riddler/template.ex:538` and `:539`).
+
+**The rule is restated.** "Every template refusal carries a position" no
+longer holds and is replaced by: every template refusal is a finding, and a
+position is present when the parser gave one.
+
+### What v1 said, and why it is now history
+
+Two sentences of this record are about the state before that change, and are
+read as history rather than as what the record decides.
+
+The first named the raise as an open defect of this package:
+
+> and a template refusal whose parser metadata is malformed raises before any
+> finding is built rather than producing one without a place (rd-9cc).
+
+That defect is resolved by the request above, and the bead is no longer open
+against this record. The other defects that paragraph files - the condition
+and pattern places discarded a layer below the finding, and the undecidable
+response finding's several causes - are untouched by it and stand as written.
+
+The second grounded the absence of a `nil` position in the fuzz rather than in
+a guarantee:
+
+> it is what this package's checks and a fuzz of 19,683 templates and 43,253
+> adversarial inputs established, finding no template finding with a `nil`
+> position, and not a guarantee the parser makes. A metadata carrying a line
+> and no column would reach `Riddler.Finding.position/2` and yield `nil`; no
+> input has been found that produces one.
+
+The care in that sentence was warranted and the sentence is now overtaken:
+inputs that produce a template finding with a `nil` position are known, named
+in the tests and in the corpus, and `{% render %}` is one of them. What the
+fuzz established remains true of the code it ran against; it is not a
+statement about the code this amendment records.
+
+**The count of sites is unchanged.** "Which findings carry it" says three
+sites in `lib/` set the field and no others, and after the change it is still
+three: the two clauses of `Riddler.Template` that build a template refusal
+(`lib/riddler/template.ex:518` and `:529`) and the `document.invalid_template`
+finding that re-reports one (`lib/riddler/screens/document.ex:590`). The
+guard added at the one call into the parser routes a placeless refusal through
+the first of those clauses rather than adding a fourth site; what changed is
+what that clause can produce, not how many places produce it.
