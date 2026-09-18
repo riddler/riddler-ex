@@ -545,7 +545,7 @@
       "input": {
         "source": "Nice to meet you, {{ responses.first_name"
       },
-      "name": "A malformed template is refused as a parse failure, not as a construct outside the subset"
+      "name": "An unterminated output tag is refused as a parse error, and the finding names no field"
     },
     {
       "expected": {
