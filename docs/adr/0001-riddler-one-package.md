@@ -394,18 +394,17 @@ against `main` at `63c432f`. Nothing above is changed.
 is decided.** The struct gains a fifth field, `:position`, which is either
 `nil` or a map `%{line: line, column: column}` with both numbers one-based and
 counting bytes, as the parser's own locations do. Every template refusal sets
-it. The parser this package pins locates every error it reports -
-`Solid.Parser.Loc` enforces a line and a column, both `pos_integer`, and
-`Solid.ParserError`'s own typespec declares its metadata carries both - so a
-template refusal with no place is not a state that arises at that version.
-`Riddler.Finding.position/2` declines to build half a span anyway. That is
-defence against a parser that stopped locating, not a fork in what this
-package does; and that the parser always locates is an assumption about a
-dependency rather than anything this package enforces, recorded here because
-an upgrade could retire it without a line of this package changing. A document
-finding coded `document.invalid_template` sets it when it wraps a refusal that
-has
-one: `lib/riddler/screens/document.ex` re-reports such a refusal against the
+it, and the reason is narrower than the rule sounds: a parse error reported
+without a place never reaches this package as a refusal at all. The parser
+builds its error by indexing the source with the line it was given, so an
+error whose metadata carries no line raises inside the parser, and
+`Riddler.Template` returns findings only where the parser returned an error it
+could index. That the parser never reports a placeless error is NOT
+established, and it is not what makes the universal hold.
+`Riddler.Finding.position/2` declines to build half a span regardless, which
+is defence rather than a case this package has been shown to meet. A document
+finding coded `document.invalid_template` sets it when it wraps a refusal:
+`lib/riddler/screens/document.ex` re-reports such a refusal against the
 template a node writes, and it carries that refusal's position as well as
 naming it in the sentence it builds, because the place is a place in source
 text the document supplied.
