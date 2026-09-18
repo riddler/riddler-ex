@@ -393,20 +393,26 @@ against `main` at `63c432f`. Nothing above is changed.
 **`Riddler.Finding` carries a source position, and this record is where that
 is decided.** The struct gains a fifth field, `:position`, which is either
 `nil` or a map `%{line: line, column: column}` with both numbers one-based and
-counting bytes, as the parser's own locations do. A template refusal sets it
-wherever the parser gave it a place, which is every refusal of a construct
-outside the subset and every parse error the parser located; a parse error it
-did not locate is the exception, because `Riddler.Template` reads a parse
-refusal's line and column from `Solid.ParserError`'s metadata, either can be
-absent there, and half a span is no span. A document finding coded
-`document.invalid_template` sets it when it wraps a template refusal that has
+counting bytes, as the parser's own locations do. Every template refusal sets
+it. The parser this package pins locates every error it reports -
+`Solid.Parser.Loc` enforces a line and a column, both `pos_integer`, and
+`Solid.ParserError`'s own typespec declares its metadata carries both - so a
+template refusal with no place is not a state that arises at that version.
+`Riddler.Finding.position/2` declines to build half a span anyway. That is
+defence against a parser that stopped locating, not a fork in what this
+package does; and that the parser always locates is an assumption about a
+dependency rather than anything this package enforces, recorded here because
+an upgrade could retire it without a line of this package changing. A document
+finding coded `document.invalid_template` sets it when it wraps a refusal that
+has
 one: `lib/riddler/screens/document.ex` re-reports such a refusal against the
 template a node writes, and it carries that refusal's position as well as
 naming it in the sentence it builds, because the place is a place in source
 text the document supplied.
 
-The field is `nil` everywhere else, and the rule is which checks carry a place
-rather than which inputs have source text. Those are not the same set.
+The field is `nil` everywhere else, and the rule is which checks OBTAIN a place
+rather than which inputs have source text. Those are not the same set, and
+obtaining a place is not the same as carrying one either.
 `document.invalid_condition` is built on two paths and only one of them obtains
 a place. Where the condition is source the compiler refused and gave a place
 for, `describe/1` in that same file takes the line and the column out of the
@@ -417,12 +423,19 @@ is not source at all - a number where a string belongs, which is the malformed
 document this check exists to refuse - there is no compiler error, no place to
 take, and the message ends in the offending value instead; that is an ordinary
 `nil`. One code, two paths, so a host reading the code alone is promised
-neither. The rest have none to carry: a template refusal the parser could not
-place; the checks about the document as data, which is what most document
-findings are, exactly as `:node_key` is `nil` for a template finding; and a
-field refused for not being template source at all, which also carries the code
-`document.invalid_template`, so a host switching on that code alone is not
-promised a span by it. Where there is a position the refusal's `:message` names
+neither. Everything else obtains no place at all: the checks about the document
+as data, which is what most document findings are, exactly as `:node_key` is
+`nil` for a template finding; a field refused for not being template source at
+all, which also carries the code `document.invalid_template`, so a host
+switching on that code alone is not promised a span by it; and the findings
+about a visitor's responses - `response.required`, `response.format`,
+`response.out_of_range` and `response.undecidable` - which report a submission
+against a screen rather than refusing authored source. `response.undecidable`
+is the one worth naming beside the condition cases above, because it too is a
+check over a condition and a reader who stopped at those would expect it here:
+it fires where a condition the document compiled cannot be DECIDED against the
+root a host handed in, so nothing was refused at a place and there is no place
+to obtain. Where there is a position the refusal's `:message` names
 it too and goes on naming it: a person reading a finding reads one sentence,
 and the field is the same fact in the form an editor can act on without parsing
 that sentence. The field and the checks that pin it are added by this request
@@ -457,7 +470,7 @@ nothing a map with those keys does not already give it.
 `Riddler.Finding.position/2`, which is `@doc false` and no part of this
 package's public surface, turns a line and a column into the map and answers
 `nil` unless both are positive integers, so a parser error reported without a
-place cannot put half a span on a finding. It is the same device, in the same
+place could not put half a span on a finding. It is the same device, in the same
 module, and for the same reason, as
 `Riddler.Finding.node_key/1`, the `@doc false` coercion this package's findings
 already go through; each is `def` rather than `defp` because the checks that
