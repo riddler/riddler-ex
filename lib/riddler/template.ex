@@ -41,26 +41,41 @@ defmodule Riddler.Template do
   ## A source that does not parse is refused, and as what depends on the reason
 
   A template the parser cannot read is refused like any other template, and
-  which code comes back depends on what the parser said about it. A refusal
-  whose reason names a tag - a stray `{% endif %}` standing on its own, for
-  example - is reported as that tag, `template.tag_not_allowed`, with the tag
-  in `field`: the author reached for a construct the subset does not admit,
-  and naming the construct is the answer they can act on. A refusal naming no
-  tag is a parse failure, `template.parse_error`, with a null `field` and the
-  parser's own reason carried in the message: there is no construct to name,
-  so a host shows the reason rather than looking for a tag that is not there.
+  which code comes back depends on the shape of the reason the parser gave.
+  One shape is singled out: the parser reporting that it met a tag it did not
+  expect. That refusal is reported as that tag, `template.tag_not_allowed`,
+  with the tag in `field`, because the author reached for a construct the
+  subset does not admit and naming the construct is the answer they can act
+  on. Every other reason is a parse failure, `template.parse_error`, with a
+  null `field` and the parser's own reason carried in the message - including
+  a reason that names a tag for some other purpose, such as a closer the
+  parser was still waiting for.
 
       iex> {:error, [finding]} = Riddler.Template.compile("done{% endif %}")
       iex> {finding.code, finding.field}
       {"template.tag_not_allowed", "endif"}
+      iex> {:error, [finding]} = Riddler.Template.compile("{% if a %}x")
+      iex> {finding.code, finding.field, finding.message =~ "endif"}
+      {"template.parse_error", nil, true}
       iex> {:error, [finding]} = Riddler.Template.compile("Nice to meet you, {{ responses.first_name")
       iex> {finding.code, finding.field}
       {"template.parse_error", nil}
 
-  A parse failure is also the one refusal that can arrive with no position on
-  it. It carries one when the parser named a place and `nil` when the parser
-  refused the source without naming one, so a host that points at a span
-  checks `position` for `nil` on this code where it need not on the others.
+  A tag the subset refuses reaches this code too when it is written in a way
+  the parser cannot read: the parser gives up before there is a node for the
+  allowlist walk to ask about, so the answer is the parse failure rather than
+  the name of the construct. `{% render %}`, `{% cycle %}`, `{% tablerow %}`
+  and `{% increment %}` each answer `template.parse_error` with a null
+  `field`, where the well-formed `{% render 'x' %}` answers
+  `template.tag_not_allowed` naming `render`; those four are examples of the
+  shape and not the whole of it. So a host shows the parser's reason on this
+  code rather than expecting a construct to name.
+
+  A parse failure is also the one refusal in this module that can arrive with
+  no position on it. It carries one when the parser named a place and `nil`
+  when the parser refused the source without naming one, which is what
+  `{% render %}` does, so a host that points at a span checks `position` for
+  `nil` on this code where it need not on the other two.
 
   Both halves of the split are pinned by the conformance corpus, which is
   where a second runtime meets the same rule: "A stray closing tag is refused
