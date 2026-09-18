@@ -847,10 +847,12 @@ defmodule Riddler.Screens.DocumentTest do
       assert "document.level_out_of_range" in codes
     end
 
-    # Mutation: give Riddler.Finding a default position other than nil, or
-    # set one on a document check - a document has no source text, so a
-    # position on one of its findings is a span pointing at nothing.
-    test "and gives its findings no source position, because a document has no source" do
+    # Mutation: give Riddler.Finding a default position other than nil, or set
+    # one on a document check - a refusal about the document itself, here a
+    # heading level out of range and a key of the wrong form, is about data
+    # rather than source text, so a position on it is a span pointing at
+    # nothing.
+    test "and gives a finding that is not about a template no source position" do
       findings =
         findings(
           document([
@@ -860,6 +862,31 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert findings != []
       assert Enum.all?(findings, &is_nil(&1.position))
+    end
+
+    # Mutation: drop `position: finding.position` from the re-wrap in
+    # `refusals/3` - the document finding then names the line and the column
+    # in its sentence and carries them nowhere, which is the whole thing the
+    # field exists to stop. This goes through `admit/1` and then `validate/1`,
+    # the door a host with a document comes through, rather than through
+    # `Riddler.Template.compile/1`.
+    test "and carries the position of a refused template through to the document finding" do
+      [finding] =
+        findings(
+          document([
+            %{
+              "type" => "heading",
+              "key" => "greeting",
+              "level" => 1,
+              "text" => "abc{% include 'footer' %}"
+            }
+          ])
+        )
+
+      assert finding.code == "document.invalid_template"
+      assert finding.node_key == "greeting"
+      assert finding.position == %{line: 1, column: 4}
+      assert finding.message =~ "(line 1, column 4)"
     end
   end
 end

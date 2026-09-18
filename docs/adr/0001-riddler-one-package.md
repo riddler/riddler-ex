@@ -388,17 +388,24 @@ at `0d51acc` the emitter still stamps the version, and the request carrying
 this note is the one that stops it (rd-pqf).
 
 Noted 2026-09-17, campaign RF051, bead rd-0pi. One note by addition, read
-against `main` at `4208433`. Nothing above is changed.
+against `main` at `63c432f`. Nothing above is changed.
 
 **`Riddler.Finding` carries a source position, and this record is where that
 is decided.** The struct gains a fifth field, `:position`, which is either
 `nil` or a map `%{line: line, column: column}` with both numbers one-based and
 counting bytes, as the parser's own locations do. Every template refusal sets
-it; every document finding leaves it `nil`, because a document is data and has
-no source text to point at, exactly as `:node_key` is `nil` for a template
-finding. The refusal's `:message` names the position too and goes on naming
-it: a person reading a finding reads one sentence, and the field is the same
-fact in the form an editor can act on without parsing that sentence. The field
+it, and so does the one document finding that wraps one:
+`document.invalid_template`, built in `lib/riddler/screens/document.ex`,
+re-reports a refusal raised against a template a node writes, and it carries
+that refusal's position as well as naming it in the sentence it builds, because
+the place is a place in source text the document supplied. Every other document
+finding leaves it `nil` - a document that is not writing a template is data and
+has no source text to point at, exactly as `:node_key` is `nil` for a template
+finding - and so does a field refused for not being template source at all,
+where there is no source for a position to be in. The refusal's `:message`
+names the position too and goes on naming it: a person reading a finding reads
+one sentence, and the field is the same fact in the form an editor can act on
+without parsing that sentence. The field
 and the checks that pin it are added by this bead's own commit and so are
 citable at no earlier SHA; at `4208433` the struct carried four fields and the
 line and column existed only inside the message, although
@@ -427,9 +434,15 @@ package's conformance encoder turns every answer it emits into JSON for a
 second runtime. Two flat fields would make "there is no source span" two facts
 that can disagree, where one nullable field makes it one. A nested struct
 would be a second public module for a pair of integers, and gains a host
-nothing a map with those keys does not already give it. A private coercion
-helper on `Riddler.Finding` turns a line and a column into the map, and
-answers `nil` unless both are positive integers, so a parser error reported
-without a place cannot put half a span on a finding - the same device, in the
-same module, and for the same reason, as the `:node_key` coercion this
-package's findings already go through (rd-0pi).
+nothing a map with those keys does not already give it.
+`Riddler.Finding.position/2`, which is `@doc false` and no part of this
+package's public surface, turns a line and a column into the map and answers
+`nil` unless both are positive integers, so a parser error reported without a
+place cannot put half a span on a finding. It is the same device, in the same
+module, and for the same reason, as
+`Riddler.Finding.node_key/1`, the `@doc false` coercion this package's findings
+already go through; each is `def` rather than `defp` because the checks that
+build findings call it from another module. The map's shape carries a name of
+its own: this addition exports the type `Riddler.Finding.position/0`, defined as
+`%{line: pos_integer(), column: pos_integer()}`, and the struct's `:position`
+is typed `position() | nil` (rd-0pi).
