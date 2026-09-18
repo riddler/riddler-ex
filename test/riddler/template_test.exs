@@ -825,6 +825,21 @@ defmodule Riddler.TemplateTest do
       assert {:error, ["responses.newsletter"]} = render!(source)
     end
 
+    # Mutation: treat a CaptureTag's body as a condition position - add a
+    # `conditional(%Solid.Tags.CaptureTag{body: body}, acc)` clause that folds
+    # `tested/2` over the body, and the capture's read is excluded. The record
+    # names a capture right-hand side as a read position beside the assign.
+    test "a capture right-hand side still reports the missing variable" do
+      source =
+        "{% capture line %}Newsletter: {{ responses.newsletter }}{% endcapture %}{{ line }}"
+
+      # The captured value renders where it is output: lenient mode puts the
+      # empty string in for the missing read, and the capture's own text still
+      # arrives at the output tag rather than being swallowed with it.
+      assert {:ok, "Newsletter: ", ["responses.newsletter"]} = render!(source, @assigns, :lenient)
+      assert {:error, ["responses.newsletter"]} = render!(source)
+    end
+
     # A `when` operand is a read position today and stays one; whether the
     # rule should reach it is a separate open question and not settled here.
     test "a when operand still reports the missing variable" do
