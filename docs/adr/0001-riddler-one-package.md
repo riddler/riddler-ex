@@ -407,12 +407,17 @@ text the document supplied.
 
 The field is `nil` everywhere else, and the rule is which checks carry a place
 rather than which inputs have source text. Those are not the same set.
-`document.invalid_condition` refuses a condition, which is source, and its
-message already ends in a line and a column - `describe/1` in that same file
-takes them out of the compiler's error to build the sentence - and the finding
-it builds does not carry them. That is a place the field is owed and not yet
-paid, named here so this rule is not read as a claim that a condition has no
-place. The rest have none to carry: a template refusal the parser could not
+`document.invalid_condition` is built on two paths and only one of them obtains
+a place. Where the condition is source the compiler refused and gave a place
+for, `describe/1` in that same file takes the line and the column out of the
+compiler's error to build the message, so the sentence ends in a place the
+finding does not carry: that is a `nil` the field is OWED, named here so this
+rule is not read as a claim that a condition has no place. Where the condition
+is not source at all - a number where a string belongs, which is the malformed
+document this check exists to refuse - there is no compiler error, no place to
+take, and the message ends in the offending value instead; that is an ordinary
+`nil`. One code, two paths, so a host reading the code alone is promised
+neither. The rest have none to carry: a template refusal the parser could not
 place; the checks about the document as data, which is what most document
 findings are, exactly as `:node_key` is `nil` for a template finding; and a
 field refused for not being template source at all, which also carries the code

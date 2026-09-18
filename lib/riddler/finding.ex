@@ -39,10 +39,13 @@ defmodule Riddler.Finding do
       which has no place to carry; a field refused for not being template
       source at all, which has none either and carries the same
       `document.invalid_template` code, so that code alone does not promise a
-      span; and `document.invalid_condition`, whose message already ends in a
-      line and a column that the finding does not yet carry. Where there is a
-      position the `:message` names it too and goes on naming it, so that a
-      person reading a finding reads one sentence; this field is the same
+      span; and `document.invalid_condition` where the compiler gave the
+      refused condition a place, whose message ends in a line and a column
+      the finding does not yet carry - a `nil` that is owed, where the same
+      code refusing a condition that is not source at all has no place to
+      take and leaves an ordinary one. Where there is a position the
+      `:message` names it too and goes on naming it, so that a person
+      reading a finding reads one sentence; this field is the same
       fact in the form an editor can act on without parsing that sentence.
 
   ## Examples
