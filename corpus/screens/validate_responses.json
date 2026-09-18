@@ -1049,6 +1049,93 @@
         "screen": "plan"
       },
       "name": "A condition the root cannot decide is a finding, not a silent pass: the question is neither held to its requirement nor let through"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "vat_id"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "context": {
+          "is_business": true
+        },
+        "document": {
+          "id": "edoc_business_details",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "details",
+              "nodes": [
+                {
+                  "key": "full_name",
+                  "label": "Your name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "condition": "context.is_business == true",
+                  "key": "vat_id",
+                  "label": "VAT number",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your details"
+            }
+          ]
+        },
+        "responses": {
+          "full_name": "Ada Lovelace"
+        },
+        "screen": "details"
+      },
+      "name": "A required question the context shows and the visitor left blank is a finding, because validation reads the context the host handed in"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "context": {
+          "is_business": false
+        },
+        "document": {
+          "id": "edoc_business_details",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "details",
+              "nodes": [
+                {
+                  "key": "full_name",
+                  "label": "Your name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "condition": "context.is_business == true",
+                  "key": "vat_id",
+                  "label": "VAT number",
+                  "required": true,
+                  "type": "text_question"
+                }
+              ],
+              "title": "Your details"
+            }
+          ]
+        },
+        "responses": {
+          "full_name": "Ada Lovelace"
+        },
+        "screen": "details"
+      },
+      "name": "The same question the same context hides cannot fail, blank or not, because the context validation reads is that one and not an empty one"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"
