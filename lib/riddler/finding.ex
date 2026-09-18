@@ -29,18 +29,22 @@ defmodule Riddler.Finding do
       a string is not a name it can find one by.
     * `:position` - where in some source text the refusal is, as
       `%{line: line, column: column}`, both one-based and counting bytes as
-      the parser's own locations do. A template refusal sets it wherever the
-      parser gave it a place, and so does a `document.invalid_template`
-      finding that wraps such a refusal, because the place it names is a
-      place in the template the document node writes. It is `nil` everywhere
-      else, and the rule is which checks carry a place rather than which
-      inputs have source text: a parse error the parser could not place,
-      because half a span is no span; every check about the document as data,
-      which has no place to carry; a field refused for not being template
-      source at all, which has none either and carries the same
-      `document.invalid_template` code, so that code alone does not promise a
-      span; and `document.invalid_condition` where the compiler gave the
-      refused condition a place, whose message ends in a line and a column
+      the parser's own locations do. Every template refusal sets it - the
+      pinned parser locates every error it reports, and `position/2` declines
+      half a span as defence rather than for a case that arises - and so does
+      a `document.invalid_template` finding that wraps such a refusal,
+      because the place it names is a place in the template the document node
+      writes. It is `nil` everywhere else, and the rule is which checks
+      OBTAIN a place rather than which inputs have source text:
+      every check about the document as data, which has no place to carry; a
+      field refused for not being template source at all, which has none
+      either and carries the same `document.invalid_template` code, so that
+      code alone does not promise a span; the `response.*` findings, which
+      report a visitor's submission against a screen rather than refusing
+      authored source, `response.undecidable` included, because a condition
+      that cannot be decided against a host's root was refused at no place;
+      and `document.invalid_condition` where the compiler gave the refused
+      condition a place, whose message ends in a line and a column
       the finding does not yet carry - a `nil` that is owed, where the same
       code refusing a condition that is not source at all has no place to
       take and leaves an ordinary one. Where there is a position the
