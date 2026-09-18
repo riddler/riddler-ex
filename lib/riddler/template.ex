@@ -137,13 +137,24 @@ defmodule Riddler.Template do
   # closer rather than the one spelling of it a reader expects, because the
   # two disagreeing is a leak and not a tidiness problem: at `solid` `1.3.4`
   # the closing tag is tokenized like any other, so `{% endraw xyz %}` closes
-  # a raw block and a pattern insisting on `{% endraw %}` ran past it to the
-  # next closer and blanked whatever stood between. Where the two can still
-  # differ, the pattern ends the block EARLIER than the parser does - a
-  # closer carrying a quoted `%}` is the case - and an early end can only
-  # expose a construct to the scan, never hide one.
+  # a raw block and a pattern insisting on `{% endraw %}` runs past it to the
+  # next closer and blanks whatever stands between. The trailing tokens are
+  # therefore skipped the way the lexer reads them, quoted strings included:
+  # a string runs to the next quote of the same kind, at this version with no
+  # escape inside it, and it may hold a `%}` or a `{%` of its own. Outside a
+  # string a bare `%` ends the tag or the parser refuses the template, which
+  # is why `%` is the one character the run cannot cross.
+  #
+  # What the two can still disagree about is a closer the pattern accepts and
+  # the PARSER refuses - `{% endraw, %}`, which the lexer will not tokenize.
+  # The parser reads it as body text and looks for a later closer, so the
+  # parser's block is the longer one and the pattern's mask ends inside it.
+  # That direction only ever exposes a construct to the scan; the direction
+  # that hides one needs the pattern to end LATER than the parser, which
+  # needs a closer the parser accepts and the pattern misses, and every
+  # accepted spelling run against the parser is matched here.
   @liquid_opener ~r/\{%-?\s*liquid\b/
-  @verbatim_block ~r/\{%-?\s*(raw|comment)\s*-?%\}.*?\{%-?\s*end\1\b[^%]*%\}/s
+  @verbatim_block ~r/\{%-?\s*(raw|comment)\s*-?%\}.*?\{%-?\s*end\1\b(?:"[^"]*"|'[^']*'|[^%"'])*%\}/s
 
   @unexpected_tag ~r/Unexpected tag '([^']+)'/
 
@@ -400,13 +411,27 @@ defmodule Riddler.Template do
   # tag, and the characters of `{% endraw %}` holds three constructs and no
   # verbatim block, and masking the block first read the printed characters as
   # a real opener and closer, blanked the tag between them, and admitted it.
-  # Masking literals first blanks every span the tree reports as one of the
-  # template's own strings - a plain literal and a bracket subscript are the
-  # two shapes that carry one - so no marker the template merely prints
-  # survives to be read as a block marker. What the block pattern is left
-  # looking at is markers the parser itself would tokenize as tags, and
-  # because its closer half matches the closers the parser accepts, the spans
-  # it blanks are the spans the parser reads as verbatim bodies.
+  # Masking literals first blanks the spans the tree reports as the template's
+  # own strings, which is every string that reaches the tree: a plain literal
+  # and a bracket subscript are the two shapes that carry one.
+  #
+  # What this does NOT reach, and the reason this paragraph does not claim the
+  # scan is sound, is a string the parser reads and then THROWS AWAY. The
+  # trailing tokens of a tag are parsed and discarded by several of the
+  # admitted tags, so a string written in one of them is in no node and is
+  # never masked; a block marker inside such a string is still read as a real
+  # marker here, pairs with a real marker later in the source, and blanks
+  # whatever lies between. `{% endif "..." %}`, `{% else "..." %}`,
+  # `{% endfor "..." %}` and a `comment` tag's own trailing tokens all do it,
+  # and a construct outside the subset written in that gap is admitted and
+  # runs. Closing it means refusing something that compiles today, which is a
+  # decision to record before it is a line to write, so it is tracked
+  # separately and deliberately left open here rather than half-closed with a
+  # second source-level string matcher that would disagree with the parser in
+  # its own new ways.
+  #
+  # What IS closed: a marker printed from a string the tree carries, and a
+  # closer the parser accepts that the block pattern used to run past.
   defp liquid_refusals(source, tree) do
     masked =
       source
