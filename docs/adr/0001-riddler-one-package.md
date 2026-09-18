@@ -682,3 +682,120 @@ and `:207`), and the body answers `{:ok, resolved, order(diagnostics)}` (`:215`)
 for a screen it finds and `{:error, :no_such_screen}` (`:211`) for one it does
 not. Read the sentence above as naming which call resolves one named screen, and
 ADR-0002 as deciding what that call returns (rd-xhv).
+
+---
+
+## Amendment, 2026-09-18: the conformance corpus lives in this repository
+
+Status: proposed
+
+This record decided that the conformance corpus is authored here and emitted
+into a separate corpus repository, and it made that emitted copy part of how
+the corpus reaches a second runtime: a mix task writes it, and a drift check in
+this repository's CI fails when the copy and the cases disagree. That separate
+repository is archived. It was a mirror with no consumer and no package of its
+own, and the drift check turned every corpus-changing request here red until a
+second request landed in a repository nobody read. This amendment changes what
+the record decides about where the corpus is and how a second runtime gets it.
+
+Recorded for campaign RF055, bead rd-4lk, against `main` at `a72788a`. The
+request carrying this amendment removes the drift job in the same commit; it
+changes nothing under `lib/`, `test/`, `corpus/` or `priv/`.
+
+### What the record now decides
+
+**The conformance corpus lives in this repository.** The cases are in
+`corpus/` and the JSON schemas are in `priv/schemas/`, beside the code that has
+to satisfy them, and that is where they are read from. There is no second
+repository holding a copy that this repository is obliged to keep in step with,
+and no record, gate or job here depends on one. The paragraph above headed
+"**The conformance corpus is authored in this repository and emitted into
+`riddler_spec`.**"
+is read under this amendment: the authoring half stands, the emitting half no
+longer names a destination this package depends on, and the drift check that
+sentence promises is gone.
+
+**A second runtime vendors the corpus from a tag of this repository and
+records the tag it took.** That is how a runtime in another language is held
+to these cases: it copies `corpus/` and `priv/schemas/` out of a named tag,
+writes down which tag, and re-vendors deliberately when it means to move. The
+sibling condition package is the precedent - its corpus is in its own
+repository and its TypeScript sibling vendors it at a tag - and the same shape
+applies here. A vendored copy is an artifact of the tag it was taken from, and
+a vendoring consumer that does not record the tag has no way to say which
+contract it implements.
+
+**The corpus runner and its tests are the gate.** `Riddler.Corpus` runs each
+case through the function its `capability` names and compares the answer to
+the one the case states (`lib/riddler/corpus.ex`, its authored case and schema
+file lists at `:25` and `:32`, read at `a72788a`), and
+`test/riddler/corpus_test.exs` runs every one of those files that way as part
+of `mix quality` (its file lists at `:30`, `:37` and `:38`, same SHA). A case
+this implementation does not satisfy is a red suite here. That is the whole
+check that the corpus describes the reference runtime, and it runs inside this
+repository against nothing outside it.
+
+**No cross-repository job gates this package.** The `drift` job the sentence
+above promised is removed from `.github/workflows/ci.yml` by the request that
+carries this amendment. The full quality gate is what CI runs, and it answers
+about this repository alone.
+
+### Why an amendment and not a note
+
+The test `docs/adr/README.md` states is whether the entry changes an answer the
+record gave. It does, twice over. The record answered where the corpus is
+emitted with a named second repository, and answers it here with: nowhere as
+a matter of record; a consumer vendors it from a tag. The record also answered
+what notices when the cases and the contract a second runtime is held to come
+apart with a drift check in this repository's CI, and answers it here with:
+the corpus runner and its tests, and the tag a consumer recorded. A reader who
+followed this record to the other repository was following a sentence this
+record decided, and that sentence sends them somewhere archived. This is not a
+reading of an already decided sentence, which is what a note records; it is the
+sentence answering differently.
+
+### What is unchanged
+
+**The cases and the schemas.** Not one file under `corpus/` or `priv/schemas/`
+changes with this amendment, and no case is added, removed or reworded by it.
+
+**Every capability name, and the rule that governs them.** The paragraph headed
+"**A corpus capability is named `<kind>.<function>`.**" stands exactly as
+written, including its rule that a capability name "is part of the contract and
+changes only by a record". Nothing here renames anything.
+
+**That a corpus file is never edited by hand.** The record's reason - that a
+copy is an artifact, and an artifact that can be edited is not a conformance
+corpus - is unchanged; it now applies to a vendored copy rather than to an
+emitted mirror. The authored cases in `corpus/` were always the authored side
+and are still edited here, by a request, like any other file.
+
+**The export task.** `mix riddler.corpus` is not changed by this amendment. It
+keeps `--to PATH`, `--check` and its environment fallback, it still runs every
+case through this implementation and refuses on the first red case before it
+writes, and what it writes is still byte-stable. What changes is its standing:
+it is an export tool a consumer may use, not a step this package's CI depends
+on. Whether its default target and its documentation should still name the
+archived repository is left to a later request.
+
+**The earlier notes that quote the archived repository are history.** Two dated
+Note entries above name it. The one opening "Noted 2026-09-17, campaign RF051,
+bead rd-9j0." says the corpus module and the task ship in the Hex tarball and
+describes how the corpus reaches that repository; the one opening "Noted
+2026-09-17, campaign RF051, bead rd-pqf." quotes that repository's `bin/lint`
+read at a SHA there, in support of keeping the `generated_by` key. Read both as
+history from this date: what they decided about this package - that the two
+files stay in the tarball, and that the key stays while its value changes - is
+untouched and in force; what they report about a repository that is now
+archived is a record of how things stood, not a destination. Neither is edited.
+
+**The sibling records' single mentions.** ADR-0002 names the archived
+repository once, in the paragraph on an open `type` in the schema, and ADR-0003
+names it once, in its Context. Neither is edited here. On this amendment's
+acceptance both are read under it, by the precedence rule in
+`docs/adr/README.md`: where each says the schema or the cases would have to be
+revised in, or are emitted into, that repository, read the schema and the cases
+as the ones in this repository, at `priv/schemas/` and `corpus/`. What each
+sentence is there to say - that the schema does not enumerate node types so
+that a type can be added without revising a schema first, and that a non-Elixir
+runtime is held to these cases - is unaffected by where the files sit.
