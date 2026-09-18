@@ -361,20 +361,27 @@ conformance corpus is authored in this repository and emitted into
 change as before. What moves is a subordinate clause describing how the
 emitter labels what it writes, and even that clause's truth value does not
 move: it named the commit while the emitter stamped the version, so it was
-inaccurate before this change and is inaccurate after it. This record never
-names `generated_by`, never states the header's shape, and never puts the
-header inside the contract it decides; the contract it decides is the content
-document. The note above headed "**`Riddler.Corpus` and the `mix
+inaccurate before this change and is inaccurate after it. What this record
+DECIDED names no `generated_by` and states no header shape: at `0d51acc` the
+word does not occur in this file at all. Where it occurs as this note lands,
+and where the header's shape is spelled out, is in the paragraphs of this
+note, which report the header rather than decide it. And the record does not
+put the header inside the contract it decides; the contract it decides is the
+content document. The note above headed "**`Riddler.Corpus` and the `mix
 riddler.corpus` task ship in the Hex tarball, and that is the decision, not
 an accident.**" is the precedent this follows - a deliberate choice about the
 emitter, locked in where a reader of the record will meet it, without
-amending anything. By contrast the two amendments the sibling record ADR-0002
-took the same day each cleared the bar for a reason this entry has no
-counterpart to: one because it "reverses the layer the Decision assigns" and
-"refuses documents this version admitted", the other because "the rule stated
-above answers a call one way, and this entry answers the same call another"
-(both read at `0d51acc`). That a ruling was taken is not the test; if it
-were, every commit made under one would amend a record.
+amending anything. By contrast the sibling record ADR-0002 took THREE
+amendments the same day, and each of the three cleared the bar for a reason
+this entry has no counterpart to. The first says of itself that "this
+amendment changes what the record decides there", which is the test in the
+record's own words. The second, because it "reverses the layer the Decision
+assigns" and "refuses documents this version admitted". The third, because
+"the rule stated above answers a call one way, and this entry answers the same
+call another". All three read at `0d51acc`, and all three name a call the
+record answered one way and now answers another. This entry names none,
+because it changes no answer the record gave. That a ruling was taken is not
+the test; if it were, every commit made under one would amend a record.
 
 This note is recorded with the code half that makes it true, in one request:
 at `0d51acc` the emitter still stamps the version, and the request carrying
