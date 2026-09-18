@@ -38,7 +38,7 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
       assert written == [
                "corpus/screens/admit.json",
                "corpus/screens/resolve.json",
-               "corpus/screens/validate_responses.json",
+               "corpus/screens/validate_screen.json",
                "corpus/templates/render.json",
                "schemas/corpus-case.schema.json",
                "schemas/screen-document.schema.json"

@@ -1025,7 +1025,7 @@
           ]
         }
       },
-      "name": "A question carrying answer_options, the field reserved for the select question types, is admitted with no finding and the field is dropped"
+      "name": "A question carrying answer_options, the field reserved for the select question types, is admitted with no finding"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"
