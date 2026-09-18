@@ -1456,26 +1456,26 @@ two: `validate_screen/4` moved with the return in that same commit, matching
 `{:ok, screen}`, while its own return was untouched. It binds those diagnostics
 rather than dropping them today, which the third note below records
 (`lib/riddler/screens.ex`, the `validate_screen/4` clause, read at `9e5d667`).
-What is enumerated here is what moved with the
-return, not every line that commit touched: it also added a sentence to this
-module's `@moduledoc` and a paragraph to `resolve_screen/3`'s `@doc`, both
-stating the new return. ADR-0001 did not change with it, and its two citations
-had nothing to change: that record names the call once as the function that
-"resolves one named screen of it" and once in a provenance line naming the
-request that built it beside `resolve/2`, and neither sentence states a return
-shape. That commit touched `lib/riddler/screens.ex`, `lib/riddler/corpus.ex`,
-two test files and a changelog fragment, and no file under `docs/adr/`. What
-ADR-0001 needed was an entry of its own rather than a correction, and it has
-one: a dated note of 2026-09-18 on that record, which landed after the tree this
-entry was otherwise read against and is read here at `a72788a`, draws the
-distinction as "Which call resolves one named screen is unchanged; what that
-call returns is not what it was when this record was accepted." The first of the
-four things listed is the call's own public surface, and that did change: its
-`@spec` states the return, and its being public is why the change is breaking
-rather than internal.
-This record's own earlier sentences naming `resolve_screen/3` are unchanged as
-well, and could not be otherwise: this record grows by addition, so an amendment
-governs over them where it says it does and nothing above it is reworded.
+What is enumerated here is what moved with the return, not every line that
+commit touched: it also added a sentence to this module's `@moduledoc` and a
+paragraph to `resolve_screen/3`'s `@doc`, both stating the new return. ADR-0001
+did not change with it, and the two citations it carried then had nothing to
+change: that record named the call once as the function that "resolves one
+named screen of it" and once in a provenance line naming the request that built
+it beside `resolve/2`, and neither sentence states a return shape. That commit
+touched `lib/riddler/screens.ex`, `lib/riddler/corpus.ex`, two test files and a
+changelog fragment, and no file under `docs/adr/`. What ADR-0001 needed was an
+entry of its own rather than a correction, and it has one: a dated note of
+2026-09-18 on that record, which landed after the tree this entry was otherwise
+read against and is read here at `a72788a`, draws the distinction as "Which
+call resolves one named screen is unchanged; what that call returns is not what
+it was when this record was accepted." The first of the four things listed is
+the call's own public surface, and that did change: its `@spec` states the
+return, and its being public is why the change is breaking rather than
+internal. This record's own earlier sentences naming `resolve_screen/3` are
+unchanged as well, and could not be otherwise: this record grows by addition, so
+an amendment governs over them where it says it does and nothing above it is
+reworded.
 
 **The four places the acceptance note lists as not yet lined up are each
 answered further down, and the list itself still reads as open (rd-uq9).** The
