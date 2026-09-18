@@ -30,7 +30,7 @@ defmodule Riddler.CorpusTest do
   @corpus_files [
     "corpus/screens/admit.json",
     "corpus/screens/resolve.json",
-    "corpus/screens/validate_responses.json",
+    "corpus/screens/validate_screen.json",
     "corpus/templates/render.json"
   ]
 
@@ -48,7 +48,7 @@ defmodule Riddler.CorpusTest do
   @case_counts %{
     "corpus/screens/admit.json" => 31,
     "corpus/screens/resolve.json" => 21,
-    "corpus/screens/validate_responses.json" => 34,
+    "corpus/screens/validate_screen.json" => 34,
     "corpus/templates/render.json" => 43
   }
 
@@ -293,7 +293,31 @@ defmodule Riddler.CorpusTest do
     # Sabotage: made an absent response count as answered rather than blank; the
     # unanswered cases came back :ok and this test went red.
     test "every response validation case answers what the corpus states" do
-      assert mismatches("corpus/screens/validate_responses.json") == []
+      assert mismatches("corpus/screens/validate_screen.json") == []
+    end
+
+    # The capability string this version renamed is gone, not kept alive beside
+    # the new one. The runner carries a clause per capability and no fallback,
+    # so a case file naming a capability it does not carry raises where a case
+    # would have run - and a corpus still naming the old string is a red run
+    # rather than one that quietly passes under a compatibility clause nobody
+    # decided to add. The name is the contract a second runtime dispatches on,
+    # and two live names for one behavior is two contracts.
+    #
+    # Sabotage: added a `defp run("screens.validate_responses", input)` clause
+    # to `Riddler.Corpus` delegating to the new one; the retired string ran the
+    # case instead of raising and this test went red.
+    test "the capability string this version retired is an unknown capability, not an alias" do
+      path =
+        Path.join(
+          System.tmp_dir!(),
+          "retired-capability-#{System.unique_integer([:positive])}.json"
+        )
+
+      File.write!(path, Riddler.Corpus.canonical(retired_capability_case()))
+      on_exit(fn -> File.rm(path) end)
+
+      assert_raise FunctionClauseError, fn -> Riddler.Corpus.mismatches(path) end
     end
 
     # Sabotage: added "cycle" to the template allowlist; the cycle refusal case
@@ -343,6 +367,34 @@ defmodule Riddler.CorpusTest do
 
   defp mismatches(path), do: Riddler.Corpus.mismatches(path)
 
+  # A case file shaped like a real one and naming the capability this version
+  # retired. It is written to a temporary path rather than into `corpus/`,
+  # because the corpus is what the file lists above hold to the tree and a file
+  # there naming a capability the runner does not carry is exactly what those
+  # lists exist to refuse.
+  defp retired_capability_case do
+    %{
+      "capability" => "screens.validate_responses",
+      "cases" => [
+        %{
+          "name" => "a case naming the capability this version retired",
+          "input" => %{
+            "document" => %{
+              "id" => "edoc_signup_screens",
+              "schema_version" => 1,
+              "screens" => [
+                %{"key" => "account", "title" => "Create your account", "nodes" => []}
+              ]
+            },
+            "responses" => %{},
+            "screen" => "account"
+          },
+          "expected" => %{"ok" => true}
+        }
+      ]
+    }
+  end
+
   # -- the documents the corpus carries ---------------------------------------
 
   defp every_document do
@@ -356,7 +408,7 @@ defmodule Riddler.CorpusTest do
   end
 
   defp carried_documents do
-    for path <- ["corpus/screens/resolve.json", "corpus/screens/validate_responses.json"],
+    for path <- ["corpus/screens/resolve.json", "corpus/screens/validate_screen.json"],
         one <- cases(path),
         do: {one["name"], one["input"]["document"]}
   end

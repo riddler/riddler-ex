@@ -1,5 +1,5 @@
 {
-  "capability": "screens.validate_responses",
+  "capability": "screens.validate_screen",
   "cases": [
     {
       "expected": {
@@ -1228,7 +1228,7 @@
         "responses": {},
         "screen": "seats"
       },
-      "name": "The validating button on that same screen returns the finding the root could not decide"
+      "name": "The validating button on a screen carrying a condition the root cannot decide returns the finding"
     },
     {
       "expected": {

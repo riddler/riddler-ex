@@ -25,7 +25,7 @@ defmodule Riddler.Corpus do
   @case_files [
     "corpus/screens/admit.json",
     "corpus/screens/resolve.json",
-    "corpus/screens/validate_responses.json",
+    "corpus/screens/validate_screen.json",
     "corpus/templates/render.json"
   ]
 
@@ -118,10 +118,10 @@ defmodule Riddler.Corpus do
     end
   end
 
-  defp run("screens.validate_responses", input) do
+  defp run("screens.validate_screen", input) do
     input["document"]
     |> admitted()
-    |> validate_responses(input)
+    |> validate_screen(input)
     |> encode_validation()
   end
 
@@ -146,7 +146,7 @@ defmodule Riddler.Corpus do
     end
   end
 
-  defp validate_responses(document, input) do
+  defp validate_screen(document, input) do
     # The root a case supplies, not a root built here: validation resolves the
     # screen against the same root the host resolved with, so a case carrying a
     # context is run under that context rather than under an empty one. A case

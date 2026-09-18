@@ -10,7 +10,7 @@
           "type": "object"
         },
         "input": {
-          "description": "What the capability is given. screens.admit takes document. screens.resolve takes document and root, and screen where only one screen is resolved. screens.validate_responses takes document and screen, and - rather than a root key - responses, and context where a condition reads it, at the top level: the two together are the root the screen is validated against, the same one the host resolved with, and a half the case leaves out is read as an empty map rather than as something the root could not decide. It also takes pressed_button where a button was pressed. templates.render takes source, and assigns and mode where the case renders; mode is lenient, strict, or both, and both means the case is run in each mode and both runs have to give the stated answer.",
+          "description": "What the capability is given. screens.admit takes document. screens.resolve takes document and root, and screen where only one screen is resolved. screens.validate_screen takes document and screen, and - rather than a root key - responses, and context where the case supplies one, at the top level: the two together are the root the screen is validated against, the same one the host resolved with, and a half the case leaves out is read as an empty map, so a path into it is undecidable like any other path the root lacks. It also takes pressed_button where a button was pressed. templates.render takes source, and assigns and mode where the case renders; mode is lenient, strict, or both, and both means the case is run in each mode and both runs have to give the stated answer.",
           "type": "object"
         },
         "name": {
@@ -29,11 +29,11 @@
   "description": "One capability's conformance cases. A case is an input and the answer every runtime has to give for it, so a runtime in a second language is held to the same behavior as the reference one. Two conventions hold across every file. A finding in an expected answer carries code, field and node_key and no message: the code is the stable thing a host switches on and the message is prose a second runtime is not obliged to reproduce word for word. And the author writes name, capability and cases; the emitter that copies these files into the corpus repository adds its own provenance header beside them, which is why this schema does not forbid further keys at the top level.",
   "properties": {
     "capability": {
-      "description": "The behavior every case in the file exercises. screens.admit runs the input document through admission and reports whether it is a document and every finding against it. screens.resolve resolves a document against a root, or one named screen of it. screens.validate_responses resolves the named screen against the same root the host resolved with and reports what the responses in it have to satisfy. templates.render compiles template source against the subset and, where the case names a mode, renders it.",
+      "description": "The behavior every case in the file exercises. screens.admit runs the input document through admission and reports whether it is a document and every finding against it. screens.resolve resolves a document against a root, or one named screen of it. screens.validate_screen resolves the named screen against the same root the host resolved with and reports what the responses in it have to satisfy. templates.render compiles template source against the subset and, where the case names a mode, renders it.",
       "enum": [
         "screens.admit",
         "screens.resolve",
-        "screens.validate_responses",
+        "screens.validate_screen",
         "templates.render"
       ],
       "type": "string"
