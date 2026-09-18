@@ -94,6 +94,9 @@ defmodule Riddler.Template do
   @filter_not_allowed "template.filter_not_allowed"
   @parse_error "template.parse_error"
 
+  # What a refusal that names no place says instead of naming one.
+  @placeless_reason "the parser refused the source without naming a place"
+
   @allowed_tags ~w(assign capture case comment for if raw unless)
 
   @string_filters ~w(
@@ -161,7 +164,7 @@ defmodule Riddler.Template do
   """
   @spec compile(String.t()) :: {:ok, Compiled.t()} | {:error, [Finding.t()]}
   def compile(source) when is_binary(source) do
-    case Solid.parse(source) do
+    case parse(source) do
       {:ok, %Solid.Template{parsed_template: tree} = parsed} ->
         case refusals(tree) ++ liquid_refusals(source, tree) do
           [] ->
@@ -173,7 +176,41 @@ defmodule Riddler.Template do
 
       {:error, %Solid.TemplateError{errors: errors}} ->
         {:error, errors |> Enum.map(&parse_refusal/1) |> drop_derivative() |> to_findings()}
+
+      {:error, :placeless} ->
+        {:error, to_findings([{nil, nil, @parse_error, nil, @placeless_reason}])}
     end
+  end
+
+  # -- the one call into the parser -----------------------------------------
+
+  # The parser can refuse a source without saying where, and at `solid`
+  # `1.3.4` it raises rather than returning when it does. A refusal carries a
+  # location, and for some sources that location is a keyword list with no
+  # `:line` key at all: `Solid.Parser.parse("{% render %}", [])` answers
+  # `{:error, [{"Expected template name as a quoted string",
+  # [end: %{line: 1, column: 11}]}]}`. `Solid.parse/2` then reads
+  # `meta[:line]` out of that list to slice the offending line out of the
+  # source, and the arithmetic on the `nil` it gets back raises before any
+  # caller sees a return value. A neighbouring source, `{% assign e %}`,
+  # reaches a placeless location one frame earlier and raises inside the
+  # parser itself. Roughly one malformed input in forty does one or the other.
+  #
+  # Both are the parser refusing a template, which is a finding here whatever
+  # the refusal does or does not say about where: `compile/1` answers
+  # `{:ok, compiled}` or findings and admits no third outcome, and
+  # `Riddler.Screens.Document` promises not to raise on anything a host can
+  # author - a host authors the template source a document node carries. So
+  # the guard is here, at the one call into the parser, rather than in each
+  # caller, and what it produces is the same parse-failure finding any other
+  # refusal produces, with no position on it. The two exception types are
+  # named rather than rescued wholesale: an exception this package has not
+  # established as a refusal without a place is a defect to see, not a
+  # finding to report.
+  defp parse(source) do
+    Solid.parse(source)
+  rescue
+    _placeless in [ArithmeticError, CaseClauseError] -> {:error, :placeless}
   end
 
   @doc """
@@ -468,14 +505,17 @@ defmodule Riddler.Template do
   # The line and the column go on being written into the message, because a
   # person reading a refusal should not have to assemble the sentence, and
   # they are also carried on `:position` for an editor that has to point at
-  # the span rather than read about it.
+  # the span rather than read about it. A parse failure is the one refusal
+  # that can arrive without them, and `span/1` below is what it says instead.
   defp finding({line, column, @parse_error, nil, reason}) do
+    position = Finding.position(line, column)
+
     %Finding{
       code: @parse_error,
-      message: "the template could not be parsed: #{reason} (line #{line}, column #{column})",
+      message: "the template could not be parsed: " <> reason <> span(position),
       field: nil,
       node_key: nil,
-      position: Finding.position(line, column)
+      position: position
     }
   end
 
@@ -489,6 +529,14 @@ defmodule Riddler.Template do
       position: Finding.position(line, column)
     }
   end
+
+  # A refusal with no place names none. The span is appended from the
+  # position rather than from the line and the column it was built out of, so
+  # that the sentence and the field cannot disagree: a refusal the parser
+  # located reads as it always has, and one it did not reports the reason and
+  # stops there rather than promising a place and leaving the slots empty.
+  defp span(nil), do: ""
+  defp span(%{line: line, column: column}), do: " (line #{line}, column #{column})"
 
   # -- render support -------------------------------------------------------
 
