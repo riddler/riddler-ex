@@ -1255,3 +1255,159 @@ format's, compiled by the one private regular-expression compiler in
 `Riddler.Screens.Validation`, which answers `:error` rather than raising and
 never reaches the template compiler. The two compile paths are distinct, and the
 amendment's claim survives.
+
+## Amendment, 2026-09-18: a keyless button cannot opt out, and a call naming no button never does
+
+Status: proposed
+
+Recorded 2026-09-18, campaign RF055, bead rd-ncs. The amendment above, on the
+per-button opt-out, names one case and declines it in these words: "Whether a
+keyless button should be able to opt out at all is left open exactly as this
+amendment found it." This amendment closes that question, and closes it the
+other way from the behaviour the package ships. Every cite below is read at
+`543f35275f05f735a34e88777201fa2e4beb1016`. The code half is a separate bead
+and a separate commit; nothing here is citable from `lib/` until it lands.
+
+### What the record now decides
+
+**`validates` as `false` is meaningful only on a button that carries a key,
+and only to a press that names that key.** The opt-out is a property of a
+press, not of a node sitting on a screen. A button with no key cannot opt out
+of anything, because nothing can name it and so no press can arrive through
+it.
+
+**`Riddler.Screens.validate_screen/3` never opts out.** It names no pressed
+button, so there is no press to read `validates` from, and it validates the
+resolved screen in full. The same holds of `validate_screen/4` handed a
+pressed key of `nil`: an absent pressed key names no button, whatever nodes
+the screen carries.
+
+What the package does today is the other reading, and this amendment is the
+reason to change it. `Riddler.Screens.Validation` finds the pressed button with
+`node[:type] == "button" and node[:key] == key`
+(`lib/riddler/screens/validation.ex:101`, the private `button?/2`, read at
+`543f35275f05f735a34e88777201fa2e4beb1016`), and the arity-3 clause passes a
+pressed key of `nil` (`lib/riddler/screens.ex:305` and `:306`, read at the same
+SHA). A button node carrying no `key` at all reads `node[:key]` as `nil` too,
+so the two absences compare equal, the private `opted_out?/2`
+(`lib/riddler/screens/validation.ex:94` through `:99`, same SHA) answers true,
+and every arity-3 validation of a document carrying such a button answers `:ok`
+without running a check.
+
+**That is a defect, and the rule above is what makes it one.** The code half
+pins the rule with a test that is red before its change and green after: the
+arity-3 call, against a document whose screen carries a button declaring
+`validates` as `false` and no key, reports the screen's findings rather than
+`:ok`. Nothing here enumerates the sites that implement the rule as a complete
+list; the rule is what is decided, and the test is what holds the package to it.
+
+### Why the fail-closed reading is the only one this record admits
+
+*Two absences comparing equal is not a host naming a button.* The amendment
+above states where `validates` is read from: "`validates` is read from the
+button the pressed key names on the resolved screen". A call passing `nil`
+names nothing. That it nonetheless finds a node is an artefact of how a missing
+key and a missing argument are both spelled, not a host saying which button the
+visitor pressed.
+
+*The purpose the record gives the opt-out does not reach this case.* The
+Decision above says what the opt-out is for - "the opt-out is what lets a Back
+button leave a half-filled screen without an error" - and the amendment above
+builds its whole argument on that: "A Back press is the visitor's, and it is
+their navigation rather than their submission." A button with no key is not a
+Back button anyone pressed. Nobody left the screen through it, because nobody
+could. The reason the amendment above gives for answering `:ok` is simply
+absent here, and with it the answer.
+
+*Answering `:ok` here is the behaviour the first amendment removed.* The reason
+that amendment gives for the finding is carried in the package's own words:
+treating the node as hidden and answering `:ok` "would accept a submission
+nobody checked" (`lib/riddler/screens.ex:252` through `:254`, the `@doc` on
+`validate_screen/3`, read at `543f35275f05f735a34e88777201fa2e4beb1016`); the
+amendment above names the same removed behaviour as "a *submission accepted
+unchecked*". That amendment carved one case out of the rule, and the carve-out
+held because a non-validating press accepts no submission. The
+arity-3 call is not a press at all: it is a host asking whether a set of
+responses is good. Answering `:ok` to that question, on the strength of a node
+nobody pressed, is exactly the accepted-unchecked submission the record refuses
+- and it is worse than the case the first amendment found, because it silences
+every finding on the screen rather than one.
+
+*The document being defective does not make the answer safe.* A button with no
+key is reported as `document.invalid_key`, from the keyless clause of the
+private `key_findings/2` (`lib/riddler/screens/document.ex:495` through `:503`,
+read at the same SHA), reached through `Riddler.Screens.Document.validate/1`.
+That is a different door. A host that validates responses without having walked
+the document door - which this package admits, `admit/1` and `validate/1` being
+separate calls - is told nothing, and is told `:ok`. The record's own framing
+of admit findings is that a document carrying one is still a document; a rule
+that is only safe for hosts who checked is not a rule this record can rest a
+silent `:ok` on.
+
+*The screen validated is the screen shown.* The first amendment's rule is that
+a rule stated about the screen the visitor was shown holds of the screen
+validated. A keyless button is on the resolved screen and can be rendered; what
+it cannot do is be pressed, because a press is a key. Reading it as the pressed
+button makes the validated screen behave as though a press arrived that the
+shown screen had no way to send.
+
+### Why an amendment and not a note
+
+The test this record states for itself is whether an entry changes what the
+record decides, and the counterweight it states just as plainly is that a
+decided reading "can remain a note because its decided reading takes nothing
+away". This one takes something away: an `:ok` the package answers today, on a
+call the amendment above describes in its own words as answering `:ok`. A
+reader of the record as it stands would write a host against that sentence. So
+this is not the `metadata` requiredness case, where deciding the open reading
+changed nothing the record had decided.
+
+It also bears on the amendment above as directly as an entry can, being a
+qualification of the rule that amendment states, which the record names
+elsewhere as the mark of an amendment rather than a note. The other test this
+record uses - the uncompilable-pattern amendment's "a new refusal of documents
+0.1.0 admits" - is not met and does not need to be: no document is refused
+here, and that test is a sufficient reason for an amendment rather than a
+necessary one.
+
+### What is unchanged
+
+Everything the three amendments above list as unchanged, and each of those
+amendments apart from the one question this entry closes for the third of them.
+`validates` keeps its default of true, its meaning on a keyed button, and its
+admit-time shape check. A press through a keyed button declaring `false` still
+answers `:ok` without running a check, for an undecidable condition and for
+every other finding, exactly as the amendment above decides. A key naming no
+button on the resolved screen still validates, because validating is what a
+button that is not there carries. `resolve/2` and `resolve_screen/3` are not
+touched, and their diagnostics are what they were.
+
+**No line of this record is edited by this amendment.** The paragraph in the
+amendment above that describes a call naming no button as "treated as a press
+through it" stays exactly as written. It is a true description of what the
+package did when it was written and of why that amendment declined the
+question; a record shows its reasoning as it went, and this entry adds the
+answer at the foot rather than rewriting the paragraph that posed it.
+
+**One sentence of the public documentation becomes false and is edited by the
+code half, not here.** The `@doc` on `Riddler.Screens.validate_screen/3`
+carries the exception as a live rule - a call through the arity-3 form reports
+the finding "unless the screen carries a button declaring `validates` as
+`false` and no key at all" (`lib/riddler/screens.ex:257` through `:261`, read
+at `543f35275f05f735a34e88777201fa2e4beb1016`). Under this amendment there is
+no such exception. The bead that changes the behaviour changes that sentence in
+the same commit. The `@doc` on `validate_screen/4` and the matching passage in
+`README.md` need no change: both state the opt-out for a button the press
+names, which is what it now is.
+
+**The conformance corpus states nothing this amendment changes.** Every button
+in `corpus/screens/validate_responses.json` carries a key (read at
+`543f35275f05f735a34e88777201fa2e4beb1016`), so no case presses, or fails to
+press, a keyless one. A case pinning this rule from the corpus side - the
+arity-3 capability against a screen carrying a keyless non-validating button -
+is left for the corpus pass.
+
+**One edge stays where the amendment above left it.** Whether a press through a
+button hidden by its own undecidable condition should reach the opt-out is
+still unanswered, and this amendment does not reach it: that button carries a
+key, and the question there is about resolution rather than about naming.
