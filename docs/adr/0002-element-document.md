@@ -1607,3 +1607,95 @@ description states it, two passages of this record adopt it, and the note above
 cites the second of those two. Nothing that note presents as a quotation is
 inexact and its substance stands; what is corrected is the one clause of
 attribution, stated here once rather than adjusted again.
+
+---
+
+Noted 2026-09-18, campaign RF055, beads rd-5v2, rd-6kl and rd-hky. Three notes
+by addition, read against `main` at `0214837`. The first two decide the two
+questions the note above on shape checks carries as open, and decide both by
+recording what this record and the code already do; the third says which block
+an earlier reference names. None of them changes what this record decides, and
+none changes what any amendment above decides.
+
+**None of the schema version, the document id and a screen's title is required
+(rd-5v2).** The note above headed "Each is a shape check and none of them is a
+requiredness check" states the reading and carries the question open. It is
+decided here, and the answer is that none of the three is required: a document
+that omits any of them, or all three, is admitted and validates clean, exactly
+as it does today. Three surfaces say so, and none of them is changed. The
+schema requires `screens` of a document and `nodes` of a screen and nothing
+else (`priv/schemas/screen-document.schema.json`, read at `0214837`). The
+runtime's three checks each answer an absent field with no finding, by
+matching `nil` in a clause head before they judge anything - the private
+`schema_version_findings/1`, `id_findings/1` and `title_findings/1` in
+`lib/riddler/screens/document.ex`, read at `0214837`, the first two reached
+through `envelope_findings/1` and the third through `screen_findings/1`. And
+this record, from this note's date, says the same rather than leaving the
+question to be inferred from the other two. What the note above gives as its
+reason for stopping is the reason for the answer: requiring a field this
+record names would refuse documents riddler 0.1.0 and 0.2.0 admit, and a new
+refusal is an amendment's work. A recorded no takes nothing away, names no
+code and moves no finding, so this is a note. What it settles is that the
+three surfaces now agree about presence as well as about shape - absent is
+admitted, present is shape-checked - and a host that needs an id or a schema
+version present enforces that itself, or holds the document to the schema.
+
+**An explicit JSON `null` is admitted on the three envelope and screen fields
+and refused on the three node fields, and both arms stay (rd-6kl).** The note
+above states that split and carries open the question of which of the two
+answers should hold for all six. It is decided here, and the decision is that
+neither arm moves. The split was probed again rather than reasoned about, one
+document per field through `Riddler.Screens.Document.admit/1` and then
+`validate/1` at `0214837`: `"schema_version": null`, `"id": null` and a
+screen's `"title": null` each validate clean, and `"required": null`,
+`"validates": null` and `"style": null` each raise exactly one finding,
+`document.invalid_required`, `document.invalid_validates` and
+`document.invalid_style` respectively. The difference is the accessor and
+nothing else. The three node checks read the field with `Map.fetch/2` and so
+see `{:ok, nil}`, which is not what an absent key gives them (the private
+`required_findings/1` in `lib/riddler/screens/type/text_question.ex`, and the
+private `validates_findings/1` and `style_findings/1` in
+`lib/riddler/screens/type/button.ex`, all read at `0214837`); the envelope and
+title checks match `nil` in a clause head and cannot tell a declared `null`
+from an omission.
+
+Each arm stays for its own reason, and in neither case is the reason that the
+split is tidy. Refusing a `null` on the envelope and screen fields would mean
+`admit/1` recording absence separately from `nil` - a change to the admitted
+struct, and a new refusal of documents 0.2.0 admits. Accepting a `null` on the
+three node fields would remove three findings 0.2.0 ships. Each arm is
+therefore the conservative one for the fields it governs, and recording them
+is what this note does rather than making them agree.
+
+The schema is stricter than the runtime on one half of the six and silent on
+the other, which is worth stating because it is not what a reader expecting
+the schema to be uniformly stricter would find. It types `id` and
+`schema_version` and a screen's `title`, so an explicit `null` on any of those
+three is not schema-valid and the runtime admits there what the schema
+refuses. It does not describe `required`, `validates` or `style` at all - the
+node definition names `condition`, `key`, `nodes` and `type`, and does not
+close the object - so an explicit `null` on those three is schema-valid and
+the finding is the runtime's alone (`priv/schemas/screen-document.schema.json`,
+read at `0214837`). The schema stays what its own description says it is, the
+statement of "exactly what makes a JSON value a screen document at all"; a
+host that wants the envelope held to the types this record states validates
+against the schema before it calls the runtime.
+
+**Which block the opt-out amendment's single-note reference names (rd-hky).**
+The amendment above headed "the per-button opt-out covers an undecidable
+condition" writes, under "Why an amendment and not a note", the sentence "The
+single-note block, of its own note:" and gives after it the quotation "it
+changes nothing this record decides, and it does not bear on the amendment
+above." When that sentence was written its description picked out one block.
+There are now two single-note blocks above it, and further entries have landed
+on this record since, so the description no longer picks out one on its own.
+The block it names is the one opening "Noted 2026-09-17, campaign RF051, bead
+rd-xxb. One note by addition, read against `main` at `342c790`." The quotation
+that follows the description has always resolved uniquely and still does: the
+other single-note block, the one opening "Noted 2026-09-17, campaign RF051,
+bead rd-mnp. One note by addition, read against `main` at `4208433`.",
+accounts for itself in different words, as recording "nothing new about the
+document" and as changing "nothing either amendment above decides". Nothing in
+that section's argument moves, and the generalisation it draws holds of both
+blocks; no citation in it ever failed. What is stated here is only which block
+it meant.
