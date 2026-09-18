@@ -191,6 +191,38 @@ defmodule Riddler.TemplateTest do
       assert finding.message =~ "line 1"
     end
 
+    # The reach the tuple clause restored is not tags only: a filter outside
+    # the allowlist written in either tuple-wrapped body was unreachable in
+    # the same way, and a `case` tag's else branch is `{:else, body}`, a
+    # different tuple shape from a `when`'s `{values, body}`.
+    #
+    # Mutation: delete the is_tuple clause from reduce_nodes/3 - the elsif
+    # body is never visited, the filter is never asked about, and compile/1
+    # returns {:ok, compiled}.
+    test "a refused filter inside an elsif body is refused" do
+      assert [%Riddler.Finding{code: "template.filter_not_allowed", field: "escape"} = finding] =
+               refusal!(
+                 "{% if responses.plan %}pro{% elsif responses.tier %}" <>
+                   "{{ responses.first_name | escape }}{% endif %}"
+               )
+
+      assert finding.message =~ "escape"
+      assert finding.message =~ "line 1"
+    end
+
+    # Mutation: delete the is_tuple clause from reduce_nodes/3 - the
+    # {:else, body} branch is never visited and the template compiles.
+    test "a refused tag inside a case else branch body is refused" do
+      assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "cycle"} = finding] =
+               refusal!(
+                 ~S({% case responses.plan %}{% when "pro" %}pro{% else %}) <>
+                   "{% cycle 'a', 'b' %}{% endcase %}"
+               )
+
+      assert finding.message =~ "cycle"
+      assert finding.message =~ "line 1"
+    end
+
     # Mutation: delete the liquid_refusals/1 call from compile/1 - the parse
     # tree carries no trace of the liquid tag, so the finding disappears.
     test "liquid is refused" do
@@ -203,6 +235,14 @@ defmodule Riddler.TemplateTest do
     test "a liquid opener inside raw is text, not a construct" do
       assert {:ok, "{% liquid echo x %}", []} =
                render!("{% raw %}{% liquid echo x %}{% endraw %}")
+    end
+
+    # Mutation: drop the verbatim-block masking in liquid_refusals/2 - the
+    # opener inside comment is read as a construct and the compile fails
+    # instead of rendering nothing.
+    test "a liquid opener inside comment is text, not a construct" do
+      assert {:ok, "", []} =
+               render!("{% comment %}{% liquid echo x %}{% endcomment %}")
     end
 
     # Mutation: drop the string-literal masking in liquid_refusals/2 - the
@@ -255,6 +295,30 @@ defmodule Riddler.TemplateTest do
     test "an apostrophe inside a double-quoted literal masks nothing beyond it" do
       assert [%Riddler.Finding{field: "liquid"}] =
                refusal!(~S({{ "it's fine" }}{% liquid assign who = 1 %}))
+    end
+
+    # The verbatim mask has to answer "is this a marker" the same way the
+    # literal mask does, or a template can print the characters of a block's
+    # opener and closer around a real refused tag and have the tag blanked
+    # before the scan ever sees it. These two pin the order of the two masks:
+    # a marker printed from a literal is not a marker.
+    #
+    # Mutation: in liquid_refusals/2 mask verbatim blocks before literals
+    # rather than after - the printed markers are read as a real raw block,
+    # the tag between them is masked away, and compile/1 answers {:ok, _}.
+    test "raw markers printed from literals do not mask a real refused tag" do
+      assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "liquid"}] =
+               refusal!(~S({{ "{% raw %}" }}{% liquid assign who = 1 %}{{ "{% endraw %}" }}))
+    end
+
+    # Mutation: the same reordering in liquid_refusals/2 - the printed comment
+    # markers are read as a real comment block and the tag between them is
+    # admitted.
+    test "comment markers printed from literals do not mask a real refused tag" do
+      assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "liquid"}] =
+               refusal!(
+                 ~S({{ "{% comment %}" }}{% liquid assign who = 1 %}{{ "{% endcomment %}" }})
+               )
     end
 
     # Mutation: add "echo" to @allowed_tags - the tag compiles.
