@@ -366,9 +366,16 @@ defmodule Riddler.Screens.DocumentTest do
       assert codes(raw) == ["document.invalid_key", "document.invalid_key"]
     end
 
-    # Sabotage: write `node_key: node[:key]` back into any one raise site and
-    # that finding carries the integer key, which the Finding typespec does not
-    # admit and a host reading the key cannot use.
+    # Sabotage: write `node_key: node[:key]` back into any one raise site that
+    # coerces, and that finding carries the integer key, which the Finding
+    # typespec does not admit and a host reading the key cannot use.
+    #
+    # Two of the sites below are not reachable that way. The invalid-key
+    # finding that carries a usable key sits behind an `is_binary` guard, and
+    # the duplicate-key finding behind an `is_binary` filter, so each has a
+    # string before it names one and no raw-key re-wiring makes either emit
+    # anything else. What covers those two is the exact code frequency alone:
+    # drop their fixture nodes and the frequency disagrees.
     test "no finding carries a non-string node key" do
       raw = %{
         "screens" => [
