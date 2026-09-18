@@ -1291,8 +1291,20 @@ pressed key of `nil` (`lib/riddler/screens.ex:305` and `:306`, read at the same
 SHA). A button node carrying no `key` at all reads `node[:key]` as `nil` too,
 so the two absences compare equal, the private `opted_out?/2`
 (`lib/riddler/screens/validation.ex:94` through `:99`, same SHA) answers true,
-and every arity-3 validation of a document carrying such a button answers `:ok`
-without running a check.
+and the call answers `:ok` with every finding on the screen silenced at once
+(`lib/riddler/screens/validation.ex:39` through `:41`, same SHA, where the
+opt-out stands in front of the checks).
+
+**The case is narrower than a document carrying such a button, and the rule
+above is what it is measured against rather than a count of the calls it
+reaches.** `opted_out?/2` is handed one resolved screen, so a validation of any
+other screen of the same document is untouched. It takes the *first* node the
+match finds, so a keyless button earlier on the screen carrying the default
+hides a later one declaring `false`. And a button whose own condition the root
+decides false is dropped from the resolved screen before validation is reached
+at all (`lib/riddler/screens.ex:382` and `:397`, same SHA), so it declares
+nothing. What is fail-open is an arity-3 validation of a resolved screen whose
+first keyless button node declares `validates` as `false`.
 
 **That is a defect, and the rule above is what makes it one.** The code half
 pins the rule with a test that is red before its change and green after: the
