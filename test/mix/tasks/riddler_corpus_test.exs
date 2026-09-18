@@ -54,7 +54,20 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
     # Sabotage: dropped the generated_by key from the emitted case file; the
     # decoded copy no longer differed from the authored file by exactly that
     # key and this test went red.
-    test "an emitted case file is the authored file plus one provenance key" do
+    #
+    # Sabotage: put the package version back into the provenance header, the
+    # shape this repository emitted through 0.1.0; the emitted header read
+    # "riddler 0.1.0 from corpus/screens/admit.json", the equality below went
+    # red, and the refutation was never reached because the equality stops the
+    # test first.
+    #
+    # Sabotage, the second one, which is why the refutation is here and is not
+    # the equality said twice: the version back in the header AND the expected
+    # string updated to expect it - the change a later hand makes when it takes
+    # the red equality for a stale test rather than a rule. The equality passed
+    # and the refutation went red, because it names the package version itself
+    # as the thing no emitted header may carry.
+    test "an emitted case file is the authored file plus one provenance key naming no version" do
       target = tmp_dir!("provenance")
 
       Task.run(["--to", target])
@@ -64,7 +77,8 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
         authored = Corpus.read(source)
 
         assert Map.delete(emitted, "generated_by") == authored
-        assert emitted["generated_by"] == "riddler #{Corpus.version()} from #{source}"
+        assert emitted["generated_by"] == "riddler from #{source}"
+        refute String.contains?(emitted["generated_by"], Corpus.version())
       end
 
       for source <- Corpus.schema_files() do
