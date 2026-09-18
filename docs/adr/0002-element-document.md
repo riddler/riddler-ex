@@ -1428,11 +1428,11 @@ key, and the question there is about resolution rather than about naming.
 
 Noted 2026-09-18, campaign RF055, beads rd-0yg, rd-uq9 and rd-pli. Three notes
 by addition, each read against `main` at `9e5d667`. They narrow a claim an
-amendment above makes about its own blast radius, say where the four places the
-acceptance note lists as not yet lined up are now answered, and record what a
-validation call does with the diagnostics of the resolution it performs. None
-of them changes what this record decides, and none bears on the amendment
-above.
+amendment above makes about how far its own change reaches, say where the four
+places the acceptance note lists as not yet lined up are now answered, and
+record what a validation call does with the diagnostics of the resolution it
+performs. None of them changes what this record decides, and none bears on the
+amendment above.
 
 **Three of the four things the first 2026-09-17 amendment names changed with
 `resolve_screen/3`'s return, and one did not (rd-0yg).** That amendment's
@@ -1450,16 +1450,28 @@ read at `9e5d667`); the second example in the same `@doc`, which matches
 `{:error, :no_such_screen}`, was untouched, that arm being unchanged. The corpus
 runner's call changed too: it matches `{:ok, screen, _diagnostics}` and still
 encodes the screen alone (`lib/riddler/corpus.ex`, the `"screens.resolve"`
-clause, read at `9e5d667`). ADR-0001 did not change, and had nothing to change.
-It cites the call twice - once as the function that "resolves one named screen
-of it", once in a provenance line naming the request that built it beside
-`resolve/2` - and neither sentence states a return shape. That commit touched
-`lib/riddler/screens.ex`, `lib/riddler/corpus.ex`, two test files and a
-changelog fragment, and no file under `docs/adr/`. Being public is why the
-change is breaking rather than a site that changed with it. This record's own
-earlier sentences naming `resolve_screen/3` are unchanged as well, and could not
-be otherwise: this record grows by addition, so an amendment governs over them
-where it says it does and nothing above it is reworded.
+clause, read at `9e5d667`). The list names one in-package caller and there are
+two: `validate_screen/4` moved with the return in that same commit, matching
+`{:ok, screen, _diagnostics}` where it had matched `{:ok, screen}`, while its
+own return was untouched (`lib/riddler/screens.ex`, the `validate_screen/4`
+clause, read at `9e5d667`). What is enumerated here is what moved with the
+return, not every line that commit touched: it also added a sentence to this
+module's `@moduledoc` and a paragraph to `resolve_screen/3`'s `@doc`, both
+stating the new return. ADR-0001 did not change with it, and its two citations
+had nothing to change: that record names the call once as the function that
+"resolves one named screen of it" and once in a provenance line naming the
+request that built it beside `resolve/2`, and neither sentence states a return
+shape. That commit touched `lib/riddler/screens.ex`, `lib/riddler/corpus.ex`,
+two test files and a changelog fragment, and no file under `docs/adr/`. What
+ADR-0001 needed was an entry of its own rather than a correction, and it has
+one: a dated note of 2026-09-18 on that record draws the distinction as "Which
+call resolves one named screen is unchanged; what that call returns is not what
+it was when this record was accepted." The first of the four things listed is
+the call's own public surface, and that did change: its `@spec` states the
+return, and its being public is why the change is breaking rather than internal.
+This record's own earlier sentences naming `resolve_screen/3` are unchanged as
+well, and could not be otherwise: this record grows by addition, so an amendment
+governs over them where it says it does and nothing above it is reworded.
 
 **The four places the acceptance note lists as not yet lined up are each
 answered further down, and the list itself still reads as open (rd-uq9).** The
