@@ -988,5 +988,87 @@ defmodule Riddler.Screens.DocumentTest do
       assert finding.position == %{line: 1, column: 4}
       assert finding.message =~ "(line 1, column 4)"
     end
+
+    # Mutation: drop `position: position` from `invalid_condition/3` and the
+    # document finding names the line and the column in its sentence and
+    # carries them nowhere; give `span/1` or the position itself the wrong
+    # numbers and the two assertions disagree with each other. The second
+    # condition is on two lines so that a position hard-coded to line 1
+    # reddens this too. It goes through `admit/1` and then `validate/1`, the
+    # door a host with a document comes through.
+    test "and carries the position of a refused condition through to the document finding" do
+      for {condition, position} <- [
+            {"responses.first_name &&& ", %{line: 1, column: 24}},
+            {"1 +\n2 &&&", %{line: 2, column: 5}}
+          ] do
+        [finding] =
+          findings(
+            document([
+              %{
+                "type" => "text",
+                "key" => "account_greeting",
+                "condition" => condition,
+                "text" => "Hi"
+              }
+            ])
+          )
+
+        assert finding.code == "document.invalid_condition"
+        assert finding.node_key == "account_greeting"
+        assert finding.position == position
+        assert finding.message =~ "(line #{position.line}, column #{position.column})"
+      end
+    end
+
+    # The other half of the same field, and the control for the test above: a
+    # condition that is not a string never reached the parser, so there is no
+    # place for the finding to carry and its sentence names none.
+    #
+    # Mutation: give `Riddler.Finding` a default position other than nil, or
+    # pass anything but `nil` from the non-string clause of
+    # `condition_findings/2`, and this reddens.
+    test "and gives a condition that never reached the parser no source position" do
+      [finding] =
+        findings(
+          document([
+            %{"type" => "text", "key" => "account_greeting", "condition" => 42, "text" => "Hi"}
+          ])
+        )
+
+      assert finding.code == "document.invalid_condition"
+      assert finding.position == nil
+      refute finding.message =~ "line"
+      refute finding.message =~ "column"
+    end
+
+    # A pattern this package cannot compile names no place either, and that is
+    # decided rather than dropped: the regular expression compiler answers a
+    # byte offset into the anchored expression `compile_pattern/1` builds, and
+    # that offset does not point at the defect, so there is no line and column
+    # to carry. The comment above `compile_pattern/1` in
+    # `Riddler.Screens.Validation` records what was run.
+    #
+    # Mutation: put a position on the `document.invalid_pattern` finding in
+    # `Riddler.Screens.Type.TextQuestion`, or name a place in its sentence,
+    # and this reddens.
+    test "and gives a pattern it cannot compile no source position" do
+      [finding] =
+        findings(
+          document([
+            %{
+              "type" => "text_question",
+              "key" => "card_last_four",
+              "label" => "Last four digits",
+              "format" => "pattern",
+              "pattern" => "[0-9"
+            }
+          ])
+        )
+
+      assert finding.code == "document.invalid_pattern"
+      assert finding.position == nil
+      refute finding.message =~ "line"
+      refute finding.message =~ "column"
+    end
   end
 end

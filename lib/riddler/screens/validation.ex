@@ -134,8 +134,16 @@ defmodule Riddler.Screens.Validation do
     end
   end
 
-  defp error_position(%{position: {line, column}}), do: Finding.position(line, column)
-  defp error_position(_placeless), do: nil
+  # The place a refusal from the condition compiler or the evaluator names, in
+  # the form a finding carries. The document check on the same conditions calls
+  # it too, which is why it is not private, for the reason `compile_pattern/1`
+  # is not: one reading of what the dependency hands back is what keeps the two
+  # doors from disagreeing about where a condition is wrong. No part of the
+  # package's surface, as nothing in this module is.
+  @doc false
+  @spec error_position(term()) :: Finding.position() | nil
+  def error_position(%{position: {line, column}}), do: Finding.position(line, column)
+  def error_position(_placeless), do: nil
 
   # The place is appended from the position rather than from the numbers it was
   # built out of, so the message and the field cannot disagree about whether
@@ -284,6 +292,16 @@ defmodule Riddler.Screens.Validation do
   # expression to anchors this format did not apply would admit a pattern the
   # format cannot use, or refuse one it can. No part of the package's surface,
   # as nothing in this module is.
+  #
+  # The refusal is discarded rather than carried, and that is a decision and
+  # not a loss. `Regex.compile/1` answers `{reason, offset}`, and the offset is
+  # a byte offset into the anchored expression compiled here - not into the
+  # author's - and it does not point at the defect: `"a(b"`, `"abc\n[def"` and
+  # a pattern whose defect follows two-byte characters each come back with the
+  # offset at the end of the subject rather than at the `(` or the `[`, and the
+  # anchors change both the offset and, for a trailing backslash, the reason
+  # itself. A line and a column no editor could point at is worse than none,
+  # so `document.invalid_pattern` names no place and carries none.
   @doc false
   @spec compile_pattern(term()) :: {:ok, Regex.t()} | :error
   def compile_pattern(source) when is_binary(source) do

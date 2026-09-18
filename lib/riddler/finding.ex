@@ -29,21 +29,25 @@ defmodule Riddler.Finding do
       a string is not a name it can find one by.
     * `:position` - where in some source text the refusal is, as
       `%{line: line, column: column}`, both one-based and counting bytes as
-      the parser's own locations do. Four places in this package set it: the
+      the parser's own locations do. Five places in this package set it: the
       two template refusal clauses in `Riddler.Template`, the
       `document.invalid_template` finding that re-reports a template refusal
       against the template a document node writes, which carries the position
-      of the refusal it wraps, and the `response.undecidable` finding, which
-      carries the place the condition compiler or the evaluator gave for the
-      condition it is about and nothing where neither gave one. Every other
-      finding leaves it `nil` - the document checks, a field refused for not
-      being template source at all (which carries that same code, so the code
-      alone does not say whether a span is there), and the other `response.*`
-      findings. Two of those `nil`s are defects rather than decisions and are
-      filed as such rather than explained here: `document.invalid_condition`,
-      which obtains a place for a condition the compiler refused and does not
-      carry it, and `document.invalid_pattern`, whose place is discarded a
-      layer below the finding. Where there is a position the `:message` names
+      of the refusal it wraps, the `document.invalid_condition` finding, which
+      carries the place the condition compiler gave for a condition that does
+      not parse and nothing for a condition that never reached the parser, and
+      the `response.undecidable` finding, which carries the place the condition
+      compiler or the evaluator gave for the condition it is about and nothing
+      where neither gave one. Every other finding leaves it `nil` - the
+      document checks, a field refused for not being template source at all
+      (which carries that same code, so the code alone does not say whether a
+      span is there), and the other `response.*` findings.
+      `document.invalid_pattern` is one of those, by decision rather than by
+      defect: the regular expression compiler answers a byte offset into the
+      anchored expression this package builds rather than a line and a column
+      into the author's, and on the refusals checked it points at where the
+      scan stopped rather than at the defect, so there is no place for that
+      finding to carry. Where there is a position the `:message` names
       it too and goes on naming it, so that a person reading a finding reads
       one sentence; this field is the same fact in the form an editor can act
       on without parsing that sentence.
