@@ -1876,13 +1876,30 @@ what the package already does. Nothing above is changed, and no answer this
 record gave moves.
 
 **A button whose own condition the root could not decide is not on the resolved
-screen, so a press naming its key validates that screen in full.** The
-amendment above states the edge in these words: "Whether a press through a
-button hidden by its own undecidable condition should reach the opt-out is
-still unanswered, and this amendment does not reach it: that button carries a
-key, and the question there is about resolution rather than about naming." The
-answer is that the press does not reach the opt-out. The rule that gives it is
-the one the amendment before that states about where `validates` is read from -
+screen, so a press naming its key validates that screen in full.** Two
+amendments above leave this edge open in their own words, and both say so in
+their "What is unchanged" sections. The amendment headed "the per-button
+opt-out covers an undecidable condition", whose `Status:` line reads
+`accepted (2026-09-18)`, carries there a paragraph opening "One edge stays
+exactly where the amendment above left it, and this amendment decides nothing
+about it." and closing "Whether a press through a button hidden by its own
+undecidable condition should reach the opt-out this amendment carves out is a
+question this amendment does not answer." The amendment headed "a keyless
+button cannot opt out, and a call naming no button never does", whose `Status:`
+line reads `proposed`, ends its own section with the same edge in different
+words: "Whether a press through a button hidden by its own undecidable
+condition should reach the opt-out is still unanswered, and this amendment does
+not reach it: that button carries a key, and the question there is about
+resolution rather than about naming."
+
+The answer is that the press does not reach the opt-out. What happens is
+already written down, between those two sentences of the accepted amendment:
+"A button's own `condition` may be the undecidable one. Resolution then drops
+that button from the screen, so nothing on the resolved screen declares
+`validates` at all, and the press falls to the default: it validates, and the
+finding is raised." What that amendment declines is only whether that is what
+should happen, and the rule that settles it is the one it states itself, under
+"What the record now decides", about where `validates` is read from -
 "`validates` is read from the button the pressed key names on the resolved
 screen" - together with what the same passage says of a press that names none:
 "A press through a button that says nothing, and a press through a key naming
@@ -1905,8 +1922,8 @@ press of `account_back`, with `first_name` blank and `email` absent, answers
 `{:error, _}` with three findings in this order - `response.undecidable` on
 `account_back`, `response.required` on `first_name`, `response.required` on
 `email` - which is the same list, finding for finding, that a press of the
-Continue button on that screen answers. The first finding's `field` is `"condition"` and its `message`
-reads, character for character:
+Continue button on that screen answers. The first finding's `field` is
+`"condition"` and its `message` reads, character for character:
 
 > the condition "context.is_business == true" could not be decided against the root this screen was validated with, so whether this question was asked of the visitor is not established
 
@@ -1916,12 +1933,20 @@ its own undecidable condition" of
 `test/riddler/screens/validation_test.exs`.
 
 **Where in the code the two halves meet, and why the drop comes first.**
-Resolution decides a node's condition before anything validates: an undecidable
-condition answers false to the question of whether the node is shown, while
-recording the condition in the diagnostics (`lib/riddler/screens.ex`, the
-private `evaluate/4`'s undecidable clause, read at `26b52cc`), and a node that
-is not shown is left out of the resolved screen (the same file, the private
-`shown/3`, same SHA). Validation is then handed that resolved screen, and the
+Resolution decides a node's condition before anything validates, and three
+private functions in `lib/riddler/screens.ex` carry it, each doing one part.
+A condition that could not be decided answers false to the question of whether
+the node is shown, while recording the condition in the diagnostics: that is
+the `_undecidable ->` arm of the `case` inside `evaluate/4`'s clause for a
+condition that is a binary, which answers
+`{false, undecidable(diagnostics, key, condition)}` (read at `26b52cc`; the
+other `evaluate/4` clause, for a condition that is not a binary, answers the
+same pair without a `case`, at the same SHA). `shown/3` turns that false into
+`{nil, diagnostics}`, which is all it does with it. `resolve_nodes/3` is what
+leaves the node out: reducing over the screen's nodes, its `{nil, diagnostics}`
+arm returns the accumulator unchanged, so the node never enters the list the
+resolved screen carries (both read at `26b52cc`). Validation is then handed
+that resolved screen, and the
 opt-out searches its nodes alone for a node that is a button and whose `key`
 equals the pressed key (`lib/riddler/screens/validation.ex`, the private
 `opted_out?/2` and `button?/2`, read at `26b52cc`). A dropped button is not
@@ -1953,18 +1978,23 @@ fix, and fixing it restores the Back button and with it the opt-out.
 themselves is whether an entry changes an answer the record gave, and deciding
 a question the record left open is not that test: "Deciding an open question
 and changing what the record decides come apart, and it is the second that
-governs." This record had left this question open and said so, in the sentence
-quoted at the head of this entry, so there is no answer above to change. Two
-sentences above could be read as reaching this case, and neither survives the
-amendment's own disclaimer. The amendment before last opens "What the record
-now decides" with "A button declaring `validates` as `false` answers `:ok` for
-the screen it submits even when that screen carries a condition the root could
-not decide", and qualifies it in the paragraph below with where `validates` is
-read from; the amendment above lists among what is unchanged that "A press
+governs." This record had left this question open and said so twice, in the two
+sentences quoted at the head of this entry, so there is no answer above to
+change. Two sentences above could nonetheless be read as reaching this case,
+and each is governed by a disclaimer in the very amendment that carries it. The
+amendment headed "the per-button opt-out covers an undecidable condition" opens
+"What the record now decides" with "A button declaring `validates` as `false`
+answers `:ok` for the screen it submits even when that screen carries a
+condition the root could not decide", and qualifies that sentence in the
+paragraph below it with where `validates` is read from; the same amendment's
+"What is unchanged" section says of this edge that "this amendment decides
+nothing about it". The amendment headed "a keyless button cannot opt out, and a
+call naming no button never does" lists among what is unchanged that "A press
 through a keyed button declaring `false` still answers `:ok` without running a
 check, for an undecidable condition and for every other finding, exactly as the
-amendment above decides", and then names this edge as still unanswered four
-paragraphs later. A record cannot both answer a call and say that it does not,
+amendment above decides", and that same amendment's last paragraph says of this
+edge that it "is still unanswered, and this amendment does not reach it". A
+record cannot both answer a call and say that it does not,
 and where the two readings of one entry differ it is the one the entry states
 about itself that holds. What is decided here takes nothing away either: no
 document that validates clean stops doing so, no document that is refused stops
