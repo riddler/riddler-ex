@@ -29,13 +29,14 @@ defmodule Riddler.Finding do
       a string is not a name it can find one by.
     * `:position` - where in some source text the refusal is, as
       `%{line: line, column: column}`, both one-based and counting bytes as
-      the parser's own locations do. Every template refusal sets it - the
-      pinned parser locates every error it reports, and `position/2` declines
-      half a span as defence rather than for a case that arises - and so does
-      a `document.invalid_template` finding that wraps such a refusal,
-      because the place it names is a place in the template the document node
-      writes. It is `nil` everywhere else, and the rule is which checks
-      OBTAIN a place rather than which inputs have source text:
+      the parser's own locations do. Every template refusal sets it, because
+      a parse error reported without a place raises inside the parser rather
+      than arriving here as a refusal - not because the parser is known
+      never to report one. `position/2` declines half a span regardless, as
+      defence. So does a `document.invalid_template` finding that wraps a
+      refusal, because the place it names is a place in the template the
+      document node writes. It is `nil` everywhere else, and the rule is
+      which checks OBTAIN a place rather than which inputs have source text:
       every check about the document as data, which has no place to carry; a
       field refused for not being template source at all, which has none
       either and carries the same `document.invalid_template` code, so that
