@@ -966,3 +966,50 @@ now answers `ok: true` for it, so the case states that and its name says why.
 No case is added and no case count moves. A case stating
 `document.invalid_pattern` against the admit capability would pin the other
 half of this boundary and is left for the corpus pass.
+
+---
+
+Noted 2026-09-17, campaign RF051, bead rd-mnp. One note by addition, read
+against `main` at `4208433`. It re-labels three of this record's own citations
+because the change that carries this note renames the file they cite; it
+records nothing new about the document, changes nothing this record
+decides, and changes nothing either amendment above decides.
+
+**The document schema is cited three times above under the name it no longer
+carries, and each citation is still sound.** The file those three cite was
+named `priv/schemas/element-document.schema.json`, and the change that carries
+this note renames it to `priv/schemas/screen-document.schema.json`. The rename
+is recorded as a rename at full similarity: the schema's content is untouched
+by it, so each SHA those citations name still reads exactly what they say it
+reads, under the file's earlier name. From this change onward the path to read
+it at is `priv/schemas/screen-document.schema.json`. The three, each located by
+the passage it sits in rather than by a line:
+
+- In the passage above beginning "The schema is the fourth reading and it is
+  wider still", the citation "(`priv/schemas/element-document.schema.json`,
+  read at `342c790`)" supports its reading that the schema "types
+  `schema_version` as `integer` with no `const`".
+- In the passage above headed "**Each is a shape check and none of them is a
+  requiredness check.**", the citation
+  "(`priv/schemas/element-document.schema.json`, read at `342c790`)" supports
+  its reading that "the schema requires `screens` of a document and `nodes` of
+  a screen and nothing else".
+- In the amendment above titled "an uncompilable pattern is the document's
+  defect", under "What the record now decides", the citation
+  "(`priv/schemas/element-document.schema.json`, read at `27f9d91`)" supports
+  its reading of what "the schema says of itself": the schema's own
+  description, which that passage quotes as "is a finding a runtime raises
+  against an admitted document, not a reason the value is not a document",
+  and the conclusion that passage draws from it in its own words, that
+  schema-valid means admitted.
+
+Each reading stands as written. What moves is the path, and only the path: a
+reader following any of the three at a tree carrying this note reads the same
+schema at `priv/schemas/screen-document.schema.json`, and at `342c790` or
+`27f9d91` reads it at the name those SHAs carry.
+
+**Two other references to the earlier name are correct as they stand and are
+deliberately untouched**, by both this note and the change that carries it:
+this record's own filename, which is how a record is cited and is fixed by its
+number, and the row that links to it from the index in `docs/adr/README.md`.
+Neither names the schema; both name this record.
