@@ -364,7 +364,6 @@ defmodule Riddler.Screens.DocumentTest do
       }
 
       assert codes(raw) == ["document.invalid_key", "document.invalid_key"]
-      refute "document.duplicate_key" in codes(raw)
     end
 
     # Sabotage: write `node_key: node[:key]` back into any one raise site and
@@ -395,7 +394,27 @@ defmodule Riddler.Screens.DocumentTest do
                 "writes" => "not a map"
               },
               %{"type" => "text_question", "key" => 10, "label" => "Name", "required" => 5},
-              %{"type" => "variant", "key" => 11, "nodes" => []}
+              %{"type" => "variant", "key" => 11, "nodes" => []},
+              %{"type" => "button", "key" => 12, "label" => "Go"},
+              %{"type" => "text", "key" => 13, "text" => 5},
+              %{"type" => "text_question", "key" => 14, "label" => "Name", "format" => "nope"},
+              %{
+                "type" => "text_question",
+                "key" => 15,
+                "label" => "Name",
+                "format" => "pattern",
+                "pattern" => 5
+              },
+              %{
+                "type" => "variant",
+                "key" => 16,
+                "nodes" => [
+                  %{"type" => "text", "key" => 17, "text" => "One"},
+                  %{"type" => "text", "key" => 18, "text" => "Two"}
+                ]
+              },
+              %{"type" => "text", "key" => "BadKey", "text" => "Hi"},
+              %{"type" => "text", "key" => "BadKey", "text" => "Hi"}
             ]
           }
         ]
@@ -403,12 +422,34 @@ defmodule Riddler.Screens.DocumentTest do
 
       raised = findings(raw)
 
-      # Every branch that puts a key on a finding is exercised here: the
-      # unknown type, the invalid key itself, the screen title, a condition
-      # that does not parse, a heading level, a refused template, a button's
-      # writes, style and validates, a question's required, and an empty
-      # variant.
-      assert length(raised) >= 10
+      # Every site that puts a node's key on a finding is exercised here, and
+      # the codes are enumerated rather than counted so that a site dropped
+      # from the fixture stops this test rather than passing a lower bound.
+      # Read off lib/ rather than remembered: seventeen sites carry a key, and
+      # these are all of them - the screen title, the unknown type, the invalid
+      # key with a usable key and the duplicate of it, a condition that does
+      # not parse, a missing field, a template refused as source and one
+      # refused because it is not source, a heading level, a button's style,
+      # validates and writes, a question's required, format and pattern, an
+      # empty variant, and a variant candidate that buries what follows it.
+      assert Enum.frequencies(Enum.map(raised, & &1.code)) == %{
+               "document.invalid_title" => 1,
+               "document.unknown_type" => 1,
+               "document.invalid_key" => 14,
+               "document.duplicate_key" => 1,
+               "document.invalid_condition" => 1,
+               "document.missing_field" => 1,
+               "document.invalid_template" => 2,
+               "document.level_out_of_range" => 1,
+               "document.invalid_style" => 1,
+               "document.invalid_validates" => 1,
+               "document.invalid_writes" => 1,
+               "document.invalid_required" => 1,
+               "document.unknown_format" => 1,
+               "document.invalid_pattern" => 1,
+               "document.empty_variant" => 1,
+               "document.unreachable_variant_candidate" => 1
+             }
 
       for finding <- raised do
         assert is_binary(finding.node_key) or is_nil(finding.node_key),

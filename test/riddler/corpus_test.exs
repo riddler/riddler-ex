@@ -61,6 +61,18 @@ defmodule Riddler.CorpusTest do
   # them.
   @retired_spellings ["payload", "action", "answers"]
 
+  # The escape hatch, as data rather than as an edit someone has to invent
+  # under deadline. Each entry is a `{file, path, reason}` triple: the file the
+  # string sits in, the dotted path the walk already computes for it, and why
+  # that one string is allowed to carry a retired spelling. The walk drops a
+  # hit whose file and path both match an entry, and nothing else.
+  #
+  # It is EMPTY, so it changes nothing today. It exists so that the first
+  # person who meets the strictness described below has an edit to make that a
+  # reviewer can read: one named string with a stated reason, never a quieter
+  # match and never a respelled verb.
+  @spelling_exemptions []
+
   describe "the corpus files themselves" do
     # Sabotage: re-indented corpus/templates/render.json with four spaces; the
     # file no longer matched its canonical form and this test went red.
@@ -131,7 +143,7 @@ defmodule Riddler.CorpusTest do
     test "no corpus file and no schema carries a retired spelling, in a key or in any string value" do
       carried =
         for path <- @json_files,
-            {at, string, word} <- path |> read() |> retired_spellings_in(),
+            {at, string, word} <- retired_spellings_in(read(path), path),
             do: {path, at, word, string}
 
       assert carried == []
@@ -154,13 +166,16 @@ defmodule Riddler.CorpusTest do
     # Whole words, because the rule retires three spellings and not every string
     # that contains their letters. A substring walk would report `transaction`
     # and `answer_options`, and a guard that cries wolf is a guard someone turns
-    # off.
+    # off. The schema's own camelCase vocabulary is here for the same reason: it
+    # is scanned like everything else, the case-boundary split below cuts it,
+    # and the words it is cut into have to stay innocent.
     #
     # Sabotage: matched with String.contains?/2 instead of cutting the string
-    # into words; the two innocent identifiers came back as hits and this test
-    # went red.
+    # into words; `transaction` came back as a hit and this test went red.
     test "a word that merely contains a retired spelling is not a hit" do
       assert retired_spellings_in(%{"transaction" => "answer_options"}) == []
+
+      assert retired_spellings_in(%{"additionalProperties" => false, "minItems" => 1}) == []
     end
 
     # The compound is the case a regular expression would have missed, and it is
@@ -177,6 +192,60 @@ defmodule Riddler.CorpusTest do
                retired_spellings_in(%{"expected" => %{"code" => "button.on_action"}})
     end
 
+    # The camelCase compound is that same mistake in the idiom of the runtime
+    # likeliest to make it: this corpus is emitted for a second implementation,
+    # and that implementation's keys may well be camelCase. Cutting on the
+    # lower-to-upper transition is what sees it, and the cut has to happen
+    # before the downcase, which is the only thing that destroys the boundary.
+    #
+    # Sabotage: removed the case-boundary split from `words/1`; `onAction`
+    # stayed one word and this test went red.
+    test "a camelCase compound naming a retired spelling is a hit, key or value" do
+      assert [{"nodes.0.onAction", "onAction", "action"}] =
+               retired_spellings_in(%{"nodes" => [%{"onAction" => true}]})
+
+      assert [{"expected.code", "actionType", "action"}] =
+               retired_spellings_in(%{"expected" => %{"code" => "actionType"}})
+    end
+
+    # A plural names the thing its singular names, so a document that carried
+    # `actions` carried the retired vocabulary. The hit is reported under the
+    # retired spelling itself rather than under the inflection, because what
+    # the author has to change is the word, not the `s`. The rule's own
+    # `answers` is unaffected: its singular is `answer`, which is not retired,
+    # so cutting one trailing `s` never reaches past the three spellings.
+    #
+    # Sabotage: dropped the plural arm from `retired_spelling/1`; `actions` and
+    # `payloads` came back clean and this test went red.
+    test "the plural of a retired spelling is a hit, reported under the spelling" do
+      assert [{"actions", "actions", "action"}, {"actions", "payloads", "payload"}] =
+               retired_spellings_in(%{"actions" => "payloads"})
+
+      assert retired_spellings_in(%{"answer" => "options"}) == []
+    end
+
+    # The hatch the comment below describes, driven with an explicit list so
+    # that what an entry would do is pinned without putting a real entry in
+    # `@spelling_exemptions`, which is empty and stays empty until there is a
+    # case for it. An entry exempts one file at one path: the same path in
+    # another file, and another path in the same file, are still hits.
+    #
+    # Sabotage: made `exempt?/3` compare the path only, ignoring the file; the
+    # second assertion came back one hit short and this test went red.
+    test "an exemption entry exempts exactly its file and its path, and nothing else" do
+      value = %{"name" => "an action", "expected" => %{"code" => "on_action"}}
+      exemptions = [{"corpus/screens/admit.json", "name", "a fixture, not a real entry"}]
+
+      assert [{"expected.code", "on_action", "action"}] =
+               retired_spellings_in(value, "corpus/screens/admit.json", exemptions)
+
+      assert [{"expected.code", "on_action", "action"}, {"name", "an action", "action"}] =
+               retired_spellings_in(value, "corpus/screens/resolve.json", exemptions)
+
+      assert [{"expected.code", "on_action", "action"}, {"name", "an action", "action"}] =
+               retired_spellings_in(value, "corpus/screens/admit.json", [])
+    end
+
     # What the walk CANNOT do, stated as a test so that nobody reads the guard
     # as cleverer than it is. The rule exempts ordinary English prose and the
     # verb "answers" above all, but inside a JSON string there is nothing to
@@ -185,8 +254,8 @@ defmodule Riddler.CorpusTest do
     # the walk is deliberately stricter than the rule: every string is held to
     # the three spellings, prose included. The corpus carries no such prose
     # today, and if a case name ever needs the English verb, the way to allow it
-    # is a reviewed change here that says which string and why - never a quieter
-    # match, and never respelling the verb.
+    # is an entry in `@spelling_exemptions` naming that file and that path and
+    # saying why - never a quieter match, and never respelling the verb.
     #
     # Sabotage: exempted any string carrying a space, on the theory that a space
     # means prose; the sentence came back clean and this test went red.
@@ -311,17 +380,48 @@ defmodule Riddler.CorpusTest do
   # it.
   #
   # Matching is by WORD, not by substring: each string is cut into words on
-  # everything that is not a letter or a digit, and each word is compared whole.
-  # So `on_action` and "Action taken" are hits, while `transaction` and
-  # `answer_options` are not. A regular expression is the obvious way to say
-  # "whole word" and the wrong one here, because `\b` counts `_` as a word
-  # character: `~r/\baction\b/` matches "Action taken" but misses `on_action`,
-  # which is the compound a document is likeliest to carry.
-  defp retired_spellings_in(value) do
+  # everything that is not a letter or a digit and on every lower-to-upper
+  # transition, and each word is compared whole, singular or plural. So
+  # `on_action`, `onAction`, `actions` and "Action taken" are hits, while
+  # `transaction`, `answer_options` and the schema's own `additionalProperties`
+  # are not. A regular expression is the obvious way to say "whole word" and the
+  # wrong one here, because `\b` counts `_` as a word character:
+  # `~r/\baction\b/` matches "Action taken" but misses `on_action`, which is the
+  # compound a document is likeliest to carry.
+  #
+  # `file` is the file the value was read from, and it is what lets an entry in
+  # `@spelling_exemptions` name one string rather than a class of them; the
+  # exemptions are passed rather than read so that the tests can drive the check
+  # with an entry without one having to exist.
+  defp retired_spellings_in(value, file \\ nil, exemptions \\ @spelling_exemptions) do
     for {at, string} <- strings(value, []),
+        not exempt?(exemptions, file, at),
         word <- words(string),
-        word in @retired_spellings,
-        do: {at, string, word}
+        spelling = retired_spelling(word),
+        do: {at, string, spelling}
+  end
+
+  defp exempt?(exemptions, file, at) do
+    Enum.any?(exemptions, fn {exempt_file, exempt_path, _reason} ->
+      exempt_file == file and exempt_path == at
+    end)
+  end
+
+  # The spelling a word carries, or `nil`. A plural names what its singular
+  # names, so `actions` is reported as `action`: the fix is the word, not the
+  # inflection. `answers` is itself retired and its singular `answer` is not, so
+  # cutting one trailing `s` never reaches past the three spellings.
+  defp retired_spelling(word) do
+    cond do
+      word in @retired_spellings ->
+        word
+
+      String.replace_suffix(word, "s", "") in @retired_spellings ->
+        String.replace_suffix(word, "s", "")
+
+      true ->
+        nil
+    end
   end
 
   defp strings(map, path) when is_map(map) do
@@ -342,7 +442,12 @@ defmodule Riddler.CorpusTest do
 
   defp location(path), do: Enum.join(path, ".")
 
+  # The case-boundary split runs before the downcase, because downcasing is what
+  # destroys the boundary.
   defp words(string) do
-    string |> String.downcase() |> String.split(~r/[^a-z0-9]+/, trim: true)
+    string
+    |> String.replace(~r/(?<=[a-z0-9])(?=[A-Z])/, " ")
+    |> String.downcase()
+    |> String.split(~r/[^a-z0-9]+/, trim: true)
   end
 end
