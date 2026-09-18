@@ -1078,3 +1078,158 @@ field, position or refusal moves with the file, and what each of those passages
 says is as true of the functions in their new module as it was in their old
 one. Read each as naming the function and the comment, which is the anchor it
 resolves by, rather than the file it was in on its date.
+
+---
+
+## Amendment, 2026-09-18: the screens kind's corpus capability is `screens.validate_screen`
+
+Status: proposed
+
+Recorded for campaign RF055, bead rd-78k, against `main` at `9558223`. The
+request carrying this amendment makes the rename in its code commit, `f370dae`;
+every code cite below is read at that commit and resolves by the anchor it
+names rather than by a line number.
+
+### What the record now decides
+
+**The screens kind's validation capability is named `screens.validate_screen`.**
+The paragraph above headed "**A corpus capability is named `<kind>.<function>`.**"
+enumerates what this version emits: "This version emits
+`screens.admit`, `screens.resolve` and `screens.validate_responses` for the one
+kind, and `templates.render` for the shared template subset". Read that
+enumeration as `screens.admit`, `screens.resolve`, `screens.validate_screen`
+and `templates.render`. The rule the same paragraph states is untouched, and it
+is the ground for the move rather than a casualty of it: a capability is named
+`<kind>.<function>`, and the function the third name spelled is not in this
+package. ADR-0002's amendment of 2026-09-17 decides that
+"`validate_responses/3` and `/4` are removed, not deprecated", and names
+`validate_screen/3` and its arity-4 form naming the button that was pressed as
+what takes their place. A capability spelled for the removed pair named nothing.
+That a ruling was taken to rename it rather than to let the name stand for the
+behavior is not what makes this an amendment; what makes it one is under "Why
+an amendment and not a note" below.
+
+**The cases move with the name.** `corpus/screens/validate_responses.json` is
+`corpus/screens/validate_screen.json`, its `capability` member reads
+`screens.validate_screen`, and the `capability` enum in
+`priv/schemas/corpus-case.schema.json` carries the new string in place of the
+old one. The runner dispatches on it (`Riddler.Corpus`, its
+`defp run("screens.validate_screen", input)` clause and the private helper that
+clause calls, `defp validate_screen(document, input)`, in
+`lib/riddler/corpus.ex`), and the authored file lists in that module, in
+`test/riddler/corpus_test.exs` and in `test/mix/tasks/riddler_corpus_test.exs`
+name the renamed file. The note of 2026-09-18 above, in its paragraph headed
+"**The rule that a kind exposes at most one kind-specific check stands; only
+the screens kind's instance of it is history.**", reports the spelling
+surviving inside `lib/` in the capability, its case file and "the private
+runner helper of the same name". Read that report as history from this date:
+none of those three carries the spelling at `f370dae`.
+
+**The retired string is an unknown capability, not an alias.** The runner
+carries one clause per capability and no fallback clause, so a case file naming
+`screens.validate_responses` raises where a case would have run. That is what
+this amendment decides and not merely what the code happens to do: two live
+names for one behavior would be two contracts, and a second runtime dispatching
+on the retired one would be held to a name this record no longer emits. The
+refusal is pinned by "the capability string this version retired is an unknown
+capability, not an alias" in `test/riddler/corpus_test.exs`, read at `f370dae`.
+
+**A runtime already held to this corpus has to move, and none is.** The rename
+is breaking for any implementation dispatching on the capability string or
+reading the case file by name: such an implementation dispatches on
+`screens.validate_screen` and reads `corpus/screens/validate_screen.json`
+instead. No implementation in another language is held to this corpus today, so
+nothing is broken by it in fact. The archived sibling repository that once
+received an emitted copy is not written to by this request, and the copy
+standing there names the corpus as it stood before this date.
+
+### Three case wordings corrected in the same request
+
+These change what the corpus claims about itself, not what it asserts about
+this package. Each case answers at `f370dae` exactly what it answered before,
+and the per-file counts are unchanged.
+
+**The corpus-case schema's `input` description no longer ties the `context` key
+to a condition reading it.** It said the capability takes "context where a
+condition reads it". That is false as a rule: cases in
+`corpus/screens/validate_screen.json` read a `context` path and carry no
+`context` key on purpose: the presses among them that validate expect the
+`response.undecidable` finding, and the press that declares it validates
+nothing expects `ok`, which is what a condition nobody is held to comes to.
+The description now says the half appears where the case supplies one,
+and that a half the case leaves out is read as an empty map, so a path into it
+is undecidable like any other path the root lacks. Description text only: no
+type, no required list and no enum but the capability value moves.
+
+**The admit case for a question carrying `answer_options` claims only what the
+admit capability compares.** It was named "A question carrying answer_options,
+the field reserved for the select question types, is admitted with no finding
+and the field is dropped". `screens.admit` compares `admitted` and `findings`
+and nothing else, so a second runtime that carried the field through would pass
+the case while failing the claim in its name. The name now ends at "is admitted
+with no finding". The drop itself stays pinned, by "does not carry
+answer_options, the field reserved for question types this version does not
+build" in `test/riddler/screens/document_test.exs`, read at `f370dae`, which
+refutes the key on the admitted node.
+
+**A validation case names its screen by what the screen carries rather than by
+the case before it.** The case named "The validating button on that same screen
+returns the finding the root could not decide" took "that same screen" from its
+neighbor, which is true of the file as it stands and stops being true the next
+time a case is inserted between them. It is now named "The validating button on
+a screen carrying a condition the root cannot decide returns the finding". The
+note of 2026-09-18 on `docs/adr/0002-element-document.md` that quotes the old
+name quotes both it and `corpus/screens/validate_responses.json` at the SHA it
+labels, `3ff9a42`, where both stand. It is not edited, and what it records
+there - that `response.undecidable` is the expected code of that case - is
+unaffected by what the case and its file are called after this date. The same
+reading applies to every other place in that record naming the case file by
+its old path: each is read at the SHA it was written against, and the cases it
+points at are the ones in `corpus/screens/validate_screen.json` from this date.
+
+### Why an amendment and not a note
+
+The test `docs/adr/README.md` states, under its "Note or Amendment" heading, is
+whether the entry changes an "answer the record gave". This entry changes one.
+The record answered what this version emits for the one kind by naming the
+capabilities, and one of the names it gave is not a name this version emits
+after this request. That is the enumeration answering differently, not a
+reading of it: a second runtime that dispatched on the name this record printed
+would find no case file under it and no clause in the reference runner for it.
+
+The mark `docs/adr/README.md` names as sufficient without being necessary is
+present as well. "One is a new refusal", and this entry records one: a case file
+naming `screens.validate_responses` is refused by the runner where before it
+ran. A note would not carry it, because a note is where "its decided reading
+takes nothing away", and this takes a capability name away from a second
+runtime.
+
+### What is unchanged
+
+**The rule that names capabilities.** "A corpus capability is named
+`<kind>.<function>`", and a capability name "is part of the contract and
+changes only by a record". Both stand, and this entry is the record the second
+sentence asks for. The amendment above headed "the conformance corpus lives in
+this repository" says under its own "What is unchanged" that the capability
+paragraph "stands exactly as written" and that "Nothing here renames anything";
+that remains a true account of that amendment, which renamed nothing. This one
+does, and by the route that paragraph names.
+
+**Every other capability, and every case's answer.** `screens.admit`,
+`screens.resolve` and `templates.render` are untouched, and no case in any file
+answers anything it did not answer before. What a host calls is untouched too:
+`Riddler.Screens.validate_screen/3` and its arity-4 form are not changed by this
+request, and no public function of this package is added, removed or altered by
+it.
+
+**Where the cases live and how they are read.** This entry decides a name, not
+a location: the cases stay in `corpus/`, the schemas in `priv/schemas/`, and
+the corpus runner and its tests remain what holds this package to them.
+
+**That prose above naming `validate_responses` is history.** The note of
+2026-09-17 headed "**`validate_responses/3` and its arity-4 form are removed by
+ADR-0002's amendment of 2026-09-17.**" already reads the two places that name
+the removed functions as history from that date, and the note of 2026-09-18
+above reads the naming of the instance the same way. Neither is edited here,
+and this entry adds the capability to what those two places are read as history
+about.
