@@ -1697,3 +1697,66 @@ resolves uniquely: the other single-note block, the one opening "Noted
 above decides". Nothing in that section's argument moves, and the
 generalisation it draws holds of both blocks; no citation in it fails. What
 is stated here is only which block it meant.
+
+---
+
+Noted 2026-09-18, campaign RF055, bead rd-7lu. One note by addition, read
+against `main` at `3ff9a42`. It records a naming decision and what follows from
+it for a host, and changes no answer this record gave.
+
+**`response.undecidable` keeps its `response.` prefix by decision, and this one
+is the recorded exception rather than the pattern.** The question the code's
+name raised was whether it should move to a prefix naming the call, since the
+finding is not about a response. It does not move, and the reason is that it is
+published. The code string ships in riddler 0.2.0
+(`lib/riddler/screens/validation.ex`, the private `undecidable_finding/1`, read
+at the tag `v0.2.0`, `a3ee6e6`), where the `@doc` on
+`Riddler.Screens.validate_screen/3` lists it beside its three siblings and calls
+a finding's `code` "a stable `code`". It is also the expected `code` of three
+cases in the conformance corpus, in `corpus/screens/validate_responses.json`,
+among them the case named "A condition the root cannot decide is a finding, not
+a silent pass: the question is neither held to its requirement nor let through"
+and the case named "The validating button on that same screen returns the
+finding the root could not decide" (read at `3ff9a42`; those two carry the code
+at the tag `v0.2.0` as well, the third having been added since). A rename would
+change a published finding code and restate what those cases assert, and would
+buy a name and nothing else: no document would be admitted or refused
+differently, and no host would read a finding it does not read today. The next
+finding of this kind - one about the call rather than about the visitor - takes
+a prefix naming the call when it is first written, while naming it is free.
+
+**What the prefix does not tell a host.** A host that matches on the `response.`
+prefix to decide that a finding belongs beside the field the visitor is editing
+will pick this one up with the rest, and nothing the visitor types clears it: a
+condition that could not be decided reports that the root the host handed in
+does not carry what the document asks about, which the `@doc` above puts as "a
+defect in the call rather than a property of the visitor". Its `field` is
+`"condition"` rather than a field of the question
+(`lib/riddler/screens/validation.ex`, `undecidable_finding/1`, read at
+`3ff9a42`), and the passage of this record beginning "A validation call returns
+no diagnostics" says where it comes from. A host that wants that placement
+matches the code in full rather than its prefix.
+
+**The siblings are not uniformly about the visitor either, so the prefix carries
+less than it looks like it carries.** The three listed beside it in that `@doc`
+are `response.required`, `response.format` and `response.out_of_range`. Two of
+them are about what the visitor typed in every case they raise: `required` is
+unanswered when the response is absent or is a string of whitespace, and
+`out_of_range` is a number outside a bound the question declares
+(`lib/riddler/screens/validation.ex`, the private `required_finding/1` and
+`range_finding/5`, read at `3ff9a42`). `response.format` is about what the
+visitor typed in every case but one: the case the note above headed "The finding
+that one case carries was reworded, and this is what it now says" records, whose
+`field` is `pattern` and which fires for a question declaring the `pattern`
+format and declaring no pattern at all - a defect in the document, which no
+response can satisfy. So the statement this record makes is the negative one: a
+`response.` code does not by itself say that what the visitor typed is what the
+finding is about, and two codes in that set already show it.
+
+**Why a note and not an amendment.** The text above this entry decides nothing
+about what a code's prefix means; it names codes one at a time and says of each
+what it reports. So recording that the prefix does not partition findings by who
+can clear them contradicts no rule stated above and takes nothing away: no
+document that validates clean stops doing so, no code, field or message moves,
+and no new refusal is added. A recorded decision to leave a published name
+where it is changes no answer this record gave.
