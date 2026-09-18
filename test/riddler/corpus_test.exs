@@ -49,7 +49,7 @@ defmodule Riddler.CorpusTest do
     "corpus/screens/admit.json" => 24,
     "corpus/screens/resolve.json" => 20,
     "corpus/screens/validate_responses.json" => 28,
-    "corpus/templates/render.json" => 29
+    "corpus/templates/render.json" => 30
   }
 
   @draft_7 "http://json-schema.org/draft-07/schema#"

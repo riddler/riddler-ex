@@ -533,6 +533,22 @@
     },
     {
       "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.parse_error",
+            "field": null,
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "Nice to meet you, {{ responses.first_name"
+      },
+      "name": "A malformed template is refused as a parse failure, not as a construct outside the subset"
+    },
+    {
+      "expected": {
         "compiled": true,
         "missing": [
           "responses.first_name"
