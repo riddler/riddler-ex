@@ -799,3 +799,89 @@ as the ones in this repository, at `priv/schemas/` and `corpus/`. What each
 sentence is there to say - that the schema does not enumerate node types so
 that a type can be added without revising a schema first, and that a non-Elixir
 runtime is held to these cases - is unaffected by where the files sit.
+
+---
+
+Noted 2026-09-18, campaign RF055, beads rd-7l8, rd-q5d and rd-2x5. Four notes
+by addition, each read against `main` at `9ec64e7`. Nothing above is changed.
+
+**The conformance corpus does not carry a finding's position, and a second
+runtime is not held to one.** The note above headed "**Why a map and not a
+tuple, a nested struct or two flat fields.**" argues in part from the fact that
+a tuple "has no JSON form, while this package's conformance encoder turns every
+answer it emits into JSON for a second runtime". Read that clause as being
+about what a HOST reads, and about what the corpus would need if the field were
+ever emitted: this package's own conformance encoder does not emit the field
+today. It encodes a finding as exactly `code`, `field` and `node_key` and drops
+`:position` (`encode_findings/1` in `lib/riddler/corpus.ex` at `:206-210`, read
+at `9ec64e7`), for the reason the comment above it gives at `:199-205` in the
+same file at the same SHA - "the code is the stable thing a host switches on".
+Nothing in that note says the corpus carries the position, and the shape
+decision it supports holds on the host-facing reason alone. It is decided here
+that the corpus does not gain the field. A position is exactly what two
+implementations compute differently: bytes against characters for a column,
+one-based against zero-based counting, and where a construct spanning several
+lines is said to start. So the contract holds a runtime to `code`, `field` and
+`node_key` and to no more, and the position stays a host-facing field that the
+reference implementation fills and that a second runtime may fill without being
+held to it either way (rd-7l8).
+
+**One corpus case name claims more than the corpus can pin, and is left as it
+stands.** The case named "A template the parser refuses without saying where is
+refused as a parse error, and the finding names no place"
+(`corpus/templates/render.json`, its `name` at `:564`, read at `9ec64e7`)
+states an expected answer byte-identical to the case above it, named "An
+unterminated output tag is refused as a parse error, and the finding names no
+field" (same file, its `name` at `:548`): each expects `compiled` false and one
+finding of code `template.parse_error` with a null `field` and a null
+`node_key`. Since a finding in the corpus carries no position, nothing in that
+expectation distinguishes a refusal that names no place from one that does.
+What pins the claim its name makes is a unit test rather than the corpus: "a
+template the parser refuses without a place is a finding, not a raise" and "a
+refusal the parser did not locate names no place in its message", both in
+`test/riddler/template_test.exs` (at `:340` and `:353`, read at `9ec64e7`),
+which assert the nil position and the absence of a line and a column from the
+message. The case is named here rather than renamed or changed: the name is
+accurate about the behaviour, and over-promises only about which of the two
+checks does the pinning (rd-7l8).
+
+**Two cross-file cites in the note of 2026-09-17 on the emitter's provenance
+header are labelled here with their repository and a SHA.** That note carries
+two citations a reader cannot resolve inside this file and that landed without
+the label its neighbours carry. The first is the corpus-case schema's own
+description, quoted in its paragraph headed "**Why no `corpus_version` field
+and why no commit stamp.**": it is `priv/schemas/corpus-case.schema.json` in
+THIS repository, its `description` at `:29`, read at `9ec64e7`, where the
+quoted words "adds its own provenance header beside them, which is why this
+schema does not forbid further keys at the top level" stand. That paragraph's
+phrase "either repository" meant, on the date it was written, this repository
+and `riddler_spec`, which then held a copy of the same schema; the amendment
+above records that the separate corpus repository is archived, so on that
+amendment's acceptance read the phrase as a record of how things stood and this
+repository's `priv/schemas/` as the live source. The second is the
+note-versus-amendment test, cited in the paragraph headed "**Why a note and not
+an amendment.**" as "The test `docs/adr/README.md` states": that is
+`docs/adr/README.md` in this repository, under its "Note or Amendment" heading,
+read at `9ec64e7`. The already-labelled `riddler_spec` `bin/lint` cite at
+`84d7a3e` in the same note is read under the amendment above, on its
+acceptance, as history too: it is why the `generated_by` key stayed, not a live
+gate this package depends on. The note's quotations of passages of this record
+itself carry no SHA and need none: what a label is for is a cite a reader
+cannot resolve inside this file (rd-q5d).
+
+**The conformance corpus does not ship in the Hex tarball, and that is decided,
+not an omission.** The note above headed "**`Riddler.Corpus` and the `mix
+riddler.corpus` task ship in the Hex tarball, and that is the decision, not an
+accident.**" settles the two `lib/` files and says nothing about the cases. The
+cases do not ship, and do not gain a place in the package: `package/0`'s
+`files:` list in `mix.exs` is `~w(lib priv/schemas mix.exs .formatter.exs
+README.md LICENSE CHANGELOG.md)` (at `:84`, read at `9ec64e7`), and `corpus/`
+is not among its entries. Three reasons hold it there. A runtime in a second
+language takes the corpus from a tag of this repository and records the tag,
+which is how the amendment above says, on its acceptance, that such a runtime
+is held to these cases; that route needs git, and an installed package is not a
+tag. A host needs the schemas at runtime, which is why `priv/schemas` is in
+that list, and a host never runs the cases. And a copy of the cases inside the
+tarball would be a second source of them per release, going stale against
+`corpus/` on any release cut that did not refresh it, for a reader who has the
+better route already. `mix.exs` is not changed by this entry (rd-2x5).
