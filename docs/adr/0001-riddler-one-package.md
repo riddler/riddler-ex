@@ -1085,8 +1085,8 @@ resolves by, rather than the file it was in on its date.
 
 Status: proposed
 
-Recorded for campaign RF055, bead rd-78k, against `main` at `9558223`. The
-request carrying this amendment makes the rename in its code commit, `f370dae`;
+Recorded for campaign RF055, bead rd-78k, against `main` at `8a86030`. The
+request carrying this amendment makes the rename in its code commit, `e0f79df`;
 every code cite below is read at that commit and resolves by the anchor it
 names rather than by a line number.
 
@@ -1123,7 +1123,7 @@ name the renamed file. The note of 2026-09-18 above, in its paragraph headed
 the screens kind's instance of it is history.**", reports the spelling
 surviving inside `lib/` in the capability, its case file and "the private
 runner helper of the same name". Read that report as history from this date:
-none of those three carries the spelling at `f370dae`.
+none of those three carries the spelling at `e0f79df`.
 
 **The retired string is an unknown capability, not an alias.** The runner
 carries one clause per capability and no fallback clause, so a case file naming
@@ -1132,22 +1132,23 @@ this amendment decides and not merely what the code happens to do: two live
 names for one behavior would be two contracts, and a second runtime dispatching
 on the retired one would be held to a name this record no longer emits. The
 refusal is pinned by "the capability string this version retired is an unknown
-capability, not an alias" in `test/riddler/corpus_test.exs`, read at `f370dae`.
+capability, not an alias" in `test/riddler/corpus_test.exs`, read at `e0f79df`.
 
 **A runtime already held to this corpus has to move, and none is.** The rename
 is breaking for any implementation dispatching on the capability string or
 reading the case file by name: such an implementation dispatches on
 `screens.validate_screen` and reads `corpus/screens/validate_screen.json`
-instead. No implementation in another language is held to this corpus today, so
-nothing is broken by it in fact. The archived sibling repository that once
-received an emitted copy is not written to by this request, and the copy
+instead. No implementation in another language is held to this corpus at this
+date, so nothing is broken by it in fact. The archived sibling repository that
+once received an emitted copy is not written to by this request, and the copy
 standing there names the corpus as it stood before this date.
 
-### Three case wordings corrected in the same request
+### Three corpus wordings corrected in the same request
 
 These change what the corpus claims about itself, not what it asserts about
-this package. Each case answers at `f370dae` exactly what it answered before,
-and the per-file counts are unchanged.
+this package. One is a description in the corpus-case schema and two are case
+names. No case answers anything at `e0f79df` that it did not answer before, and
+the per-file counts are unchanged.
 
 **The corpus-case schema's `input` description no longer ties the `context` key
 to a condition reading it.** It said the capability takes "context where a
@@ -1169,7 +1170,7 @@ and nothing else, so a second runtime that carried the field through would pass
 the case while failing the claim in its name. The name now ends at "is admitted
 with no finding". The drop itself stays pinned, by "does not carry
 answer_options, the field reserved for question types this version does not
-build" in `test/riddler/screens/document_test.exs`, read at `f370dae`, which
+build" in `test/riddler/screens/document_test.exs`, read at `e0f79df`, which
 refutes the key on the admitted node.
 
 **A validation case names its screen by what the screen carries rather than by
@@ -1230,6 +1231,6 @@ the corpus runner and its tests remain what holds this package to them.
 2026-09-17 headed "**`validate_responses/3` and its arity-4 form are removed by
 ADR-0002's amendment of 2026-09-17.**" already reads the two places that name
 the removed functions as history from that date, and the note of 2026-09-18
-above reads the naming of the instance the same way. Neither is edited here,
-and this entry adds the capability to what those two places are read as history
-about.
+quoted above reads the naming of the instance the same way. Neither is edited
+here, and this entry adds the capability to what those two places are read as
+history about.
