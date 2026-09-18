@@ -91,6 +91,18 @@ defmodule Riddler.Screens.Validation do
   # no button at all - validates. Only a button that says `false` out loud
   # skips the checks, which is what lets a Back button leave a half-filled
   # screen without an error.
+  #
+  # The opt-out belongs to the press rather than to the screen, which the
+  # amendment to `docs/adr/0002-element-document.md` headed "a keyless button
+  # cannot opt out, and a call naming no button never does" decides. A call
+  # naming no pressed button has no button to read `validates` from, so it
+  # runs the checks in full: that is every arity-3 call, and it is an arity-4
+  # call handed `nil` as well. The clause below is what says so, and it is
+  # also what keeps a button node carrying no `key` out of the match - the
+  # node's absent key would otherwise compare equal to the absent press and
+  # silence every finding on the screen at once.
+  defp opted_out?(_screen, nil), do: false
+
   defp opted_out?(screen, pressed_button_key) do
     case Enum.find(screen.nodes, &button?(&1, pressed_button_key)) do
       nil -> false
@@ -98,6 +110,9 @@ defmodule Riddler.Screens.Validation do
     end
   end
 
+  # The key reaching here is never `nil`, so a button node carrying no `key`
+  # is never a candidate: nothing can press a button nothing can name, and a
+  # keyless node sitting in front of a keyed one hides it from nobody.
   defp button?(node, key), do: node[:type] == "button" and node[:key] == key
 
   # -- one node ---------------------------------------------------------------

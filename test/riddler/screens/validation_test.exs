@@ -65,6 +65,38 @@ defmodule Riddler.Screens.ValidationTest do
     |> Document.admit()
   end
 
+  # A button node carrying no `key` at all, declaring that it does not
+  # validate. `Document.admit/1` takes it - `Document.validate/1` is the call
+  # that reports it, as `document.invalid_key` - so a host that admits a
+  # document without validating it can hand this screen to response
+  # validation, which is the whole of why the cases below exist.
+  @keyless_back %{"type" => "button", "label" => "Back", "validates" => false}
+
+  # The fixture's account screen carrying that keyless button and nothing
+  # else new: the arity-3 form's own absent pressed key and this node's absent
+  # key are the two absences the opt-out must not read as a press.
+  defp account_with_keyless_button_document do
+    raw_fixture() |> add_node("account", @keyless_back) |> Document.admit()
+  end
+
+  # The same screen with a keyless button carrying the DEFAULT in FRONT of a
+  # keyed Back button declaring `false`. `add_node/3` appends, so the keyless
+  # one is earlier in document order, which is the order that matters: the
+  # opt-out takes the first button its match finds, and a keyless node that
+  # could be found would carry the answer the keyed press must not get.
+  defp keyless_before_keyed_back_document do
+    raw_fixture()
+    |> add_node("account", %{"type" => "button", "label" => "Help"})
+    |> add_node("account", %{
+      "type" => "button",
+      "key" => "account_back",
+      "label" => "Back",
+      "outcome" => "went_back",
+      "validates" => false
+    })
+    |> Document.admit()
+  end
+
   # A one-question screen from the payments host, for the format cases: the
   # question carries whatever the format under test reads, and a Pay button so
   # that the arity-4 form has something to press.
@@ -298,6 +330,95 @@ defmodule Riddler.Screens.ValidationTest do
                )
 
       assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
+    end
+  end
+
+  # The amendment to `docs/adr/0002-element-document.md` headed "a keyless
+  # button cannot opt out, and a call naming no button never does": the
+  # opt-out is a property of a press, so a button nothing can name declares
+  # nothing to anyone, and a call that names no button reads `validates` from
+  # nothing at all.
+  describe "a button carrying no key" do
+    # The defect this block exists for. Before the change the arity-3 call
+    # answered `:ok` here, because the absent pressed key and the keyless
+    # node's absent key compared equal and every finding on the screen was
+    # silenced at once.
+    #
+    # Sabotage: dropped the `opted_out?(_screen, nil)` clause, putting the two
+    # absences back in front of each other; the blank name and the unanswered
+    # email went unreported, the call answered `:ok`, and this test went red.
+    test "does not opt the arity-3 call out, whatever it declares" do
+      assert {:error, findings} =
+               Screens.validate_screen(account_with_keyless_button_document(), "account", %{
+                 "responses" => %{"first_name" => ""}
+               })
+
+      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
+    end
+
+    # The same rule reached through the arity-4 form: an absent pressed key
+    # names no button however it arrived, so a host passing `nil` explicitly
+    # is told what the screen says.
+    #
+    # Sabotage: the same dropped clause; the explicit `nil` found the keyless
+    # node, the call answered `:ok`, and this test went red.
+    test "does not opt out a press of nil handed to the arity-4 form" do
+      assert {:error, findings} =
+               Screens.validate_screen(
+                 account_with_keyless_button_document(),
+                 "account",
+                 %{"responses" => %{"first_name" => ""}},
+                 nil
+               )
+
+      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
+    end
+
+    # The carve-out is unchanged, which is the half of this that must not
+    # move: a press through a KEYED button declaring `validates` as `false`
+    # still answers `:ok` without running a check.
+    #
+    # Sabotage: made `opted_out?/2` answer `false` for every press; the Back
+    # press ran the checks on the blank name and this test went red.
+    test "leaves a keyed button's opt-out alone when the press names that key" do
+      assert :ok ==
+               Screens.validate_screen(
+                 account_with_back_document(),
+                 "account",
+                 %{"responses" => %{"first_name" => ""}},
+                 "account_back"
+               )
+    end
+
+    # A keyless node sitting in front of a keyed one hides nothing, because
+    # the match a non-nil press makes cannot land on a node with no key. The
+    # keyless button here carries the default, so a match that did land on it
+    # would answer the opposite of what the press asked for.
+    #
+    # Sabotage: made `button?/2` answer `true` for a keyless node whatever the
+    # pressed key; the keyless Help button was found first, its default read
+    # as validating, the Back press ran the checks on the blank name, and this
+    # test went red.
+    test "does not hide a keyed button declaring the opt-out later on the screen" do
+      assert :ok ==
+               Screens.validate_screen(
+                 keyless_before_keyed_back_document(),
+                 "account",
+                 %{"responses" => %{"first_name" => ""}},
+                 "account_back"
+               )
+    end
+
+    # The document layer still says what it said: this is the second door the
+    # record names, and the change above does not move it.
+    #
+    # Sabotage: made the keyless clause of `key_findings/2` answer `[]`; the
+    # document validated clean and this test went red.
+    test "is still the document's own finding at the document layer" do
+      assert {:error, findings} =
+               Document.validate(account_with_keyless_button_document())
+
+      assert "document.invalid_key" in Enum.map(findings, & &1.code)
     end
   end
 

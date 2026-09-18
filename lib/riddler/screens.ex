@@ -254,11 +254,11 @@ defmodule Riddler.Screens do
   checked. It is reported wherever the pressed button validates. The press
   that does not is one through a button declaring `validates` as `false`,
   which answers `:ok` without running a check at all - see
-  `validate_screen/4`. This arity-3 form presses no button, and a button that
-  is not there carries the default, so a call through it reports the finding -
-  unless the screen carries a button declaring `validates` as `false` and no
-  key at all, which is a document `Riddler.Screens.Document.validate/1`
-  reports as defective.
+  `validate_screen/4`. This arity-3 form presses no button, so there is no
+  press to read `validates` from and it reports the finding whatever buttons
+  the screen carries. A button declaring `validates` as `false` and carrying
+  no key at all is no exception: the opt-out is a property of a press, and
+  nothing can press a button nothing can name.
 
   A condition this root *decides* false is a different thing and stays silent:
   the node is hidden, and a question the visitor was never asked cannot fail.
