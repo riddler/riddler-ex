@@ -297,3 +297,54 @@ package what this package's conformance corpus is and how it reaches
 riddler_spec, and excluding individual `lib/` files by enumerating paths in
 `files:` is a list that has to be maintained against every future file under
 `lib/` (rd-9j0).
+
+Noted 2026-09-17, campaign RF051, bead rd-pqf. One note by addition, read
+against `main` at `0d51acc`. Nothing above is changed.
+
+**The provenance an emitted case file carries names the source file and
+nothing else: no version, no commit.** The corpus paragraph above says that a
+"mix task emits them, with provenance naming the commit they were emitted
+from, and a drift check in this repository's CI fails when the emitted corpus
+and the cases disagree." That clause was already inaccurate at 0.1.0 in the
+noun it used: at `0d51acc` the emitter stamped the package VERSION, not the
+commit - `Riddler.Corpus.generated_by/1` in `lib/riddler/corpus.ex` answered
+the word `riddler`, the package version, the word `from` and the
+repository-relative source path. From this date the header carries neither.
+It is the word `riddler`, a space, the word `from`, a space and the source
+path, so an emit is byte-identical across commits AND across releases, and a
+difference the drift check reports is a difference in the cases. The clause's
+second half holds unchanged: the drift check still fails when the emitted
+corpus and the cases disagree. Read its first half as history: what 0.1.0
+emitted was the version, not the commit that clause names.
+
+**Why no `corpus_version` field and why no commit stamp.** Neither was taken,
+and each fails for its own reason. A `corpus_version` key does not exist: no
+case file, schema or module in either repository carries one, and the corpus
+case schema's own description says the emitter "adds its own provenance header
+beside them, which is why this schema does not forbid further keys at the top
+level" - permission to add a key, not a key already there. Adding one would
+be introducing a field to an emitted format, which is a decision about the
+contract and not a fix to a header. A commit stamp fails harder: it would
+rewrite every emitted file on every commit to this repository, where the
+version stamp rewrote them only on a release. The property the header exists
+to have is that re-emitting an unchanged corpus writes the same bytes, so
+that the drift check reports a real difference rather than the passage of
+time; stamping the commit would trade a drift-per-release for a
+drift-per-commit and leave the drift check reporting the history of this
+repository instead of the content of the corpus. The version and the commit
+an emit ran from are recorded in the request that carries the emit, where
+they do not travel into the artifact.
+
+**The key stays; only its value changes.** `riddler_spec`'s `bin/lint`
+requires `generated_by` on every case file among its required top-level keys
+(read at `riddler_spec` `84d7a3e`), and it checks that the key is present and
+not what its value says. Removing the key would turn that repository's gate
+red; a corpus emitted under this note passes it unchanged. The package
+version itself is not removed and is not hidden: `Riddler.Corpus.version/0`
+survives, and `mix riddler.corpus` still names the version on the console for
+whoever is running an emit. Console output is not an emitted byte, and a
+person running the task is entitled to know which checkout is writing.
+
+This note is recorded with the code half that makes it true, in one request:
+at `0d51acc` the emitter still stamps the version, and the request carrying
+this note is the one that stops it (rd-pqf).

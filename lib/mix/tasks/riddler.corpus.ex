@@ -17,11 +17,11 @@ defmodule Mix.Tasks.Riddler.Corpus do
   does not have.
 
   What is written is byte-stable - keys sorted, two spaces of indent, one
-  trailing newline, no timestamp and no commit - so re-emitting an unchanged
-  corpus writes the same bytes and `--check` reports a real change rather than
-  the passage of time. Each case file gains one key it was not authored with, a
-  `generated_by` naming the version that emitted it and the file here it came
-  from. The schemas are copied unchanged.
+  trailing newline, no version, no timestamp and no commit - so re-emitting an
+  unchanged corpus writes the same bytes and `--check` reports a real change
+  rather than the passage of time or the cutting of a release. Each case file
+  gains one key it was not authored with, a `generated_by` naming the file here
+  it came from. The schemas are copied unchanged.
 
   ## Where it writes
 

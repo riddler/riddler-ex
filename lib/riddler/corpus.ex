@@ -46,7 +46,11 @@ defmodule Riddler.Corpus do
   @spec schema_files() :: [String.t()]
   def schema_files, do: @schema_files
 
-  @doc "The version of this package, which every emitted case file records."
+  @doc """
+  The version of this package. It labels an emit on the console for whoever is
+  running one; no emitted file records it, so that an emit is byte-identical
+  across releases.
+  """
   @spec version() :: String.t()
   def version, do: @version
 
@@ -264,14 +268,16 @@ defmodule Riddler.Corpus do
   # -- what is emitted --------------------------------------------------------
 
   @doc """
-  The provenance a case file gains when it is copied out: the version that
-  emitted it and the file in this repository it came from. It carries no
+  The provenance a case file gains when it is copied out: the file in this
+  repository it came from, and nothing else. It carries no version, no
   timestamp and no commit, so re-emitting an unchanged corpus writes the same
-  bytes and the drift check reports a real difference rather than the passage
-  of time. The commit an emit ran from belongs in the request that carries it.
+  bytes across commits and across releases alike, and the drift check reports a
+  real difference rather than the passage of time or the cutting of a release.
+  The version and the commit an emit ran from belong in the request that
+  carries it.
   """
   @spec generated_by(String.t()) :: String.t()
-  def generated_by(source), do: "riddler #{@version} from #{source}"
+  def generated_by(source), do: "riddler from #{source}"
 
   @doc """
   Every file the corpus repository receives, as `{relative target path,
