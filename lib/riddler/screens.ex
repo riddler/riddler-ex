@@ -247,7 +247,16 @@ defmodule Riddler.Screens do
   `response.undecidable` is the one that is not about a response. A condition
   this root could not decide - a variable the root does not carry, an operand
   of the wrong type - is reported as a finding on the node that carries it,
-  with `field` `"condition"`. A condition that could not be decided says the
+  with `field` `"condition"`. So is a condition that is not valid predicator at
+  all, and one that is not a string: the code is the one fail-closed answer for
+  every condition resolution could not decide, so that a host which skipped
+  `Riddler.Screens.Document.validate/1` is told rather than let through. The
+  `message` says which of the three it was, and carries the place the compiler
+  or the evaluator gave where there is one, as `position` does. A condition
+  that does not parse is also the document's own `document.invalid_condition`,
+  which is where an author fixing the document is told about it.
+
+  A condition that could not be decided says the
   root the host handed in does not carry what the document asks about, which
   is a defect in the call rather than a property of the visitor, so treating
   the node as hidden and answering `:ok` would accept a submission nobody
@@ -345,7 +354,7 @@ defmodule Riddler.Screens do
 
     case resolve_screen(document, screen_key, root) do
       {:ok, screen, diagnostics} ->
-        Validation.validate(screen, diagnostics, root["responses"], pressed_button_key)
+        Validation.validate(screen, diagnostics, root, pressed_button_key)
 
       {:error, :no_such_screen} = no_such_screen ->
         no_such_screen

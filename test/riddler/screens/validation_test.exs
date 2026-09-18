@@ -171,6 +171,38 @@ defmodule Riddler.Screens.ValidationTest do
     })
   end
 
+  # The checkout screen above with the VAT question's condition replaced, so
+  # that the three things that leave a condition undecided are put to one
+  # screen rather than to three documents that differ in more than the
+  # condition.
+  defp checkout_condition_document(condition) do
+    Document.admit(%{
+      "schema_version" => 1,
+      "id" => "edoc_checkout",
+      "screens" => [
+        %{
+          "key" => "checkout",
+          "title" => "Checkout",
+          "nodes" => [
+            %{
+              "type" => "text_question",
+              "key" => "full_name",
+              "label" => "Your name",
+              "required" => true
+            },
+            %{
+              "type" => "text_question",
+              "key" => "vat_id",
+              "label" => "VAT identifier",
+              "condition" => condition,
+              "required" => true
+            }
+          ]
+        }
+      ]
+    })
+  end
+
   describe "required over the signup fixture" do
     # Sabotage: made `blank?/1` answer `false` for `nil`; the unanswered name
     # raised no finding and this test went red.
@@ -810,6 +842,93 @@ defmodule Riddler.Screens.ValidationTest do
                {"response.undecidable", "vat_id"},
                {"response.required", "full_name"}
              ]
+    end
+  end
+
+  describe "which of the three things left a condition undecided" do
+    # One code fires for all three, so the message and the position are what a
+    # host has to tell them apart by. Each case pins the code that does not
+    # move, the sentence that says which cause fired, and the place - present
+    # where the compiler or the evaluator gave one, absent where neither did.
+
+    # Sabotage: made `undecided_position/2` answer `nil` for every condition;
+    # the finding lost the place the evaluator gave and this test went red.
+    test "a condition the root leaves undecided carries the place the evaluator gave" do
+      root = %{"context" => %{}, "responses" => %{"full_name" => "Ada"}}
+
+      assert {:error, [finding]} =
+               Screens.validate_screen(
+                 checkout_condition_document("is_business"),
+                 "checkout",
+                 root
+               )
+
+      assert %Finding{code: "response.undecidable", field: "condition", node_key: "vat_id"} =
+               finding
+
+      assert finding.position == %{line: 1, column: 1}
+
+      assert finding.message ==
+               ~s[the condition "is_business" could not be decided against the root this screen was validated with, so whether this question was asked of the visitor is not established (line 1, column 1)]
+
+      # The other half of the same cause: a condition reading a key the root's
+      # own map does not carry is undecided in exactly the same way and the
+      # evaluator names no place for it, so nothing is invented for it either.
+      assert {:error, [placeless]} =
+               Screens.validate_screen(
+                 checkout_condition_document("context.is_business == true"),
+                 "checkout",
+                 root
+               )
+
+      assert placeless.position == nil
+      refute placeless.message =~ "line"
+      assert placeless.message =~ "could not be decided against the root"
+    end
+
+    # Sabotage: gave the `{:error, error}` arm of `cause/2` the same lead as the
+    # arm above it; the finding said the root could not decide a condition the
+    # parser had refused and this test went red.
+    test "a condition that is not valid predicator says so and carries the parser's place" do
+      root = %{"context" => %{"is_business" => true}, "responses" => %{"full_name" => "Ada"}}
+      document = checkout_condition_document("context.is_business ==")
+
+      assert {:error, [finding]} = Screens.validate_screen(document, "checkout", root)
+
+      assert %Finding{code: "response.undecidable", field: "condition", node_key: "vat_id"} =
+               finding
+
+      assert finding.position == %{line: 1, column: 23}
+
+      assert finding.message ==
+               ~s[the condition "context.is_business ==" is not valid predicator, so whether this question was asked of the visitor is not established (line 1, column 23)]
+
+      # The document layer reports the same string as its own defect, which is
+      # where an author fixing the document is told about it. The response
+      # finding stays because a host that never called this is still told.
+      assert {:error, document_findings} = Document.validate(document)
+
+      assert Enum.map(document_findings, &{&1.code, &1.node_key}) == [
+               {"document.invalid_condition", "vat_id"}
+             ]
+    end
+
+    # Sabotage: gave the non-string clause of `cause/2` the undecided lead; the
+    # finding about a condition that never reached the parser claimed the root
+    # could not decide it and this test went red.
+    test "a condition that is not a string says so and carries no place" do
+      root = %{"context" => %{"is_business" => true}, "responses" => %{"full_name" => "Ada"}}
+      document = checkout_condition_document(42)
+
+      assert {:error, [finding]} = Screens.validate_screen(document, "checkout", root)
+
+      assert %Finding{code: "response.undecidable", field: "condition", node_key: "vat_id"} =
+               finding
+
+      assert finding.position == nil
+
+      assert finding.message ==
+               "the condition 42 is not a string, so whether this question was asked of the visitor is not established"
     end
   end
 

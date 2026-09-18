@@ -11,11 +11,19 @@ defmodule Riddler.Screens.Validation do
   # collapsed to its winner, and there is no condition left to consult.
   #
   # The one thing it is told about resolution rather than about the screen is
-  # what resolution could not decide, which `undecidable_findings/1` turns into
+  # what resolution could not decide, which `undecidable_findings/2` turns into
   # findings. That is why the entry point takes the diagnostics beside the
   # screen: both halves of the answer sit behind one opt-out check, so a button
   # that declares it does not validate leaves by the same door whichever half
   # would otherwise have spoken.
+  #
+  # It takes the whole root rather than the responses inside it for one reason:
+  # a condition that could not be decided is read again here, against the same
+  # root it was resolved against, to say which of the three things went wrong
+  # and to recover the place the compiler or the evaluator gave. The published
+  # diagnostics could have carried that instead, and do not: their shape is
+  # part of what `resolve_screen/3` answers, and a second key on it would be a
+  # new public field for something only this module reads.
 
   alias Riddler.Finding
   alias Riddler.Screens.Resolved
@@ -36,11 +44,13 @@ defmodule Riddler.Screens.Validation do
   # interleave them into.
   @spec validate(Resolved.screen(), Resolved.diagnostics(), map(), term()) ::
           :ok | {:error, [Finding.t()]}
-  def validate(screen, diagnostics, responses, pressed_button_key) do
+  def validate(screen, diagnostics, root, pressed_button_key) do
     if opted_out?(screen, pressed_button_key) do
       :ok
     else
-      case undecidable_findings(diagnostics) ++
+      responses = root["responses"]
+
+      case undecidable_findings(diagnostics, root) ++
              Enum.flat_map(screen.nodes, &node_findings(&1, responses)) do
         [] -> :ok
         findings -> {:error, findings}
@@ -71,19 +81,67 @@ defmodule Riddler.Screens.Validation do
   # a press through a button declaring `validates` as `false` answers `:ok` whatever
   # resolution could not decide, because a visitor can always press Back and a
   # host's defect is not theirs to be held at the screen by.
-  defp undecidable_findings(diagnostics) do
-    Enum.map(diagnostics.undecidable_conditions, &undecidable_finding/1)
+  defp undecidable_findings(diagnostics, root) do
+    Enum.map(diagnostics.undecidable_conditions, &undecidable_finding(&1, root))
   end
 
-  defp undecidable_finding(%{key: key, condition: condition}) do
+  # One code for three causes, by decision, and the message is what tells them
+  # apart. The record headed "An undecidable condition is a finding" makes this
+  # the fail-closed answer for a condition resolution could not decide, and a
+  # host that skipped the document checks reaches it with a condition that does
+  # not compile and with one that is not source text at all. Narrowing the code
+  # to the genuinely-undecided case would let those two through such a host
+  # unreported, which is the silent pass the record removes, so the code stays
+  # and the sentence carries the difference.
+  defp undecidable_finding(%{key: key, condition: condition}, root) do
+    {lead, position} = cause(condition, root)
+
     %Finding{
       code: "response.undecidable",
       message:
-        "the condition #{inspect(condition)} could not be decided against the root this screen was validated with, so whether this question was asked of the visitor is not established",
+        "the condition #{inspect(condition)} #{lead}, so whether this question was asked of the visitor is not established" <>
+          span(position),
       field: "condition",
-      node_key: Finding.node_key(key)
+      node_key: Finding.node_key(key),
+      position: position
     }
   end
+
+  # Which of the three fired, and the place there is one for. A condition that
+  # compiles was undecided against this root, and the evaluator names a place
+  # for some of those and none for others - an identifier the root does not
+  # carry is located, a key missing from a map it holds is not. A condition
+  # that does not compile is located by the parser, and is the same defect the
+  # document layer reports as `document.invalid_condition`. A condition that is
+  # not a string never reached the parser and has no place to name.
+  defp cause(condition, root) when is_binary(condition) do
+    case Predicator.compile(condition) do
+      {:ok, _instructions} ->
+        {"could not be decided against the root this screen was validated with",
+         undecided_position(condition, root)}
+
+      {:error, error} ->
+        {"is not valid predicator", error_position(error)}
+    end
+  end
+
+  defp cause(_condition, _root), do: {"is not a string", nil}
+
+  defp undecided_position(condition, root) do
+    case Predicator.evaluate(condition, root) do
+      {:error, error} -> error_position(error)
+      _placeless -> nil
+    end
+  end
+
+  defp error_position(%{position: {line, column}}), do: Finding.position(line, column)
+  defp error_position(_placeless), do: nil
+
+  # The place is appended from the position rather than from the numbers it was
+  # built out of, so the message and the field cannot disagree about whether
+  # there is one.
+  defp span(%{line: line, column: column}), do: " (line #{line}, column #{column})"
+  defp span(nil), do: ""
 
   # -- the per-button opt-out -------------------------------------------------
 

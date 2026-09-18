@@ -29,21 +29,24 @@ defmodule Riddler.Finding do
       a string is not a name it can find one by.
     * `:position` - where in some source text the refusal is, as
       `%{line: line, column: column}`, both one-based and counting bytes as
-      the parser's own locations do. Three places in this package set it: the
-      two template refusal clauses in `Riddler.Template`, and the
+      the parser's own locations do. Four places in this package set it: the
+      two template refusal clauses in `Riddler.Template`, the
       `document.invalid_template` finding that re-reports a template refusal
       against the template a document node writes, which carries the position
-      of the refusal it wraps. Every other finding leaves it `nil` - the
-      document checks, a field refused for not being template source at all
-      (which carries that same code, so the code alone does not say whether a
-      span is there), and the `response.*` findings. Three of those `nil`s
-      are defects rather than decisions and are filed as such rather than
-      explained here: `document.invalid_condition` and
-      `document.invalid_pattern` (rd-ai1) and `response.undecidable`
-      (rd-d9n). Where there is a position the `:message` names it too and
-      goes on naming it, so that a person reading a finding reads one
-      sentence; this field is the same fact in the form an editor can act on
-      without parsing that sentence.
+      of the refusal it wraps, and the `response.undecidable` finding, which
+      carries the place the condition compiler or the evaluator gave for the
+      condition it is about and nothing where neither gave one. Every other
+      finding leaves it `nil` - the document checks, a field refused for not
+      being template source at all (which carries that same code, so the code
+      alone does not say whether a span is there), and the other `response.*`
+      findings. Two of those `nil`s are defects rather than decisions and are
+      filed as such rather than explained here: `document.invalid_condition`,
+      which obtains a place for a condition the compiler refused and does not
+      carry it, and `document.invalid_pattern`, whose place is discarded a
+      layer below the finding. Where there is a position the `:message` names
+      it too and goes on naming it, so that a person reading a finding reads
+      one sentence; this field is the same fact in the form an editor can act
+      on without parsing that sentence.
 
   ## Examples
 
