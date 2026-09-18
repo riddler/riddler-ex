@@ -132,46 +132,8 @@ defmodule Riddler.Template do
   # all. Verbatim blocks are masked because a liquid opener written inside
   # `{% raw %}` or `{% comment %}` is text, and string literals are masked
   # because an opener a template merely prints is text too.
-  #
-  # Reading the source means this pattern has to decide where a verbatim block
-  # ends, and the only safe answer is the one the parser reaches. NEITHER
-  # direction of disagreement is safe. Ending LATER than the parser blanks a
-  # construct the parser left in the open. Ending EARLIER is not the harmless
-  # half it looks like: the scan resumes inside what the parser is reading as
-  # body text, and a marker in there - a `{% comment %}` an author wrote
-  # inside a raw body - opens a block the parser never opened, which then runs
-  # to a later closer and blanks the span between. An early end
-  # re-synchronises; it does not merely expose.
-  #
-  # So the pattern mirrors the lexer twice over. The NAME ends where the lexer
-  # ends one, at whitespace or at a tag or object end, which is why
-  # `{% endraw, %}` and `{% endraw"q" %}` are not closers: their tag name is
-  # `endraw,` and `endraw"q"`. The trailing TOKENS are the tokens the lexer
-  # will take and no others - strings in either quote, running to the next
-  # quote of the same kind with no escape inside one at this version and free
-  # to hold a `%}` or a `{%`; the comparison operators; identifiers, which may
-  # carry a `-` or end in a `?`; numbers; the punctuation the lexer maps to a
-  # token; and whitespace. A `}` is not among them, so the run cannot cross
-  # the `}}` that ends `{% endraw }} %}` before its `%}` does.
-  #
-  # Generating every spelling these rules allow and running each against the
-  # parser is how this is checked rather than argued: the parser's answer and
-  # the pattern's agree on all of them, in both directions.
   @liquid_opener ~r/\{%-?\s*liquid\b/
-  @verbatim_block ~r/
-    \{%-?\s*(raw|comment)\s*-?%\}
-    .*?
-    \{%-?\s*end\1(?=\s|-?%\})
-    (?:
-      "[^"]*" | '[^']*'
-      | == | != | <> | <= | >=
-      | [A-Za-z_][A-Za-z0-9_?-]*
-      | -?[0-9][0-9.]*
-      | [.|\[\]():,=<>]
-      | \s
-    )*
-    -?%\}
-  /sx
+  @verbatim_block ~r/\{%-?\s*(raw|comment)\s*-?%\}.*?\{%-?\s*end\1\s*-?%\}/s
 
   @unexpected_tag ~r/Unexpected tag '([^']+)'/
 
@@ -424,39 +386,36 @@ defmodule Riddler.Template do
   # characters a construct or is it text - and they have to answer it about
   # the same source, or one of them decides the other's input. Literals are
   # masked FIRST, because what a verbatim block is gets decided by the tree
-  # too: a template that prints the characters of `{% raw %}`, a real refused
-  # tag, and the characters of `{% endraw %}` holds three constructs and no
+  # too: a template that prints the characters of `{% raw %}`, a refused tag,
+  # and the characters of `{% endraw %}` holds three constructs and no
   # verbatim block, and masking the block first read the printed characters as
   # a real opener and closer, blanked the tag between them, and admitted it.
   # Masking literals first blanks the spans the tree reports as the template's
-  # own strings, which is every string that reaches the tree: a plain literal
-  # and a bracket subscript are the two shapes that carry one.
+  # own strings: a plain literal and a bracket subscript are the two shapes
+  # that carry one.
   #
-  # What this does NOT reach, and the reason this paragraph does not claim the
-  # scan is sound, is a string the parser reads and then THROWS AWAY. The
-  # trailing tokens of a tag are parsed and discarded by several of the
-  # admitted tags, so a string written in one of them is in no node and is
-  # never masked; a block marker inside such a string is still read as a real
-  # marker here, pairs with a real marker later in the source, and blanks
-  # whatever lies between. `{% endif "..." %}`, `{% else "..." %}`,
-  # `{% endfor "..." %}` and a `comment` tag's own trailing tokens all do it.
+  # That is all this ordering fixes, and the paragraph claims nothing more.
+  # Where a verbatim block ENDS is decided by the pattern below exactly as it
+  # was before, and the pattern recognises one spelling of a closing tag while
+  # the parser accepts several: `{% endraw xyz %}` closes a block at
+  # `solid` `1.3.4` and this pattern runs past it to the next closer, blanking
+  # the span between. A marker written inside a string the parser reads and
+  # then THROWS AWAY is the other gap - the trailing tokens of several
+  # admitted tags are discarded, so such a string is in no node, is never
+  # masked, and a marker in it pairs with a real marker later in the source.
   #
-  # Be exact about what gets through that gap. `liquid` is excluded as an
+  # Be exact about what gets through either gap. `liquid` is excluded as an
   # alternate SPELLING for constructs the subset already admits, not as a
   # construct the subset forbids: the tags written inside it are ordinary tag
   # nodes in the tree and the allowlist walk asks about every one of them, so
   # `{% liquid echo x %}` is still refused on `echo`. What a blanked span
   # admits is therefore an admitted construct in a spelling a second runtime
   # need not implement - a hole in what the conformance corpus can hold two
-  # runtimes to - and not a forbidden construct escaping the walk. It is
-  # worth closing for that reason and not a larger one, and closing it means
-  # refusing something that compiles today, which is a decision to record
-  # before it is a line to write. So it is tracked separately and left open
-  # here rather than half-closed with a second source-level string matcher
-  # that would disagree with the parser in its own new ways.
+  # runtimes to - and not a forbidden construct escaping the walk.
   #
-  # What IS closed: a marker printed from a string the tree carries, and a
-  # block whose end the pattern and the parser used to disagree about.
+  # Both gaps are tracked separately, and the fix for them is not a wider
+  # pattern. A pattern is a hand-copy of the lexer and a hand-copy drifts; the
+  # end of a block is something to ask the parser for.
   defp liquid_refusals(source, tree) do
     masked =
       source
@@ -471,8 +430,8 @@ defmodule Riddler.Template do
     end)
   end
 
-  # Runs over the literal-masked source, so the only `{% raw %}` and
-  # `{% comment %}` markers left are the ones a tag node accounts for.
+  # Runs over the literal-masked source, so a `{% raw %}` or `{% comment %}`
+  # marker the template merely prints is no longer here to be read as one.
   # Masking preserves length and newlines here as it does everywhere else.
   defp mask_verbatim_blocks(source) do
     Regex.replace(@verbatim_block, source, fn match, _block -> mask(match) end)
