@@ -885,3 +885,114 @@ that list, and a host never runs the cases. And a copy of the cases inside the
 tarball would be a second source of them per release, going stale against
 `corpus/` on any release cut that did not refresh it, for a reader who has the
 better route already. `mix.exs` is not changed by this entry (rd-2x5).
+
+---
+
+Noted 2026-09-18, campaign RF055, bead rd-ai1. Two notes by addition, plus the
+paragraph that accounts for the instrument, each read against `8331e97`, the
+code commit this entry lands beside rather than a SHA on `main`: the entry and
+the code half are one request, and a rebase merge rewrites that SHA, so every
+cite below names the function or the clause it is about and resolves by that
+anchor rather than by a line number. Nothing above is changed; each paragraph
+below says what the text above means now.
+
+**Five sites in `lib/` set `:position`, and the count moving is what this
+record anticipated.** The note above headed "**`Riddler.Finding` carries a
+source position, and this record is where that is decided.**" says under
+"**Which findings carry it.**" that "Three sites in `lib/` set the field and no
+others", and the amendment below it headed "a placeless parse refusal is a
+finding with a nil position" restates that under "**The count of sites is
+unchanged.**" Both sentences were true of the code they were read against.
+`docs/adr/0002-element-document.md` then recorded, under "**A count in ADR-0001
+moves with this, and belongs to that record.**", that `response.undecidable`
+had become a fourth site, and said of this record that it "is where its own
+count is stated and where it is restated". This is that restatement, and the
+count is five. Every occurrence of a `:position` key on a `Riddler.Finding`
+literal in `lib/` was enumerated at `8331e97`, and these are all of them:
+
+- The two clauses of `Riddler.Template` that build a template refusal: the
+  parse-failure clause,
+  `defp finding({line, column, @parse_error, nil, reason})`, which carries the
+  position it built and appends the same place to its message through `span/1`,
+  and the subset clause, `defp finding({line, column, code, name, lead})`,
+  which takes the pair through `Riddler.Finding.position/2`
+  (`lib/riddler/template.ex`, the `position:` assignment in each).
+- The `document.invalid_template` finding that re-reports a template refusal
+  against the template a document node writes, carrying the position of the
+  refusal it wraps (`lib/riddler/screens/document.ex`, the `%Finding{}` built
+  inside `defp refusals(source, field, key) when is_binary(source)`, its
+  `position: finding.position`).
+- The `document.invalid_condition` finding, which is the site this request adds
+  (`lib/riddler/screens/document.ex`,
+  `defp invalid_condition(detail, key, position)`).
+- The `response.undecidable` finding
+  (`lib/riddler/screens/validation.ex`,
+  `defp undecidable_finding(%{key: key, condition: condition}, root)`).
+
+The fifth of those is what this request adds. This record files two of the
+`nil`s in the enumeration above as defects rather than decisions, on the ground
+that "a record cannot be made true about behaviour that is wrong", and names
+the first of them: "`document.invalid_condition` obtains a place for a
+condition the compiler refused and does not carry it". That one is fixed here.
+The condition compiler locates a condition it refuses, and the place now
+reaches the finding through `Riddler.Finding.position/2` by way of
+`error_position/1` in `Riddler.Screens.Validation`, the same helper the
+response check reads it with, which is `@doc false` as `compile_pattern/1` in
+that module already is and no part of this package's documented surface. A
+condition that is not a string never reached the parser, has no place, and
+still carries none. The rule this record states is untouched: the field is set
+by which checks carry a place, and a check that has one now carries it.
+
+**`document.invalid_pattern` carries no place, and that is decided here rather
+than filed.** The same paragraph files the second defect as
+"`document.invalid_pattern`'s place is discarded a layer below the finding".
+What is discarded is not a place. `compile_pattern/1` in
+`Riddler.Screens.Validation` is the one place a `pattern` source becomes a
+regular expression, and it compiles the author's expression wrapped in the
+anchors that format applies, so what `Regex.compile/1` hands back on a refusal
+is a reason and a byte offset into that anchored string rather than a line and
+a column into what the author wrote. Three refusals were run against
+`Regex.compile/1` to establish what the offset counts. `"a(b"`, whose defect is
+the unclosed parenthesis at byte offset 1, answered offset 3. `"abc\n[def"`,
+whose defect is the unterminated character class at byte offset 4 and on its
+second line, answered offset 8. A pattern whose unterminated character class is
+also at byte offset 4 but at character offset 2, two two-byte characters
+preceding it, answered offset 6. Each of the three is the end of the subject
+rather than the defect, and the third is what shows the count to be bytes and
+not characters: that pattern is 6 bytes and 4 characters long, and 6 is what
+came back. Through the anchored form the same three answered 11, 16 and 14,
+again the end of the string compiled, which is the author's expression with
+five bytes before it and three after; and for a source ending in a backslash
+the anchors change the reason itself, from one naming a backslash at the end of
+the pattern to one naming a missing parenthesis. A line and a column derived
+from that offset would point at where the scan stopped inside a string the
+author never wrote.
+So the field stays `nil`, the sentence goes on naming no place, and what was
+run is recorded in `lib/` above `compile_pattern/1` so that a later reader does
+not take the offset for a place. Both `nil`s that paragraph files are resolved
+by this request: the first by its code half, and this one by being decided.
+
+**Why a note and not an amendment.** The test these records state in their own
+words is whether the entry changes an answer the record gave: an entry is an
+amendment where "the rule stated above answers a call one way, and this entry
+answers the same call another". What this entry restates is a count of where a
+rule renders in `lib/`, and it is the enumeration that moves and not the rule.
+The field is still `nil` or a map of a line and a column; it is still set by
+which checks carry a place rather than by which inputs have source text; it is
+still built only by `Riddler.Finding.position/2`; and no code, field or node
+key moves, no refusal is added, and no document that validates clean stops
+doing so. This record anticipated the move in the same sentence that files the
+two `nil`s as defects rather than explaining them, and
+`docs/adr/0002-element-document.md` read it that way for the fourth site, "so
+the count moving is what it anticipated rather than something it decided
+against". The two marks these records name as sufficient for an amendment are
+absent: nothing here is a new refusal, and nothing here qualifies a rule an
+amendment states. The amendment of 2026-09-18 says "**The count of sites is
+unchanged.**" of its own change, and that stays true of it - the guard it
+records added no site, and the sites added since are two later requests' and
+not its. The paragraph on `document.invalid_pattern` is the other half of the
+same answer: it records a status quo, which "takes nothing away, and so changes
+nothing this record had decided". That the code half changes what a host reads
+on one finding is not the test either, as this record says of itself elsewhere:
+"That a ruling was taken is not the test; if it were, every commit made under
+one would amend a record."
