@@ -1686,16 +1686,14 @@ The amendment above headed "the per-button opt-out covers an undecidable
 condition" writes, under "Why an amendment and not a note", the sentence "The
 single-note block, of its own note:" and gives after it the quotation "it
 changes nothing this record decides, and it does not bear on the amendment
-above." When that sentence was written its description picked out one block.
-There are now two single-note blocks above it, and further entries have landed
-on this record since, so the description no longer picks out one on its own.
-The block it names is the one opening "Noted 2026-09-17, campaign RF051, bead
-rd-xxb. One note by addition, read against `main` at `342c790`." The quotation
-that follows the description has always resolved uniquely and still does: the
-other single-note block, the one opening "Noted 2026-09-17, campaign RF051,
-bead rd-mnp. One note by addition, read against `main` at `4208433`.",
-accounts for itself in different words, as recording "nothing new about the
-document" and as changing "nothing either amendment above decides". Nothing in
-that section's argument moves, and the generalisation it draws holds of both
-blocks; no citation in it ever failed. What is stated here is only which block
-it meant.
+above." Two single-note blocks stand above that reference, so its description
+does not pick out one of them on its own. The block it names is the one
+opening "Noted 2026-09-17, campaign RF051, bead rd-xxb. One note by addition,
+read against `main` at `342c790`." The quotation that follows the description
+resolves uniquely: the other single-note block, the one opening "Noted
+2026-09-17, campaign RF051, bead rd-mnp. One note by addition, read against
+`main` at `4208433`.", accounts for itself in different words, as recording
+"nothing new about the document" and as changing "nothing either amendment
+above decides". Nothing in that section's argument moves, and the
+generalisation it draws holds of both blocks; no citation in it fails. What
+is stated here is only which block it meant.
