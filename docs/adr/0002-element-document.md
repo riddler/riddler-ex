@@ -1760,3 +1760,96 @@ can clear them contradicts no rule stated above and takes nothing away: no
 document that validates clean stops doing so, no code, field or message moves,
 and no new refusal is added. A recorded decision to leave a published name
 where it is changes no answer this record gave.
+
+---
+
+Noted 2026-09-18, campaign RF055, bead rd-d9n. Three notes by addition, read
+against `main` at `90f5930`, with the code half that makes the first two true
+in the same request at `b67dea5`. Nothing above is changed; each paragraph
+below says what the text above means now.
+
+**The three things that leave a condition undecided are one finding, by
+decision.** The amendment above headed "An undecidable condition is a finding"
+decides that a condition that cannot be decided against the root answers a
+finding rather than `:ok`, and leaves "the finding's code to the bead that
+raises it". The code that was raised, `response.undecidable`, is reached by
+three unrelated things: a condition that compiles and that this root leaves
+undecided, a condition that is not valid predicator at all, and a condition
+that is not a string (`lib/riddler/screens/validation.ex`, the private
+`cause/2`, read at `b67dea5`). It stays one code for all three, and the reason
+is fail-closed rather than tidy. The second and the third are each already a
+document finding, `document.invalid_condition` on the same node and the same
+field (`lib/riddler/screens/document.ex`, the private `condition_findings/2`
+and `compile_condition/2`, read at `b67dea5`), and that remains where an author
+fixing the document is told about them. But nothing obliges a host to call
+`Riddler.Screens.Document.validate/1` before it resolves, and a host that does
+not is the one this check stands for: narrowing the code to the
+genuinely-undecided case would let a document the parser refused resolve and
+validate clean, which is the silent pass the amendment above removes. What
+tells the three apart is the `message`, which now names which of them fired.
+The `code`, the `field` `"condition"` and the `node_key` are what they were, so
+a host switching on the code reads what it read before
+(`lib/riddler/screens/validation.ex`, the private `undecidable_finding/2`, read
+at `b67dea5`; the three are pinned one case apiece in
+`test/riddler/screens/validation_test.exs`, the describe block "which of the
+three things left a condition undecided", read at `b67dea5`).
+
+**It carries the place it is given, and invents none.** Two of the three are
+located by the package's dependency and one is not. A condition that does not
+compile is located by the parser; a condition that compiles and names an
+identifier the root does not carry is located by the evaluator; a condition
+that compiles and reads a key missing from a map the root does hold is
+undecided with no place named, and a condition that is not a string never
+reached the parser and has none either. The finding carries the position in the
+first two cases and `nil` in the last two, through
+`Riddler.Finding.position/2`, which builds the map only from a positive line
+and a positive column (`lib/riddler/finding.ex`, `position/2` and its fallback
+clause, read at `b67dea5`). The message and the field cannot disagree about
+whether there is one: the place is appended to the sentence from the position
+rather than from the numbers it was built out of
+(`lib/riddler/screens/validation.ex`, the private `span/1`, read at
+`b67dea5`). Reading the condition a second time is what makes this possible,
+and the validation entry point is handed the whole root rather than the
+responses inside it so that the second reading runs against the same root the
+first did (`lib/riddler/screens.ex`, the `validate_screen/4` clause, and
+`lib/riddler/screens/validation.ex`, `validate/4`, both read at `b67dea5`). The
+published diagnostics gain nothing: `undecidable_conditions` is still a list of
+`%{key: ..., condition: ...}`, which is what the Typespecs section above states
+and what `resolve_screen/3` answers, and a key added to it would be a new
+public field for something only the response check reads.
+
+**A count in ADR-0001 moves with this, and belongs to that record.** The note
+in `docs/adr/0001-riddler-one-package.md` headed "`Riddler.Finding` carries a
+source position, and this record is where that is decided" says under "Which
+findings carry it" that three sites in `lib/` set the field and no others, and
+names `response.undecidable` among the findings that leave it `nil`; the
+amendment below it headed "a placeless parse refusal is a finding with a nil
+position" restates that count as still three. After the change recorded above
+there are four sites, and `response.undecidable` is the fourth. That record
+also files the `nil` this change removes as one of three defects recorded
+"rather than explained", on the ground that "a record cannot be made true about
+behaviour that is wrong", so the count moving is what it anticipated rather
+than something it decided against. Saying so is all this paragraph does:
+ADR-0001 is where its own count is stated and where it is restated.
+
+**Why a note and not an amendment.** The test the records state in their own
+words is whether the entry changes an answer the record gave: an entry is an
+amendment where "the rule stated above answers a call one way, and this entry
+answers the same call another". No rule stated above answers a call one way and
+is answered another here. This record decides that an undecidable condition is
+a finding on the node carrying it, with `field` `"condition"`, reported wherever
+the pressed button validates, and every one of those is what it was: no
+document that validates clean stops doing so, no document that is refused stops
+being refused, no code, field or node key moves, and no refusal is added. That
+the catch-all was left as it stands is a recorded decision to leave behaviour
+where it is, which the records treat as a note, and deciding a question the
+record left open is not the test either: this record already says so, in the
+sentence "Deciding an open question and changing what the record decides come
+apart, and it is the second that governs." What is decided above stays a note
+on the same ground the note above that sentence gives for itself, that "its
+decided reading takes nothing away, and so changes nothing this record had
+decided". One thing this entry does move is the
+`message`, which the single-note block above it names among what it left where
+it was; a message is not part of what this record decides, which names codes
+and fields and never a sentence, and the block above accounts for its own entry
+rather than for this one.
