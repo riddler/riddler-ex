@@ -293,15 +293,27 @@ defmodule Riddler.Screens.Validation do
   # format cannot use, or refuse one it can. No part of the package's surface,
   # as nothing in this module is.
   #
-  # The refusal is discarded rather than carried, and that is a decision and
-  # not a loss. `Regex.compile/1` answers `{reason, offset}`, and the offset is
-  # a byte offset into the anchored expression compiled here - not into the
-  # author's - and it does not point at the defect: `"a(b"`, `"abc\n[def"` and
-  # a pattern whose defect follows two-byte characters each come back with the
-  # offset at the end of the subject rather than at the `(` or the `[`, and the
-  # anchors change both the offset and, for a trailing backslash, the reason
-  # itself. A line and a column no editor could point at is worse than none,
-  # so `document.invalid_pattern` names no place and carries none.
+  # The refusal's offset is discarded rather than carried, and that is a
+  # decision. `Regex.compile/1` answers `{reason, offset}`, and the offset is a
+  # byte count into the string compiled here, which is the author's expression
+  # inside the anchors rather than the author's expression. What it counts to
+  # is not one thing. Ten refusals were run against it. For six - an unmatched
+  # `)`, a `{2,1}` quantifier, a `[z-a]` range, a doubled `*` on a second line,
+  # a duplicate group name, and a malformed `(?P` - the offset lands at the
+  # defect or at the character that closes it. For four - three unterminated
+  # constructs and a trailing backslash - it lands at the end of the input
+  # instead, the defect being detected only when the scan runs out. The
+  # duplicate-name run, whose second name follows two two-byte characters,
+  # answers 15 where the character count to the same place is 13, which is what
+  # shows the count to be bytes. The anchors then move five of those six by
+  # exactly the five bytes they add in front; the sixth, the unmatched `)`,
+  # relocates onto the wrapper's own `)`; and the trailing backslash changes
+  # reason as well, from one naming a backslash at the end of the pattern to
+  # one naming a missing parenthesis. So a place derived from the offset would
+  # be right for some refusals and wrong for others under one finding code,
+  # which is worse for a host than none at all. `document.invalid_pattern`
+  # names no place and carries none. These ten are the runs made and not a
+  # classification of every refusal the compiler can answer.
   @doc false
   @spec compile_pattern(term()) :: {:ok, Regex.t()} | :error
   def compile_pattern(source) when is_binary(source) do

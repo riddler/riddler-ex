@@ -889,12 +889,16 @@ better route already. `mix.exs` is not changed by this entry (rd-2x5).
 ---
 
 Noted 2026-09-18, campaign RF055, bead rd-ai1. Two notes by addition, plus the
-paragraph that accounts for the instrument, each read against `8331e97`, the
-code commit this entry lands beside rather than a SHA on `main`: the entry and
-the code half are one request, and a rebase merge rewrites that SHA, so every
-cite below names the function or the clause it is about and resolves by that
-anchor rather than by a line number. Nothing above is changed; each paragraph
-below says what the text above means now.
+paragraph that accounts for the instrument. The five sites enumerated below
+were read at `8331e97`, this request's code commit rather than a SHA on `main`,
+and none of them moves in the commit this entry lands in. The one cite that is
+not to those sites - the comment above `compile_pattern/1` in
+`lib/riddler/screens/validation.ex` - names text that same commit rewrites, so
+it carries no SHA at all. Every cite below names the function, the clause or
+the comment it is about and resolves by that anchor rather than by a line
+number, which is also what a rebase merge rewriting `8331e97` calls for.
+Nothing above is changed; each paragraph below says what the text above means
+now.
 
 **Five sites in `lib/` set `:position`, and the count moving is what this
 record anticipated.** The note above headed "**`Riddler.Finding` carries a
@@ -929,11 +933,19 @@ literal in `lib/` was enumerated at `8331e97`, and these are all of them:
   (`lib/riddler/screens/validation.ex`,
   `defp undecidable_finding(%{key: key, condition: condition}, root)`).
 
-The fifth of those is what this request adds. This record files two of the
-`nil`s in the enumeration above as defects rather than decisions, on the ground
-that "a record cannot be made true about behaviour that is wrong", and names
-the first of them: "`document.invalid_condition` obtains a place for a
-condition the compiler refused and does not carry it". That one is fixed here.
+The fourth in that list is what this request adds. The paragraph above headed
+"**Why some of those `nil`s are the way they are is filed rather than
+explained.**" says "Three of them are defects in this package and not decisions
+of this record", on the ground that "a record cannot be made true about
+behaviour that is wrong", and the three `nil`s it names are
+`document.invalid_condition`, `document.invalid_pattern` and
+`response.undecidable`, alongside a fourth defect that is a raise rather than a
+`nil`. Of those three, `response.undecidable`'s was resolved by the earlier
+request and recorded on `docs/adr/0002-element-document.md`, and the raise by
+the amendment above. What this request does with the other two is the rest of
+this entry. The first is named there as
+"`document.invalid_condition` obtains a place for a condition the compiler
+refused and does not carry it". That one is fixed here.
 The condition compiler locates a condition it refuses, and the place now
 reaches the finding through `Riddler.Finding.position/2` by way of
 `error_position/1` in `Riddler.Screens.Validation`, the same helper the
@@ -943,34 +955,68 @@ condition that is not a string never reached the parser, has no place, and
 still carries none. The rule this record states is untouched: the field is set
 by which checks carry a place, and a check that has one now carries it.
 
-**`document.invalid_pattern` carries no place, and that is decided here rather
-than filed.** The same paragraph files the second defect as
-"`document.invalid_pattern`'s place is discarded a layer below the finding".
-What is discarded is not a place. `compile_pattern/1` in
-`Riddler.Screens.Validation` is the one place a `pattern` source becomes a
-regular expression, and it compiles the author's expression wrapped in the
-anchors that format applies, so what `Regex.compile/1` hands back on a refusal
-is a reason and a byte offset into that anchored string rather than a line and
-a column into what the author wrote. Three refusals were run against
-`Regex.compile/1` to establish what the offset counts. `"a(b"`, whose defect is
-the unclosed parenthesis at byte offset 1, answered offset 3. `"abc\n[def"`,
-whose defect is the unterminated character class at byte offset 4 and on its
-second line, answered offset 8. A pattern whose unterminated character class is
-also at byte offset 4 but at character offset 2, two two-byte characters
-preceding it, answered offset 6. Each of the three is the end of the subject
-rather than the defect, and the third is what shows the count to be bytes and
-not characters: that pattern is 6 bytes and 4 characters long, and 6 is what
-came back. Through the anchored form the same three answered 11, 16 and 14,
-again the end of the string compiled, which is the author's expression with
-five bytes before it and three after; and for a source ending in a backslash
-the anchors change the reason itself, from one naming a backslash at the end of
-the pattern to one naming a missing parenthesis. A line and a column derived
-from that offset would point at where the scan stopped inside a string the
-author never wrote.
-So the field stays `nil`, the sentence goes on naming no place, and what was
-run is recorded in `lib/` above `compile_pattern/1` so that a later reader does
-not take the offset for a place. Both `nil`s that paragraph files are resolved
-by this request: the first by its code half, and this one by being decided.
+**`document.invalid_pattern` carries no place, and that is a recorded ground
+here rather than a filed defect.** The paragraph above files the second of the
+three as "`document.invalid_pattern`'s place is discarded a layer below the
+finding". What is discarded is an offset, and an offset is not a place.
+`compile_pattern/1` in `Riddler.Screens.Validation` is the one function in this
+package that turns a `pattern` source into a regular expression, and it
+compiles the author's expression inside the anchors that format applies, so
+what `Regex.compile/1` hands back on a refusal is a reason and a byte count
+into that anchored string. What the count counts to is not one thing. Ten
+refusals were run against `Regex.compile/1`, and these are the runs made
+rather than a classification of every refusal that compiler can answer. The
+offset column is the raw one, against the author's expression alone; the
+anchored column is the same source through the form `compile_pattern/1`
+compiles, which adds five bytes in front and three behind.
+
+| source | bytes | reason | offset | anchored |
+|---|---|---|---|---|
+| `"x)y"` | 3 | unmatched parentheses | 1 | 8 |
+| `"a{2,1}bcd"` | 9 | numbers out of order in {} quantifier | 5 | 10 |
+| `"ab[z-a]cd"` | 9 | range out of order in character class | 5 | 10 |
+| `"ab\nc**d"` | 7 | nothing to repeat | 5 | 10 |
+| two two-byte characters, then `"(?<n>x)(?<n>y)tail"` | 22 | two named subpatterns have the same name | 15 | 20 |
+| `"(?Pxyz)tail"` | 11 | unrecognized character after (?P | 3 | 8 |
+| `"a(b"` | 3 | missing ) | 3 | 11 |
+| `"abc\n[def"` | 8 | missing terminating ] for character class | 8 | 16 |
+| two two-byte characters, then `"[a"` | 6 | missing terminating ] for character class | 6 | 14 |
+| `"a\"` | 2 | \ at end of pattern | 2 | 10 |
+
+Three things the ten show. For the first six the offset lands at the defect or
+at the character that closes it: the unmatched `)` is at byte 1 and the answer
+is 1; `{2,1}` closes at byte 5 and the answer is 5; `[z-a]`'s out-of-order
+bound is at byte 5; the doubled `*` on the second line is at byte 5; the
+repeated group name closes at byte 15; and the character `(?P` does not admit
+is at byte 3. For the last four - three unterminated constructs and a trailing
+backslash - the answer is the end of the input instead, equal to the byte
+length in each case, the defect being detected only when the scan runs out.
+And the count is bytes and not characters: the duplicate-name run answers 15
+where the character count to the same place is 13, and the unterminated class
+after two two-byte characters answers 6 where that source is 4 characters
+long.
+
+The anchoring is not a constant shift either. It moves five of the first six
+by exactly the five bytes it adds in front, which is what the table's last two
+columns show for every row but the first and the last four; the unmatched `)`
+moves by seven, because the offset relocates onto the closing parenthesis of
+the wrapper rather than staying on the author's; and the trailing backslash
+comes back under a different reason as well, "missing )" where the raw form
+said the backslash was at the end of the pattern.
+
+So a line and a column derived from that offset would be right for some
+refusals and wrong for others, all under one finding code, and a field a host
+can trust for some findings of a code and not for others is worse for that
+host than a field that is never there. On that ground the position stays
+`nil`, the sentence goes on naming no place, and the runs are recorded in
+`lib/` in the comment above `compile_pattern/1` so that a later reader does
+not take the offset for a place. Whether the refusals whose offset does land
+at the defect should carry one anyway is a question for a record to settle and
+not for this request. Of the three `nil`s that paragraph files as defects,
+then: one was resolved by the earlier request, one is resolved by this
+request's code half, and this one is not a defect of the shape that paragraph
+describes - read that clause as history from this date, and the `nil` as
+decided on the ground above.
 
 **Why a note and not an amendment.** The test these records state in their own
 words is whether the entry changes an answer the record gave: an entry is an
@@ -981,8 +1027,8 @@ The field is still `nil` or a map of a line and a column; it is still set by
 which checks carry a place rather than by which inputs have source text; it is
 still built only by `Riddler.Finding.position/2`; and no code, field or node
 key moves, no refusal is added, and no document that validates clean stops
-doing so. This record anticipated the move in the same sentence that files the
-two `nil`s as defects rather than explaining them, and
+doing so. This record anticipated the move in the same paragraph that files
+three of these `nil`s as defects rather than explaining them, and
 `docs/adr/0002-element-document.md` read it that way for the fourth site, "so
 the count moving is what it anticipated rather than something it decided
 against". The two marks these records name as sufficient for an amendment are
@@ -991,8 +1037,11 @@ amendment states. The amendment of 2026-09-18 says "**The count of sites is
 unchanged.**" of its own change, and that stays true of it - the guard it
 records added no site, and the sites added since are two later requests' and
 not its. The paragraph on `document.invalid_pattern` is the other half of the
-same answer: it records a status quo, which "takes nothing away, and so changes
-nothing this record had decided". That the code half changes what a host reads
+same answer: it records a status quo, and `docs/adr/README.md`, setting out the
+test, says a decided reading stays a note when "its decided reading takes
+nothing away, and so changes nothing this record had decided" - the words are
+ADR-0002's, said there of itself, and what carries over here is the test and
+not the referent. That the code half changes what a host reads
 on one finding is not the test either, as this record says of itself elsewhere:
 "That a ruling was taken is not the test; if it were, every commit made under
 one would amend a record."
