@@ -120,8 +120,8 @@ defmodule Riddler.Screens.Document do
   """
 
   alias Riddler.Finding
+  alias Riddler.Screens.Compilers
   alias Riddler.Screens.Registry
-  alias Riddler.Screens.Validation
   alias Riddler.Template
 
   # The content kind this module is the runtime for, and the kind a document
@@ -543,7 +543,7 @@ defmodule Riddler.Screens.Document do
         []
 
       {:error, error} ->
-        [invalid_condition(describe(error), key, Validation.error_position(error))]
+        [invalid_condition(describe(error), key, Compilers.error_position(error))]
     end
   end
 

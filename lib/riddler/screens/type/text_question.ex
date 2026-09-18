@@ -42,8 +42,8 @@ defmodule Riddler.Screens.Type.TextQuestion do
   @behaviour Riddler.Screens.Type
 
   alias Riddler.Finding
+  alias Riddler.Screens.Compilers
   alias Riddler.Screens.Document
-  alias Riddler.Screens.Validation
 
   @impl true
   def fields,
@@ -146,5 +146,5 @@ defmodule Riddler.Screens.Type.TextQuestion do
   # of the format's own compiler rather than of a second one here: the anchors
   # are part of what it compiles, and a check with its own copy of them would
   # drift from the one that runs when a visitor submits.
-  defp usable?(pattern), do: match?({:ok, _regex}, Validation.compile_pattern(pattern))
+  defp usable?(pattern), do: match?({:ok, _regex}, Compilers.compile_pattern(pattern))
 end

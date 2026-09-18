@@ -26,6 +26,7 @@ defmodule Riddler.Screens.Validation do
   # new public field for something only this module reads.
 
   alias Riddler.Finding
+  alias Riddler.Screens.Compilers
   alias Riddler.Screens.Resolved
 
   # A node a response answers is a node that declares something about the
@@ -121,7 +122,7 @@ defmodule Riddler.Screens.Validation do
          undecided_position(condition, root)}
 
       {:error, error} ->
-        {"is not valid predicator", error_position(error)}
+        {"is not valid predicator", Compilers.error_position(error)}
     end
   end
 
@@ -129,21 +130,10 @@ defmodule Riddler.Screens.Validation do
 
   defp undecided_position(condition, root) do
     case Predicator.evaluate(condition, root) do
-      {:error, error} -> error_position(error)
+      {:error, error} -> Compilers.error_position(error)
       _placeless -> nil
     end
   end
-
-  # The place a refusal from the condition compiler or the evaluator names, in
-  # the form a finding carries. The document check on the same conditions calls
-  # it too, which is why it is not private, for the reason `compile_pattern/1`
-  # is not: one reading of what the dependency hands back is what keeps the two
-  # doors from disagreeing about where a condition is wrong. No part of the
-  # package's surface, as nothing in this module is.
-  @doc false
-  @spec error_position(term()) :: Finding.position() | nil
-  def error_position(%{position: {line, column}}), do: Finding.position(line, column)
-  def error_position(_placeless), do: nil
 
   # The place is appended from the position rather than from the numbers it was
   # built out of, so the message and the field cannot disagree about whether
@@ -268,7 +258,7 @@ defmodule Riddler.Screens.Validation do
   # pattern anchored at neither end would admit anything carrying a match
   # somewhere inside it, which is not what an author writing one means.
   defp pattern(node, response) do
-    case compile_pattern(Map.get(node, :pattern)) do
+    case Compilers.compile_pattern(Map.get(node, :pattern)) do
       {:ok, regex} -> matching(regex, node, response, "in the form this question asks for")
       :error -> unreadable_pattern(node)
     end
@@ -285,45 +275,6 @@ defmodule Riddler.Screens.Validation do
   defp unreadable_pattern(node) do
     if Map.has_key?(node, :pattern), do: [], else: [pattern_finding(node)]
   end
-
-  # The one place a `pattern` source becomes a regular expression. The document
-  # check on the same field calls it too, which is the whole reason it is not
-  # private: two compilers would drift, and a document check holding an
-  # expression to anchors this format did not apply would admit a pattern the
-  # format cannot use, or refuse one it can. No part of the package's surface,
-  # as nothing in this module is.
-  #
-  # The refusal's offset is discarded rather than carried, and that is a
-  # decision. `Regex.compile/1` answers `{reason, offset}`, and the offset is a
-  # byte count into the string compiled here, which is the author's expression
-  # inside the anchors rather than the author's expression. What it counts to
-  # is not one thing. Ten refusals were run against it. For six - an unmatched
-  # `)`, a `{2,1}` quantifier, a `[z-a]` range, a doubled `*` on a second line,
-  # a duplicate group name, and a malformed `(?P` - the offset lands at the
-  # defect or at the character that closes it. For four - three unterminated
-  # constructs and a trailing backslash - it lands at the end of the input
-  # instead, the defect being detected only when the scan runs out. The
-  # duplicate-name run, whose second name follows two two-byte characters,
-  # answers 15 where the character count to the same place is 13, which is what
-  # shows the count to be bytes. The anchors then move five of those six by
-  # exactly the five bytes they add in front; the sixth, the unmatched `)`,
-  # relocates onto the wrapper's own `)`; and the trailing backslash changes
-  # reason as well, from one naming a backslash at the end of the pattern to
-  # one naming a missing parenthesis. So a place derived from the offset would
-  # be right for some refusals and wrong for others under one finding code,
-  # which is worse for a host than none at all. `document.invalid_pattern`
-  # names no place and carries none. These ten are the runs made and not a
-  # classification of every refusal the compiler can answer.
-  @doc false
-  @spec compile_pattern(term()) :: {:ok, Regex.t()} | :error
-  def compile_pattern(source) when is_binary(source) do
-    case Regex.compile("\\A(?:" <> source <> ")\\z") do
-      {:ok, regex} -> {:ok, regex}
-      {:error, _reason} -> :error
-    end
-  end
-
-  def compile_pattern(_source), do: :error
 
   defp pattern_finding(node) do
     %Finding{
