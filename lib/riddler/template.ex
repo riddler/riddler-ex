@@ -465,12 +465,17 @@ defmodule Riddler.Template do
     |> Enum.map(&finding/1)
   end
 
+  # The line and the column go on being written into the message, because a
+  # person reading a refusal should not have to assemble the sentence, and
+  # they are also carried on `:position` for an editor that has to point at
+  # the span rather than read about it.
   defp finding({line, column, @parse_error, nil, reason}) do
     %Finding{
       code: @parse_error,
       message: "the template could not be parsed: #{reason} (line #{line}, column #{column})",
       field: nil,
-      node_key: nil
+      node_key: nil,
+      position: Finding.position(line, column)
     }
   end
 
@@ -480,7 +485,8 @@ defmodule Riddler.Template do
       message:
         "#{lead} \"#{name}\" is not in the template subset (line #{line}, column #{column})",
       field: name,
-      node_key: nil
+      node_key: nil,
+      position: Finding.position(line, column)
     }
   end
 

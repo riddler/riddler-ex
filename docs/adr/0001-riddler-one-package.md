@@ -386,3 +386,50 @@ the test; if it were, every commit made under one would amend a record.
 This note is recorded with the code half that makes it true, in one request:
 at `0d51acc` the emitter still stamps the version, and the request carrying
 this note is the one that stops it (rd-pqf).
+
+Noted 2026-09-17, campaign RF051, bead rd-0pi. One note by addition, read
+against `main` at `4208433`. Nothing above is changed.
+
+**`Riddler.Finding` carries a source position, and this record is where that
+is decided.** The struct gains a fifth field, `:position`, which is either
+`nil` or a map `%{line: line, column: column}` with both numbers one-based and
+counting bytes, as the parser's own locations do. Every template refusal sets
+it; every document finding leaves it `nil`, because a document is data and has
+no source text to point at, exactly as `:node_key` is `nil` for a template
+finding. The refusal's `:message` names the position too and goes on naming
+it: a person reading a finding reads one sentence, and the field is the same
+fact in the form an editor can act on without parsing that sentence. The field
+and the checks that pin it are added by this bead's own commit and so are
+citable at no earlier SHA; at `4208433` the struct carried four fields and the
+line and column existed only inside the message, although
+`lib/riddler/template.ex` already carried them as a pair through its refusal
+tuples and formatted them in at the end.
+
+**Why this record and not ADR-0002 or ADR-0003.** The rule on module layout
+above names `Riddler.Template`, `Riddler.Finding` and the condition and
+container machinery as the shared machinery that carries no kind in its names,
+and the rule on the public runtime of the screens kind says that surface
+beyond the functions it names is added by a record and not by a commit. A
+field on the struct every refusal in this package returns is that surface, and
+this is the record that owns the shared machinery it sits on. The two records
+that decide behaviour producing findings do not own its shape: ADR-0003 names
+`Riddler.Finding` nowhere, and ADR-0002 mentions it twice - once as an example
+usage, and once to say in as many words that it does not introduce a
+finding-code registry and that nothing there changes what the struct carries.
+Neither enumerates the fields as a decision, so neither is amended by adding
+one; the addition is recorded here, where the struct's ownership is stated.
+
+**Why a map and not a tuple, a nested struct or two flat fields.** A host
+matches `%Riddler.Finding{position: %{line: line, column: column}}` and reads
+the two numbers by name. A `{line, column}` tuple would be positional, so a
+reader has to know which number is which, and it has no JSON form, while this
+package's conformance encoder turns every answer it emits into JSON for a
+second runtime. Two flat fields would make "there is no source span" two facts
+that can disagree, where one nullable field makes it one. A nested struct
+would be a second public module for a pair of integers, and gains a host
+nothing a map with those keys does not already give it. A private coercion
+helper on `Riddler.Finding` turns a line and a column into the map, and
+answers `nil` unless both are positive integers, so a parser error reported
+without a place cannot put half a span on a finding - the same device, in the
+same module, and for the same reason, as the `:node_key` coercion this
+package's findings already go through (rd-0pi).

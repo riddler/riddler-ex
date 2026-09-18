@@ -317,6 +317,37 @@ defmodule Riddler.TemplateTest do
     test "a block terminator standing alone is still refused" do
       assert [%Riddler.Finding{field: "endif"}] = refusal!("done {% endif %}")
     end
+
+    # Mutation: have finding/1 pass `nil` where it passes the line and the
+    # column - the refusal then carries no span for an editor to point at and
+    # the match on the map fails.
+    test "a refused construct carries its source position beside the message" do
+      assert [%Riddler.Finding{position: %{line: 1, column: 4}} = finding] =
+               refusal!("abc{% include 'footer' %}")
+
+      assert finding.message =~ "(line 1, column 4)"
+    end
+
+    # Mutation: as above, on the parse-error clause alone. A parse error takes
+    # its line and column from the parser's meta rather than from a loc, so
+    # it is the one refusal whose position arrives by a second route.
+    test "a parse error carries its source position too" do
+      assert [%Riddler.Finding{position: %{line: 1, column: 23}}] =
+               refusal!("{{ responses.email |||}")
+    end
+
+    # Mutation: drop the "(line ..., column ...)" from either message in
+    # finding/1 now that the position has a field of its own - the sentence a
+    # human reads stops saying where the refusal was and this match fails.
+    # This one pins wording that must NOT change, so it is green before the
+    # position field and green after; the mutation is what makes it earn its
+    # place.
+    test "the message still names the position in its own words" do
+      assert [finding] = refusal!("{{ name | strip_html }}")
+
+      assert finding.message ==
+               "the filter \"strip_html\" is not in the template subset (line 1, column 11)"
+    end
   end
 
   describe "render/3 modes" do
