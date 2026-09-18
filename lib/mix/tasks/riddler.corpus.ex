@@ -104,7 +104,10 @@ defmodule Mix.Tasks.Riddler.Corpus do
   defp check(target) do
     case Corpus.drift(target) do
       [] ->
-        Mix.shell().info("#{target} carries the corpus riddler #{Corpus.version()} emits.")
+        Mix.shell().info(
+          "#{target} carries the corpus this repository emits (checked by riddler #{Corpus.version()})."
+        )
+
         :ok
 
       drift ->
