@@ -97,6 +97,19 @@ defmodule Riddler.Screens.ValidationTest do
     |> Document.admit()
   end
 
+  # A screen whose nodes are keyed with something that is not a string. A key
+  # is a string by the record the document implements, so `Document.validate/1`
+  # reports such a document - as `document.invalid_key` - but `Document.admit/1`
+  # takes it, and a host that admits without validating hands exactly this
+  # screen to response validation, which is where the cases below run.
+  defp non_string_key_document(nodes) do
+    Document.admit(%{
+      "schema_version" => 1,
+      "id" => "edoc_keys",
+      "screens" => [%{"key" => "keys", "title" => "Keys", "nodes" => nodes}]
+    })
+  end
+
   # A one-question screen from the payments host, for the format cases: the
   # question carries whatever the format under test reads, and a Pay button so
   # that the arity-4 form has something to press.
@@ -797,6 +810,178 @@ defmodule Riddler.Screens.ValidationTest do
                {"response.undecidable", "vat_id"},
                {"response.required", "full_name"}
              ]
+    end
+  end
+
+  describe "a node key the record does not admit" do
+    # Sabotage: write `node_key: node[:key]` back into `finding/4` and the
+    # required finding carries the integer key, which the `Riddler.Finding`
+    # typespec does not admit and a host indexing findings by that field
+    # cannot look a node up by.
+    test "leaves the required finding's node key nil" do
+      document =
+        non_string_key_document([
+          %{"type" => "text_question", "key" => 7, "label" => "Your name", "required" => true}
+        ])
+
+      assert {:error, [finding]} = Screens.validate_screen(document, "keys", %{})
+      assert finding.code == "response.required"
+      assert finding.node_key == nil
+    end
+
+    # Sabotage: the same site as the required case - `finding/4` is what both
+    # kinds are built from - and the format finding carried the integer key.
+    test "leaves the format finding's node key nil" do
+      document =
+        non_string_key_document([
+          %{
+            "type" => "text_question",
+            "key" => 7,
+            "label" => "Where to send the receipt",
+            "format" => "email"
+          }
+        ])
+
+      root = %{"responses" => %{7 => "ada at example dot com"}}
+
+      assert {:error, [finding]} = Screens.validate_screen(document, "keys", root)
+      assert finding.code == "response.format"
+      assert finding.field == "format"
+      assert finding.node_key == nil
+    end
+
+    # Sabotage: write `node_key: node[:key]` back into `pattern_finding/1` and
+    # this finding carried the atom key.
+    test "leaves the missing-pattern finding's node key nil" do
+      document =
+        non_string_key_document([
+          %{
+            "type" => "text_question",
+            "key" => :card_last_four,
+            "label" => "Last four digits",
+            "format" => "pattern"
+          }
+        ])
+
+      root = %{"responses" => %{card_last_four: "1234"}}
+
+      assert {:error, [finding]} = Screens.validate_screen(document, "keys", root)
+      assert finding.code == "response.format"
+      assert finding.field == "pattern"
+      assert finding.node_key == nil
+    end
+
+    # Sabotage: write `node_key: node[:key]` back into `range_finding/5` and
+    # the out-of-range finding carried the integer key.
+    test "leaves the out-of-range finding's node key nil" do
+      document =
+        non_string_key_document([
+          %{
+            "type" => "text_question",
+            "key" => 7,
+            "label" => "Seats",
+            "format" => "integer",
+            "min" => 2
+          }
+        ])
+
+      root = %{"responses" => %{7 => "1"}}
+
+      assert {:error, [finding]} = Screens.validate_screen(document, "keys", root)
+      assert finding.code == "response.out_of_range"
+      assert finding.field == "min"
+      assert finding.node_key == nil
+    end
+
+    # The undecidable finding is built from the resolution diagnostics rather
+    # than from a node on the resolved screen, so it carries the key by its own
+    # route and needs its own case.
+    #
+    # Sabotage: write `node_key: key` back into `undecidable_finding/1` and the
+    # finding about the condition carried the atom key.
+    test "leaves the undecidable finding's node key nil" do
+      document =
+        non_string_key_document([
+          %{
+            "type" => "text_question",
+            "key" => :vat_id,
+            "label" => "VAT identifier",
+            "required" => true,
+            "condition" => "context.is_business == true"
+          }
+        ])
+
+      root = %{"context" => %{}, "responses" => %{}}
+
+      {:ok, screen, diagnostics} = Screens.resolve_screen(document, "keys", root)
+      assert screen.nodes == []
+
+      assert diagnostics.undecidable_conditions == [
+               %{key: :vat_id, condition: "context.is_business == true"}
+             ]
+
+      assert {:error, [finding]} = Screens.validate_screen(document, "keys", root)
+      assert finding.code == "response.undecidable"
+      assert finding.node_key == nil
+    end
+
+    # Every kind at once, the way the document half is pinned: a screen whose
+    # nodes are all keyed with something the record does not admit raises one
+    # finding per kind, and not one of them carries a key a host cannot use.
+    #
+    # Sabotage: write the raw key back into any one of the four sites and this
+    # test goes red on that finding.
+    test "holds for every kind the response path raises" do
+      document =
+        non_string_key_document([
+          %{"type" => "text_question", "key" => 1, "label" => "Your name", "required" => true},
+          %{
+            "type" => "text_question",
+            "key" => 2,
+            "label" => "Where to send the receipt",
+            "format" => "email"
+          },
+          %{
+            "type" => "text_question",
+            "key" => 3,
+            "label" => "Last four digits",
+            "format" => "pattern"
+          },
+          %{
+            "type" => "text_question",
+            "key" => 4,
+            "label" => "Seats",
+            "format" => "integer",
+            "min" => 2
+          },
+          %{
+            "type" => "text_question",
+            "key" => :vat_id,
+            "label" => "VAT identifier",
+            "required" => true,
+            "condition" => "context.is_business == true"
+          }
+        ])
+
+      root = %{
+        "context" => %{},
+        "responses" => %{2 => "ada at example dot com", 3 => "1234", 4 => "1"}
+      }
+
+      assert {:error, findings} = Screens.validate_screen(document, "keys", root)
+
+      assert Enum.map(findings, & &1.code) == [
+               "response.undecidable",
+               "response.required",
+               "response.format",
+               "response.format",
+               "response.out_of_range"
+             ]
+
+      for finding <- findings do
+        assert finding.node_key == nil,
+               "#{finding.code} carries node_key #{inspect(finding.node_key)}"
+      end
     end
   end
 end
