@@ -1933,28 +1933,34 @@ its own undecidable condition" of
 `test/riddler/screens/validation_test.exs`.
 
 **Where in the code the two halves meet, and why the drop comes first.**
-Resolution decides a node's condition before anything validates, and three
-private functions in `lib/riddler/screens.ex` carry it, each doing one part.
-A condition that could not be decided answers false to the question of whether
-the node is shown, while recording the condition in the diagnostics: that is
-the `_undecidable ->` arm of the `case` inside `evaluate/4`'s clause for a
-condition that is a binary, which answers
-`{false, undecidable(diagnostics, key, condition)}` (read at `26b52cc`; the
-other `evaluate/4` clause, for a condition that is not a binary, answers the
-same pair without a `case`, at the same SHA). `shown/3` turns that false into
-`{nil, diagnostics}`, which is all it does with it. `resolve_nodes/3` is what
-leaves the node out: reducing over the screen's nodes, its `{nil, diagnostics}`
-arm returns the accumulator unchanged, so the node never enters the list the
-resolved screen carries (both read at `26b52cc`). Validation is then handed
-that resolved screen, and the
-opt-out searches its nodes alone for a node that is a button and whose `key`
-equals the pressed key (`lib/riddler/screens/validation.ex`, the private
-`opted_out?/2` and `button?/2`, read at `26b52cc`). A dropped button is not
-among them, so the search finds nothing and the call takes the validating arm.
-The public documentation already states the consequence without naming this
-route to it: the `@doc` on `Riddler.Screens.validate_screen/4` says "A key that
-names no button on the resolved screen validates too, because the default is
-what a button that is not there carries." (`lib/riddler/screens.ex`, read at
+Resolution decides a node's condition before anything validates, and it is one
+path down through `lib/riddler/screens.ex` that does it. `resolve_one/3` hands
+the screen's nodes to `resolve_nodes/3`; `resolve_nodes/3` asks `shown/3` about
+each node in turn; `shown/3` asks `decide/3`; `decide/3` answers
+`{true, diagnostics}` for a node carrying no `condition`, and otherwise calls
+`evaluate/4` with the condition and the node's key; and `evaluate/4` is where a
+condition that could not be decided answers false while recording the condition
+through `undecidable/3`. That recording is the `_undecidable ->` arm of the
+`case` inside `evaluate/4`'s clause for a condition that is a binary, which
+answers `{false, undecidable(diagnostics, key, condition)}`; the other
+`evaluate/4` clause, for a condition that is not a binary, answers the same
+pair without a `case`. `shown/3` turns that false into `{nil, diagnostics}`,
+which is all it does with it. `resolve_nodes/3` is what leaves the node out:
+reducing over the screen's nodes, its `{nil, diagnostics}` arm answers
+`{acc, diagnostics}` - the accumulator it was handed, unchanged, beside the
+diagnostics `shown/3` answered with, which in this case are the updated ones
+carrying the recorded condition - so the node never enters the list the
+resolved screen carries. Every function named so far in this paragraph is
+private, sits in `lib/riddler/screens.ex`, and is read at `26b52cc`.
+Validation is then handed that resolved screen, and the opt-out searches its
+nodes alone for a node that is a button and whose `key` equals the pressed key
+(`lib/riddler/screens/validation.ex`, the private `opted_out?/2` and
+`button?/2`, read at `26b52cc`). A dropped button is not among them, so the
+search finds nothing and the call takes the validating arm. The public
+documentation already states the consequence without naming this route to it:
+the `@doc` on `Riddler.Screens.validate_screen/4` says "A key that names no
+button on the resolved screen validates too, because the default is what a
+button that is not there carries." (`lib/riddler/screens.ex`, read at
 `26b52cc`).
 
 **Why the carve-out's reasoning does not reach this case.** The amendment that
@@ -1994,8 +2000,8 @@ through a keyed button declaring `false` still answers `:ok` without running a
 check, for an undecidable condition and for every other finding, exactly as the
 amendment above decides", and that same amendment's last paragraph says of this
 edge that it "is still unanswered, and this amendment does not reach it". A
-record cannot both answer a call and say that it does not,
-and where the two readings of one entry differ it is the one the entry states
+record cannot both answer a call and say that it does not, and where the two
+readings of one entry differ it is the one the entry states
 about itself that holds. What is decided here takes nothing away either: no
 document that validates clean stops doing so, no document that is refused stops
 being refused, no code, field, message or node key moves, no refusal is added,
