@@ -133,28 +133,45 @@ defmodule Riddler.Template do
   # `{% raw %}` or `{% comment %}` is text, and string literals are masked
   # because an opener a template merely prints is text too.
   #
-  # The closer half of the block pattern matches what the parser accepts as a
-  # closer rather than the one spelling of it a reader expects, because the
-  # two disagreeing is a leak and not a tidiness problem: at `solid` `1.3.4`
-  # the closing tag is tokenized like any other, so `{% endraw xyz %}` closes
-  # a raw block and a pattern insisting on `{% endraw %}` runs past it to the
-  # next closer and blanks whatever stands between. The trailing tokens are
-  # therefore skipped the way the lexer reads them, quoted strings included:
-  # a string runs to the next quote of the same kind, at this version with no
-  # escape inside it, and it may hold a `%}` or a `{%` of its own. Outside a
-  # string a bare `%` ends the tag or the parser refuses the template, which
-  # is why `%` is the one character the run cannot cross.
+  # Reading the source means this pattern has to decide where a verbatim block
+  # ends, and the only safe answer is the one the parser reaches. NEITHER
+  # direction of disagreement is safe. Ending LATER than the parser blanks a
+  # construct the parser left in the open. Ending EARLIER is not the harmless
+  # half it looks like: the scan resumes inside what the parser is reading as
+  # body text, and a marker in there - a `{% comment %}` an author wrote
+  # inside a raw body - opens a block the parser never opened, which then runs
+  # to a later closer and blanks the span between. An early end
+  # re-synchronises; it does not merely expose.
   #
-  # What the two can still disagree about is a closer the pattern accepts and
-  # the PARSER refuses - `{% endraw, %}`, which the lexer will not tokenize.
-  # The parser reads it as body text and looks for a later closer, so the
-  # parser's block is the longer one and the pattern's mask ends inside it.
-  # That direction only ever exposes a construct to the scan; the direction
-  # that hides one needs the pattern to end LATER than the parser, which
-  # needs a closer the parser accepts and the pattern misses, and every
-  # accepted spelling run against the parser is matched here.
+  # So the pattern mirrors the lexer twice over. The NAME ends where the lexer
+  # ends one, at whitespace or at a tag or object end, which is why
+  # `{% endraw, %}` and `{% endraw"q" %}` are not closers: their tag name is
+  # `endraw,` and `endraw"q"`. The trailing TOKENS are the tokens the lexer
+  # will take and no others - strings in either quote, running to the next
+  # quote of the same kind with no escape inside one at this version and free
+  # to hold a `%}` or a `{%`; the comparison operators; identifiers, which may
+  # carry a `-` or end in a `?`; numbers; the punctuation the lexer maps to a
+  # token; and whitespace. A `}` is not among them, so the run cannot cross
+  # the `}}` that ends `{% endraw }} %}` before its `%}` does.
+  #
+  # Generating every spelling these rules allow and running each against the
+  # parser is how this is checked rather than argued: the parser's answer and
+  # the pattern's agree on all of them, in both directions.
   @liquid_opener ~r/\{%-?\s*liquid\b/
-  @verbatim_block ~r/\{%-?\s*(raw|comment)\s*-?%\}.*?\{%-?\s*end\1\b(?:"[^"]*"|'[^']*'|[^%"'])*%\}/s
+  @verbatim_block ~r/
+    \{%-?\s*(raw|comment)\s*-?%\}
+    .*?
+    \{%-?\s*end\1(?=\s|-?%\})
+    (?:
+      "[^"]*" | '[^']*'
+      | == | != | <> | <= | >=
+      | [A-Za-z_][A-Za-z0-9_?-]*
+      | -?[0-9][0-9.]*
+      | [.|\[\]():,=<>]
+      | \s
+    )*
+    -?%\}
+  /sx
 
   @unexpected_tag ~r/Unexpected tag '([^']+)'/
 
@@ -422,16 +439,24 @@ defmodule Riddler.Template do
   # never masked; a block marker inside such a string is still read as a real
   # marker here, pairs with a real marker later in the source, and blanks
   # whatever lies between. `{% endif "..." %}`, `{% else "..." %}`,
-  # `{% endfor "..." %}` and a `comment` tag's own trailing tokens all do it,
-  # and a construct outside the subset written in that gap is admitted and
-  # runs. Closing it means refusing something that compiles today, which is a
-  # decision to record before it is a line to write, so it is tracked
-  # separately and deliberately left open here rather than half-closed with a
-  # second source-level string matcher that would disagree with the parser in
-  # its own new ways.
+  # `{% endfor "..." %}` and a `comment` tag's own trailing tokens all do it.
+  #
+  # Be exact about what gets through that gap. `liquid` is excluded as an
+  # alternate SPELLING for constructs the subset already admits, not as a
+  # construct the subset forbids: the tags written inside it are ordinary tag
+  # nodes in the tree and the allowlist walk asks about every one of them, so
+  # `{% liquid echo x %}` is still refused on `echo`. What a blanked span
+  # admits is therefore an admitted construct in a spelling a second runtime
+  # need not implement - a hole in what the conformance corpus can hold two
+  # runtimes to - and not a forbidden construct escaping the walk. It is
+  # worth closing for that reason and not a larger one, and closing it means
+  # refusing something that compiles today, which is a decision to record
+  # before it is a line to write. So it is tracked separately and left open
+  # here rather than half-closed with a second source-level string matcher
+  # that would disagree with the parser in its own new ways.
   #
   # What IS closed: a marker printed from a string the tree carries, and a
-  # closer the parser accepts that the block pattern used to run past.
+  # block whose end the pattern and the parser used to disagree about.
   defp liquid_refusals(source, tree) do
     masked =
       source
