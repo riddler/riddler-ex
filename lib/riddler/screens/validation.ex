@@ -81,7 +81,7 @@ defmodule Riddler.Screens.Validation do
       message:
         "the condition #{inspect(condition)} could not be decided against the root this screen was validated with, so whether this question was asked of the visitor is not established",
       field: "condition",
-      node_key: key
+      node_key: Finding.node_key(key)
     }
   end
 
@@ -243,7 +243,7 @@ defmodule Riddler.Screens.Validation do
       message:
         "this question asks for a response in the form of a pattern and declares none, so nothing can satisfy it",
       field: "pattern",
-      node_key: node[:key]
+      node_key: Finding.node_key(node[:key])
     }
   end
 
@@ -309,16 +309,22 @@ defmodule Riddler.Screens.Validation do
       code: "response.out_of_range",
       message: "#{inspect(label(node))} is #{direction} #{bound}, and #{value} is not",
       field: field,
-      node_key: node[:key]
+      node_key: Finding.node_key(node[:key])
     }
   end
 
   # -- findings ---------------------------------------------------------------
 
+  # Every site here that puts a node's key on a finding goes through
+  # `Finding.node_key/1`, for the reason the document checks do: a key is a
+  # string by the record the document implements, the field is typed that way,
+  # and a key of any other form is one no host can look a node up by. This path
+  # runs on every submission rather than once at authoring time, so it is the
+  # half a host indexing findings by that field meets most often.
   defp format_finding(node, detail), do: finding(node, "response.format", "format", detail)
 
   defp finding(node, code, field, message) do
-    %Finding{code: code, message: message, field: field, node_key: node[:key]}
+    %Finding{code: code, message: message, field: field, node_key: Finding.node_key(node[:key])}
   end
 
   # The label is what the visitor was asked, already rendered by resolution, so
