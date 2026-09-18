@@ -132,8 +132,18 @@ defmodule Riddler.Template do
   # all. Verbatim blocks are masked because a liquid opener written inside
   # `{% raw %}` or `{% comment %}` is text, and string literals are masked
   # because an opener a template merely prints is text too.
+  #
+  # The closer half of the block pattern matches what the parser accepts as a
+  # closer rather than the one spelling of it a reader expects, because the
+  # two disagreeing is a leak and not a tidiness problem: at `solid` `1.3.4`
+  # the closing tag is tokenized like any other, so `{% endraw xyz %}` closes
+  # a raw block and a pattern insisting on `{% endraw %}` ran past it to the
+  # next closer and blanked whatever stood between. Where the two can still
+  # differ, the pattern ends the block EARLIER than the parser does - a
+  # closer carrying a quoted `%}` is the case - and an early end can only
+  # expose a construct to the scan, never hide one.
   @liquid_opener ~r/\{%-?\s*liquid\b/
-  @verbatim_block ~r/\{%-?\s*(raw|comment)\s*-?%\}.*?\{%-?\s*end\1\s*-?%\}/s
+  @verbatim_block ~r/\{%-?\s*(raw|comment)\s*-?%\}.*?\{%-?\s*end\1\b[^%]*%\}/s
 
   @unexpected_tag ~r/Unexpected tag '([^']+)'/
 
@@ -390,8 +400,13 @@ defmodule Riddler.Template do
   # tag, and the characters of `{% endraw %}` holds three constructs and no
   # verbatim block, and masking the block first read the printed characters as
   # a real opener and closer, blanked the tag between them, and admitted it.
-  # Masking literals first leaves only the markers a tree node put there, so
-  # the block regex sees the blocks an author actually opened.
+  # Masking literals first blanks every span the tree reports as one of the
+  # template's own strings - a plain literal and a bracket subscript are the
+  # two shapes that carry one - so no marker the template merely prints
+  # survives to be read as a block marker. What the block pattern is left
+  # looking at is markers the parser itself would tokenize as tags, and
+  # because its closer half matches the closers the parser accepts, the spans
+  # it blanks are the spans the parser reads as verbatim bodies.
   defp liquid_refusals(source, tree) do
     masked =
       source
@@ -438,6 +453,19 @@ defmodule Riddler.Template do
   # `{condition, body}` pair - which is why this walk has a tuple clause of
   # its own and had one before the general reducer grew its own.
   defp literal_locs(%Solid.Literal{loc: %Solid.Parser.Loc{} = loc}, acc),
+    do: [{loc.line, loc.column} | acc]
+
+  # A bracket subscript is a string written in the template exactly as any
+  # other literal is - `a["plan"]` - but the parser reports it as its own node
+  # type rather than as a literal, so the clause above does not see it. It is
+  # the same exemption for the same reason: `{{ a["{% liquid %}"] }}` prints
+  # those characters and holds no tag. A dot access is the same node with a
+  # different `access_type` and its loc is on the identifier rather than on a
+  # quote, and an integer subscript's loc is on a digit; both reach
+  # `literal_span/2`, which skips a loc that does not start at a quote, so
+  # this clause does not need to exclude them and is not written as though it
+  # does.
+  defp literal_locs(%Solid.AccessLiteral{loc: %Solid.Parser.Loc{} = loc}, acc),
     do: [{loc.line, loc.column} | acc]
 
   defp literal_locs(term, acc) when is_struct(term),

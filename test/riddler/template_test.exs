@@ -321,6 +321,147 @@ defmodule Riddler.TemplateTest do
                )
     end
 
+    # A bracket subscript is a string the template holds, exactly as a plain
+    # literal is, but the parser reports it as its own node type. Until the
+    # literal collector knew that node, a subscript's characters were not
+    # masked, so a printed marker inside one was read as a real block marker
+    # and blanked whatever stood between two of them. These four are the
+    # positions a subscript can be written in.
+    #
+    # Mutation: delete the Solid.AccessLiteral clause from literal_locs/2 -
+    # the subscripts are not masked, the printed markers open and close a raw
+    # block across the liquid tag, and compile/1 answers {:ok, _}.
+    test "raw markers in a bracket subscript do not mask a real refused tag" do
+      assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "liquid"}] =
+               refusal!(
+                 ~S({{ responses["{% raw %}"] }}{% liquid assign who = 1 %}) <>
+                   ~S({{ responses["{% endraw %}"] }})
+               )
+    end
+
+    # Mutation: the same deletion - a single-quoted subscript is the same node
+    # and the comment markers in it mask the tag between them.
+    test "comment markers in a bracket subscript do not mask a real refused tag" do
+      assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "liquid"}] =
+               refusal!(
+                 ~S({{ responses['{% comment %}'] }}{% liquid assign who = 1 %}) <>
+                   ~S({{ responses['{% endcomment %}'] }})
+               )
+    end
+
+    # Mutation: the same deletion - the subscript in an assign's right-hand
+    # side is not masked and the tag between the two is admitted.
+    test "markers in a subscript on an assign do not mask a real refused tag" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({% assign a = responses["{% raw %}"] %}{% liquid assign who = 1 %}) <>
+                   ~S({% assign b = responses["{% endraw %}"] %})
+               )
+    end
+
+    # Mutation: the same deletion - the subscript inside an if condition is
+    # not masked and the tag between the two is admitted.
+    test "markers in a subscript in a condition do not mask a real refused tag" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({% if responses["{% raw %}"] %}{% endif %}{% liquid assign who = 1 %}) <>
+                   ~S({% if responses["{% endraw %}"] %}{% endif %})
+               )
+    end
+
+    # Mutation: the same deletion - the subscript standing as a filter
+    # argument is not masked and the tag between the two is admitted.
+    test "markers in a subscript as a filter argument do not mask a refused tag" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({{ "x" | append: responses["{% raw %}"] }}{% liquid assign who = 1 %}) <>
+                   ~S({{ "x" | append: responses["{% endraw %}"] }})
+               )
+    end
+
+    # The other direction of the same clause: a subscript holding a forbidden
+    # tag's characters is text and renders, as the same characters in a plain
+    # literal already did.
+    #
+    # Mutation: delete the Solid.AccessLiteral clause from literal_locs/2 -
+    # the subscript is not masked, the opener in it is read as a construct,
+    # and the template is refused instead of rendering.
+    test "a liquid opener inside a bracket subscript is text, not a construct" do
+      assert {:ok, "yes", []} =
+               render!(
+                 ~S({{ responses["{% liquid %}"] }}),
+                 %{"responses" => %{"{% liquid %}" => "yes"}},
+                 :strict
+               )
+    end
+
+    # Mutation: mask from a subscript's opening quote to the end of the source
+    # instead of to its closing quote - the real opener after it is masked too
+    # and the refusal disappears.
+    test "a real liquid block beside a subscript holding the opener is refused" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(~S({{ responses["{% liquid %}"] }}{% liquid assign who = 1 %}))
+    end
+
+    # The block pattern and the parser have to agree about where a verbatim
+    # block ENDS, for the same reason they have to agree about what a marker
+    # is. At solid 1.3.4 a closing tag is tokenized like any other tag, so
+    # `{% endraw xyz %}` closes a raw block; a pattern that insisted on the
+    # bare spelling ran past it to the next closer and blanked the real tag
+    # in between.
+    #
+    # Mutation: put `\s*-?%\}` back as the closer half of @verbatim_block -
+    # the first closer is not matched, the pattern runs on to the second, the
+    # liquid tag between them is blanked and compile/1 answers {:ok, _}.
+    test "a raw closer carrying trailing text ends the block" do
+      assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "liquid"}] =
+               refusal!(
+                 "{% raw %}{% endraw xyz %}{% liquid assign who = 1 %}{% raw %}{% endraw %}"
+               )
+    end
+
+    # Mutation: the same restoration - the comment block's closer is missed
+    # in the same way.
+    test "a comment closer carrying trailing text ends the block" do
+      assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "liquid"}] =
+               refusal!(
+                 "{% comment %}{% endcomment xyz %}{% liquid assign who = 1 %}" <>
+                   "{% comment %}{% endcomment %}"
+               )
+    end
+
+    # Every closer spelling the parser accepts, run against the parser to
+    # establish the list: a body is protected under each of them, and a
+    # spelling the parser rejects is a parse refusal rather than a silently
+    # different block. The two rejected spellings are here so that the list
+    # above is a boundary and not just a sample.
+    #
+    # Mutation: put `\s*-?%\}` back as the closer half of @verbatim_block -
+    # the trailing-text spelling leaves the block unmasked to the end of the
+    # source and the opener in the body is refused.
+    test "a raw body is protected under every closer spelling the parser accepts" do
+      for closer <- [
+            "{% endraw %}",
+            "{%endraw%}",
+            "{%- endraw -%}",
+            "{%   endraw   %}",
+            "{% endraw xyz %}",
+            "{%\nendraw\n%}"
+          ] do
+        source = "{% raw %}{% liquid echo x %}" <> closer
+
+        assert {:ok, _compiled} = Template.compile(source),
+               "expected the closer #{inspect(closer)} to end the block"
+      end
+
+      for rejected <- ["{% ENDRAW %}", "{% endrawx %}"] do
+        findings = refusal!("{% raw %}body" <> rejected)
+
+        assert Enum.any?(findings, &(&1.code == "template.parse_error")),
+               "expected the closer #{inspect(rejected)} to leave the block unterminated"
+      end
+    end
+
     # Mutation: add "echo" to @allowed_tags - the tag compiles.
     test "echo is refused" do
       assert [%Riddler.Finding{field: "echo"}] = refusal!("{% echo responses.first_name %}")
