@@ -1090,12 +1090,33 @@ amendment exists to end.
 
 ### Why an amendment and not a note
 
-Because it decides a question the record left open, which is this record's own
-stated test. The note above that decides what becomes of a node field this
-version does not know declines to decide whether such a field should also
+Because it changes what this record decides, which is the test this record
+states for itself. The note above that decides what becomes of a node field
+this version does not know declines to decide whether such a field should also
 raise a finding, and gives its reason in these words: "naming a code for it
 would change what this record decides, and that is an amendment's work, not a
-note's."
+note's." The operative clause is *changes what this record decides*, and this
+entry does: the rule stated above answers a call one way, and this entry
+answers the same call another.
+
+**Deciding something the record left open is not by itself that test, and this
+record refutes the confusion by example.** The `metadata` requiredness note
+says of itself "This note decides the open reading rather than merely reporting
+the code" - and remains a note. It sits in the same note block as the sentence
+just quoted, at the end of the paragraph immediately before it, so a reader
+following that citation lands beside it. It can remain a note because its
+decided reading takes nothing away, and so changes nothing this record had
+decided. Deciding an open question and changing what the record decides come
+apart, and it is the second that governs.
+
+The provenance lines the note blocks carry say the same thing from the other
+side, each in its own words. The four-note block: they "record what this record
+was silent on; none of them changes what it decides, and none of them bears on
+the amendment above." The single-note block, of its own note: "it changes
+nothing this record decides, and it does not bear on the amendment above."
+This entry fails the operative clause in both spellings twice over. It changes
+what the record decides, and it bears on the amendment above as directly as an
+entry can, being a qualification of one of its rules.
 
 The other test this record uses points the other way and is not the governing
 one. The amendment on an uncompilable pattern asks whether a change is "a new
@@ -1118,9 +1139,22 @@ apart from the one qualification stated here: a validating press still answers
 the finding, `missing_variables` still becomes no finding, a condition the root
 *decides* false still hides its node silently, and the order of the findings is
 untouched. `validates` keeps its default of true, its meaning, and its
-admit-time shape check. `resolve/2` and `resolve_screen/3` are not touched:
-their diagnostics report an undecidable condition whatever button is pressed,
-because no button is pressed at resolution.
+admit-time shape check. `resolve/2` and `resolve_screen/3` are not touched *by
+this amendment* - `resolve_screen/3`'s return is changed by the amendment
+above, which states that and says why - and their diagnostics report an
+undecidable condition whatever button is pressed, because no button is pressed
+at resolution.
+
+**One edge stays exactly where the amendment above left it, and this amendment
+decides nothing about it.** A button's own `condition` may be the undecidable
+one. Resolution then drops that button from the screen, so nothing on the
+resolved screen declares `validates` at all, and the press falls to the
+default: it validates, and the finding is raised. That is the behaviour the
+`@doc` on
+`Riddler.Screens.validate_screen/4` already states for any key naming no button
+on the resolved screen, and it is not changed here. Whether a press through a
+button hidden by its own undecidable condition should reach the opt-out this
+amendment carves out is a question this amendment does not answer.
 
 **The public documentation of the opt-out needed no change.** The `@doc` on
 `Riddler.Screens.validate_screen/4` (`lib/riddler/screens.ex`, read at
