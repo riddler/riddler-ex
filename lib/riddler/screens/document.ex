@@ -121,6 +121,7 @@ defmodule Riddler.Screens.Document do
 
   alias Riddler.Finding
   alias Riddler.Screens.Registry
+  alias Riddler.Screens.Validation
   alias Riddler.Template
 
   # The content kind this module is the runtime for, and the kind a document
@@ -521,31 +522,47 @@ defmodule Riddler.Screens.Document do
 
   defp condition_findings(node, key) do
     case Map.fetch(node, :condition) do
-      {:ok, condition} when is_binary(condition) -> compile_condition(condition, key)
-      {:ok, condition} -> [invalid_condition(inspect(condition) <> " is not a condition", key)]
-      :error -> []
+      {:ok, condition} when is_binary(condition) ->
+        compile_condition(condition, key)
+
+      {:ok, condition} ->
+        [invalid_condition(inspect(condition) <> " is not a condition", key, nil)]
+
+      :error ->
+        []
     end
   end
 
+  # A condition that reached the parser and was refused is located by it, and
+  # the place is read out of the refusal by the same helper the response check
+  # reads it with, so the two doors cannot name different places for one
+  # condition. A condition that never reached the parser has none.
   defp compile_condition(condition, key) do
     case Predicator.compile(condition) do
-      {:ok, _instructions} -> []
-      {:error, error} -> [invalid_condition(describe(error), key)]
+      {:ok, _instructions} ->
+        []
+
+      {:error, error} ->
+        [invalid_condition(describe(error), key, Validation.error_position(error))]
     end
   end
-
-  defp describe(%{message: message, position: {line, column}}),
-    do: "#{message} (line #{line}, column #{column})"
 
   defp describe(%{message: message}), do: message
   defp describe(error), do: inspect(error)
 
-  defp invalid_condition(detail, key) do
+  # The place is appended from the position rather than from the numbers it was
+  # built out of, so the message and the field cannot disagree about whether
+  # there is one.
+  defp span(%{line: line, column: column}), do: " (line #{line}, column #{column})"
+  defp span(nil), do: ""
+
+  defp invalid_condition(detail, key, position) do
     %Finding{
       code: "document.invalid_condition",
-      message: "the condition does not parse: #{detail}",
+      message: "the condition does not parse: #{detail}" <> span(position),
       field: "condition",
-      node_key: key
+      node_key: key,
+      position: position
     }
   end
 
