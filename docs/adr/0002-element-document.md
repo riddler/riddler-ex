@@ -1769,10 +1769,11 @@ in the same request at `b67dea5`. Nothing above is changed; each paragraph
 below says what the text above means now.
 
 **The three things that leave a condition undecided are one finding, by
-decision.** The amendment above headed "An undecidable condition is a finding"
-decides that a condition that cannot be decided against the root answers a
-finding rather than `:ok`, and leaves "the finding's code to the bead that
-raises it". The code that was raised, `response.undecidable`, is reached by
+decision.** The amendment above headed "the screen validated is the screen
+shown", in its section headed "An undecidable condition is a finding", decides
+that a condition that cannot be decided against the root answers a finding
+rather than `:ok`, and leaves "the finding's code to the bead that raises it".
+The code that was raised, `response.undecidable`, is reached by
 three unrelated things: a condition that compiles and that this root leaves
 undecided, a condition that is not valid predicator at all, and a condition
 that is not a string (`lib/riddler/screens/validation.ex`, the private
@@ -1794,19 +1795,31 @@ at `b67dea5`; the three are pinned one case apiece in
 `test/riddler/screens/validation_test.exs`, the describe block "which of the
 three things left a condition undecided", read at `b67dea5`).
 
-**It carries the place it is given, and invents none.** Two of the three are
-located by the package's dependency and one is not. A condition that does not
-compile is located by the parser; a condition that compiles and names an
-identifier the root does not carry is located by the evaluator; a condition
-that compiles and reads a key missing from a map the root does hold is
-undecided with no place named, and a condition that is not a string never
-reached the parser and has none either. The finding carries the position in the
-first two cases and `nil` in the last two, through
-`Riddler.Finding.position/2`, which builds the map only from a positive line
-and a positive column (`lib/riddler/finding.ex`, `position/2` and its fallback
-clause, read at `b67dea5`). The message and the field cannot disagree about
-whether there is one: the place is appended to the sentence from the position
-rather than from the numbers it was built out of
+**It carries the place it is given, and invents none.** The rule is not one
+about the three causes, and it is worth stating on its own because the causes
+do not settle it: the finding carries a place exactly when the parser or the
+evaluator hands one back, and `nil` otherwise. A condition that is not valid
+predicator is always located, because the refusal the parser answers with
+carries a position as a field it requires. A condition that is not a string
+never reached the parser and is never located. A condition that compiles falls
+both ways, and which way is a property of the error the evaluator answers
+rather than of the cause. The inputs driven against this code half at
+`b67dea5`, under a root of `%{"context" => %{"n" => 5}, "responses" => %{}}`,
+are examples of both and not an enumeration of them: `"is_business"` and
+`"nosuch(1)"` come back located at line 1, column 1 and `"1 / 0 > 1"` at line
+1, column 3, the evaluator answering an error that carries a position;
+`"context.is_business == true"` and `"context.n > 'a'"` come back
+`{:ok, :undefined}` and `"context.n + 1"` comes back `{:ok, 6}`, which are not
+errors and carry no place, so the finding carries none. What decides the field
+is therefore the shape the dependency answers with, and of the five error
+structs `predicator` 9.4.1 defines, one requires a position, three carry it as
+an optional field that may be `nil`, and one has no such field at all. The
+finding takes it through `Riddler.Finding.position/2`, which builds the map
+only from a positive line and a positive column and answers `nil` for anything
+else (`lib/riddler/finding.ex`, `position/2` and its fallback clause, read at
+`b67dea5`). The message and the field cannot disagree about whether there is
+one: the place is appended to the sentence from the position rather than from
+the numbers it was built out of
 (`lib/riddler/screens/validation.ex`, the private `span/1`, read at
 `b67dea5`). Reading the condition a second time is what makes this possible,
 and the validation entry point is handed the whole root rather than the
