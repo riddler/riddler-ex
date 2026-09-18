@@ -1633,6 +1633,57 @@
         }
       },
       "name": "The whole signup wizard against a visitor who has answered nothing keeps the envelope and every screen in order, and reports each condition it could not decide"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_greeting",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "key": "team_name",
+                "label": "How should Ada be shown to your team?",
+                "type": "text_question"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_greeting",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "team_name",
+                  "label": "How should {{ responses.first_name }} be shown to your team?",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "Ada"
+          }
+        }
+      },
+      "name": "A text question's label is a template and renders against the root"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

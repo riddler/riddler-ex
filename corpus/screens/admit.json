@@ -796,6 +796,206 @@
         }
       },
       "name": "A kind no runtime knows is refused, naming the kind and no node"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_schema_version",
+            "field": "schema_version",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A schema version this package does not implement is refused, naming no node"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_pattern",
+            "field": "pattern",
+            "node_key": "postal_code"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "pattern",
+                  "key": "postal_code",
+                  "label": "Postal code",
+                  "pattern": "[0-9",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A pattern that cannot compile is refused, because nothing a visitor could type would satisfy it"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_required",
+            "field": "required",
+            "node_key": "email"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "email",
+                  "label": "Work email",
+                  "required": "yes",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A required that is not true or false is refused, the question's emptiness rule being unreadable"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_style",
+            "field": "style",
+            "node_key": "plan_personal"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_personal",
+                  "label": "Take the personal plan",
+                  "outcome": "personal_chosen",
+                  "style": 1,
+                  "type": "button"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A style that is not the name a renderer looks up is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_validates",
+            "field": "validates",
+            "node_key": "plan_back"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_back",
+                  "label": "Go back",
+                  "outcome": "went_back",
+                  "type": "button",
+                  "validates": "no"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A validates that is not true or false is refused, the button's submission rule being unreadable"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "field": "include",
+            "node_key": "email"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "email",
+                  "label": "{% include 'footer' %}",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A label holding a construct outside the subset is refused, naming the construct"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"
