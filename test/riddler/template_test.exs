@@ -500,23 +500,64 @@ defmodule Riddler.TemplateTest do
                )
     end
 
-    # The one way the pattern and the parser still disagree, pinned as what it
-    # is rather than left to be rediscovered: a closer the pattern matches and
-    # the LEXER refuses. The parser reads it as body text and looks for a
-    # later closer, so the parser's block is the longer one and the mask ends
-    # inside it. That direction exposes a construct to the scan - this
-    # template is refused although the parser puts the tag inside a raw body -
-    # and exposing is the direction that cannot hide a refusal.
+    # A spelling the parser does NOT read as a closer must not be read as one
+    # here either, and the reason is not symmetry. When the pattern ends a
+    # block early, the scan resumes inside what the parser is still reading as
+    # body text; a marker written in there opens a block the parser never
+    # opened, that block runs to a later closer, and the span between is
+    # blanked. An early end re-synchronises. These four are the shapes that
+    # reach it: a tag name the lexer runs on past the closer keyword
+    # (`endraw,` and `endraw"q"` are names, not `endraw` with trailing text),
+    # and an object end reached before the tag end (`{% endraw }} %}`).
     #
-    # Mutation: let the closer's trailing run cross a comma-only tag by
-    # matching `.*?%\}` - the disagreement widens rather than narrows and this
-    # assertion is unaffected, which is why the sabotage for this one is the
-    # opposite: make the run stop at the comma's position by excluding `,`
-    # too, and the pattern no longer matches the closer, the mask runs to the
-    # later one, and the template compiles.
-    test "a closer the lexer refuses ends the pattern's block early" do
+    # The body inside the erased tag is `assign`, which the allowlist admits.
+    # With a refused tag such as `echo` in there the walk refuses the template
+    # for the inner tag and the test passes whatever the mask did, which is
+    # exactly the blindness that let this through the first time.
+    #
+    # Mutation: drop the `(?=\s|-?%\})` lookahead after the closer keyword -
+    # `endraw,` is read as a closer, the block ends early, the pattern
+    # re-synchronises on the `{% comment %}` inside the parser's raw body, and
+    # compile/1 answers {:ok, _} on all but the `}}` shape.
+    test "a tag name that runs past the closer keyword does not end the block" do
       assert [%Riddler.Finding{field: "liquid"}] =
-               refusal!(~S({% raw %}A{% endraw, %}{% liquid echo x %}{% endraw %}))
+               refusal!(
+                 ~S({% raw %}A{% endraw, %}{% comment %}{% endraw %}) <>
+                   ~S({% liquid assign y = x %}{{ y }}{% raw %}{% endcomment %}{% endraw %})
+               )
+    end
+
+    # Mutation: the same lookahead removal - a quote directly after the
+    # keyword is part of the tag name at solid 1.3.4, and dropping the
+    # lookahead reads it as a closer with a string argument.
+    test "a quote against the closer keyword does not end the block" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({% raw %}A{% endraw"q" %}{% comment %}{% endraw %}) <>
+                   ~S({% liquid assign y = x %}{{ y }}{% raw %}{% endcomment %}{% endraw %})
+               )
+    end
+
+    # Mutation: put `}` back into the closer's trailing run - the run crosses
+    # the object end, reaches the later `%}`, the block ends early and the
+    # pattern re-synchronises as above.
+    test "an object end before the tag end does not end the block" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({% raw %}A{% endraw }} %}{% comment %}{% endraw %}) <>
+                   ~S({% liquid assign y = x %}{{ y }}{% raw %}{% endcomment %}{% endraw %})
+               )
+    end
+
+    # Mutation: drop the lookahead - the comment block ends early at
+    # `{% endcomment, %}` and re-synchronises on the raw marker inside the
+    # parser's comment body.
+    test "a comment block does not end on a name that runs past the keyword" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({% comment %}A{% endcomment, %}{% raw %}{% endcomment %}) <>
+                   ~S({% liquid assign y = x %}{{ y }}{% comment %}{% endraw %}{% endcomment %})
+               )
     end
 
     # Every closer spelling the parser accepts, run against the parser to
@@ -557,7 +598,11 @@ defmodule Riddler.TemplateTest do
             "{% endrawx %}",
             "{% endraw, %}",
             "{% endraw 50% %}",
-            ~S({% endraw "abc %})
+            ~S({% endraw "abc %}),
+            ~S({% endraw"q" %}),
+            "{% endraw }} %}",
+            "{% endraw - %}",
+            "{% endraw ; %}"
           ] do
         findings = refusal!("{% raw %}body" <> rejected)
 
