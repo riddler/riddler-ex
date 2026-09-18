@@ -577,11 +577,17 @@ defmodule Riddler.Screens.Document do
 
       {:error, findings} ->
         Enum.map(findings, fn finding ->
+          # The wrapped refusal's position is a place in the template this
+          # node writes, so it survives the re-wrap. The message already
+          # carries it as prose; carrying the field too is what spares a
+          # host parsing that sentence, and this is the door a host with a
+          # document comes through.
           %Finding{
             code: "document.invalid_template",
             message: "the #{field} template is refused: #{finding.message}",
             field: finding.field,
-            node_key: key
+            node_key: key,
+            position: finding.position
           }
         end)
     end
