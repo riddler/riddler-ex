@@ -1866,3 +1866,108 @@ decided". One thing this entry does move is the
 it was; a message is not part of what this record decides, which names codes
 and fields and never a sentence, and the block above accounts for its own entry
 rather than for this one.
+
+---
+
+Noted 2026-09-18, campaign RF055, bead rd-7ue. One note by addition, read
+against `main` at `26b52cc`. It answers the one edge the amendment above names
+as left open, and answers it by recording what this record already decides and
+what the package already does. Nothing above is changed, and no answer this
+record gave moves.
+
+**A button whose own condition the root could not decide is not on the resolved
+screen, so a press naming its key validates that screen in full.** The
+amendment above states the edge in these words: "Whether a press through a
+button hidden by its own undecidable condition should reach the opt-out is
+still unanswered, and this amendment does not reach it: that button carries a
+key, and the question there is about resolution rather than about naming." The
+answer is that the press does not reach the opt-out. The rule that gives it is
+the one the amendment before that states about where `validates` is read from -
+"`validates` is read from the button the pressed key names on the resolved
+screen" - together with what the same passage says of a press that names none:
+"A press through a button that says nothing, and a press through a key naming
+no button on the resolved screen, both still report it." A button the document
+says may not be shown is not on the resolved screen, so the press names no
+button there. It is the second of those two cases and not the first, and the
+opt-out is not weighed and refused so much as absent: there is no node for it
+to read `validates` from.
+
+**What the package answers, driven at this reading.** The screen the test below
+uses is a signup screen carrying, among its nodes, two required questions
+keyed `first_name` and `email` and a Continue button, given in addition a Back
+button keyed `account_back` that declares `validates` as `false` and carries a
+condition of its own, `context.is_business == true`, under a root that carries
+no `context` at all. Resolution drops the Back button:
+`Riddler.Screens.resolve_screen/3` answers a screen whose node keys do not
+include it, and reports the condition in its diagnostics as
+`%{key: "account_back", condition: "context.is_business == true"}`. The keyed
+press of `account_back`, with `first_name` blank and `email` absent, answers
+`{:error, _}` with three findings in this order - `response.undecidable` on
+`account_back`, `response.required` on `first_name`, `response.required` on
+`email` - which is the same list, finding for finding, that a press of the
+Continue button on that screen answers. The first finding's `field` is `"condition"` and its `message`
+reads, character for character:
+
+> the condition "context.is_business == true" could not be decided against the root this screen was validated with, so whether this question was asked of the visitor is not established
+
+That is pinned by the test named "does not opt its keyed press out, because the
+press names no button that is there", in the describe block "a button hidden by
+its own undecidable condition" of
+`test/riddler/screens/validation_test.exs`.
+
+**Where in the code the two halves meet, and why the drop comes first.**
+Resolution decides a node's condition before anything validates: an undecidable
+condition answers false to the question of whether the node is shown, while
+recording the condition in the diagnostics (`lib/riddler/screens.ex`, the
+private `evaluate/4`'s undecidable clause, read at `26b52cc`), and a node that
+is not shown is left out of the resolved screen (the same file, the private
+`shown/3`, same SHA). Validation is then handed that resolved screen, and the
+opt-out searches its nodes alone for a node that is a button and whose `key`
+equals the pressed key (`lib/riddler/screens/validation.ex`, the private
+`opted_out?/2` and `button?/2`, read at `26b52cc`). A dropped button is not
+among them, so the search finds nothing and the call takes the validating arm.
+The public documentation already states the consequence without naming this
+route to it: the `@doc` on `Riddler.Screens.validate_screen/4` says "A key that
+names no button on the resolved screen validates too, because the default is
+what a button that is not there carries." (`lib/riddler/screens.ex`, read at
+`26b52cc`).
+
+**Why the carve-out's reasoning does not reach this case.** The amendment that
+made the carve-out argues from who is charged for a defect: "A defect in the
+call is the host's. A Back press is the visitor's, and it is their navigation
+rather than their submission." That argument is about which findings a
+navigating visitor should be held at the screen by, and it presumes a door the
+document offers. Here the document says the door may not be shown, or rather
+says nothing decidable about whether it may: the condition the host's root
+could not decide is the button's own, so whether the visitor was ever offered
+that Back button is exactly what is not established. Answering `:ok` on the
+strength of a node the visitor cannot be shown to have been able to press
+would silence every finding on the screen on the say-so of a condition nobody
+could decide, which is a wider `:ok` than the carve-out ever granted. The host
+is told what it needs in the same breath: the undecidable condition is reported
+as a finding on the button, and reported again in the diagnostics of every
+resolution of that screen whatever is pressed. The condition is the defect to
+fix, and fixing it restores the Back button and with it the opt-out.
+
+**Why a note and not an amendment.** The test these records state for
+themselves is whether an entry changes an answer the record gave, and deciding
+a question the record left open is not that test: "Deciding an open question
+and changing what the record decides come apart, and it is the second that
+governs." This record had left this question open and said so, in the sentence
+quoted at the head of this entry, so there is no answer above to change. Two
+sentences above could be read as reaching this case, and neither survives the
+amendment's own disclaimer. The amendment before last opens "What the record
+now decides" with "A button declaring `validates` as `false` answers `:ok` for
+the screen it submits even when that screen carries a condition the root could
+not decide", and qualifies it in the paragraph below with where `validates` is
+read from; the amendment above lists among what is unchanged that "A press
+through a keyed button declaring `false` still answers `:ok` without running a
+check, for an undecidable condition and for every other finding, exactly as the
+amendment above decides", and then names this edge as still unanswered four
+paragraphs later. A record cannot both answer a call and say that it does not,
+and where the two readings of one entry differ it is the one the entry states
+about itself that holds. What is decided here takes nothing away either: no
+document that validates clean stops doing so, no document that is refused stops
+being refused, no code, field, message or node key moves, no refusal is added,
+and no line of `lib/` changes with this entry. A recorded decision to leave
+behaviour where it stands is what these records treat as a note.

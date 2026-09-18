@@ -97,6 +97,26 @@ defmodule Riddler.Screens.ValidationTest do
     |> Document.admit()
   end
 
+  # The fixture's account screen with a keyed Back button declaring
+  # `validates` as `false` and carrying a condition of its own that the roots
+  # below cannot decide - they carry no `context` at all, so
+  # `context.is_business` is undefined and the condition comes back neither
+  # true nor false. The Back button is the only node whose condition is
+  # undecidable under those roots: the fixture's own conditional greeting asks
+  # about `responses.first_name`, which the roots below do carry.
+  defp back_hidden_by_its_own_condition_document do
+    raw_fixture()
+    |> add_node("account", %{
+      "type" => "button",
+      "key" => "account_back",
+      "label" => "Back",
+      "outcome" => "went_back",
+      "validates" => false,
+      "condition" => "context.is_business == true"
+    })
+    |> Document.admit()
+  end
+
   # A screen whose nodes are keyed with something that is not a string. A key
   # is a string by the record the document implements, so `Document.validate/1`
   # reports such a document - as `document.invalid_key` - but `Document.admit/1`
@@ -464,6 +484,60 @@ defmodule Riddler.Screens.ValidationTest do
                Document.validate(account_with_keyless_button_document())
 
       assert "document.invalid_key" in Enum.map(findings, & &1.code)
+    end
+  end
+
+  # The note at the foot of `docs/adr/0002-element-document.md` opening
+  # "Noted 2026-09-18, campaign RF055, bead rd-7ue.": a button the document
+  # says may not be shown is not on the resolved screen, so a press naming its
+  # key names no button on the resolved screen and validates in full. The
+  # amendment headed "a keyless button cannot opt out, and a call naming no
+  # button never does" leaves this edge open in as many words; the note records
+  # where the rule already decided renders on it.
+  describe "a button hidden by its own undecidable condition" do
+    # Sabotage: made `shown/3` in `lib/riddler/screens.ex` answer
+    # `present(node, root, diagnostics)` for the undecidable arm of
+    # `evaluate/4` - that is, kept a node whose condition could not be decided
+    # on the resolved screen instead of dropping it. The Back button was then
+    # on the screen, `opted_out?/2` found it and read its `validates` as
+    # `false`, the keyed press answered `:ok`, and this test went red on its
+    # first assertion. Reverted from a copy taken before the edit.
+    test "does not opt its keyed press out, because the press names no button that is there" do
+      document = back_hidden_by_its_own_condition_document()
+      root = %{"responses" => %{"first_name" => ""}}
+
+      assert {:error, findings} =
+               Screens.validate_screen(document, "account", root, "account_back")
+
+      assert Enum.map(findings, &{&1.code, &1.node_key}) == [
+               {"response.undecidable", "account_back"},
+               {"response.required", "first_name"},
+               {"response.required", "email"}
+             ]
+
+      assert hd(findings).field == "condition"
+
+      assert hd(findings).message ==
+               "the condition \"context.is_business == true\" could not be decided against " <>
+                 "the root this screen was validated with, so whether this question was " <>
+                 "asked of the visitor is not established"
+
+      # Why the press names no button that is there: the button is dropped from
+      # the resolved screen, and the condition that dropped it is what the
+      # first finding above reports.
+      assert {:ok, screen, diagnostics} = Screens.resolve_screen(document, "account", root)
+
+      refute "account_back" in Enum.map(screen.nodes, & &1.key)
+
+      assert diagnostics.undecidable_conditions == [
+               %{key: "account_back", condition: "context.is_business == true"}
+             ]
+
+      # The opt-out is invisible to the press rather than weighed and refused:
+      # the press through the button declaring `false` answers exactly what a
+      # press through the Continue button on the same screen answers.
+      assert {:error, findings} ==
+               Screens.validate_screen(document, "account", root, "account_continue")
     end
   end
 
