@@ -1452,9 +1452,11 @@ runner's call changed too: it matches `{:ok, screen, _diagnostics}` and still
 encodes the screen alone (`lib/riddler/corpus.ex`, the `"screens.resolve"`
 clause, read at `9e5d667`). The list names one in-package caller and there are
 two: `validate_screen/4` moved with the return in that same commit, matching
-`{:ok, screen, _diagnostics}` where it had matched `{:ok, screen}`, while its
-own return was untouched (`lib/riddler/screens.ex`, the `validate_screen/4`
-clause, read at `9e5d667`). What is enumerated here is what moved with the
+`{:ok, screen, _diagnostics}` at `fc69b8d` where it had matched
+`{:ok, screen}`, while its own return was untouched. It binds those diagnostics
+rather than dropping them today, which the third note below records
+(`lib/riddler/screens.ex`, the `validate_screen/4` clause, read at `9e5d667`).
+What is enumerated here is what moved with the
 return, not every line that commit touched: it also added a sentence to this
 module's `@moduledoc` and a paragraph to `resolve_screen/3`'s `@doc`, both
 stating the new return. ADR-0001 did not change with it, and its two citations
@@ -1464,11 +1466,13 @@ request that built it beside `resolve/2`, and neither sentence states a return
 shape. That commit touched `lib/riddler/screens.ex`, `lib/riddler/corpus.ex`,
 two test files and a changelog fragment, and no file under `docs/adr/`. What
 ADR-0001 needed was an entry of its own rather than a correction, and it has
-one: a dated note of 2026-09-18 on that record draws the distinction as "Which
-call resolves one named screen is unchanged; what that call returns is not what
-it was when this record was accepted." The first of the four things listed is
-the call's own public surface, and that did change: its `@spec` states the
-return, and its being public is why the change is breaking rather than internal.
+one: a dated note of 2026-09-18 on that record, which landed after the tree this
+entry was otherwise read against and is read here at `a72788a`, draws the
+distinction as "Which call resolves one named screen is unchanged; what that
+call returns is not what it was when this record was accepted." The first of the
+four things listed is the call's own public surface, and that did change: its
+`@spec` states the return, and its being public is why the change is breaking
+rather than internal.
 This record's own earlier sentences naming `resolve_screen/3` are unchanged as
 well, and could not be otherwise: this record grows by addition, so an amendment
 governs over them where it says it does and nothing above it is reworded.
@@ -1530,6 +1534,6 @@ not carry - that renders as the empty string, is reported in
 question was asked at all, and only that half bears on whether a visitor can be
 held to an answer. So the decided reading is that a call returning no screen
 surfaces the undecidable half as findings and lets the missing-variable half go
-unreported, and a caller who wants a screen's diagnostics asks `resolve_screen/3`
-for them, that being the call this record decides returns them. This note states
-the contract the package ships and changes nothing.
+unreported, and a caller who wants a screen's diagnostics asks
+`resolve_screen/3` for them, that being the call this record decides returns
+them. This note states the contract the package ships and changes nothing.
