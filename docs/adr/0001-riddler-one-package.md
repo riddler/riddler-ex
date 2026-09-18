@@ -403,19 +403,26 @@ absent there, and half a span is no span. A document finding coded
 one: `lib/riddler/screens/document.ex` re-reports such a refusal against the
 template a node writes, and it carries that refusal's position as well as
 naming it in the sentence it builds, because the place is a place in source
-text the document supplied. The field is `nil` everywhere else - on a template
-refusal the parser could not place; on every other document finding, because a
-document that is not writing a template is data and has no source text to point
-at, exactly as `:node_key` is `nil` for a template finding; and on a field
-refused for not being template source at all, where there is no source for a
-position to be in. That last one carries the code `document.invalid_template`
-as well, so a host switching on the code alone is not promised a span by it.
-Where there is a position the refusal's `:message` names it too and goes on
-naming it: a person reading a finding reads one sentence, and the field is the
-same fact in the form an editor can act on without parsing that sentence. The
-field and the checks that pin it are added by this request and so are citable
-at no earlier SHA; at `4208433` the struct carried four fields and the line and
-column existed only inside the message, although
+text the document supplied.
+
+The field is `nil` everywhere else, and the rule is which checks carry a place
+rather than which inputs have source text. Those are not the same set.
+`document.invalid_condition` refuses a condition, which is source, and its
+message already ends in a line and a column - `describe/1` in that same file
+takes them out of the compiler's error to build the sentence - and the finding
+it builds does not carry them. That is a place the field is owed and not yet
+paid, named here so this rule is not read as a claim that a condition has no
+place. The rest have none to carry: a template refusal the parser could not
+place; the checks about the document as data, which is what most document
+findings are, exactly as `:node_key` is `nil` for a template finding; and a
+field refused for not being template source at all, which also carries the code
+`document.invalid_template`, so a host switching on that code alone is not
+promised a span by it. Where there is a position the refusal's `:message` names
+it too and goes on naming it: a person reading a finding reads one sentence,
+and the field is the same fact in the form an editor can act on without parsing
+that sentence. The field and the checks that pin it are added by this request
+and so are citable at no earlier SHA; at `4208433` the struct carried four
+fields and the line and column existed only inside the message, although
 `lib/riddler/template.ex` already carried them as a pair through its refusal
 tuples and formatted them in at the end.
 

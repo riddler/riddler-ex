@@ -33,15 +33,17 @@ defmodule Riddler.Finding do
       parser gave it a place, and so does a `document.invalid_template`
       finding that wraps such a refusal, because the place it names is a
       place in the template the document node writes. It is `nil` everywhere
-      else: a parse error the parser could not place, because half a span is
-      no span; every other document finding, because a document is data
-      rather than source; and a field refused for not being template source
-      at all, which carries the same `document.invalid_template` code and has
-      no source for a position to be in, so the code alone does not promise a
-      span. Where there is a position the `:message` names it too and goes on
-      naming it, so that a person reading a finding reads one sentence; this
-      field is the same fact in the form an editor can act on without parsing
-      that sentence.
+      else, and the rule is which checks carry a place rather than which
+      inputs have source text: a parse error the parser could not place,
+      because half a span is no span; every check about the document as data,
+      which has no place to carry; a field refused for not being template
+      source at all, which has none either and carries the same
+      `document.invalid_template` code, so that code alone does not promise a
+      span; and `document.invalid_condition`, whose message already ends in a
+      line and a column that the finding does not yet carry. Where there is a
+      position the `:message` names it too and goes on naming it, so that a
+      person reading a finding reads one sentence; this field is the same
+      fact in the form an editor can act on without parsing that sentence.
 
   ## Examples
 
