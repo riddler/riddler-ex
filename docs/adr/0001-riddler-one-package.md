@@ -891,12 +891,15 @@ better route already. `mix.exs` is not changed by this entry (rd-2x5).
 Noted 2026-09-18, campaign RF055, bead rd-ai1. Two notes by addition, plus the
 paragraph that accounts for the instrument. The five sites enumerated below
 were read at `8331e97`, this request's code commit rather than a SHA on `main`,
-and none of them moves in the commit this entry lands in. The one cite that is
-not to those sites - the comment above `compile_pattern/1` in
-`lib/riddler/screens/validation.ex` - names text that same commit rewrites, so
-it carries no SHA at all. Every cite below names the function, the clause or
-the comment it is about and resolves by that anchor rather than by a line
-number, which is also what a rebase merge rewriting `8331e97` calls for.
+and no later commit of this request changes any of them. Three cites below are
+not to those sites. `Riddler.Finding.position/2` is unchanged by this request
+altogether, and `error_position/1` in `lib/riddler/screens/validation.ex` is
+read at `8331e97`, the commit that promoted it, and is unchanged after it. The
+third is the comment above `compile_pattern/1` in the same file, which a later
+commit of this request, `6fd2a53`, rewrote and where it is read; the function
+under it is unchanged by this request. Every cite below names the function, the
+clause or the comment it is about and resolves by that anchor rather than by a
+line number, which is also what a rebase merge rewriting either SHA calls for.
 Nothing above is changed; each paragraph below says what the text above means
 now.
 
@@ -933,7 +936,8 @@ literal in `lib/` was enumerated at `8331e97`, and these are all of them:
   (`lib/riddler/screens/validation.ex`,
   `defp undecidable_finding(%{key: key, condition: condition}, root)`).
 
-The fourth in that list is what this request adds. The paragraph above headed
+`document.invalid_condition`, the third bullet above and the fourth of the five
+sites, is what this request adds. The paragraph above headed
 "**Why some of those `nil`s are the way they are is filed rather than
 explained.**" says "Three of them are defects in this package and not decisions
 of this record", on the ground that "a record cannot be made true about
@@ -981,7 +985,7 @@ compiles, which adds five bytes in front and three behind.
 | `"a(b"` | 3 | missing ) | 3 | 11 |
 | `"abc\n[def"` | 8 | missing terminating ] for character class | 8 | 16 |
 | two two-byte characters, then `"[a"` | 6 | missing terminating ] for character class | 6 | 14 |
-| `"a\"` | 2 | \ at end of pattern | 2 | 10 |
+| `"a\\"` | 2 | \ at end of pattern | 2 | 10 |
 
 Three things the ten show. For the first six the offset lands at the defect or
 at the character that closes it: the unmatched `)` is at byte 1 and the answer
