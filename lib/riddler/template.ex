@@ -194,7 +194,10 @@ defmodule Riddler.Template do
   # source, and the arithmetic on the `nil` it gets back raises before any
   # caller sees a return value. A neighbouring source, `{% assign e %}`,
   # reaches a placeless location one frame earlier and raises inside the
-  # parser itself. Roughly one malformed input in forty does one or the other.
+  # parser itself. Neither shape is exotic - both are reachable from ordinary
+  # malformed source - and how often one is reached is a property of the
+  # sources being fed in rather than of this package, so no rate is quoted
+  # here.
   #
   # Both are the parser refusing a template, which is a finding here whatever
   # the refusal does or does not say about where: `compile/1` answers
@@ -379,11 +382,21 @@ defmodule Riddler.Template do
 
   # -- the one construct the parse tree erases ------------------------------
 
+  # The two masks are both answers to the same question - is this run of
+  # characters a construct or is it text - and they have to answer it about
+  # the same source, or one of them decides the other's input. Literals are
+  # masked FIRST, because what a verbatim block is gets decided by the tree
+  # too: a template that prints the characters of `{% raw %}`, a real refused
+  # tag, and the characters of `{% endraw %}` holds three constructs and no
+  # verbatim block, and masking the block first read the printed characters as
+  # a real opener and closer, blanked the tag between them, and admitted it.
+  # Masking literals first leaves only the markers a tree node put there, so
+  # the block regex sees the blocks an author actually opened.
   defp liquid_refusals(source, tree) do
     masked =
-      @verbatim_block
-      |> Regex.replace(source, fn match, _block -> mask(match) end)
+      source
       |> mask_string_literals(tree)
+      |> mask_verbatim_blocks()
 
     @liquid_opener
     |> Regex.scan(masked, return: :index)
@@ -391,6 +404,13 @@ defmodule Riddler.Template do
       {line, column} = position(masked, offset)
       {line, column, @tag_not_allowed, "liquid", "the tag"}
     end)
+  end
+
+  # Runs over the literal-masked source, so the only `{% raw %}` and
+  # `{% comment %}` markers left are the ones a tag node accounts for.
+  # Masking preserves length and newlines here as it does everywhere else.
+  defp mask_verbatim_blocks(source) do
+    Regex.replace(@verbatim_block, source, fn match, _block -> mask(match) end)
   end
 
   # The exemption is the parse tree's, not the source's. A template that
@@ -437,8 +457,9 @@ defmodule Riddler.Template do
   # of that same character: `solid` at `1.3.4` has no escape inside a string
   # literal - `"a\"b"` is a parse error, not an escaped quote - so the next
   # one is the closing one. A loc whose character is not a quote belongs to a
-  # number, a boolean or a span a verbatim block has already masked, and is
-  # skipped.
+  # number or a boolean and is skipped. This runs over the unmasked source -
+  # it is the first of the two masks - so every loc the tree reports still
+  # points at the character the author wrote.
   defp literal_span(source, {line, column}) do
     with offset when is_integer(offset) <- offset(source, line, column),
          true <- offset < byte_size(source),
@@ -583,9 +604,14 @@ defmodule Riddler.Template do
   # the walk descends through rather than nodes it reports, so the tuple
   # clause widens what is reached without widening what is asked about. A
   # tuple's first element is descended too - an elsif's condition, a `when`'s
-  # values, the `:else` atom - which reaches no node the other elements do not
-  # already reach through the same struct fields, and the collectors that fold
-  # into a `MapSet` are idempotent about being handed a position twice.
+  # values, the `:else` atom - and those are reached only that way: nothing
+  # else in the tree leads to an elsif condition's variables or a `when`'s
+  # values. What makes descending them harmless is not that they are reached
+  # twice but that no collector clause matches anything found there - a
+  # condition and a branch's values hold no tag and no filter, so `refuse/2`
+  # falls through, `guarded/2` sees no `Object` and `conditional/2` no block
+  # tag - and the collectors that fold into a `MapSet` are idempotent about
+  # being handed a position twice in any case.
   defp reduce_nodes(node, acc, fun) when is_struct(node) do
     node
     |> Map.from_struct()
