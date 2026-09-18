@@ -891,15 +891,18 @@ better route already. `mix.exs` is not changed by this entry (rd-2x5).
 Noted 2026-09-18, campaign RF055, bead rd-ai1. Two notes by addition, plus the
 paragraph that accounts for the instrument. The five sites enumerated below
 were read at `8331e97`, this request's code commit rather than a SHA on `main`,
-and no later commit of this request changes any of them. Three cites below are
-not to those sites. `Riddler.Finding.position/2` is unchanged by this request
-altogether, and `error_position/1` in `lib/riddler/screens/validation.ex` is
-read at `8331e97`, the commit that promoted it, and is unchanged after it. The
-third is the comment above `compile_pattern/1` in the same file, which a later
-commit of this request, `6fd2a53`, rewrote and where it is read; the function
-under it is unchanged by this request. Every cite below names the function, the
-clause or the comment it is about and resolves by that anchor rather than by a
-line number, which is also what a rebase merge rewriting either SHA calls for.
+and no later commit of this request changes any of them. The cites below that
+are not to those sites are accounted for as follows. `Riddler.Finding.position/2`
+is unchanged by this request, which touches no line of its definition. `span/1`,
+named in the first site's bullet, is `lib/riddler/template.ex`'s, and no commit
+of this request touches that file at all. `error_position/1` in
+`lib/riddler/screens/validation.ex` is read at `8331e97`, the commit that
+promoted it, and is unchanged after it. The comment above `compile_pattern/1` in
+that same file is read at `6fd2a53`, a later commit of this request, which
+rewrote it; the function under it is unchanged by this request. Every code cite
+below names the function, the clause or the comment it is about and resolves by
+that anchor rather than by a line number, which is also what a rebase merge
+rewriting either SHA calls for.
 Nothing above is changed; each paragraph below says what the text above means
 now.
 
@@ -987,7 +990,7 @@ compiles, which adds five bytes in front and three behind.
 | two two-byte characters, then `"[a"` | 6 | missing terminating ] for character class | 6 | 14 |
 | `"a\\"` | 2 | \ at end of pattern | 2 | 10 |
 
-Three things the ten show. For the first six the offset lands at the defect or
+What the ten show is this. For the first six the offset lands at the defect or
 at the character that closes it: the unmatched `)` is at byte 1 and the answer
 is 1; `{2,1}` closes at byte 5 and the answer is 5; `[z-a]`'s out-of-order
 bound is at byte 5; the doubled `*` on the second line is at byte 5; the
