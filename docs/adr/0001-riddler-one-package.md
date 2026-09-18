@@ -611,8 +611,9 @@ history from that date, and one of the two carries a live rule alongside the
 dated instance. Read as history only the naming of the instance: the screens
 kind's one kind-specific check is now `Riddler.Screens.validate_screen/3` and
 its arity-4 form naming the button that was pressed. The rule itself is
-untouched and in force - a kind exposes at most one kind-specific check, and
-"a kind that wants a second check is a record, because a kind with an open-ended
+untouched and in force: a kind exposes at most one kind-specific check, and the
+sentence the Decision puts immediately after it still holds of every kind. "A
+kind that wants a second check is a record, because a kind with an open-ended
 API is not a contract a second runtime can be held to." ADR-0002's amendment
 replaced the instance rather than removing the rule: it decides that
 "`validate_responses/3` and `/4` are removed, not deprecated", names
@@ -626,7 +627,9 @@ that surface: the corpus capability `screens.validate_responses` and its case
 file (`lib/riddler/corpus.ex:28` and `:121`), which name a capability rather
 than a function, and the private runner helper of the same name
 (`lib/riddler/corpus.ex:149`), which builds the case's root and calls
-`Riddler.Screens.validate_screen/4` (rd-54p).
+`Riddler.Screens.validate_screen/4` when the case names a pressed button
+(`:158` and `:159`) and `validate_screen/3` when it does not (`:161` and
+`:162`) (rd-54p).
 
 **The list of excluded statifier packages illustrates the rule; it does not
 define it.** The note of 2026-09-17 headed "**The packages the no-statifier rule
