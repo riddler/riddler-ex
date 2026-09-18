@@ -592,3 +592,90 @@ did not locate names no place in its message"
 names is in `corpus/templates/render.json`, "A template the parser refuses
 without saying where is refused as a parse error, and the finding names no
 place".
+
+---
+
+Noted 2026-09-18, campaign RF055, beads rd-54p, rd-5eq and rd-xhv. Three notes
+by addition, each read against `main` at `9e5d667`. Nothing above is changed;
+each paragraph below says what the text above means now.
+
+**The rule that a kind exposes at most one kind-specific check stands; only the
+screens kind's instance of it is history.** The Decision above says that each
+kind exposes admit and validate over a raw document, and resolve over a document
+and a context, "plus at most one kind-specific check", and the sentence after it
+names the instance: "The screens kind's one check is `validate_responses`, which
+is what a host calls before it accepts what a visitor submitted." The note of
+2026-09-17 headed "**`validate_responses/3` and its arity-4 form are removed by
+ADR-0002's amendment of 2026-09-17.**" reads both of the places it names as
+history from that date, and one of the two carries a live rule alongside the
+dated instance. Read as history only the naming of the instance: the screens
+kind's one kind-specific check is now `Riddler.Screens.validate_screen/3` and
+its arity-4 form naming the button that was pressed. The rule itself is
+untouched and in force - a kind exposes at most one kind-specific check, and
+"a kind that wants a second check is a record, because a kind with an open-ended
+API is not a contract a second runtime can be held to." ADR-0002's amendment
+replaced the instance rather than removing the rule: it decides that
+"`validate_responses/3` and `/4` are removed, not deprecated", names
+`validate_screen` as the function that takes their place, and says nothing about
+how many kind-specific checks a kind may expose. At `9e5d667` the instance reads
+as this note states it: `lib/riddler/screens.ex` defines `validate_screen/3`
+(`@spec` at `:303`, body at `:305`) and `validate_screen/4` (`@spec` at `:340`,
+body at `:342`), and no `validate_responses` function is part of this package's
+public surface. The spelling survives inside `lib/` in two places that are not
+that surface: the corpus capability `screens.validate_responses` and its case
+file (`lib/riddler/corpus.ex:28` and `:121`), which name a capability rather
+than a function, and the private runner helper of the same name
+(`lib/riddler/corpus.ex:149`), which builds the case's root and calls
+`Riddler.Screens.validate_screen/4` (rd-54p).
+
+**The list of excluded statifier packages illustrates the rule; it does not
+define it.** The note of 2026-09-17 headed "**The packages the no-statifier rule
+excludes, named.**" introduces those packages with a colon, and a list
+introduced that way reads as a closed definition. Read it open. What the
+Decision above excludes is the statifier family's own packages - "No statifier
+package appears in this repository's `mix.exs` or `mix.lock`" - and the packages
+that note names are that family's members as of the date it was written. A
+package that joins the family after that date is excluded by the rule as it
+stands, without an edit to the list; a package that is not one of the family's
+own is outside the rule whether or not the list happens to name it, which is why
+that note names `predicator` and `solid` as outside it. The enumeration stays
+rather than reverting to a `statifier*` glob, because the glob states the rule
+wrongly: it does not reach `opentelemetry_statifier`, whose package name does
+not begin with the word, and it selects by spelling where the rule selects by
+membership of the family. At `9e5d667` the rule still holds literally:
+`mix.exs` names `predicator` (`:104`) and `solid` (`:105`) as the runtime
+dependencies, its one occurrence of the word "statifier" is the deps comment
+restating this prohibition (`:95`), and `mix.lock` carries no package of that
+family (rd-5eq).
+
+**`resolve_screen/3` answers the screen and the diagnostics its resolution
+produced.** The paragraph above on the public runtime of the screens kind names
+"`Riddler.Screens.resolve_screen/3`" as the call that "resolves one named screen
+of it". Which call resolves one named screen is unchanged; what that call
+returns is not what it was when this record was accepted. ADR-0002's amendment
+of 2026-09-17, "the screen validated is the screen shown", decides the return
+under its section "A single-screen call returns its diagnostics", in these
+words:
+
+> **It returns them.** A single-screen call answers with the screen and the
+> diagnostics its resolution produced, so a caller is never handed a screen whose
+> resolution reported something without being handed the report. `resolve_screen/3`
+> answers `{:ok, screen, diagnostics}`, with `diagnostics` the same shape
+> `resolve/2` already carries on its resolved document: `missing_variables` and
+> `undecidable_conditions`.
+
+That amendment names this record as one of the places the change reaches:
+"`resolve_screen/3` is public, is documented with executable examples that match
+on `{:ok, screen}`, is cited by ADR-0001 as the call that resolves one named
+screen, and is called inside this package by the corpus runner." Its `Status:`
+line reads accepted (2026-09-18), and the dated Note that flipped it records the
+code half read by anchor at `015f209`: "`resolve_screen/3` answers
+`{:ok, screen, diagnostics}` (`lib/riddler/screens.ex`, its `@spec` and body),
+so the single-screen call returns the diagnostics its resolution produced." At
+`9e5d667` it still reads that way: the `@spec` is
+`resolve_screen(Document.t(), term(), map()) :: {:ok, Resolved.screen(),
+Resolved.diagnostics()} | {:error, :no_such_screen}` (`lib/riddler/screens.ex:206`
+and `:207`), and the body answers `{:ok, resolved, order(diagnostics)}` (`:215`)
+for a screen it finds and `{:error, :no_such_screen}` (`:211`) for one it does
+not. Read the sentence above as naming which call resolves one named screen, and
+ADR-0002 as deciding what that call returns (rd-xhv).
