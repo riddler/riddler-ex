@@ -312,10 +312,16 @@ the word `riddler`, the package version, the word `from` and the
 repository-relative source path. From this date the header carries neither.
 It is the word `riddler`, a space, the word `from`, a space and the source
 path, so an emit is byte-identical across commits AND across releases, and a
-difference the drift check reports is a difference in the cases. The clause's
-second half holds unchanged: the drift check still fails when the emitted
-corpus and the cases disagree. Read its first half as history: what 0.1.0
-emitted was the version, not the commit that clause names.
+difference the drift check reports is a difference in the corpus rather than
+in when or from what version it was emitted. In the corpus, not in the cases
+alone: `Riddler.Corpus.drift/1` walks `files/0`, which is the case files and
+the schemas together (`lib/riddler/corpus.ex`, read at `0d51acc`), so a
+schema that differs or is absent is reported exactly as a case file is - and
+a missing schema is what that check reports on the request carrying this
+note. The clause's second half holds unchanged: the drift check still fails
+when the emitted corpus and the cases disagree. Read its first half as
+history: what 0.1.0 emitted was the version, not the commit that clause
+names.
 
 **Why no `corpus_version` field and why no commit stamp.** Neither was taken,
 and each fails for its own reason. A `corpus_version` key does not exist: no
@@ -344,6 +350,31 @@ version itself is not removed and is not hidden: `Riddler.Corpus.version/0`
 survives, and `mix riddler.corpus` still names the version on the console for
 whoever is running an emit. Console output is not an emitted byte, and a
 person running the task is entitled to know which checkout is writing.
+
+**Why a note and not an amendment.** The test `docs/adr/README.md` states is
+that "an amendment changes what the record decides and a note does not: a
+note records where something already decided renders, or what a sentence
+already accepted was about." This entry does not change what this record
+decides. The proposition the corpus paragraph asserts in bold - that the
+conformance corpus is authored in this repository and emitted into
+`riddler_spec` - is word for word what it was and is as true after this
+change as before. What moves is a subordinate clause describing how the
+emitter labels what it writes, and even that clause's truth value does not
+move: it named the commit while the emitter stamped the version, so it was
+inaccurate before this change and is inaccurate after it. This record never
+names `generated_by`, never states the header's shape, and never puts the
+header inside the contract it decides; the contract it decides is the content
+document. The note above headed "**`Riddler.Corpus` and the `mix
+riddler.corpus` task ship in the Hex tarball, and that is the decision, not
+an accident.**" is the precedent this follows - a deliberate choice about the
+emitter, locked in where a reader of the record will meet it, without
+amending anything. By contrast the two amendments the sibling record ADR-0002
+took the same day each cleared the bar for a reason this entry has no
+counterpart to: one because it "reverses the layer the Decision assigns" and
+"refuses documents this version admitted", the other because "the rule stated
+above answers a call one way, and this entry answers the same call another"
+(both read at `0d51acc`). That a ruling was taken is not the test; if it
+were, every commit made under one would amend a record.
 
 This note is recorded with the code half that makes it true, in one request:
 at `0d51acc` the emitter still stamps the version, and the request carrying
