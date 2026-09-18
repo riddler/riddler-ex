@@ -468,7 +468,7 @@ is typed `position() | nil` (rd-0pi).
 
 ## Amendment, 2026-09-18: a placeless parse refusal is a finding with a nil position
 
-Status: proposed
+Status: accepted (2026-09-18)
 
 This record decided that a finding's `:position` is `nil` or a map of a line
 and a column, and it stated carefully that every template refusal carries a
@@ -552,3 +552,43 @@ finding that re-reports one (`lib/riddler/screens/document.ex:590`). The
 guard added at the one call into the parser routes a placeless refusal through
 the first of those clauses rather than adding a fourth site; what changed is
 what that clause can produce, not how many places produce it.
+
+---
+
+Noted 2026-09-18. The Amendment above, "a placeless parse refusal is a
+finding with a nil position", moves from `proposed` to `accepted`, its Status
+line flipped in place and nothing else in it reworded.
+
+It was verified against `main` at `a3ee6e6` before the flip rather than
+against the tree it was written on: it cites the head of riddler-ex pull
+request 45, which has since merged as `f9cb9c8`, and riddler 0.2.0 has moved
+`main` on top of it. Every cite was re-located by anchor at that SHA and each
+still reads as the amendment states, at the same line:
+
+- `Riddler.Template.compile/1` and its `{:error, :placeless}` clause
+  (`lib/riddler/template.ex:166` and `:180`).
+- The one call into the parser, `Riddler.Template`'s private `parse/1`, and
+  the two named exceptions it rescues, `ArithmeticError` and `CaseClauseError`
+  (`lib/riddler/template.ex:210` and `:213`).
+- `Riddler.Finding.position/2`, building the map only for two positive
+  integers, and its fallback answering `nil`
+  (`lib/riddler/finding.ex:97` and `:101`).
+- The document door re-reporting a refusal as `document.invalid_template` and
+  carrying the wrapped finding's position, absent and all
+  (`lib/riddler/screens/document.ex:586` and `:590`).
+- The span appended from the position rather than from the numbers it was
+  built out of (`lib/riddler/template.ex:538` and `:539`).
+- The count of sites setting `:position` in `lib/` is still three:
+  `lib/riddler/template.ex:518`, `:529` and
+  `lib/riddler/screens/document.ex:590`.
+
+Both doors are still pinned by tests, and the suite is green at that SHA (38
+doctests, 194 tests, 0 failures): the template door by "a template the parser
+refuses without a place is a finding, not a raise" and "a refusal the parser
+did not locate names no place in its message"
+(`test/riddler/template_test.exs`), and the document door by the
+`document.invalid_template` case asserting a `nil` position
+(`test/riddler/screens/document_test.exs:462`). The corpus case the amendment
+names is in `corpus/templates/render.json`, "A template the parser refuses
+without saying where is refused as a parse error, and the finding names no
+place".
