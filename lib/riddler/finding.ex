@@ -42,12 +42,16 @@ defmodule Riddler.Finding do
       document checks, a field refused for not being template source at all
       (which carries that same code, so the code alone does not say whether a
       span is there), and the other `response.*` findings.
-      `document.invalid_pattern` is one of those, by decision rather than by
-      defect: the regular expression compiler answers a byte offset into the
-      anchored expression this package builds rather than a line and a column
-      into the author's, and on the refusals checked it points at where the
-      scan stopped rather than at the defect, so there is no place for that
-      finding to carry. Where there is a position the `:message` names
+      `document.invalid_pattern` is one of those by decision rather than by
+      defect: the regular expression compiler answers a byte count into the
+      expression this package compiles rather than a line and a column, and
+      across the refusals run that count lands at the defect for some and at
+      the end of the input for others, and is moved, or its reason replaced,
+      by the anchors this package adds. A place derived from it would be right
+      for some refusals under that code and wrong for others, which is worse
+      for a host than none; the comment above `compile_pattern/1` in
+      `Riddler.Screens.Validation` records what was run. Where there is a
+      position the `:message` names
       it too and goes on naming it, so that a person reading a finding reads
       one sentence; this field is the same fact in the form an editor can act
       on without parsing that sentence.
