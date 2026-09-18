@@ -581,6 +581,33 @@ defmodule Riddler.Screens.ValidationTest do
                Document.validate(card_document(question))
     end
 
+    # What the boundary above leaves behind, pinned as intended rather than as
+    # a gap. With the pattern gone from this layer there is nothing here to
+    # hold a response to, so a response the author's expression plainly means
+    # to refuse is accepted - on the arity-3 call and through a validating
+    # button alike - while `required` on the same question still runs. The
+    # record entry that says so opens "An uncompilable `pattern` is not
+    # re-checked at submission, so a host that does not validate the document
+    # accepts any response to that question's pattern check."
+    #
+    # Sabotage: made `unreadable_pattern/1` answer `[pattern_finding(node)]`
+    # for a declared pattern as well as for an absent one, so that submission
+    # refuses a response when the pattern does not compile; the arity-3
+    # assertion carried `response.format` and this test went red.
+    test "an uncompilable pattern constrains no response here, and the checks beside it still run" do
+      question = %{"format" => "pattern", "pattern" => "[0-9", "required" => true}
+      document = card_document(question)
+      typed = %{"responses" => %{"card_field" => "not digits at all"}}
+
+      assert :ok == Screens.validate_screen(document, "card", typed)
+      assert :ok == Screens.validate_screen(document, "card", typed, "card_pay")
+
+      assert {:error, [%Finding{code: "response.required", node_key: "card_field"}]} =
+               Screens.validate_screen(document, "card", %{
+                 "responses" => %{"card_field" => "   "}
+               })
+    end
+
     # The case this layer keeps: a question asking for the `pattern` format and
     # declaring no pattern at all. There is no expression for the document
     # check to read, so it raises nothing there, and a response cannot satisfy
