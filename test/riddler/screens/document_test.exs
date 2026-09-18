@@ -1046,7 +1046,7 @@ defmodule Riddler.Screens.DocumentTest do
     # byte offset into the anchored expression `compile_pattern/1` builds, and
     # that offset does not point at the defect, so there is no line and column
     # to carry. The comment above `compile_pattern/1` in
-    # `Riddler.Screens.Validation` records what was run.
+    # `Riddler.Screens.Compilers` records what was run.
     #
     # Mutation: put a position on the `document.invalid_pattern` finding in
     # `Riddler.Screens.Type.TextQuestion`, or name a place in its sentence,

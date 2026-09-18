@@ -50,7 +50,7 @@ defmodule Riddler.Finding do
       by the anchors this package adds. A place derived from it would be right
       for some refusals under that code and wrong for others, which is worse
       for a host than none; the comment above `compile_pattern/1` in
-      `Riddler.Screens.Validation` records what was run. Where there is a
+      `Riddler.Screens.Compilers` records what was run. Where there is a
       position the `:message` names
       it too and goes on naming it, so that a person reading a finding reads
       one sentence; this field is the same fact in the form an editor can act
