@@ -430,6 +430,95 @@ defmodule Riddler.TemplateTest do
                )
     end
 
+    # The trailing tokens of a closer are skipped the way the lexer reads
+    # them, which means a quoted string in there is skipped whole. A run that
+    # stopped at any `%` stopped inside the string instead, failed to match
+    # the closer, and ran on to a later one - the same leak as the bare
+    # spelling, arriving one step further along. These six are the shapes a
+    # quote makes reachable: a percent inside a string, a quote of either
+    # kind, a `{%` inside a string, both block kinds, and whitespace control.
+    #
+    # Mutation: put `[^%]*%\}` back as the closer's trailing run - the run
+    # stops at the percent inside the string, the closer is missed, the
+    # pattern pairs with the later closer, the liquid tag between is blanked
+    # and compile/1 answers {:ok, _}.
+    test "a raw closer holding a percent in a string ends the block" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({% raw %}{% endraw "50%" %}{% liquid assign who = 1 %}) <>
+                   "{% raw %}{% endraw %}"
+               )
+    end
+
+    # Mutation: the same restoration - a single-quoted string holding the
+    # percent is missed in the same way.
+    test "a raw closer holding a single-quoted percent ends the block" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({% raw %}{% endraw '%' %}{% liquid assign who = 1 %}) <>
+                   "{% raw %}{% endraw %}"
+               )
+    end
+
+    # Mutation: the same restoration - the string holds a tag opener rather
+    # than a bare percent, and the run stops at its percent.
+    test "a raw closer holding a tag opener in a string ends the block" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({% raw %}{% endraw "{%" %}{% liquid assign who = 1 %}) <>
+                   "{% raw %}{% endraw %}"
+               )
+    end
+
+    # Mutation: the same restoration - the comment block's closer takes the
+    # same trailing tokens and was missed the same way.
+    test "a comment closer holding a percent in a string ends the block" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({% comment %}{% endcomment "50%" %}{% liquid assign who = 1 %}) <>
+                   "{% comment %}{% endcomment %}"
+               )
+    end
+
+    # Mutation: the same restoration, with a tag opener in the comment
+    # closer's string.
+    test "a comment closer holding a tag opener in a string ends the block" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({% comment %}{% endcomment "{%" %}{% liquid assign who = 1 %}) <>
+                   "{% comment %}{% endcomment %}"
+               )
+    end
+
+    # Mutation: the same restoration - whitespace control on both markers
+    # changes nothing about where the string is.
+    test "a whitespace-controlled closer holding a percent ends the block" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(
+                 ~S({%- raw -%}{%- endraw "%" -%}{% liquid assign who = 1 %}) <>
+                   "{%- raw -%}{%- endraw -%}"
+               )
+    end
+
+    # The one way the pattern and the parser still disagree, pinned as what it
+    # is rather than left to be rediscovered: a closer the pattern matches and
+    # the LEXER refuses. The parser reads it as body text and looks for a
+    # later closer, so the parser's block is the longer one and the mask ends
+    # inside it. That direction exposes a construct to the scan - this
+    # template is refused although the parser puts the tag inside a raw body -
+    # and exposing is the direction that cannot hide a refusal.
+    #
+    # Mutation: let the closer's trailing run cross a comma-only tag by
+    # matching `.*?%\}` - the disagreement widens rather than narrows and this
+    # assertion is unaffected, which is why the sabotage for this one is the
+    # opposite: make the run stop at the comma's position by excluding `,`
+    # too, and the pattern no longer matches the closer, the mask runs to the
+    # later one, and the template compiles.
+    test "a closer the lexer refuses ends the pattern's block early" do
+      assert [%Riddler.Finding{field: "liquid"}] =
+               refusal!(~S({% raw %}A{% endraw, %}{% liquid echo x %}{% endraw %}))
+    end
+
     # Every closer spelling the parser accepts, run against the parser to
     # establish the list: a body is protected under each of them, and a
     # spelling the parser rejects is a parse refusal rather than a silently
@@ -445,8 +534,17 @@ defmodule Riddler.TemplateTest do
             "{%endraw%}",
             "{%- endraw -%}",
             "{%   endraw   %}",
+            "{% endraw -%}",
             "{% endraw xyz %}",
-            "{%\nendraw\n%}"
+            "{%\nendraw\n%}",
+            ~S({% endraw "50%" %}),
+            ~S({% endraw '%' %}),
+            ~S({% endraw "{%" %}),
+            ~S({% endraw "a %} b" %}),
+            ~S({% endraw "" %}),
+            ~S({% endraw "a" "b" %}),
+            ~S({% endraw 1 %}),
+            ~S({% endraw a[1] %})
           ] do
         source = "{% raw %}{% liquid echo x %}" <> closer
 
@@ -454,7 +552,13 @@ defmodule Riddler.TemplateTest do
                "expected the closer #{inspect(closer)} to end the block"
       end
 
-      for rejected <- ["{% ENDRAW %}", "{% endrawx %}"] do
+      for rejected <- [
+            "{% ENDRAW %}",
+            "{% endrawx %}",
+            "{% endraw, %}",
+            "{% endraw 50% %}",
+            ~S({% endraw "abc %})
+          ] do
         findings = refusal!("{% raw %}body" <> rejected)
 
         assert Enum.any?(findings, &(&1.code == "template.parse_error")),
