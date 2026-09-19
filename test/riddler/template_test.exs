@@ -505,7 +505,11 @@ defmodule Riddler.TemplateTest do
     # Mutation: delete drop_derivative/1, or the uniq_by in to_findings/1 -
     # the parser reports the same refused tag twice and the orphaned block
     # terminator once more, and the list is then longer than the number of
-    # constructs the author actually reached for.
+    # constructs the author actually reached for. The corpus case "A refused
+    # tag inside an if block is the one finding: the closing tag that ends the
+    # block is not refused" states this source's answer for a second runtime;
+    # having drop_derivative/1 return its argument unchanged turns that case
+    # red as well as this test.
     test "a refused construct inside a block is reported once" do
       findings = refusal!("{% if responses.plan %}{% include 'footer' %}{% endif %}")
 

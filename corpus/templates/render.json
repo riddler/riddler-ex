@@ -772,7 +772,23 @@
       "input": {
         "source": "done{% endif %}"
       },
-      "name": "A stray closing tag is refused as a tag outside the subset, not as a parse error: a parse failure naming a tag is reported as that tag"
+      "name": "A closing tag written where no block of its tag is open is refused as that tag, not as a parse error"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "include",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% if responses.plan %}{% include 'footer' %}{% endif %}"
+      },
+      "name": "A refused tag inside an if block is the one finding: the closing tag that ends the block is not refused"
     },
     {
       "expected": {

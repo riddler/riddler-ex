@@ -78,14 +78,15 @@ defmodule Riddler.Template do
   `nil` on this code where it need not on the other two.
 
   Both halves of the split are pinned by the conformance corpus, which is
-  where a second runtime meets the same rule: "A stray closing tag is refused
-  as a tag outside the subset, not as a parse error: a parse failure naming a
-  tag is reported as that tag", "An unterminated output tag is refused as a
-  parse error, and the finding names no field", and "A render tag naming no
-  template is refused as a parse error, as a finding rather than a raise, and
-  the finding names no field". The corpus does not carry a finding's
-  position, so that the placeless refusal carries a `nil` one is pinned by this
-  package's own tests rather than by the corpus.
+  where a second runtime meets it, stated by what the source holds rather
+  than by what this parser says of it: "A closing tag written where no block
+  of its tag is open is refused as that tag, not as a parse error", "An
+  unterminated output tag is refused as a parse error, and the finding names
+  no field", and "A render tag naming no template is refused as a parse
+  error, as a finding rather than a raise, and the finding names no field".
+  The corpus does not carry a finding's position, so that the placeless
+  refusal carries a `nil` one is pinned by this package's own tests rather
+  than by the corpus.
 
   ## Output is text, never markup
 
@@ -185,6 +186,13 @@ defmodule Riddler.Template do
   @probe_name "riddler_liquid_probe"
   @probe_reason "Unexpected tag '#{@probe_name}'"
 
+  # This pattern and `@probe_reason` above are the two places this module
+  # reads the parser's own wording, its reason for a tag it did not expect.
+  # The wording is how this package reaches its answers and not the rule it
+  # answers by. A `solid` release that rewords it turns the conformance
+  # corpus red through either place, and the liquid test's generated
+  # agreement too through `@probe_reason`, rather than letting an answer
+  # change unnoticed.
   @unexpected_tag ~r/Unexpected tag '([^']+)'/
 
   # The branch and terminator keywords of the admitted block tags. A refused
