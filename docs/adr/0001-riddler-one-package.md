@@ -1278,18 +1278,22 @@ that sets a position is named here with its unit", in
 `test/riddler/finding_position_units_test.exs` (read at `a3a134d`), reads each
 `Riddler.Finding` literal carrying `:position` out of the syntax tree of the
 files under `lib/` and fails when the sites it finds and the sites it names
-with a unit differ. A site added later fails that test until it is named there with its
-unit.
+with a unit differ. What it reads is a literal: a `Riddler.Finding` literal
+carrying `:position` added to `lib/` later fails that test until it is named
+there with its unit, and a position set on a finding any other way, by a
+struct update or a map write, is not read by it.
 
 **Each unit is pinned where it is given.** The tests under "a column the
 template parser gave counts bytes" and "a column the condition compiler or the
-evaluator gave counts characters", in the same file at the same SHA, put two
-two-byte characters before the defect at each site and assert the column its
-unit gives, after asserting that the two units disagree on that input. The
-subset clause is put to each route its place arrives by: the parser refusing a
-tag it does not know, the allowlist walk reading a filter's location and a
-tag's, and the check that locates a liquid tag. `response.undecidable` is put
-to the compiler's place and to the evaluator's.
+evaluator gave counts characters", in the same file at the same SHA, put
+two-byte characters before the defect - two at each site the template parser
+locates and one at each site the condition compiler or the evaluator locates -
+and assert the column its unit gives, after asserting that the two units
+disagree on that input. The subset clause is put to each route its place
+arrives by: the parser refusing a tag it does not know, the allowlist walk
+reading a filter's location and a tag's, and the check that locates a liquid
+tag. `response.undecidable` is put to the compiler's place and to the
+evaluator's.
 
 **The units are the dependencies'.** They are what `solid` 1.3.4 and
 `predicator` 9.4.1 answer, the versions `mix.lock` resolves (read at
