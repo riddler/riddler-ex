@@ -1534,3 +1534,68 @@ under its own "What is unchanged".
 **The capability names.** "A corpus capability is named `<kind>.<function>`",
 and a capability name "changes only by a record". This entry names no
 capability and renames none.
+
+---
+
+Noted 2026-09-18, campaign RF058, beads rd-p7z and rd-bug. Two notes by
+addition, each read against `main` at `893425d`. Nothing above is changed;
+each paragraph below says what the text above means now.
+
+**Three notes of 2026-09-18 are notes and not amendments, and this is why.**
+The entry opening "Noted 2026-09-18, campaign RF055, beads rd-7l8, rd-q5d and
+rd-2x5." carries the paragraphs headed "**The conformance corpus does not
+carry a finding's position, and a second runtime is not held to one.**",
+"**Two cross-file cites in the note of 2026-09-17 on the emitter's provenance
+header are labelled here with their repository and a SHA.**" and "**The
+conformance corpus does not ship in the Hex tarball, and that is decided, not
+an omission.**", and the argument for their shape was not written into the
+record with them. The test `docs/adr/README.md` states, under its "Note or
+Amendment" heading, is whether an entry changes an "answer the record gave",
+and none of the three does. The corpus-position paragraph decides a call this
+record had not answered: nothing above it said the corpus carries a position,
+and the encoder already compared a finding as `code`, `field` and `node_key`
+alone (`encode_findings/1` in `Riddler.Corpus`), so its decided reading "takes
+nothing away, and so changes nothing this record had decided", and "Deciding
+an open question and changing what the record decides come apart, and it is
+the second that governs". The cite-label paragraph says which file and which
+SHA two cites already in the record resolve to, which is "what a sentence
+already accepted was about"; where it reads that note's phrase "either
+repository" and its `riddler_spec` `bin/lint` cite as history, it does so on
+the acceptance of the amendment above headed "the conformance corpus lives in
+this repository", and answers nothing that amendment does not. The tarball
+paragraph records a status quo: the cases were already outside `package/0`'s
+`files:` list (`mix.exs`), the paragraph leaves `mix.exs` unchanged, as it
+says, and the tarball note it follows settled the two `lib/` files and said
+nothing about the cases. None of the three adds a refusal or qualifies a rule
+an amendment states, the two marks the same heading names as sufficient for
+an amendment. The same entry's second paragraph, on the render case's name,
+is not among these three: the amendment
+above headed "a corpus case's name claims only what its capability compares"
+answers its call the other way, and says under its own heading why that is an
+amendment.
+
+**`document.invalid_pattern`'s `nil` position is final, the refusals whose
+offset lands at the defect included.** The note of 2026-09-18 headed
+"**`document.invalid_pattern` carries no place, and that is a recorded ground
+here rather than a filed defect.**" left one call open: "Whether the refusals
+whose offset does land at the defect should carry one anyway is a question for
+a record to settle and not for this request." It is settled here, and they
+carry none. The ground is the one that note gives for the rest, and it is
+about trust: "a field a host can trust for some findings of a code and not for
+others is worse for that host than a field that is never there". It reaches
+these refusals too. Which refusals land at the defect is known only from the
+runs that note tabulates, which it calls "the runs made rather than a
+classification of every refusal that compiler can answer". A position keyed
+on the reasons those runs answered would rest on runs of the compiler rather
+than on anything it guarantees, and could be wrong for a refusal under one of
+those reasons that nobody ran, so a host could not trust it for any
+`document.invalid_pattern` finding it appeared on. That is the same care the
+note headed "**`Riddler.Finding` carries a source position, and this record is
+where that is decided.**" took over a fuzz that was "not a guarantee the
+parser makes". The comment above `compile_pattern/1` in
+`Riddler.Screens.Compilers` and the `:position` bullet of `Riddler.Finding`'s
+moduledoc already call the `nil` a decision, and neither is edited. This is a
+note: the record's answer for this code is `nil`, and this answers the call it
+left open the same way, so no finding, code, field or refusal moves. A later
+entry giving these refusals a position would change that answer, and would be
+an amendment.
