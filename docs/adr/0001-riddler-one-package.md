@@ -1276,12 +1276,14 @@ by the extra bytes of each one that does.
 The list is kept by a test rather than by this record. "every site in lib/
 that sets a position is named here with its unit", in
 `test/riddler/finding_position_units_test.exs` (read at `a3a134d`), reads each
-`Riddler.Finding` literal carrying `:position` out of the syntax tree of the
-files under `lib/` and fails when the sites it finds and the sites it names
-with a unit differ. What it reads is a literal: a `Riddler.Finding` literal
-carrying `:position` added to `lib/` later fails that test until it is named
-there with its unit, and a position set on a finding any other way, by a
-struct update or a map write, is not read by it.
+`Riddler.Finding` literal carrying `:position` inside a `def` or a `defp` out
+of the syntax tree of the files under `lib/` and fails when the sites it finds
+and the sites it names with a unit differ. What it reads is such a literal: a
+`Riddler.Finding` literal carrying `:position` added inside a `def` or a
+`defp` in `lib/` later fails that test until it is named there with its unit.
+A literal inside a `defmacro` or a module attribute is not read by it, and
+neither is a position set on a finding any other way, by a struct update or a
+map write.
 
 **Each unit is pinned where it is given.** The tests under "a column the
 template parser gave counts bytes" and "a column the condition compiler or the
