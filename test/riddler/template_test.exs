@@ -708,9 +708,9 @@ defmodule Riddler.TemplateTest do
       assert {:ok, "A", []} = render!(source, @assigns, :strict)
     end
 
-    # Mutation: drop the reduce over the elsif bodies in conditional/2 - the
-    # general walk stops at the {condition, body} tuple, so a tag nested in an
-    # elsif body is never reached and its own condition re-reports.
+    # Mutation: delete the is_tuple clause from reduce_nodes/3 - the general
+    # walk stops at the {condition, body} tuple, so the unless nested in the
+    # elsif body is never handed to conditional/2 and its condition re-reports.
     test "an unless nested in an elsif body is a condition position too" do
       source =
         "{% if responses.nickname %}A{% elsif responses.plan %}" <>
@@ -720,9 +720,9 @@ defmodule Riddler.TemplateTest do
       assert {:ok, "B", []} = render!(source, @assigns, :strict)
     end
 
-    # Mutation: drop the CaseTag clause of conditional/2 - a `case` branch's
-    # body is a {values, body} tuple, so the general walk stops before it and
-    # the nested condition re-reports.
+    # Mutation: delete the is_tuple clause from reduce_nodes/3 - a `case`
+    # branch's body is a {values, body} tuple, so the general walk stops
+    # before it and the nested condition re-reports.
     test "an unless in a when body is a condition position too" do
       source =
         ~s({% case context.tenant %}{% when "acme" %}) <>
@@ -732,8 +732,8 @@ defmodule Riddler.TemplateTest do
       assert {:ok, "B", []} = render!(source, @assigns, :strict)
     end
 
-    # Mutation: the same. A `case` else branch is an {:else, body} tuple, so
-    # it needs the same clause and a case of its own.
+    # Mutation: the same. A `case` else branch is an {:else, body} tuple, a
+    # different shape from a `when`'s, so it has a case of its own.
     test "an unless in a case else body is a condition position too" do
       source =
         ~s({% case context.tenant %}{% when "other" %}A{% else %}) <>
@@ -743,13 +743,13 @@ defmodule Riddler.TemplateTest do
       assert {:ok, "B", []} = render!(source, @assigns, :strict)
     end
 
-    # The distinction the CaseTag clause has to keep: the tag's own argument is
-    # the subject and reads a value, while a condition inside one of its branch
-    # bodies tests one. Both appear here and only the subject is reported.
+    # The distinction the condition collector has to keep: a `case` tag's own
+    # argument is the subject and reads a value, while a condition inside one
+    # of its branch bodies tests one. Both appear here and only the subject is
+    # reported.
     #
-    # Mutation: have the CaseTag clause reduce over the whole tag rather than
-    # over its branch bodies - the subject is then excluded and this goes red
-    # while every other case test stays green.
+    # Mutation: add a CaseTag clause to conditional/2 that passes the tag's
+    # argument to tested/2 - the subject is then excluded and this goes red.
     test "a case subject reports even when its body holds a condition" do
       source =
         "{% case responses.audience %}{% else %}" <>

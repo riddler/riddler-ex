@@ -373,37 +373,18 @@ defmodule Riddler.Template do
   # caches and hands back keeps the shape it already has.
   defp condition_positions(tree), do: reduce_nodes(tree, MapSet.new(), &conditional/2)
 
+  # The conditions of an `if` or an `unless` tag: its own and each `elsif`'s.
+  # The bodies are not followed from here. The general walk reaches every tag
+  # nested in a body - the tuple-wrapped `elsif` and `case` branch bodies
+  # included, through its tuple clause - and hands each one to this function,
+  # so a condition nested at any depth is collected by the clause below. A
+  # `case` tag contributes nothing of its own: its `argument` is the subject,
+  # which reads a value rather than tests one, and stays reported.
   defp conditional(%Solid.Tags.IfTag{condition: condition, elsifs: elsifs}, acc) do
-    conditions = [condition | Enum.map(elsifs, &elem(&1, 0))]
-    bodies = Enum.map(elsifs, &elem(&1, 1))
-    collected = Enum.reduce(conditions, acc, &tested/2)
-
-    # The general walk descends the `{condition, body}` tuple itself now, so
-    # an `elsif` body's own nested tags are reached both ways. This fold is
-    # kept so that which positions a condition excludes does not depend on
-    # the general reducer's shape, and the accumulator is a `MapSet`, so a
-    # position reached twice is recorded once.
-    branch_bodies(bodies, collected)
-  end
-
-  # A `case` branch is a `{values, body}` tuple, or `{:else, body}` for its
-  # else, which the general walk descends exactly as it does an `elsif`'s.
-  # Only the bodies are followed from here: the tag's own `argument` is the
-  # subject, which reads a value rather than tests one, and stays reported.
-  defp conditional(%Solid.Tags.CaseTag{cases: cases}, acc) do
-    cases |> Enum.map(&elem(&1, 1)) |> branch_bodies(acc)
+    Enum.reduce([condition | Enum.map(elsifs, &elem(&1, 0))], acc, &tested/2)
   end
 
   defp conditional(_node, acc), do: acc
-
-  # The two tuple-wrapped body positions among the admitted tags -
-  # `if_tag.elsifs` and `case_tag.cases` - and no others: every other
-  # admitted tag holds its body in a plain list. The general walk follows
-  # both shapes now; this is the condition collector's own pass over the two
-  # tuple-wrapped ones.
-  defp branch_bodies(bodies, acc) do
-    reduce_nodes(bodies, acc, fn node, positions -> conditional(node, positions) end)
-  end
 
   # A condition's own traversal, because the general one reports struct nodes
   # to the function it was given and what is wanted here is every `Variable`
