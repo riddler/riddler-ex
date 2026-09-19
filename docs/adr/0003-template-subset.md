@@ -381,9 +381,9 @@ one arrive as ordinary nodes - so refusing the spelling means finding it
 somewhere other than the tree, and this record never said where. The code half
 of 0.2.0 found it by reading the source with patterns of its own, and a pattern
 is a second reading of the template that can disagree with the parser's. This
-amendment decides whose reading counts. Cites to the code as 0.2.0 shipped it
-are read at `a4f731d`; the code this amendment describes is added by this
-entry's own commit and is citable at no earlier SHA.
+amendment decides whose reading counts. Cites to the code this amendment
+replaces are read at `a4f731d`; the code this amendment describes is added by
+this entry's own commit and is citable at no earlier SHA.
 
 ### What the record now decides
 
@@ -433,11 +433,11 @@ The Decision's exclusion list is unchanged; which templates it reaches is not.
 
 The check puts each place the characters `liquid` occur to the parser, as the
 author's source up to that place with a name no tag answers to in its stead,
-and refuses where the parser reports that name as a tag (`Riddler.Template`,
-the private `liquid_refusals/1`). A generated test holds the check to the
-parser in both directions, with an `assign` inside every liquid body so that
-the allowlist walk cannot refuse the template on its own
-(`test/riddler/template_liquid_test.exs`, the describe block "generated
+and refuses where the parser's first refusal of that source is that name met
+as a tag (`Riddler.Template`, the private `liquid_refusals/1`). A generated
+test holds the check to the parser in both directions, with an `assign` inside
+every liquid body so that the allowlist walk cannot refuse the template on its
+own (`test/riddler/template_liquid_test.exs`, the describe block "generated
 agreement with the parser").
 
 ### What is unchanged
@@ -459,7 +459,8 @@ it refused, each named "A liquid tag's characters inside a ... block whose ...
 carries ..." (`corpus/templates/render.json`).
 
 Those cases hold a second runtime to the parser's reading of tokens it
-discards: a runtime whose Liquid library refuses `{% endif "x" %}` outright
-answers a parse failure where a case states the liquid refusal. Whether the
-subset should admit a tag token carrying text the parser discards at all is a
-question this amendment does not decide.
+discards, and both kinds do: a runtime whose Liquid library refuses
+`{% endif "x" %}` or `{% endraw note %}` outright answers a parse failure where
+a refusal case states the liquid refusal, and where a text case states a
+render. Whether the subset should admit a tag token carrying text the parser
+discards at all is a question this amendment does not decide.
