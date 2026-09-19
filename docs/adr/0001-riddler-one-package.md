@@ -1343,3 +1343,41 @@ does not carry a finding's position names "bytes against characters for a
 column" among what two implementations compute differently. That decision
 stands. This entry says what the reference implementation fills the field
 with; it holds no second runtime to it.
+
+---
+
+Noted 2026-09-18, campaign RF058, bead rd-6z8, and one item carried out of the
+direction review of the amendment above headed "the conformance corpus lives
+in this repository". Two notes by addition, each read against `main` at
+`5c2e34e`; the one code cite is read at `570272c`, the code commit of the
+request carrying this note. Nothing above is changed; each paragraph below
+says what the text above means now.
+
+**The export task has no environment fallback and no default target.** That
+amendment's paragraph headed "**The export task.**", under "What is
+unchanged", says `mix riddler.corpus` "keeps `--to PATH`, `--check` and its
+environment fallback", and ends: "Whether its default target and its
+documentation should still name the archived repository is left to a later
+request." The request carrying this note is that later request. The task reads
+no environment variable and has no default target: it refuses to run without
+`--to`, `--check` included (`target/1` in `Mix.Tasks.Riddler.Corpus`,
+`lib/mix/tasks/riddler.corpus.ex`, read at `570272c`), and its documentation
+names no destination repository. What the amendment decides about the task -
+that it is an export tool a consumer may use, not a step this package's CI
+depends on - is unchanged. Read the words "and its environment fallback" as
+the task as it stood when the amendment was written.
+
+**"A copy is an artifact" carries the record's reason to a vendored copy, on
+purpose.** The same amendment's paragraph headed "**That a corpus file is
+never edited by hand.**" gives the record's reason as "that a copy is an
+artifact". The corpus paragraph of the Decision, headed "**The conformance
+corpus is authored in this repository and emitted into `riddler_spec`.**",
+words it "the emitted copy is an artifact". The restatement is not a
+quotation of the Decision: it widens the reason from the emitted copy to any
+copy, which is what the amendment's next clause says in its own words - "it
+now applies to a vendored copy rather than to an emitted mirror". Read the
+unquoted restatement as that widening.
+
+Neither note changes an answer the record gave: the record decides the task's
+standing, not its options, and the widening is the one the amendment's own
+next clause already states.
