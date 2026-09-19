@@ -1657,7 +1657,9 @@ was read:
   string this version retired is an unknown capability, not an alias"
   (`test/riddler/corpus_test.exs:348`). No file under `lib/`, `priv/` or
   `corpus/` carries the retired spelling; it survives only in test text that
-  names it as the retired string.
+  names it as the retired string (`test/riddler/corpus_test.exs:345` and
+  `:424`) or as the removed function `validate_responses/4`
+  (`test/riddler/screens/validation_test.exs:765`).
 - The two corrected case names read as the amendment gives them:
   `corpus/screens/admit.json:1327` and
   `corpus/screens/validate_screen.json:1231`. The drop of `answer_options` is
@@ -1668,8 +1670,12 @@ was read:
   surface the capability is named for (`lib/riddler/screens.ex:319` and
   `:356`).
 
-The per-file case counts the second amendment says its request left unchanged
-have moved since, by cases added in later requests; that sentence is a claim
+Of the per-file case counts the second amendment says its request left
+unchanged, two have moved since, by cases added in later requests:
+`corpus/screens/admit.json` from 31 to 42 and `corpus/templates/render.json`
+from 43 to 58 (`test/riddler/corpus_test.exs:48`, the `@case_counts` map);
+`corpus/screens/resolve.json` (21) and `corpus/screens/validate_screen.json`
+(34) have not. The amendment's sentence is a claim
 about its own request, whose code commit it cites as `e0f79df` and which
 reached `main` as `034d24f`, and it holds there. The later notes above that
 read either amendment stand under the acceptance. One of them reads an earlier
