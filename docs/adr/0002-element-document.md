@@ -2334,3 +2334,149 @@ here are where they resolve at this reading.
 and saying where three cites land changes no answer this record gave: no
 finding code, field, position or refusal moves with the file or the lines, and
 each passage says of the function what it said before.
+
+---
+
+Noted 2026-09-18, campaign RF058, beads rd-32y and rd-c2x. Notes by addition,
+each read against `main` at `07b86e6759baad64b995004b971f86d4346f4672` unless
+it names another SHA. Nothing above is changed; each paragraph below says what
+the text above means now. In order, they are about the amendment above headed
+"a keyless button cannot opt out, and a call naming no button never does",
+about wording in earlier notes of 2026-09-18, and about the note headed
+"`response.undecidable` keeps its `response.` prefix by decision, and this one
+is the recorded exception rather than the pattern."
+
+**The keyless-button amendment is an amendment on the mark of a qualification,
+not on what it takes away (rd-32y).** Its section "Why an amendment and not a
+note" quotes the counterweight this record states, that a decided reading "can
+remain a note because its decided reading takes nothing away", and stops
+there. The sentence it quotes, in the opt-out amendment's own "Why an
+amendment and not a note", goes on: "and so changes nothing this record had
+decided. Deciding an open question and changing what the record decides come
+apart, and it is the second that governs." What "takes nothing away" is
+measured against is therefore what the record had decided. The keyless-button
+amendment measures it against the package instead, naming as what it takes
+away "an `:ok` the package answers today". Measured against the record, the
+case it closes had been left open: the opt-out amendment says of it "this
+amendment decides nothing about it" and "Whether a keyless button should be
+able to opt out at all is left open exactly as this amendment found it", and
+the keyless-button amendment calls the paragraph there that describes a call
+naming no button as "treated as a press through it" "a true description of
+what the package did when it was written".
+So the counterweight does not settle the classification by itself. What
+settles it is the mark the amendment gives in its next paragraph, "a
+qualification of the rule that amendment states" - the rule that `validates`
+is read from the button the pressed key names - and `docs/adr/README.md` names
+qualifying a rule an Amendment above states as one of two marks "each
+sufficient for an Amendment without being necessary". On that mark it is an
+amendment, and its `Status:` line is not touched here.
+
+**The hidden-button edge stays outside that amendment because the button is
+not on the resolved screen, key or no key (rd-32y).** The amendment's last
+paragraph gives its reason for not reaching the edge as "that button carries a
+key, and the question there is about resolution rather than about naming."
+The first clause asserts what the amendment does not establish, and it is not
+what places the edge outside it. A condition the root could not decide answers
+false exactly as a condition the root decides false does (the private
+`evaluate/4` in `lib/riddler/screens.ex`), and a node whose condition answers
+false is not shown: resolution answers `nil` for it and the resolved screen
+does not carry it (the private `shown/3` in the same file). So such a button
+declares nothing to validation whether or not it carries a key, and nothing
+the amendment decides about naming reaches it. The second clause is the
+reason, and it stands. The note headed "A button whose own condition the root
+could not decide is not on the resolved screen, so a press naming its key
+validates that screen in full." answers the edge on this ground.
+
+**Both examples in the amendment's paragraph on how narrow the case is are
+examples, and each has a sibling (rd-32y).** The paragraph opening "The case
+is narrower than a document carrying such a button" says that `opted_out?/2`
+"takes the *first* node the match finds, so a keyless button earlier on the
+screen carrying the default hides a later one declaring `false`". A keyless
+button earlier on the screen declaring `validates` as `true` hides the later
+one just as surely: the match took the first keyless button whatever it
+declared, and only a `false` on that first one opted out (the private
+`opted_out?/2` in `lib/riddler/screens/validation.ex`, read at
+`543f35275f05f735a34e88777201fa2e4beb1016`). The same paragraph says that "a
+button whose own condition the root decides false is dropped from the resolved
+screen"; a button whose condition the root could not decide is dropped the
+same way, as the paragraph before this one says. Neither example overstates,
+and the paragraph states the case itself in its last sentence, with the
+examples as instances of it rather than a list. Both describe the package
+before that amendment's code half: at this reading `opted_out?/2` answers
+`false` for a pressed key of `nil` in its first clause, so no keyless button
+is matched and neither hiding case arises.
+
+**In the entry directly below the keyless-button amendment, "none bears on the
+amendment above" means that none of its notes changes an answer that amendment
+gave (rd-32y).** That entry closes its opening with "None of them changes what
+this record decides, and none bears on the amendment above." The amendment
+above it is the keyless-button amendment, and what the clause says of it is
+that none of that entry's notes changes an answer it gave. The phrase "bears
+on" is looser than that; the answer is the thing meant.
+
+**Of the three node fields the note on an explicit `null` names, `required` is
+a text question's and `style` and `validates` are a button's (rd-32y).** The
+note headed "An explicit JSON `null` is admitted on the three envelope and
+screen fields and refused on the three node fields, and both arms stay"
+speaks of "the three node fields" without saying which node type carries
+which. `required` is among the fields `Riddler.Screens.Type.TextQuestion`
+names, and `style` and `validates` are among those
+`Riddler.Screens.Type.Button` names (each module's `fields/0`). The finding
+that note records for a `null` is raised on a node of the type that names the
+field. On a node of any other type the field is not named, and `admit/1`
+drops it: for a type the registry knows, admission takes only the fields that
+type names (the private `admit_typed/3` in `lib/riddler/screens/document.ex`),
+and for a type it does not know, only `type`, `key` and `condition` (the
+private `admit_common/1` in the same file). A document `admit/1` builds
+carries nothing there, so nothing is raised for it.
+
+**Two phrases in the note deciding that none of the schema version, the
+document id and a screen's title is required (rd-32y).** "Three surfaces say
+so, and none of them is changed" reads more exactly as "none of them moves":
+the third surface it names is this record, which gains that note. And "names
+no code", in "A recorded no takes nothing away, names no code and moves no
+finding", means that it names no finding code; the same paragraph names
+functions.
+
+**A rename of `response.undecidable` would tell no host about a defect it is
+not told about today; what it would change is the code string (rd-c2x).** The
+note headed "`response.undecidable` keeps its `response.` prefix by decision,
+and this one is the recorded exception rather than the pattern." says that a
+rename "would buy a name and nothing else: no document would be admitted or
+refused differently, and no host would read a finding it does not read
+today." The last clause is loose: a rename changes the code string a host
+matches on, which the same sentence says in its opening words, "A rename would
+change a published finding code". The claim is about which findings are
+raised, and it reads exactly as: no host would be told about a defect it is
+not told about today. The same defects would be reported, on the same nodes
+and fields; only the code string would change, and that is the cost the
+sentence names.
+
+**The next finding of this kind is expected to take a prefix naming the call;
+that sentence is an intention, not a rule (rd-c2x).** The same note closes its
+paragraph with "The next finding of this kind - one about the call rather than
+about the visitor - takes a prefix naming the call when it is first written,
+while naming it is free." Read as a rule, it decides how a code nobody has
+written yet is to be spelled. `docs/adr/README.md` says what a note records -
+"a note records where something already decided renders, or what a sentence
+already accepted was about" - and the spelling of a code not yet written is
+neither. The test it states for an amendment, whether the entry changes an
+"answer the record gave", is not met either, because no answer above says how
+such a code is spelled. So the sentence changes no answer, and as a rule it
+would decide something a note does not record. It stands as what it can be
+inside a note: the next finding of this kind is expected to take a prefix
+naming the call when it is first written, while naming it is free. Nothing
+here makes that binding; a rule for how finding codes are spelled would be
+decided in an entry that carries a `Status:` line and can be accepted, not in
+a note.
+
+**Why a note and not an amendment.** `docs/adr/README.md` states the test
+these records use: whether the entry changes an "answer the record gave", an
+entry being an amendment where "the rule stated above answers a call one way,
+and this entry answers the same call another". No note here answers a call
+another way. Each says what a sentence above means, completes a quotation,
+gives a reason, widens an example, or names which type carries a field, and
+the last states as an intention what was phrased as a rule. No document that
+validates clean stops doing so, no document that is refused stops being
+refused, no code, field, message or node key moves, no refusal is added, no
+`Status:` line changes, and no line of `lib/` changes with this entry.
