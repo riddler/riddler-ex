@@ -97,6 +97,17 @@ defmodule Riddler.Screens.ValidationTest do
     |> Document.admit()
   end
 
+  # The same screen with the keyed Back button above given no key: a keyless
+  # button carrying the DEFAULT in front of a keyless one declaring `false`.
+  # No press can name either, so the two differ only in document order and in
+  # what they declare.
+  defp keyless_default_before_keyless_back_document do
+    raw_fixture()
+    |> add_node("account", %{"type" => "button", "label" => "Help"})
+    |> add_node("account", @keyless_back)
+    |> Document.admit()
+  end
+
   # The fixture's account screen with a keyed Back button declaring
   # `validates` as `false` and carrying a condition of its own that the roots
   # below cannot decide - they carry no `context` at all, so
@@ -352,6 +363,11 @@ defmodule Riddler.Screens.ValidationTest do
     # an undecidable condition is the pair of cases in the "a condition that
     # could not be decided" block below.
     #
+    # It is also the half of the keyless-button amendment that must not move,
+    # which is why the "a button carrying no key" block below has no copy of
+    # it: a press through a KEYED button declaring `validates` as `false`
+    # still answers `:ok` without running a check.
+    #
     # Sabotage: made `opted_out?/2` compare `validates` against a value it
     # never holds, so no button ever opts out; the Back press ran the checks on
     # the blank name and this test went red.
@@ -445,20 +461,29 @@ defmodule Riddler.Screens.ValidationTest do
       assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
     end
 
-    # The carve-out is unchanged, which is the half of this that must not
-    # move: a press through a KEYED button declaring `validates` as `false`
-    # still answers `:ok` without running a check.
+    # The shape the amendment's own paragraph beginning "The case is narrower"
+    # works through: a keyless button carrying the default sits in front of a
+    # later keyless one declaring `validates` as `false`. The rule is that the
+    # arity-3 call never opts out, so it reports here whatever the keyless
+    # nodes declare and in whatever order.
     #
-    # Sabotage: made `opted_out?/2` answer `false` for every press; the Back
-    # press ran the checks on the blank name and this test went red.
-    test "leaves a keyed button's opt-out alone when the press names that key" do
-      assert :ok ==
+    # Sabotage: made the `nil` clause of `opted_out?/2` answer whether any
+    # button on the screen declares `validates` as `false`; the later keyless
+    # Back button was read, the call answered `:ok`, and this test went red.
+    # Dropping that clause alone leaves this test green, because the first
+    # button the match then finds is the keyless Help button carrying the
+    # default, which is the narrowing that paragraph records.
+    test "does not opt the arity-3 call out when a later keyless button declares the opt-out" do
+      assert {:error, findings} =
                Screens.validate_screen(
-                 account_with_back_document(),
+                 keyless_default_before_keyless_back_document(),
                  "account",
-                 %{"responses" => %{"first_name" => ""}},
-                 "account_back"
+                 %{
+                   "responses" => %{"first_name" => ""}
+                 }
                )
+
+      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
     end
 
     # A keyless node sitting in front of a keyed one hides nothing, because
@@ -1135,7 +1160,7 @@ defmodule Riddler.Screens.ValidationTest do
     # than from a node on the resolved screen, so it carries the key by its own
     # route and needs its own case.
     #
-    # Sabotage: write `node_key: key` back into `undecidable_finding/1` and the
+    # Sabotage: write `node_key: key` back into `undecidable_finding/2` and the
     # finding about the condition carried the atom key.
     test "leaves the undecidable finding's node key nil" do
       document =
@@ -1167,8 +1192,26 @@ defmodule Riddler.Screens.ValidationTest do
     # nodes are all keyed with something the record does not admit raises one
     # finding per kind, and not one of them carries a key a host cannot use.
     #
-    # Sabotage: write the raw key back into any one of the four sites and this
-    # test goes red on that finding.
+    # Read off lib/ rather than remembered: four sites in
+    # `Riddler.Screens.Validation` put a node's key on a finding, each through
+    # `Finding.node_key/1`, and this fixture reaches all four - the private
+    # `undecidable_finding/2`, `finding/4` (behind both the required and the
+    # format finding), `pattern_finding/1` and `range_finding/5`. Every one of
+    # them can be re-wired to the raw key. The codes are listed in order
+    # rather than counted, so a site dropped from the fixture stops this test
+    # rather than passing a lower bound.
+    #
+    # Sabotage, one site at a time, each reverted from a copy before the next:
+    # writing `node_key: key` into `undecidable_finding/2`, `node[:key]` into
+    # `finding/4`, `node[:key]` into `pattern_finding/1` and `node[:key]` into
+    # `range_finding/5`. Each turned this test red on the first finding that
+    # site builds, which carried the raw key: `:vat_id`, `1`, `3` and `4`
+    # respectively.
+    #
+    # `Document.admit/1` answers `nil` for every document below, a key that is
+    # not a string being a value the schema refuses, so the struct is built by
+    # hand: a host holding a struct it built itself is the only way such a
+    # key reaches response validation.
     test "holds for every kind the response path raises" do
       document =
         non_string_key_document([
@@ -1220,6 +1263,37 @@ defmodule Riddler.Screens.ValidationTest do
         assert finding.node_key == nil,
                "#{finding.code} carries node_key #{inspect(finding.node_key)}"
       end
+    end
+
+    # The opt-out is not hardened against a button key that is not a string,
+    # and ADR-0002's note on that key says why: the key is the document
+    # layer's finding, and a press equal to it is the host naming the button
+    # it built. The press is compared with the key as it is, so an equal term
+    # opts out and the string spelling of it names nothing.
+    #
+    # Sabotage: made `button?/2` match only a key that is a string; the press
+    # of `7` found no button, validated in full, and this test went red on its
+    # first assertion.
+    test "a press equal to a non-string button key reaches that button's opt-out" do
+      document =
+        non_string_key_document([
+          %{"type" => "text_question", "key" => "seats", "label" => "Seats", "required" => true},
+          %{
+            "type" => "button",
+            "key" => 7,
+            "label" => "Back",
+            "outcome" => "went_back",
+            "validates" => false
+          }
+        ])
+
+      assert :ok == Screens.validate_screen(document, "keys", %{}, 7)
+
+      assert {:error, [%Finding{code: "response.required", node_key: "seats"}]} =
+               Screens.validate_screen(document, "keys", %{}, "7")
+
+      assert {:error, findings} = Document.validate(document)
+      assert Enum.map(findings, &{&1.code, &1.node_key}) == [{"document.invalid_key", nil}]
     end
   end
 end

@@ -14,12 +14,14 @@ defmodule Riddler.Screens.Compilers do
 
   alias Riddler.Finding
 
-  # The one place a `pattern` source becomes a regular expression. The document
-  # check on the same field calls it too, which is the whole reason it is not
-  # private: two compilers would drift, and a document check holding an
-  # expression to anchors this format did not apply would admit a pattern the
-  # format cannot use, or refuse one it can. No part of the package's surface,
-  # as nothing in this module is.
+  # The one place a `pattern` source becomes a regular expression. The response
+  # check compiles the author's expression with it to hold a response to, and
+  # the document check compiles the same expression with it to decide whether
+  # the format can use it, which is the whole reason it is shared: two
+  # compilers would drift, and a document check holding an expression to
+  # anchors the format did not apply would admit a pattern the format cannot
+  # use, or refuse one it can. No part of the package's surface, as nothing in
+  # this module is.
   #
   # The refusal's offset is discarded rather than carried, and that is a
   # decision. `Regex.compile/1` answers `{reason, offset}`, and the offset is a
@@ -54,9 +56,9 @@ defmodule Riddler.Screens.Compilers do
   def compile_pattern(_source), do: :error
 
   # The place a refusal from the condition compiler or the evaluator names, in
-  # the form a finding carries. The document check on the same conditions calls
-  # it too, which is why it is not private, for the reason `compile_pattern/1`
-  # is not: one reading of what the dependency hands back is what keeps the two
+  # the form a finding carries. The document check and the response check both
+  # locate a refused condition with it, for the reason `compile_pattern/1` is
+  # shared: one reading of what the dependency hands back is what keeps the two
   # doors from disagreeing about where a condition is wrong. No part of the
   # package's surface, as nothing in this module is.
   @doc false
