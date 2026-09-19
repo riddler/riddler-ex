@@ -2379,12 +2379,14 @@ The first clause asserts what the amendment does not establish, and it is not
 what places the edge outside it. A condition the root could not decide answers
 false exactly as a condition the root decides false does (the private
 `evaluate/4` in `lib/riddler/screens.ex`), and a node whose condition answers
-false is not shown: resolution answers `nil` for it and the resolved screen
-does not carry it (the private `shown/3` in the same file). So such a button
-declares nothing to validation whether or not it carries a key, and nothing
-the amendment decides about naming reaches it. The second clause is the
-reason, and it stands. The note headed "A button whose own condition the root
-could not decide is not on the resolved screen, so a press naming its key
+false is not shown. A node directly on a screen is answered `nil` and left off
+the resolved screen (the private `shown/3` in the same file), and a variant
+candidate is passed over for the candidate after it (the private `winner/3` in
+the same file); either way the resolved screen does not carry it. So such a
+button declares nothing to validation whether or not it carries a key, and
+nothing the amendment decides about naming reaches it. The second clause is
+the reason, and it stands. The note headed "A button whose own condition the
+root could not decide is not on the resolved screen, so a press naming its key
 validates that screen in full." answers the edge on this ground.
 
 **Both examples in the amendment's paragraph on how narrow the case is are
@@ -2401,10 +2403,13 @@ button whose own condition the root decides false is dropped from the resolved
 screen"; a button whose condition the root could not decide is dropped the
 same way, as the paragraph before this one says. Neither example overstates,
 and the paragraph states the case itself in its last sentence, with the
-examples as instances of it rather than a list. Both describe the package
-before that amendment's code half: at this reading `opted_out?/2` answers
-`false` for a pressed key of `nil` in its first clause, so no keyless button
-is matched and neither hiding case arises.
+examples as instances of it rather than a list. The first example and its
+sibling describe the package before that amendment's code half: at this
+reading `opted_out?/2` answers `false` for a pressed key of `nil` in its first
+clause, so no keyless button is matched and neither of those two hiding cases
+arises. The second example and its sibling still hold at this reading, since
+resolution still leaves such a button off the resolved screen; what is past is
+only that the drop narrowed a keyless opt-out, there being none now to narrow.
 
 **In the entry directly below the keyless-button amendment, "none bears on the
 amendment above" means that none of its notes changes an answer that amendment
