@@ -468,26 +468,31 @@ discards at all is a question this amendment does not decide.
 ---
 
 Noted 2026-09-18, campaign RF058, bead rd-d5c. One note by addition, read
-against `main` at `6a3ee40`; the code and the corpus it cites are read at
-`6329c8a`, the code commit of the request that carries it. Nothing above is
+against `main` at `893425d`; the code and the corpus it cites are read at
+`d24d896`, the code commit of the request that carries it. Nothing above is
 changed.
 
 **Which code a closing tag with no block open answers is part of the contract,
 stated by what the source holds.** A branch keyword - `elsif`, `else` or
 `when` - or a closing tag - `endif`, `endunless`, `endcase`, `endfor`,
 `endcapture`, `endcomment` or `endraw` - written where no block it can belong to
-is open is refused as `template.tag_not_allowed` naming that keyword, and not as
-`template.parse_error`. A runtime reaches that answer by knowing which blocks are
-open where the keyword stands, whatever its Liquid library reports for it. The
-corpus case "A closing tag written where no block of its tag is open is refused
-as that tag, not as a parse error" (`corpus/templates/render.json`) holds a
-second runtime to it.
-
-**A closing tag that ends a block the author opened is not refused, whatever the
-block holds.** A refused construct inside an admitted block is one finding, the
-construct's. The corpus case "A refused tag inside an if block is the one
-finding: the closing tag that ends the block is not refused", in the same file,
+is open, in a template that refuses nothing else, is refused as
+`template.tag_not_allowed` naming that keyword, and not as
+`template.parse_error`. Beside another refusal it is not always reported; that
+shape is left open below. A runtime reaches that answer by knowing which blocks
+are open where the keyword stands, whatever its Liquid library reports for it.
+The corpus case "A closing tag written where no block of its tag is open is
+refused as that tag, not as a parse error" (`corpus/templates/render.json`)
 holds a second runtime to it.
+
+**A closing tag that ends a block the author opened is not refused when what
+the block holds is refused for something other than a branch or closing
+keyword it cannot hold.** A refused tag or filter inside an admitted block, or
+a source inside one that does not parse, is refused on its own and the block's
+closer is not reported. The corpus case "A refused tag inside an if block is the
+one finding: the closing tag that ends the block is not refused", in the same
+file, holds a second runtime to it. A block that holds a misplaced keyword is
+outside this rule and is left open below.
 
 **How this package reaches those answers is not the rule.** It reads the
 reference parser's reason for a tag it did not expect in two places: the
@@ -497,7 +502,8 @@ that rewords that reason turns this package's corpus run red rather than
 changing an answer unnoticed; that safeguard is this package's own and binds no
 other runtime. The second rule is reached by `drop_derivative/1`, which drops
 the refusal of a keyword in `@block_keywords` whenever the parser also refused
-something that is not one.
+something that is not one, and drops nothing when every refusal it was given is
+such a keyword.
 
 **What this note does not decide: a closing tag with no block open beside
 another refusal.** `drop_derivative/1` cannot tell the closer of a block the
@@ -512,10 +518,29 @@ short of the Decision above, which reports one finding per refused construct,
 and bringing the code to it is the code half's work, not a change to what is
 decided here.
 
+**What this note does not decide either: a block that holds a branch or closing
+keyword it cannot hold.** Where the block holds nothing else that is refused,
+the misplaced keyword is refused, and so are the block's own keywords and
+closer, because `drop_derivative/1` has no refusal beside them that is not a
+keyword. Where it also holds a refusal the parser reports, such as `include`,
+only that refusal is reported; where the other refusal is one the allowlist
+walk would find in the parse tree, such as `render` or a refused filter, it is
+not reached, as above, and the keywords are reported as if it were absent.
+`{% for x in responses.a %}{% endif %}{% endfor %}`
+answers `endif` and `endfor`; `{% if responses.a %}{% endfor %}{% endif %}`
+answers `endfor` and `endif`; and
+`{% case responses.a %}{% when 1 %}{% elsif b %}{% endcase %}` answers `when`,
+`elsif` and `endcase`, refusing a `when` whose `case` is open. The corpus states
+none of these answers, and a second runtime is not held to them. Whether a
+block's own keywords and closer are reported beside a misplaced keyword is left
+open here.
+
 **Why a note and not an amendment.** No answer changes: every template compiles
 or is refused as it was, with the same findings, and no refusal is added. The
 Decision refuses everything outside the allowlist and names no code; this entry
-records which code a closer with no block open takes and that the closer of an
-opened block takes none, which is what the code already answered, and it leaves
-the answer beside another refusal open. The corpus case it adds states an
-answer this package already gave.
+records which code a closer with no block open takes when it stands alone, and
+that the closer of an opened block takes none when the block's refused content
+is not a misplaced keyword, which is what the code already answered, and it
+leaves open the answer beside another refusal and inside a block holding a
+misplaced keyword. The corpus case it adds states an answer this package
+already gave.
