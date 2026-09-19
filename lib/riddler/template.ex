@@ -81,9 +81,11 @@ defmodule Riddler.Template do
   where a second runtime meets the same rule: "A stray closing tag is refused
   as a tag outside the subset, not as a parse error: a parse failure naming a
   tag is reported as that tag", "An unterminated output tag is refused as a
-  parse error, and the finding names no field", and "A template the parser
-  refuses without saying where is refused as a parse error, and the finding
-  names no place".
+  parse error, and the finding names no field", and "A render tag naming no
+  template is refused as a parse error, as a finding rather than a raise, and
+  the finding names no field". The corpus does not carry a finding's
+  position, so that the placeless refusal carries a `nil` one is pinned by this
+  package's own tests rather than by the corpus.
 
   ## Output is text, never markup
 
