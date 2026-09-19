@@ -3,10 +3,10 @@ defmodule Riddler.Corpus do
 
   # The conformance corpus as data: where the authored files are, how a case is
   # run against this implementation, what the canonical byte form of a file is,
-  # and how the whole set is copied into the corpus repository.
+  # and how the whole set is exported into a directory.
   #
   # This module is deliberately not public surface. It exists so that the suite
-  # that holds this runtime to the corpus and the task that emits the corpus
+  # that holds this runtime to the corpus and the task that exports the corpus
   # are one piece of logic: a case that passes here and a case that is emitted
   # are the same case, run by the same code, encoded by the same encoder. Two
   # copies of that logic would let the emitted corpus describe a runtime the
@@ -273,7 +273,8 @@ defmodule Riddler.Corpus do
   # -- what is emitted --------------------------------------------------------
 
   @doc """
-  The provenance a case file gains when it is copied out: the file in this
+  The provenance a case file gains when it is copied out: the word `riddler`,
+  a space, the word `from`, a space and the path of the file in this
   repository it came from, and nothing else. It carries no version, no
   timestamp and no commit, so re-emitting an unchanged corpus writes the same
   bytes across commits and across releases alike, and the drift check reports a
@@ -285,8 +286,8 @@ defmodule Riddler.Corpus do
   def generated_by(source), do: "riddler from #{source}"
 
   @doc """
-  Every file the corpus repository receives, as `{relative target path,
-  contents}`: each case file with its provenance header, each schema as it
+  Every file an export writes, as `{relative target path, contents}`: each
+  case file with its provenance header, each schema as it
   stands. The schemas are copied unchanged because a JSON Schema is read by
   validators that are not ours, and a provenance key invented for them would
   travel into every one of those.

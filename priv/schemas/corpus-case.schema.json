@@ -26,7 +26,7 @@
       "type": "object"
     }
   },
-  "description": "One capability's conformance cases. A case is an input and the answer every runtime has to give for it, so a runtime in a second language is held to the same behavior as the reference one. Two conventions hold across every file. A finding in an expected answer carries code, field and node_key and no message: the code is the stable thing a host switches on and the message is prose a second runtime is not obliged to reproduce word for word. And the author writes name, capability and cases; the emitter that copies these files into the corpus repository adds its own provenance header beside them, which is why this schema does not forbid further keys at the top level.",
+  "description": "One capability's conformance cases. A case is an input and the answer every runtime has to give for it, so a runtime in a second language is held to the same behavior as the reference one. Two conventions hold across every file. A finding in an expected answer carries code, field and node_key and no message: the code is the stable thing a host switches on and the message is prose a second runtime is not obliged to reproduce word for word. And the author writes name, capability and cases; the export task that copies these files out of this repository adds its own provenance header beside them, which is why this schema does not forbid further keys at the top level.",
   "properties": {
     "capability": {
       "description": "The behavior every case in the file exercises. screens.admit runs the input document through admission and reports whether it is a document and every finding against it. screens.resolve resolves a document against a root, or one named screen of it. screens.validate_screen resolves the named screen against the same root the host resolved with and reports what the responses in it have to satisfy. templates.render compiles template source against the subset and, where the case names a mode, renders it.",
@@ -46,7 +46,7 @@
       "type": "array"
     },
     "generated_by": {
-      "description": "Written by the emitter when the file is copied into the corpus repository. An authored file does not carry it.",
+      "description": "Written by the export task when it copies the file out: the word riddler, a space, the word from, a space and the file's path in the repository it was authored in, as in \"riddler from corpus/screens/admit.json\". It names no version, no timestamp and no commit. An authored file does not carry it.",
       "type": "string"
     },
     "name": {

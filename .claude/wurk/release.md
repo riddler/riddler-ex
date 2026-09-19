@@ -152,9 +152,12 @@ ever added, it gets a step in this file on the same day.
 
 ## The corpus is not a release artifact
 
-`mix riddler.corpus` emits the conformance corpus into `riddler_spec`. That
-emission is its own change with its own request in that repo; it is not a
-release step here, and a release commit does not run it.
+The conformance corpus lives in this repository, in `corpus/` and
+`priv/schemas/`, and a runtime in another language vendors it from a tag of
+this repository. The tag is what a release gives it; nothing is copied
+anywhere at release. `mix riddler.corpus --to PATH` exports a copy into a
+directory for a consumer that wants one, and it is not a release step here: a
+release commit does not run it.
 
 ## The files a release commit touches
 
