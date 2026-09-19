@@ -756,7 +756,7 @@
       "input": {
         "source": "{% render %}"
       },
-      "name": "A template the parser refuses without saying where is refused as a parse error, and the finding names no place"
+      "name": "A render tag naming no template is refused as a parse error, as a finding rather than a raise, and the finding names no field"
     },
     {
       "expected": {
