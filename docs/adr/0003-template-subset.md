@@ -464,3 +464,58 @@ discards, and both kinds do: a runtime whose Liquid library refuses
 a refusal case states the liquid refusal, and where a text case states a
 render. Whether the subset should admit a tag token carrying text the parser
 discards at all is a question this amendment does not decide.
+
+---
+
+Noted 2026-09-18, campaign RF058, bead rd-d5c. One note by addition, read
+against `main` at `6a3ee40`; the code and the corpus it cites are read at
+`6329c8a`, the code commit of the request that carries it. Nothing above is
+changed.
+
+**Which code a closing tag with no block open answers is part of the contract,
+stated by what the source holds.** A branch keyword - `elsif`, `else` or
+`when` - or a closing tag - `endif`, `endunless`, `endcase`, `endfor`,
+`endcapture`, `endcomment` or `endraw` - written where no block it can belong to
+is open is refused as `template.tag_not_allowed` naming that keyword, and not as
+`template.parse_error`. A runtime reaches that answer by knowing which blocks are
+open where the keyword stands, whatever its Liquid library reports for it. The
+corpus case "A closing tag written where no block of its tag is open is refused
+as that tag, not as a parse error" (`corpus/templates/render.json`) holds a
+second runtime to it.
+
+**A closing tag that ends a block the author opened is not refused, whatever the
+block holds.** A refused construct inside an admitted block is one finding, the
+construct's. The corpus case "A refused tag inside an if block is the one
+finding: the closing tag that ends the block is not refused", in the same file,
+holds a second runtime to it.
+
+**How this package reaches those answers is not the rule.** It reads the
+reference parser's reason for a tag it did not expect in two places: the
+`@unexpected_tag` pattern `parse_refusal/1` matches, and the `@probe_reason`
+string `probe/1` compares (both in `lib/riddler/template.ex`). A `solid` release
+that rewords that reason turns this package's corpus run red rather than
+changing an answer unnoticed; that safeguard is this package's own and binds no
+other runtime. The second rule is reached by `drop_derivative/1`, which drops
+the refusal of a keyword in `@block_keywords` whenever the parser also refused
+something that is not one.
+
+**What this note does not decide: a closing tag with no block open beside
+another refusal.** `drop_derivative/1` cannot tell the closer of a block the
+author opened from a closer with no block open, and a refused construct the
+allowlist walk would find in the parse tree is not reached when the parser
+refuses the source (`compile/1`). So `{% include 'footer' %}{% endif %}` answers
+the `include` finding alone, and `{% render 'footer' %}{% endif %}` answers the
+`endif` finding alone. The corpus states neither answer, and a second runtime is
+not held to either. Whether the closer is reported beside another refusal is
+left open here. That `render` goes unreported in the second template falls
+short of the Decision above, which reports one finding per refused construct,
+and bringing the code to it is the code half's work, not a change to what is
+decided here.
+
+**Why a note and not an amendment.** No answer changes: every template compiles
+or is refused as it was, with the same findings, and no refusal is added. The
+Decision refuses everything outside the allowlist and names no code; this entry
+records which code a closer with no block open takes and that the closer of an
+opened block takes none, which is what the code already answered, and it leaves
+the answer beside another refusal open. The corpus case it adds states an
+answer this package already gave.
