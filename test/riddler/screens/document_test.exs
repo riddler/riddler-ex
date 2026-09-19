@@ -41,6 +41,91 @@ defmodule Riddler.Screens.DocumentTest do
 
   defp codes(raw), do: raw |> findings() |> Enum.map(& &1.code)
 
+  # The struct `admit/1` would build from `raw` if it took a value of the
+  # wrong JSON type where the schema types one: every field is the atom of its
+  # spelling, and a container's candidates are converted the same way.
+  # `admit/1` answers `nil` for such a value, so a struct carrying one is
+  # built by hand, as a host that never calls `admit/1` could build it - which
+  # is what holds `validate/1` to answering such a struct rather than raising.
+  defp hand_built(raw) do
+    %Document{
+      schema_version: raw["schema_version"],
+      id: raw["id"],
+      screens:
+        Enum.map(raw["screens"], fn screen ->
+          %{
+            key: screen["key"],
+            title: screen["title"],
+            nodes: Enum.map(screen["nodes"], &hand_built_node/1)
+          }
+        end)
+    }
+  end
+
+  defp hand_built_node(node) do
+    node
+    |> Map.new(fn
+      {"nodes", candidates} -> {:nodes, Enum.map(candidates, &hand_built_node/1)}
+      {spelling, value} -> {String.to_existing_atom(spelling), value}
+    end)
+    |> Map.put_new(:type, nil)
+  end
+
+  defp hand_built_findings(raw) do
+    {:error, findings} = raw |> hand_built() |> Document.validate()
+    findings
+  end
+
+  # One document per way of writing a value of the wrong JSON type into a
+  # field the document schema types, each named for where it goes wrong: the
+  # eight typed scalars, `null` among the values, and a `nodes` on a node
+  # whose type reads none. Every one is refused by the schema, and so every
+  # one is not a document to `admit/1` either.
+  defp wrong_typed do
+    node = %{"type" => "text", "key" => "account_intro", "text" => "Hi"}
+    heading = %{"type" => "heading", "key" => "account_heading", "level" => 1, "text" => "Hi"}
+    strings = [7, 1.5, true, nil, ["account"], %{"name" => "account"}]
+    not_integers = ["1", 1.5, true, nil, [1], %{"version" => 1}]
+
+    envelope =
+      for {field, values} <- [
+            {"id", strings},
+            {"kind", strings},
+            {"schema_version", not_integers}
+          ],
+          value <- values do
+        {"the envelope's #{field} as #{inspect(value)}", Map.put(document([node]), field, value)}
+      end
+
+    screen =
+      for field <- ["key", "title"], value <- strings do
+        {"a screen's #{field} as #{inspect(value)}", document([node], %{field => value})}
+      end
+
+    nodes =
+      for field <- ["key", "type", "condition"], value <- strings do
+        {"a node's #{field} as #{inspect(value)}", document([Map.put(node, field, value)])}
+      end
+
+    candidates =
+      for {what, value} <- [
+            {"a string", "two"},
+            {"null", nil},
+            {"a list of numbers", [1]},
+            {"a list holding a node keyed 7", [Map.put(node, "key", 7)]},
+            {"a list holding a node whose nodes are a string", [Map.put(node, "nodes", "two")]}
+          ],
+          {host, carrier} <- [
+            {"a heading", heading},
+            {"a text", node},
+            {"a type the registry does not know", %{"type" => "carousel", "key" => "pictures"}}
+          ] do
+        {"#{host}'s nodes as #{what}", document([Map.put(carrier, "nodes", value)])}
+      end
+
+    envelope ++ screen ++ nodes ++ candidates
+  end
+
   # The counting rule, applied to the raw JSON and to the admitted struct so
   # that the two can be compared. A leaf field is: each of the two envelope
   # fields the document carries, each entry of `metadata`, each screen's
@@ -222,6 +307,88 @@ defmodule Riddler.Screens.DocumentTest do
     end
   end
 
+  describe "a value of the wrong JSON type where the schema types one" do
+    # Sabotage: dropped `true <- typed?(raw, @envelope_scalars)` from
+    # `admit/1`; an id of 7 was admitted and this went red. Again with the
+    # screen's check dropped from `admit_screen/1`, and again with the node's
+    # dropped from `admit_node/1`: red each time.
+    test "is not a document, in every typed scalar and with every wrong type" do
+      admitted = for {name, raw} <- wrong_typed(), Document.admit(raw) != nil, do: name
+
+      assert admitted == []
+    end
+
+    # The agreement the schema's own description claims, checked from both
+    # sides over every document above and the clean ones beside them: a value
+    # the schema calls a document is admitted, and a value it does not is
+    # not.
+    #
+    # Sabotage: made `unread_nodes/1` answer `:ok` whatever it was handed; a
+    # heading carrying a string of nodes was admitted while the schema refused
+    # it, and this went red.
+    test "agrees with the document schema in both directions" do
+      schema =
+        "priv/schemas/screen-document.schema.json"
+        |> File.read!()
+        |> Jason.decode!()
+        |> ExJsonSchema.Schema.resolve()
+
+      heading = %{"type" => "heading", "key" => "account_heading", "level" => 1, "text" => "Hi"}
+      text = %{"type" => "text", "key" => "account_intro", "text" => "Hi"}
+      conditional = Map.put(text, "condition", "context.returning == 'yes'")
+
+      clean = [
+        {"a document with every typed scalar written as its type",
+         Map.put(document([conditional]), "kind", "screens")},
+        {"a schema_version with no fractional part",
+         Map.put(document([text]), "schema_version", 1.0)},
+        {"a heading carrying a list of nodes", document([Map.put(heading, "nodes", [text])])},
+        {"a heading carrying an empty list of nodes", document([Map.put(heading, "nodes", [])])}
+      ]
+
+      disagreements =
+        for {name, raw} <- clean ++ wrong_typed(),
+            schema_valid <- [ExJsonSchema.Validator.valid?(schema, raw)],
+            admitted <- [Document.admit(raw) != nil],
+            schema_valid != admitted,
+            do: {name, schema_valid, admitted}
+
+      assert disagreements == []
+      assert Enum.all?(clean, fn {_name, raw} -> ExJsonSchema.Validator.valid?(schema, raw) end)
+    end
+
+    # The schema's draft counts a number with no fractional part as an
+    # integer, and so does admission. Whether that number is the version this
+    # package implements is not admission's question.
+    #
+    # Sabotage: dropped the float clause of `of_type?/2`; a schema_version of
+    # 1.0 was refused and this went red.
+    test "leaves a schema_version with no fractional part a document" do
+      assert %Document{schema_version: version} =
+               Document.admit(Map.put(document([]), "schema_version", 1.0))
+
+      assert version == 1.0
+    end
+
+    # A `nodes` list on a node whose type reads none is the schema's to admit,
+    # and it is admitted and dropped like any other field the type does not
+    # name: nothing reads it, and the node validates as it would without it.
+    #
+    # Sabotage: made `admit_typed/3` put a `:nodes` onto a node whose type
+    # reads none when the document wrote one; the heading came back carrying
+    # it and this went red.
+    test "admits a list of nodes on a node whose type reads none, and drops it" do
+      heading = %{"type" => "heading", "key" => "account_heading", "level" => 1, "text" => "Hi"}
+      text = %{"type" => "text", "key" => "account_intro", "text" => "Hi"}
+
+      document = Document.admit(document([Map.put(heading, "nodes", [text])]))
+
+      assert [%{nodes: [node]}] = document.screens
+      assert node == %{type: "heading", key: "account_heading", level: 1, text: "Hi"}
+      assert {:ok, ^document} = Document.validate(document)
+    end
+  end
+
   describe "the envelope's kind" do
     # Sabotage: made `admit_kind/1` answer nil for an absent kind; the
     # defaulted document came back with no kind at all and this went red,
@@ -336,11 +503,15 @@ defmodule Riddler.Screens.DocumentTest do
       assert missing.node_key == nil
     end
 
+    # `admit/1` answers `nil` for a key that is not a string, so this is a
+    # struct built by hand, and what it holds is that `validate/1` answers one.
+    #
     # Sabotage: delete the non-string clause of `key_findings/2` and the
     # integer key falls through to the absent-key clause, which tells the
     # author the node carries no key when it carries one of the wrong form.
-    test "a key that is there and is not a string" do
-      [finding] = findings(document([%{"type" => "text", "key" => 7, "text" => "Hi"}]))
+    test "a key that is there and is not a string, on a struct built by hand" do
+      [finding] =
+        hand_built_findings(document([%{"type" => "text", "key" => 7, "text" => "Hi"}]))
 
       assert finding.code == "document.invalid_key"
       assert finding.field == "key"
@@ -353,7 +524,7 @@ defmodule Riddler.Screens.DocumentTest do
     # Sabotage: drop the `is_binary/1` filter from `every_key/1` and the two
     # nodes keyed 7 are reported as a duplicate key as well as an invalid one,
     # which says the document uses one key twice when it has no usable key.
-    test "a non-string key used twice is not a duplicate" do
+    test "a non-string key used twice on a struct built by hand is not a duplicate" do
       raw = %{
         "screens" => [
           screen([
@@ -363,7 +534,10 @@ defmodule Riddler.Screens.DocumentTest do
         ]
       }
 
-      assert codes(raw) == ["document.invalid_key", "document.invalid_key"]
+      assert Enum.map(hand_built_findings(raw), & &1.code) == [
+               "document.invalid_key",
+               "document.invalid_key"
+             ]
     end
 
     # Sabotage: write `node_key: node[:key]` back into any one raise site that
@@ -376,12 +550,15 @@ defmodule Riddler.Screens.DocumentTest do
     # string before it names one and no raw-key re-wiring makes either emit
     # anything else. What covers those two is the exact code frequency alone:
     # drop their fixture nodes and the frequency disagrees.
+    #
+    # `admit/1` answers `nil` for every key below that is not a string, so the
+    # struct is built by hand.
     test "no finding carries a non-string node key" do
       raw = %{
         "screens" => [
           %{
             "key" => 1,
-            "title" => 2,
+            "title" => "Keys",
             "nodes" => [
               %{"type" => "carousel", "key" => 7},
               %{
@@ -427,20 +604,19 @@ defmodule Riddler.Screens.DocumentTest do
         ]
       }
 
-      raised = findings(raw)
+      raised = hand_built_findings(raw)
 
       # Every site that puts a node's key on a finding is exercised here, and
       # the codes are enumerated rather than counted so that a site dropped
       # from the fixture stops this test rather than passing a lower bound.
-      # Read off lib/ rather than remembered: seventeen sites carry a key, and
-      # these are all of them - the screen title, the unknown type, the invalid
+      # Read off lib/ rather than remembered: sixteen sites carry a key, and
+      # these are all of them - the unknown type, the invalid
       # key with a usable key and the duplicate of it, a condition that does
       # not parse, a missing field, a template refused as source and one
       # refused because it is not source, a heading level, a button's style,
       # validates and writes, a question's required, format and pattern, an
       # empty variant, and a variant candidate that buries what follows it.
       assert Enum.frequencies(Enum.map(raised, & &1.code)) == %{
-               "document.invalid_title" => 1,
                "document.unknown_type" => 1,
                "document.invalid_key" => 14,
                "document.duplicate_key" => 1,
@@ -801,36 +977,24 @@ defmodule Riddler.Screens.DocumentTest do
       assert finding.message =~ "2"
     end
 
-    # Sabotage: widened `id_findings/1`'s second clause to `when not is_nil(id)`
-    # and an id of 7 validated clean, so this went red.
-    test "an id that is there and is not a string" do
+    # An id or a screen title that is not a string is not a document, so
+    # neither is a finding: `validate/1` answers nothing about either, even on
+    # a struct built by hand to carry one.
+    #
+    # Sabotage: restored the retired id check into `envelope_findings/1` and
+    # the hand-built struct came back with a finding, so this went red.
+    test "nothing about an id or a screen title, which admission holds to being strings" do
       raw =
         Map.put(
-          document([%{"type" => "text", "key" => "account_intro", "text" => "Hi"}]),
+          document([%{"type" => "text", "key" => "account_intro", "text" => "Hi"}], %{
+            "title" => 3
+          }),
           "id",
           7
         )
 
-      [finding] = findings(raw)
-
-      assert finding.code == "document.invalid_id"
-      assert finding.field == "id"
-      assert finding.node_key == nil
-      assert finding.message =~ "7"
-    end
-
-    # Sabotage: dropped `title_findings/1` from `screen_findings/1` and a
-    # screen titled with a number validated clean, so this went red.
-    test "a screen title that is there and is not a string" do
-      raw =
-        document([%{"type" => "text", "key" => "account_intro", "text" => "Hi"}], %{"title" => 3})
-
-      [finding] = findings(raw)
-
-      assert finding.code == "document.invalid_title"
-      assert finding.field == "title"
-      assert finding.node_key == "account"
-      assert finding.message =~ "3"
+      assert Document.admit(raw) == nil
+      assert {:ok, _document} = Document.validate(hand_built(raw))
     end
 
     # Sabotage: widened `required_findings/1`'s match to `when not is_nil(required)`
@@ -1027,9 +1191,12 @@ defmodule Riddler.Screens.DocumentTest do
     # Mutation: give `Riddler.Finding` a default position other than nil, or
     # pass anything but `nil` from the non-string clause of
     # `condition_findings/2`, and this reddens.
+    #
+    # `admit/1` answers `nil` for a condition that is not a string, so the
+    # struct is built by hand.
     test "and gives a condition that never reached the parser no source position" do
       [finding] =
-        findings(
+        hand_built_findings(
           document([
             %{"type" => "text", "key" => "account_greeting", "condition" => 42, "text" => "Hi"}
           ])

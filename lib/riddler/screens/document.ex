@@ -34,11 +34,20 @@ defmodule Riddler.Screens.Document do
 
   `admit/1` answers `nil` for an input that is not a screen document - not
   a map, or a map whose spine is not a document's: no list of screens, a
-  screen that is not an object, a screen with no list of nodes, a node that
-  is not an object, a variant whose candidates are not a list. That is the
-  whole of what it refuses. Everything else - a missing field, a key of the
-  wrong shape, a level of 9, a condition that does not parse - is a document
-  that exists and is wrong, and saying which is `validate/1`'s job.
+  `metadata` that is neither an object nor `null`, a screen that is not an
+  object, a screen with no list of nodes, a node that is not an object, a
+  variant whose candidates are not a list. It answers
+  `nil` too for a value of the wrong JSON type in a field the document schema
+  types: an `id`, a `kind`, a screen's `key` or `title`, or a node's `key`,
+  `type` or `condition` that is there and is not a string, `null` included; a
+  `schema_version` that is there and is not an integer; and a `nodes` on a
+  node whose type reads none that is not a list of nodes. A list of nodes
+  there is admitted and dropped, as any field the type does not name is. That
+  is the whole of what it refuses, and the document schema refuses each of
+  them too, so a value the schema calls a document is admitted. Everything
+  else - a missing field, a key of the wrong shape, a level of 9, a condition
+  that does not parse - is a document that exists and is wrong, and saying
+  which is `validate/1`'s job.
 
   A field this version does not know is not carried onto the admitted node.
   `metadata` is the declared place for what a host wants to keep beside the
@@ -58,8 +67,6 @@ defmodule Riddler.Screens.Document do
     * `document.invalid_schema_version` - the envelope declares a
       `schema_version` other than the one this package implements. No node
       key, for the same reason.
-    * `document.invalid_id` - the envelope's `id` is there and is not a
-      string. No node key.
     * `document.unknown_type` - the registry has no such type.
     * `document.duplicate_key` - a key used twice anywhere in the document.
       Only the keys that are strings are compared. A key that is not a string
@@ -74,8 +81,6 @@ defmodule Riddler.Screens.Document do
       no node key - `node_key` is how a host looks the node up, and neither
       an absent key nor a key of the wrong form is a name to look one up by -
       and the key the document did write is named in the message.
-    * `document.invalid_title` - a screen's `title` is there and is not a
-      string. The finding carries the screen's key.
     * `document.missing_field` - a field the node's type requires.
     * `document.level_out_of_range` - a heading level outside 1 to 6.
     * `document.invalid_condition` - a condition that does not parse.
@@ -144,13 +149,17 @@ defmodule Riddler.Screens.Document do
   @kinds [@default_kind]
 
   @typedoc "An admitted screen: its key, its title, and its nodes in order."
-  @type screen :: %{key: term(), title: term(), nodes: [Riddler.Screens.Type.node_t()]}
+  @type screen :: %{
+          key: String.t() | nil,
+          title: String.t() | nil,
+          nodes: [Riddler.Screens.Type.node_t()]
+        }
 
   @typedoc "An admitted document."
   @type t :: %__MODULE__{
-          schema_version: term(),
-          kind: term(),
-          id: term(),
+          schema_version: number() | nil,
+          kind: String.t(),
+          id: String.t() | nil,
           metadata: %{optional(String.t()) => term()},
           screens: [screen()]
         }
@@ -174,6 +183,15 @@ defmodule Riddler.Screens.Document do
 
   @key_shape ~r/^[a-z][a-z0-9_]*$/
 
+  # The scalars the document schema types, each with the JSON type it gives
+  # it. A value of another type in one of them is not a document to the
+  # schema, and so it is not one to `admit/1` either: the schema says of
+  # itself that schema-valid means admitted, and that holds read in both
+  # directions only if admission refuses what the schema refuses.
+  @envelope_scalars [{"id", :string}, {"kind", :string}, {"schema_version", :integer}]
+  @screen_scalars [{"key", :string}, {"title", :string}]
+  @node_scalars [{"key", :string}, {"type", :string}, {"condition", :string}]
+
   @doc """
   Turns a decoded JSON document into the struct, or answers `nil`.
 
@@ -190,6 +208,7 @@ defmodule Riddler.Screens.Document do
   @spec admit(term()) :: t() | nil
   def admit(raw) when is_map(raw) and not is_struct(raw) do
     with screens when is_list(screens) <- Map.get(raw, "screens"),
+         true <- typed?(raw, @envelope_scalars),
          {:ok, metadata} <- admit_metadata(Map.get(raw, "metadata")),
          {:ok, admitted} <- admit_each(screens, &admit_screen/1) do
       %__MODULE__{
@@ -279,6 +298,7 @@ defmodule Riddler.Screens.Document do
 
   defp admit_screen(raw) when is_map(raw) and not is_struct(raw) do
     with nodes when is_list(nodes) <- Map.get(raw, "nodes"),
+         true <- typed?(raw, @screen_scalars),
          {:ok, admitted} <- admit_each(nodes, &admit_node/1) do
       {:ok, %{key: Map.get(raw, "key"), title: Map.get(raw, "title"), nodes: admitted}}
     else
@@ -289,15 +309,19 @@ defmodule Riddler.Screens.Document do
   defp admit_screen(_raw), do: :error
 
   defp admit_node(raw) when is_map(raw) and not is_struct(raw) do
+    if typed?(raw, @node_scalars), do: admit_common(raw), else: :error
+  end
+
+  defp admit_node(_raw), do: :error
+
+  defp admit_common(raw) do
     common = Map.put_new(take(raw, @common_fields), :type, nil)
 
     case Registry.fetch(common.type) do
       {:ok, module} -> admit_typed(raw, common, module)
-      :error -> {:ok, common}
+      :error -> with :ok <- unread_nodes(raw), do: {:ok, common}
     end
   end
-
-  defp admit_node(_raw), do: :error
 
   defp admit_typed(raw, common, module) do
     %{required: required, optional: optional} = module.fields()
@@ -313,9 +337,49 @@ defmodule Riddler.Screens.Document do
         :error
 
       :error ->
-        {:ok, typed}
+        with :ok <- unread_nodes(raw), do: {:ok, typed}
     end
   end
+
+  # A `nodes` on a node whose type reads none - every type but the container,
+  # and a type the registry does not know - is carried nowhere, as no field a
+  # type does not name is. The schema types `nodes` on every node all the
+  # same, so a value there that is not a list of nodes is not a document, and
+  # a list of nodes is admitted and dropped.
+  defp unread_nodes(raw) do
+    case Map.fetch(raw, "nodes") do
+      :error ->
+        :ok
+
+      {:ok, candidates} when is_list(candidates) ->
+        with {:ok, _dropped} <- admit_each(candidates, &admit_node/1), do: :ok
+
+      {:ok, _not_a_list} ->
+        :error
+    end
+  end
+
+  # Whether each of these fields, where the value carries it, holds a value of
+  # the JSON type the schema gives it. A field that is absent is not this
+  # check's: the schema requires none of them. A field that is there and holds
+  # `null` is refused like any other value of the wrong type.
+  defp typed?(raw, fields) do
+    Enum.all?(fields, fn {spelling, type} ->
+      case Map.fetch(raw, spelling) do
+        {:ok, value} -> of_type?(type, value)
+        :error -> true
+      end
+    end)
+  end
+
+  # JSON has one number type, and the schema's draft counts a number with no
+  # fractional part as an integer, so `1.0` is an integer to it. A value the
+  # schema calls an integer is admitted, and whether it is the version this
+  # package implements stays `validate/1`'s question.
+  defp of_type?(:string, value), do: is_binary(value)
+  defp of_type?(:integer, value) when is_integer(value), do: true
+  defp of_type?(:integer, value) when is_float(value), do: Float.round(value) == value
+  defp of_type?(:integer, _value), do: false
 
   defp take(raw, fields) do
     for field <- fields,
@@ -345,15 +409,16 @@ defmodule Riddler.Screens.Document do
     ]
   end
 
-  # The rest of the envelope, checked for the shapes the record states: the
-  # `schema_version` this package is the runtime for, and an `id` that is a
-  # string. Each is checked only where the document carries it. An absent
-  # field is `nil` in the admitted struct and is not a finding here: the
-  # schema requires `screens` and nothing else, so whether either field is
+  # The rest of the envelope: the `schema_version` this package is the
+  # runtime for, checked only where the document carries one. An absent
+  # version is `nil` in the admitted struct and is not a finding here: the
+  # schema requires `screens` and nothing else, so whether the field is
   # required is a question this check does not answer, and answering it would
-  # refuse documents this version admits.
+  # refuse documents this version admits. That the version is an integer, and
+  # that the `id` beside it is a string, is `admit/1`'s: a value of another
+  # type there is not a document.
   defp envelope_findings(%__MODULE__{} = document) do
-    schema_version_findings(document.schema_version) ++ id_findings(document.id)
+    schema_version_findings(document.schema_version)
   end
 
   defp schema_version_findings(nil), do: []
@@ -366,20 +431,6 @@ defmodule Riddler.Screens.Document do
         message:
           "a document this package is the runtime for declares schema_version #{@schema_version}, not #{inspect(version)}",
         field: "schema_version",
-        node_key: nil
-      }
-    ]
-  end
-
-  defp id_findings(nil), do: []
-  defp id_findings(id) when is_binary(id), do: []
-
-  defp id_findings(id) do
-    [
-      %Finding{
-        code: "document.invalid_id",
-        message: "a document's id is the string that names it, not #{inspect(id)}",
-        field: "id",
         node_key: nil
       }
     ]
@@ -428,28 +479,7 @@ defmodule Riddler.Screens.Document do
 
   defp screen_findings(screen) do
     key_findings(screen.key, "the screen #{inspect(screen.title)}") ++
-      title_findings(screen) ++
       Enum.flat_map(screen.nodes, &node_findings/1)
-  end
-
-  # A screen's title is a string, checked only where the screen carries one:
-  # `admit/1` writes `nil` for a screen that declares none, and the schema
-  # requires only `nodes` of a screen, so an absent title is not this check's
-  # to refuse. The finding names the screen by its key, because the screen is
-  # what the author has to fix.
-  defp title_findings(%{title: nil}), do: []
-  defp title_findings(%{title: title}) when is_binary(title), do: []
-
-  defp title_findings(screen) do
-    [
-      %Finding{
-        code: "document.invalid_title",
-        message:
-          "a screen's title is the string a visitor is shown, not #{inspect(screen.title)}",
-        field: "title",
-        node_key: Finding.node_key(screen.key)
-      }
-    ]
   end
 
   defp node_findings(node) do

@@ -46,7 +46,7 @@ defmodule Riddler.CorpusTest do
   # so the count is part of what this version pins: a case lost in a rebase is
   # a case a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
-    "corpus/screens/admit.json" => 31,
+    "corpus/screens/admit.json" => 42,
     "corpus/screens/resolve.json" => 21,
     "corpus/screens/validate_screen.json" => 34,
     "corpus/templates/render.json" => 55
@@ -328,15 +328,24 @@ defmodule Riddler.CorpusTest do
   end
 
   describe "the screen document schema" do
+    # Both directions: a case the corpus calls a document is one the schema
+    # validates, and a case it calls no document is one the schema refuses.
+    # The validity is bound by a generator rather than by a bare `valid = ...`,
+    # which a comprehension reads as a filter too and which would drop every
+    # value the schema refuses before the comparison ran.
+    #
     # Sabotage: dropped "screens" from the schema's required list; the cases
-    # that are not documents validated against it and this test went red.
+    # that are not documents validated against it and this test went red. And
+    # again with a draft case stating `"admitted": true` for a document whose
+    # id is 7, which the schema refuses; this test went red on it, where the
+    # filtering binding it replaces had skipped it.
     test "admits exactly the values the admission corpus calls documents" do
       schema = resolved_schema(@document_schema)
 
       disagreements =
         for %{"name" => name, "input" => input, "expected" => expected} <-
               cases("corpus/screens/admit.json"),
-            valid = ExJsonSchema.Validator.valid?(schema, input["document"]),
+            valid <- [ExJsonSchema.Validator.valid?(schema, input["document"])],
             valid != expected["admitted"],
             do: {name, valid, expected["admitted"]}
 

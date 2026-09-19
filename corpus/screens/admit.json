@@ -147,6 +147,305 @@
     },
     {
       "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": 7,
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_intro",
+                  "text": "Create your account",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "An id that is not a string is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "kind": 7,
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_intro",
+                  "text": "Create your account",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A kind that is not a string is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "kind": null,
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_intro",
+                  "text": "Create your account",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A kind written as null is not a screen document, rather than a document naming no kind"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": "1",
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_intro",
+                  "text": "Create your account",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A schema version that is not an integer is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": 7,
+              "nodes": [
+                {
+                  "key": "account_intro",
+                  "text": "Create your account",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A screen key that is not a string is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_intro",
+                  "text": "Create your account",
+                  "type": "text"
+                }
+              ],
+              "title": 7
+            }
+          ]
+        }
+      },
+      "name": "A screen title that is not a string is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": 7,
+                  "text": "Create your account",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A node key that is not a string is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_intro",
+                  "text": "Create your account",
+                  "type": 7
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A node type that is not a string is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "condition": true,
+                  "key": "account_intro",
+                  "text": "Create your account",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A condition that is not a string is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "nodes": "two",
+                  "text": "Create your account",
+                  "type": "heading"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Nodes that are not a list, on a node whose type reads none, are not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "nodes": [
+                    {
+                      "key": "account_intro",
+                      "text": "Create your account",
+                      "type": "text"
+                    }
+                  ],
+                  "text": "Create your account",
+                  "type": "heading"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A list of nodes on a node whose type reads none is admitted with no finding, and nothing reads it"
+    },
+    {
+      "expected": {
         "admitted": true,
         "findings": []
       },
