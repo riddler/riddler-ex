@@ -326,8 +326,8 @@ holds to it by computing, at render, the condition positions to leave out of
 the missing list: `condition_positions/1`, private to `lib/riddler/template.ex`,
 collects them by walking the whole parse tree of the compiled template.
 `Riddler.Template.render/3` runs that walk on every render in which the engine
-returns an error, of any kind - an undefined filter as well as a missing
-variable - and does not run it when the engine returns none. A screen renders
+reports an undefined variable or an undefined filter, and does not run it on a
+render in which it reports neither. A screen renders
 lenient at runtime, as the Decision above names, and under lenient mode a
 missing optional variable is the expected case rather than an exceptional one,
 so for a screen the walk is not a rare-path cost.
@@ -341,7 +341,8 @@ variable, where the walk does not run, and a root missing optional variables,
 where it does: the median of five repeats of 2,000 renders, on one arm64
 machine under Elixir 1.18.3 and OTP 27. The difference between the two roots is
 an upper bound on the walk rather than a measurement of it, because it also
-carries the engine's own error bookkeeping and the sorting of its error list.
+carries the engine's own error bookkeeping and the filtering and de-duplicating
+of its error list.
 Across the four templates that bound was 0.458, 3.630, 23.466 and 39.414
 microseconds, between 52.9 and 62.8 percent of the lenient render with missing
 variables. It is fixed per render rather than per missing variable: a root
