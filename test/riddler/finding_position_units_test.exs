@@ -9,10 +9,16 @@ defmodule Riddler.FindingPositionUnitsTest do
   locates it, one where the condition compiler or the evaluator does - so the
   byte column and the character column to the same place differ by that
   count, and asserts the unit its site gives. The first test enumerates the
-  `Riddler.Finding` literals that carry `:position` inside a `def` or a `defp`
-  in `lib/`, so such a literal added without a unit named here turns this file
-  red. A literal inside a `defmacro` or a module attribute is not read, and
-  neither is a position set by a struct update or a map write.
+  struct literals whose alias ends in `Finding`, as `%Finding{...}` and
+  `%Riddler.Finding{...}` do, that carry `:position` and stand inside a `def`
+  or a `defp` in a `.ex` file under `lib/`, head or body, wherever that `def`
+  or `defp` stands (one quoted inside a `defmacro` included), so such a
+  literal added without a unit named here turns this file red. A literal
+  outside every `def` and `defp` (in a module attribute, or in a `defmacro`
+  body outside a quoted `def`) is not read, and neither is a struct update, a
+  map write or a `%__MODULE__{...}` literal. Because the struct is known by the
+  last segment of the alias written, a literal of another module whose name
+  ends in `Finding` is read too.
   """
 
   use ExUnit.Case, async: true
@@ -92,10 +98,11 @@ defmodule Riddler.FindingPositionUnitsTest do
 
   # -- the enumeration -------------------------------------------------------
 
-  # Every `%Finding{...}` or `%Riddler.Finding{...}` literal inside a `def` or
-  # a `defp` in `lib/` whose keys include `:position`, keyed by file, function and a one-based count
-  # within that function, read out of the source's syntax tree rather than
-  # matched as text.
+  # Every struct literal whose alias ends in `Finding` and whose keys include
+  # `:position`, inside a `def` or a `defp` in a `.ex` file under `lib/`
+  # wherever that stands, keyed by file, function and a one-based count within
+  # that function, read out of the source's syntax tree rather than matched
+  # as text.
   defp position_sites do
     for path <- Path.wildcard("lib/**/*.ex"),
         {name, literals} <- defs(path),

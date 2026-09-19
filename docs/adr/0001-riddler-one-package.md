@@ -1275,15 +1275,20 @@ by the extra bytes of each one that does.
 
 The list is kept by a test rather than by this record. "every site in lib/
 that sets a position is named here with its unit", in
-`test/riddler/finding_position_units_test.exs` (read at `a3a134d`), reads each
-`Riddler.Finding` literal carrying `:position` inside a `def` or a `defp` out
-of the syntax tree of the files under `lib/` and fails when the sites it finds
-and the sites it names with a unit differ. What it reads is such a literal: a
-`Riddler.Finding` literal carrying `:position` added inside a `def` or a
-`defp` in `lib/` later fails that test until it is named there with its unit.
-A literal inside a `defmacro` or a module attribute is not read by it, and
-neither is a position set on a finding any other way, by a struct update or a
-map write.
+`test/riddler/finding_position_units_test.exs` (read at `a3a134d`), reads the
+syntax tree of each `.ex` file under `lib/` and collects every struct literal
+whose alias ends in `Finding`, as `%Finding{...}` and `%Riddler.Finding{...}`
+do, that carries `:position` among its keys and stands inside a `def` or a
+`defp`, in its head or its body. A `def` or a `defp` is read wherever it
+stands in the file, one quoted inside a `defmacro` included. The test fails
+when the sites it collects and the sites it names with a unit differ, so such
+a literal added to `lib/` later fails it until it is named there with its
+unit. It does not read a literal outside
+every `def` and `defp`, such as one in a module attribute or in a `defmacro`
+body outside a quoted `def`; nor a struct update, a map write, or a struct
+written as `%__MODULE__{...}`. It knows the struct by the last segment of the
+alias written, so a literal of another module whose name ends in `Finding` is
+collected too.
 
 **Each unit is pinned where it is given.** The tests under "a column the
 template parser gave counts bytes" and "a column the condition compiler or the
