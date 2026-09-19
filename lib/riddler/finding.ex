@@ -28,9 +28,14 @@ defmodule Riddler.Finding do
       this field to find the node the author has to fix and a key that is not
       a string is not a name it can find one by.
     * `:position` - where in some source text the refusal is, as
-      `%{line: line, column: column}`, both one-based and counting bytes as
-      the parser's own locations do. Five places in this package set it: the
-      two template refusal clauses in `Riddler.Template`, the
+      `%{line: line, column: column}`, both one-based. The column counts in
+      the unit of the parser that located the refusal, and this package
+      converts neither: a column the template parser gave counts bytes, and a
+      column the condition compiler or the evaluator gave counts characters.
+      The two differ wherever a multi-byte character stands before the place
+      on its line, so a host that maps a column onto an editor offset reads
+      the finding's code to know which it holds. Five places in this package
+      set it: the two template refusal clauses in `Riddler.Template`, the
       `document.invalid_template` finding that re-reports a template refusal
       against the template a document node writes, which carries the position
       of the refusal it wraps, the `document.invalid_condition` finding, which
@@ -38,7 +43,8 @@ defmodule Riddler.Finding do
       not parse and nothing for a condition that never reached the parser, and
       the `response.undecidable` finding, which carries the place the condition
       compiler or the evaluator gave for the condition it is about and nothing
-      where neither gave one. Every other finding leaves it `nil` - the
+      where neither gave one. The first three give bytes and the last two give
+      characters. Every other finding leaves it `nil` - the
       document checks, a field refused for not being template source at all
       (which carries that same code, so the code alone does not say whether a
       span is there), and the other `response.*` findings.
@@ -69,8 +75,10 @@ defmodule Riddler.Finding do
   """
 
   @typedoc """
-  A place in some source text: a one-based line and a one-based column, both
-  counting bytes.
+  A place in some source text: a one-based line and a one-based column. The
+  column counts bytes where the template parser located the place and
+  characters where the condition compiler or the evaluator did; the
+  `:position` field in the moduledoc says which finding gives which.
   """
   @type position :: %{line: pos_integer(), column: pos_integer()}
 
