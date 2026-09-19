@@ -1258,7 +1258,7 @@ amendment's claim survives.
 
 ## Amendment, 2026-09-18: a keyless button cannot opt out, and a call naming no button never does
 
-Status: proposed
+Status: accepted (2026-09-19)
 
 Recorded 2026-09-18, campaign RF055, bead rd-ncs. The amendment above, on the
 per-button opt-out, names one case and declines it in these words: "Whether a
@@ -2485,3 +2485,56 @@ the last states as an intention what was phrased as a rule. No document that
 validates clean stops doing so, no document that is refused stops being
 refused, no code, field, message or node key moves, no refusal is added, no
 `Status:` line changes, and no line of `lib/` changes with this entry.
+
+---
+
+Noted 2026-09-19. The amendment above headed "a keyless button cannot opt out,
+and a call naming no button never does" moves from `proposed` to `accepted`,
+its Status line flipped in place and nothing else in it reworded. The
+amendment headed "a value of the wrong type in a field the schema types is not
+a document" stays `proposed`; this entry does not reach it.
+
+It was verified against `main` at `ade824f` before the flip rather than
+against the tree it was written on, because an amendment is accepted for what
+the package does now. It said of itself that "the code half is a separate bead
+and a separate commit; nothing here is citable from `lib/` until it lands".
+That commit is on `main` as `e07daba`, so the rule was read in `lib/` rather
+than in the behaviour the amendment described. Every cite was re-located by
+anchor at `ade824f`:
+
+- A call naming no pressed button never opts out: the private `opted_out?/2`
+  answers false for a pressed key of `nil` before any node is looked at
+  (`lib/riddler/screens/validation.ex:160`), and `validate/4` consults it in
+  front of the checks (the same file, `:49`).
+- A keyless button node is never the pressed button: the private `button?/2`
+  is reached only with a key that is not `nil` (the same file, `:172`).
+- `Riddler.Screens.validate_screen/3` passes a pressed key of `nil`
+  (`lib/riddler/screens.ex:320`), so it validates the resolved screen in full.
+- The `@doc` sentence the amendment named as becoming false has been edited by
+  the code half as it said: the arity-3 `@doc` now says a keyless button
+  declaring `validates` as `false` "is no exception"
+  (`lib/riddler/screens.ex:274`). The `@doc` on `validate_screen/4` and the
+  README passage on `validates` still state the opt-out for the button a press
+  names.
+- A button with no key is still `document.invalid_key`, from the keyless clause
+  of the private `key_findings/2` (`lib/riddler/screens/document.ex:526`).
+- The rule is pinned by "the arity-3 form presses no button and validates",
+  "does not opt out a press of nil handed to the arity-4 form" and "does not
+  opt the arity-3 call out when a later keyless button declares the opt-out"
+  (`test/riddler/screens/validation_test.exs:398`, `:452` and `:476`).
+
+The corpus case the amendment left "for the corpus pass" has since been taken
+up and states exactly the rule it decides: "A screen carrying a button with no
+key declaring that it does not validate is checked in full when the call
+presses no button, because nothing can press a button nothing can name"
+(`corpus/screens/validate_screen.json:1328`), expecting the screen's
+`response.required` finding. Its sentence that every button in the case file
+carries a key is a claim about the file at the SHA it labels, and holds there.
+The edge it left outside itself, a press through a button hidden by its own
+undecidable condition, is answered by the note above headed "**A button whose
+own condition the root could not decide is not on the resolved screen, so a
+press naming its key validates that screen in full.**", on the ground a later
+note above gives for keeping it outside the amendment; this entry does not
+reach it. The later notes above that read the amendment's wording, and the
+readings they give, stand under the acceptance. CI on `main` at `ade824f` is
+green.

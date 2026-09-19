@@ -687,7 +687,7 @@ ADR-0002 as deciding what that call returns (rd-xhv).
 
 ## Amendment, 2026-09-18: the conformance corpus lives in this repository
 
-Status: proposed
+Status: accepted (2026-09-19)
 
 This record decided that the conformance corpus is authored here and emitted
 into a separate corpus repository, and it made that emitted copy part of how
@@ -1083,7 +1083,7 @@ resolves by, rather than the file it was in on its date.
 
 ## Amendment, 2026-09-18: the screens kind's corpus capability is `screens.validate_screen`
 
-Status: proposed
+Status: accepted (2026-09-19)
 
 Recorded for campaign RF055, bead rd-78k, against `main` at `8a86030`. The
 request carrying this amendment makes the rename in its code commit, `e0f79df`;
@@ -1599,3 +1599,80 @@ note: the record's answer for this code is `nil`, and this answers the call it
 left open the same way, so no finding, code, field or refusal moves. A later
 entry giving these refusals a position would change that answer, and would be
 an amendment.
+
+---
+
+Noted 2026-09-19. Two amendments above move from `proposed` to `accepted`,
+each Status line flipped in place and nothing else in them reworded. They are,
+in the order they appear: "the conformance corpus lives in this repository"
+and "the screens kind's corpus capability is `screens.validate_screen`". The
+two amendments headed "a position's column counts in the unit of the parser
+that located it" and "a corpus case's name claims only what its capability
+compares" stay `proposed`; this entry does not reach them.
+
+Each was verified against `main` at `ade824f` before the flip rather than
+against the tree it was written on, because an amendment is accepted for what
+the package does now. Every cite was re-located by anchor at that SHA. What
+was read:
+
+**The conformance corpus lives in this repository.**
+
+- The cases are in `corpus/` and the schemas in `priv/schemas/`, and
+  `Riddler.Corpus` lists them as its authored case and schema files
+  (`lib/riddler/corpus.ex:25` and `:32`, the same lines the amendment cites).
+- `test/riddler/corpus_test.exs` holds this package to every one of those
+  files (its file lists at `:30`, `:37` and `:38`, the same lines).
+- CI runs one job, `gate`, which runs the full quality gate the manifest names
+  and nothing else (`.github/workflows/ci.yml:18`); there is no drift job and
+  no step reading another repository.
+- `mix riddler.corpus` still runs every case before it writes and refuses on a
+  red one (`refuse_red_cases/0` in `Mix.Tasks.Riddler.Corpus`,
+  `lib/mix/tasks/riddler.corpus.ex:79`). The words "and its environment
+  fallback" in that amendment's paragraph headed "**The export task.**" are
+  already read by the note above headed "**The export task has no environment
+  fallback and no default target.**": the later request that paragraph left
+  the default target to has removed the fallback, and what the amendment
+  decides about the task's standing is unchanged. That reading stands under
+  the acceptance.
+- The single mentions of the archived repository in ADR-0002
+  (`docs/adr/0002-element-document.md:77`) and ADR-0003
+  (`docs/adr/0003-template-subset.md:26`) are unedited. The amendment says
+  that "on this amendment's acceptance" both are read under it; from this
+  entry they are.
+
+**The screens kind's corpus capability is `screens.validate_screen`.**
+
+- The runner carries one clause per capability,
+  `screens.validate_screen` among them, and no fallback clause (`run/2` in
+  `Riddler.Corpus`, `lib/riddler/corpus.ex:121` for that clause), and the
+  private `validate_screen/2` it calls is at `lib/riddler/corpus.ex:149`.
+- The `capability` enum carries `screens.validate_screen`
+  (`priv/schemas/corpus-case.schema.json:36`), and the `input` description
+  reads the `context` half as the amendment says it now does, a half the case
+  leaves out being read as an empty map (the same file, `:13`).
+- The renamed file is what the authored lists name: `lib/riddler/corpus.ex:28`,
+  `test/riddler/corpus_test.exs:33` and
+  `test/mix/tasks/riddler_corpus_test.exs:41`.
+- The retired string is refused rather than aliased, pinned by "the capability
+  string this version retired is an unknown capability, not an alias"
+  (`test/riddler/corpus_test.exs:348`). No file under `lib/`, `priv/` or
+  `corpus/` carries the retired spelling; it survives only in test text that
+  names it as the retired string.
+- The two corrected case names read as the amendment gives them:
+  `corpus/screens/admit.json:1327` and
+  `corpus/screens/validate_screen.json:1231`. The drop of `answer_options` is
+  still pinned by "does not carry answer_options, the field reserved for
+  question types this version does not build"
+  (`test/riddler/screens/document_test.exs:270`).
+- `Riddler.Screens.validate_screen/3` and its arity-4 form are the public
+  surface the capability is named for (`lib/riddler/screens.ex:319` and
+  `:356`).
+
+The per-file case counts the second amendment says its request left unchanged
+have moved since, by cases added in later requests; that sentence is a claim
+about its own request, whose code commit it cites as `e0f79df` and which
+reached `main` as `034d24f`, and it holds there. The later notes above that
+read either amendment stand under the acceptance. One of them reads an earlier
+note's phrase "either repository" as history "on the acceptance of" the first
+of the two amendments; that acceptance is this entry. CI on `main` at
+`ade824f` is green.
