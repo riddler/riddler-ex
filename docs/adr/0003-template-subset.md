@@ -367,3 +367,99 @@ gave: no template renders differently, no missing list changes, and no refusal
 is added. The entry records what the rule the note of 2026-09-17 decided costs
 at render and why that cost is kept where it is. Storing the positions at
 compile would change a public struct, and it is recorded when it is taken.
+
+---
+
+## Amendment, 2026-09-18: whether a template holds a liquid tag is the parser's answer
+
+Status: proposed
+
+Recorded 2026-09-18, campaign RF058, bead rd-zar. The Decision excludes
+`liquid` as an alternate spelling for constructs already in the allowlist. The
+parse tree does not record that a liquid tag was there - the tags written inside
+one arrive as ordinary nodes - so refusing the spelling means finding it
+somewhere other than the tree, and this record never said where. The code half
+of 0.2.0 found it by reading the source with patterns of its own, and a pattern
+is a second reading of the template that can disagree with the parser's. This
+amendment decides whose reading counts. Cites to the code as 0.2.0 shipped it
+are read at `a4f731d`; the code this amendment describes is added by this
+entry's own commit and is citable at no earlier SHA.
+
+### What the record now decides
+
+**A template holds a liquid tag exactly where the parser, reading the template
+as written, reads one, and it is refused there.** The check that refuses the
+spelling asks the parser where a liquid tag begins; it does not re-read the
+source with a pattern. Characters the parser reads as anything other than a
+tag - text, a string, the body of a `raw` or `comment` block, a token a tag
+reads and discards - are not a liquid tag and refuse nothing. A liquid tag the
+parser reads is refused whatever characters stand around it. The finding is
+the one the Decision already gives an excluded construct:
+`template.tag_not_allowed`, naming `liquid`, at the place the tag begins.
+
+**Where a `raw` or `comment` block begins and ends is the parser's answer
+too.** At `solid` `1.3.4`, as this repository's `mix.lock` resolves it, a
+closer carrying trailing text the parser discards - `{% endraw note %}`,
+`{% endcomment note %}` - ends its block, and a `comment` opener carrying
+trailing text opens one. What stands inside such a block is text, a liquid tag's
+characters included.
+
+**What was wrong, stated exactly.** The tags inside a liquid tag are nodes in
+the parse tree, and the allowlist walk refuses every one the subset refuses
+whether or not the spelling is found. What 0.2.0 admitted, in the templates
+below, was an admitted construct written in a spelling this record excludes: a
+conformance gap, a template this runtime admitted that a runtime implementing
+the subset need not accept. It was not a construct outside the allowlist
+reaching a render.
+
+### Why an amendment and not a note
+
+Because it refuses templates this version admitted, which `docs/adr/README.md`
+names as sufficient for an amendment. At `a4f731d` each of these compiled with
+its liquid tag, holding an `assign`, rendered: a `raw` marker written in a
+string that an `endif`, an `else`, an `endfor`, a `comment` opener or an
+`endcomment` discards, or inside a comment whose opener carried trailing text,
+followed later by a liquid tag and a real `raw` block; and a liquid tag after a
+`raw` or `comment` block whose closer carried trailing text, followed by a
+later block of the same kind. The source patterns in `Riddler.Template` (the
+private `liquid_refusals/2`, read at `a4f731d`) took the first marker for an
+opener and paired it with a later closer, and blanked the liquid tag between
+them. It also admits templates this version refused: a liquid tag's characters
+inside a `raw` block whose closer carried trailing text, or inside a `comment`
+block whose opener or closer did, were refused at `a4f731d` as a liquid tag.
+The Decision's exclusion list is unchanged; which templates it reaches is not.
+
+### What the code does
+
+The check puts each place the characters `liquid` occur to the parser, as the
+author's source up to that place with a name no tag answers to in its stead,
+and refuses where the parser reports that name as a tag (`Riddler.Template`,
+the private `liquid_refusals/1`). A generated test holds the check to the
+parser in both directions, with an `assign` inside every liquid body so that
+the allowlist walk cannot refuse the template on its own
+(`test/riddler/template_liquid_test.exs`, the describe block "generated
+agreement with the parser").
+
+### What is unchanged
+
+The allowlist, the exclusion list, refusal at compile, and one finding per
+refused construct. The characters of an excluded tag printed from a string
+literal or a bracket subscript are text, as the corpus cases "A refused tag's
+characters inside a string literal render as those characters in both modes:
+the exemption is the parse tree's, not the source's" and "A refused tag's
+characters inside a bracket subscript are a key, not a tag: the subscript reads
+the value under that key in both modes" state.
+
+### Consequences
+
+The corpus gains a refusal case for each spelling above that 0.2.0 admitted,
+each named "liquid is refused where a raw marker stands ..." or "liquid is
+refused after a ... block whose closer carries ...", and a text case for each
+it refused, each named "A liquid tag's characters inside a ... block whose ...
+carries ..." (`corpus/templates/render.json`).
+
+Those cases hold a second runtime to the parser's reading of tokens it
+discards: a runtime whose Liquid library refuses `{% endif "x" %}` outright
+answers a parse failure where a case states the liquid refusal. Whether the
+subset should admit a tag token carrying text the parser discards at all is a
+question this amendment does not decide.
