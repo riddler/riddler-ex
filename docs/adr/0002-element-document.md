@@ -2084,3 +2084,150 @@ the same call. Nothing is taken away: no document that validates clean stops
 doing so, no document that is refused stops being refused, no code, field,
 message or node key moves, no refusal is added, and no behaviour in `lib/`
 changes with this entry.
+
+---
+
+## Amendment, 2026-09-18: a value of the wrong type in a field the schema types is not a document
+
+Status: proposed
+
+Recorded 2026-09-18, campaign RF058, beads rd-f9k, rd-w5i and rd-rp3. The
+document schema and the runtime agreed in one direction only: a value the
+schema calls a document was admitted, but a value it refuses for holding the
+wrong JSON type in a field it types was admitted too, with a finding or with
+none. This amendment makes admission refuse what the schema refuses in those
+fields, so that the two agree in both directions there, and retires the two
+codes that nothing but such a value ever raised. Every cite below of the
+package before this change is read at
+`ef87a50ac596ab3ce5f2ed3138c035626470fc4e`. The code half is in the same
+request; the functions it adds or changes are cited by name, and none of them
+is citable at an earlier SHA.
+
+### What the record now decides
+
+**A value of the wrong JSON type in a field the document schema types is not
+a document.** The schema types eight scalars: the envelope's `id` and `kind`
+as strings and its `schema_version` as an integer, a screen's `key` and
+`title` as strings, and a node's `key`, `type` and `condition` as strings
+(`priv/schemas/screen-document.schema.json`, read at
+`ef87a50ac596ab3ce5f2ed3138c035626470fc4e`). A value of any other JSON type
+in one of them, `null` included, is refused by
+`Riddler.Screens.Document.admit/1`, which answers `nil` for it, as the schema
+does. For `schema_version` the wrong type is a value that is not an integer,
+and an integer is what the schema's draft counts as one: a number with no
+fractional part, so `1.0` is admitted. A field that is absent is not refused,
+exactly as before. The check is the private `typed?/2` in
+`lib/riddler/screens/document.ex`, against the three lists of typed fields
+beside it.
+
+**A `nodes` on a node whose type reads none is held to the schema's type for
+it and then dropped.** The schema types `nodes` on every node as a list of
+nodes; the runtime reads it only on `variant`. On a node of any other type,
+known or not, a `nodes` that is not a list of nodes is not a document, and a
+list of nodes - each one a node admission would take - is admitted and dropped
+with no finding, as any field a type does not name is (the private
+`unread_nodes/1` in `lib/riddler/screens/document.ex`).
+
+What each field answered before and answers now, one document per row, each
+put through `admit/1` and then `validate/1`; the two "before" columns are
+measured at `ef87a50ac596ab3ce5f2ed3138c035626470fc4e`, and the schema refuses
+every row's input:
+
+| Field | A value of another type, not `null` | `null` | Now |
+|---|---|---|---|
+| envelope `id` | admitted, `document.invalid_id` | admitted, no finding | not a document |
+| envelope `kind` | admitted, `document.unknown_kind` | admitted as `screens`, no finding | not a document |
+| envelope `schema_version` | admitted, `document.invalid_schema_version` | admitted, no finding | not a document |
+| screen `key` | admitted, `document.invalid_key` | admitted, `document.invalid_key` | not a document |
+| screen `title` | admitted, `document.invalid_title` | admitted, no finding | not a document |
+| node `key` | admitted, `document.invalid_key` | admitted, `document.invalid_key` | not a document |
+| node `type` | admitted, `document.unknown_type` | admitted, `document.unknown_type` | not a document |
+| node `condition` | admitted, `document.invalid_condition` | admitted, `document.invalid_condition` | not a document |
+| `nodes` on a `heading` | admitted, no finding | admitted, no finding | not a document |
+| `nodes` on a type the registry does not know | admitted, `document.unknown_type` | admitted, `document.unknown_type` | not a document |
+
+The value of another type measured in each row: `7` for every string field
+but `condition`, which took `true`; the string `"1"` for `schema_version`; the
+string `"two"` for `nodes`. A heading carrying a list of one `text` node is
+schema-valid, and it was admitted with no finding before and is now.
+
+**`document.invalid_id` and `document.invalid_title` are retired.** Each was
+raised for an `id` or a screen `title` that is there and is not a string
+(`lib/riddler/screens/document.ex`, the private `id_findings/1` and
+`title_findings/1`, read at `ef87a50ac596ab3ce5f2ed3138c035626470fc4e`). No
+document `admit/1` takes carries such a value now, so neither code has a value
+left to be raised for, and both checks are removed from `validate/1`. A string
+`id` or `title` was never a finding, so no document that validated clean
+before stops doing so.
+
+**The other codes the wrong-typed values raised keep the values that still
+reach them.** `document.unknown_kind`, `document.invalid_schema_version`,
+`document.invalid_key`, `document.unknown_type` and
+`document.invalid_condition` are each raised by a value the schema admits: a
+kind no runtime knows, a version other than 1, a key that is not lower snake
+case or is absent, a type the registry does not know or an absent one, and a
+condition that does not parse. Each is stated by a case in
+`corpus/screens/admit.json`. The clauses of `validate/1` that answer a key or
+a condition that is not a string stay (the private `key_findings/2` and
+`condition_findings/2` in `lib/riddler/screens/document.ex`), and so does the
+matching clause of response validation (the private `cause/2` in
+`lib/riddler/screens/validation.ex`). `admit/1` never builds a struct that
+reaches them now; a struct a host builds itself can, and those clauses are
+what keep `validate/1` and response validation answering such a struct rather
+than raising.
+
+**The corpus states the refusals.** `corpus/screens/admit.json` carries one
+case per typed scalar, a case for a `kind` written as `null`, a case for a
+`nodes` that is not a list on a `heading`, and a case admitting a `heading`
+carrying a list of nodes with no finding. The agreement check between the
+schema and the admission corpus in `test/riddler/corpus_test.exs`, the test
+named "admits exactly the values the admission corpus calls documents", now
+compares both directions: it binds the schema's answer with a generator, where
+it had bound it with a bare match that a comprehension also reads as a filter
+and that dropped every value the schema refuses before the comparison ran.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test these records use: an entry is an
+Amendment where "the rule stated above answers a call one way, and this entry
+answers the same call another", and a new refusal is one of the two marks it
+names as "each sufficient for an Amendment without being necessary". This
+entry carries both. It refuses documents 0.1.0 and 0.2.0 admit. And it answers
+three calls the record had answered the other way:
+
+- The note above of 2026-09-17 for bead rd-xxb names `document.invalid_id` for
+  "an `id` that is not a string" and `document.invalid_title` for "a screen
+  `title` that is not a string". Those values are no longer documents, and the
+  two codes are retired.
+- The note above of 2026-09-18 for bead rd-6kl decides that an explicit `null`
+  on the schema version, the document id and a screen's title stays admitted,
+  under the words "neither arm moves". That arm moves: each of those three
+  `null`s is not a document. The node arm that note records - a `null`
+  `required`, `validates` or `style` raising its finding - does not move,
+  because the schema does not type those fields and a `null` there is
+  schema-valid.
+- The note above of 2026-09-18 for bead rd-d9n says of a condition that is not
+  valid predicator and one that is not a string that "The second and the third
+  are each already a document finding". The third is now not a document. The
+  response finding that note describes keeps all three of its causes, and the
+  third is reached now only by a struct a host builds itself.
+
+### What is unchanged
+
+`priv/schemas/screen-document.schema.json` is not edited. An absent field is
+admitted, as the note above for bead rd-5v2 decides. The admitted struct has
+the same shape: `admit/1` tells an absent field from a `null` one by reading
+the decoded map, not by recording absence on the struct, so the change the
+note above for bead rd-6kl names as the cost of refusing a `null` is not
+needed. Every document the schema admits answers what it answered before,
+finding for finding, and no message changes.
+
+**Two things this entry does not reach.** A `metadata` written as `null` is
+still admitted, with no finding, while the schema refuses it
+(`lib/riddler/screens/document.ex`, the private `admit_metadata/1`); it is not
+one of the typed scalars this entry decides, and it is left where it stands.
+And a `schema_version` of `1.0` is admitted, as the schema's integer, and then
+raises `document.invalid_schema_version` from `validate/1`, which compares the
+version with the integer 1 (the private `schema_version_findings/1` in
+`lib/riddler/screens/document.ex`); whether that number is version 1 is not
+decided here either.

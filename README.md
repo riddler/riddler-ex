@@ -81,9 +81,11 @@ while the author is still looking at it.
     ["account_heading", "account_greeting", "work_email", "account_next"]
 
 A document that is *absent* and a document that is *wrong* are different
-answers. `admit/1` refuses only a spine that is not a document's; everything
-else is admitted and refused by `validate/1`, one finding per thing wrong, each
-carrying a stable `code` a host switches on rather than wording.
+answers. `admit/1` refuses only what the published document schema refuses - a
+spine that is not a document's, or a field the schema types holding a value of
+another type; everything else is admitted and refused by `validate/1`, one
+finding per thing wrong, each carrying a stable `code` a host switches on
+rather than wording.
 
     iex> alias Riddler.Screens.Document
     iex> Document.admit("a string is not a document")

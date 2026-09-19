@@ -118,16 +118,22 @@ defmodule Riddler.Screens.ValidationTest do
   end
 
   # A screen whose nodes are keyed with something that is not a string. A key
-  # is a string by the record the document implements, so `Document.validate/1`
-  # reports such a document - as `document.invalid_key` - but `Document.admit/1`
-  # takes it, and a host that admits without validating hands exactly this
-  # screen to response validation, which is where the cases below run.
+  # is a string by the record the document implements and by the schema, so
+  # `Document.admit/1` answers `nil` for such a document. The struct is built
+  # by hand instead - every field the atom of its spelling, as `admit/1` would
+  # build it - because a host holding a struct it built itself can hand
+  # exactly this screen to response validation, which is where the cases
+  # below run.
   defp non_string_key_document(nodes) do
-    Document.admit(%{
-      "schema_version" => 1,
-      "id" => "edoc_keys",
-      "screens" => [%{"key" => "keys", "title" => "Keys", "nodes" => nodes}]
-    })
+    %Document{
+      schema_version: 1,
+      id: "edoc_keys",
+      screens: [%{key: "keys", title: "Keys", nodes: Enum.map(nodes, &hand_built_node/1)}]
+    }
+  end
+
+  defp hand_built_node(node) do
+    Map.new(node, fn {spelling, value} -> {String.to_existing_atom(spelling), value} end)
   end
 
   # A one-question screen from the payments host, for the format cases: the
@@ -1018,9 +1024,20 @@ defmodule Riddler.Screens.ValidationTest do
     # Sabotage: gave the non-string clause of `cause/2` the undecided lead; the
     # finding about a condition that never reached the parser claimed the root
     # could not decide it and this test went red.
+    #
+    # `Document.admit/1` answers `nil` for a condition that is not a string, so
+    # the condition is put onto the admitted struct by hand.
     test "a condition that is not a string says so and carries no place" do
       root = %{"context" => %{"is_business" => true}, "responses" => %{"full_name" => "Ada"}}
-      document = checkout_condition_document(42)
+      %Document{screens: [screen]} = document = checkout_document()
+
+      nodes =
+        Enum.map(screen.nodes, fn
+          %{key: "vat_id"} = node -> %{node | condition: 42}
+          node -> node
+        end)
+
+      document = %{document | screens: [%{screen | nodes: nodes}]}
 
       assert {:error, [finding]} = Screens.validate_screen(document, "checkout", root)
 
