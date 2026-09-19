@@ -1381,3 +1381,153 @@ unquoted restatement as that widening.
 Neither note changes an answer the record gave: the record decides the task's
 standing, not its options, and the widening is the one the amendment's own
 next clause already states.
+
+---
+
+## Amendment, 2026-09-18: a corpus case's name claims only what its capability compares
+
+Status: proposed
+
+Recorded for campaign RF058, bead rd-mbp, against `main` at `c666ccf`. The
+request carrying this amendment renames one case and brings the one moduledoc
+sentence quoting it in step in its code commit, `df476af`; every code cite
+below is read at that commit and resolves by the anchor it names rather than
+by a line number.
+
+### What the record now decides
+
+**A case's name claims only what its capability compares.** A case passes when
+the answer this package gives equals the answer the case states, the two maps
+compared whole (`mismatches/1` in `Riddler.Corpus`, `lib/riddler/corpus.ex`).
+What a capability answers is therefore all that any case under it holds a
+second runtime to, and a case's name claims nothing that answer does not carry.
+A name may say what its input is; what it says the input comes to is what the
+answer compares, and a claim beyond that is either dropped from the name or
+made comparable.
+
+**A comparison is widened by name, one capability at a time.** Where a claim
+beyond what a capability compares is worth stating, that capability's answer
+gains a member under its own name, in `priv/schemas/corpus-case.schema.json`
+and in that capability's clause of the runner, in the same request, and a
+request widens one capability. It is never a free-form expectation: a case
+states only members its capability's runner clause produces, and a member no
+runner clause names is not a way to state a claim. A widening changes what
+the corpus asserts, so it takes a changelog fragment, where a rename alone is
+a fixture change and takes none (`changelog.d/README.md`).
+
+**What each capability compares at this date.** A finding in any answer below
+is compared as `code`, `field` and `node_key` and nothing else
+(`encode_findings/1` in `Riddler.Corpus`).
+
+| capability | the answer compared | where it is built |
+|---|---|---|
+| `screens.admit` | `admitted`, and `findings` | the `"screens.admit"` clause of `run/2` |
+| `screens.resolve` | the resolved document, or the one screen the case names, encoded whole; `error` for a screen the document does not carry | the `"screens.resolve"` clause of `run/2` |
+| `screens.validate_screen` | `ok`, with `findings` where it is false; `error` for a screen the document does not carry | `encode_validation/1` |
+| `templates.render`, refused | `compiled` false, and `findings` | the `"templates.render"` clause of `run/2` |
+| `templates.render`, compiled with no mode named | `compiled` true alone | `render_modes/2` |
+| `templates.render`, rendered in one mode | `compiled`, `rendered` and `missing`, with `text` where it rendered | `render/3` |
+| `templates.render`, in both modes | the one answer both modes give; `modes_disagree` where they differ | `agreed/2` |
+
+Every function named in the table is in `Riddler.Corpus`.
+
+### The two cases whose names claimed more
+
+Both are brought under the rule by the rename arm; no capability is widened.
+
+**The admit case for a question carrying `answer_options`.** The amendment
+above headed "the screens kind's corpus capability is
+`screens.validate_screen`" already renamed it, in its paragraph headed
+"**The admit case for a question carrying `answer_options` claims only what the
+admit capability compares.**", and at `df476af` it is named "A question
+carrying answer_options, the field reserved for the select question types, is
+admitted with no finding" (`corpus/screens/admit.json`). This amendment makes
+that paragraph an instance of a rule rather than a correction standing alone.
+`screens.admit` is not widened: stating the drop in the corpus would take a
+member carrying the admitted document, or what admission removed from it, and
+either is a JSON form for an admitted document that no record gives. The drop
+stays pinned by "does not carry answer_options, the field reserved for
+question types this version does not build"
+(`test/riddler/screens/document_test.exs`, read at `df476af`), and the corpus
+does not hold a second runtime to it.
+
+**The render case for a refusal the parser does not place.** This request
+renames it. It was named "A template the parser refuses without saying where
+is refused as a parse error, and the finding names no place"; it is named "A
+render tag naming no template is refused as a parse error, as a finding rather
+than a raise, and the finding names no field" (`corpus/templates/render.json`).
+Its input, `{% render %}`, and its expected answer are unchanged: `compiled`
+false and one finding of code `template.parse_error` with a null `field` and a
+null `node_key`. The old name's "without saying where" was about the reference
+parser rather than about the input, and its "names no place" about a member
+the answer does not carry. That the refusal is a finding rather than a raise
+is something the case holds a runtime to, since a runtime raising on the
+source gives no answer to compare. `templates.render` is not widened: the note
+of 2026-09-18 headed "**The conformance corpus does not carry a finding's
+position, and a second runtime is not held to one.**" decides that the corpus
+does not gain the field, and a position member on this one capability would
+reverse it. The `nil` position stays pinned by "a template the parser refuses
+without a place is a finding, not a raise" and "a refusal the parser did not
+locate names no place in its message" (`test/riddler/template_test.exs`, read
+at `df476af`).
+
+**The moduledoc quotes the new name.** `Riddler.Template`'s moduledoc names
+this case among the cases that pin its parse-failure split. It quotes the new
+name and says that the `nil` position of a placeless refusal is pinned by this
+package's own tests rather than by the corpus (`lib/riddler/template.ex`, the
+moduledoc, read at `df476af`).
+
+### What earlier text now reads as
+
+**The accepted amendment on a placeless parse refusal.** The amendment above
+headed "a placeless parse refusal is a finding with a nil position" says, under
+"What the record now decides", that the template door is pinned "by a corpus
+case in `corpus/templates/render.json` that expects a refusal naming no place",
+and the Note flipping it names that case by its old name. The case expects a
+parse-error finding naming no field and no node, and nothing about a place.
+Read that clause as: the corpus case pins that the refusal is a finding, and
+the two tests named above pin its `nil` position. Neither text is edited; the
+flip Note quotes the name as it stood at the SHA it labels.
+
+**The note that left the render case's name standing.** The note of 2026-09-18
+whose paragraph is headed "**One corpus case name claims more than the corpus
+can pin, and is left as it stands.**" says of that case that it "is named here
+rather than renamed or changed". From this date it is renamed; read that
+sentence as how the case stood at the SHA it labels. What the same paragraph
+says about which check pins the claim is unchanged, and it is what this
+amendment relies on.
+
+### Why an amendment and not a note
+
+The test `docs/adr/README.md` states, under its "Note or Amendment" heading,
+is whether the entry changes an "answer the record gave". This entry changes
+two:
+
+- The amendment on a placeless parse refusal answered what pins the template
+  door's placeless refusal with a corpus case that "expects a refusal naming no
+  place". This entry answers that the corpus case pins the finding and not the
+  place.
+- The note of 2026-09-18 answered whether the render case's over-claiming name
+  stands with "named here rather than renamed or changed". This entry answers
+  the same call the other way, and renames it.
+
+That a ruling was taken, and that the request renames a case, are not the test,
+as `docs/adr/README.md` says under the same heading.
+
+### What is unchanged
+
+**Every case's answer, and every file's count.** No case answers anything at
+`df476af` that it did not answer at `c666ccf`, and no file gains or loses a
+case. One case name changes, in `corpus/templates/render.json`.
+
+**Every capability's comparison.** No capability is widened, and
+`priv/schemas/corpus-case.schema.json` and `Riddler.Corpus` are not edited by
+this request. A later request that widens one does so under the rule above.
+
+**The corpus carries no position.** The note that decides so stands, and so
+does the amendment above on what a column counts, which keeps that decision
+under its own "What is unchanged".
+
+**The capability names.** "A corpus capability is named `<kind>.<function>`",
+and a capability name "changes only by a record". This entry names no
+capability and renames none.
