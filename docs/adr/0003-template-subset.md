@@ -313,3 +313,56 @@ takes an omission for a decision. Whether a later amendment should bring a
 `when` operand under the condition rule - it is a test of a kind, compared
 against a subject rather than output - is a question this entry leaves open
 rather than settles.
+
+---
+
+Noted 2026-09-18, campaign RF058, bead rd-6h8. One note by addition, read
+against `main` at `a4f731d`. Nothing above is changed.
+
+**The condition rule costs a walk of the whole parse tree at render, and for a
+screen that walk is on the ordinary path.** The note of 2026-09-17 above decides
+that a variable used only in a condition is missing in neither mode. The code
+holds to it by computing, at render, the condition positions to leave out of
+the missing list: `condition_positions/1`, private to `lib/riddler/template.ex`,
+collects them by walking the whole parse tree of the compiled template.
+`Riddler.Template.render/3` runs that walk on every render in which the engine
+returns an error, of any kind - an undefined filter as well as a missing
+variable - and does not run it when the engine returns none. A screen renders
+lenient at runtime, as the Decision above names, and under lenient mode a
+missing optional variable is the expected case rather than an exceptional one,
+so for a screen the walk is not a rare-path cost.
+
+**What it costs, measured against `main` at `80977f3`.** Four templates in the
+signup-wizard domain - one output tag and no conditional; six output tags and
+two conditionals; 42 output tags and twelve conditionals, nested; 66 output tags
+and twenty conditionals, nested - were each compiled once and rendered through
+`Riddler.Template.render/3` in lenient mode, against a root carrying every
+variable, where the walk does not run, and a root missing optional variables,
+where it does: the median of five repeats of 2,000 renders, on one arm64
+machine under Elixir 1.18.3 and OTP 27. The difference between the two roots is
+an upper bound on the walk rather than a measurement of it, because it also
+carries the engine's own error bookkeeping and the sorting of its error list.
+Across the four templates that bound was 0.458, 3.630, 23.466 and 39.414
+microseconds, between 52.9 and 62.8 percent of the lenient render with missing
+variables. It is fixed per render rather than per missing variable: a root
+missing one variable cost the same, within noise, as a root missing three. On
+the 42-output template the bound is about 23 microseconds a render, against
+about 264 microseconds to compile the same template once. The measuring script
+was not committed, and nothing here is a claim about end-to-end request cost or
+about any workload not measured.
+
+**The design stands: the condition positions are not computed at compile.**
+About 23 microseconds a render on a realistic screen is not a cost a host will
+see, and nothing measured is slow. Computing the positions once at compile
+would store them on `Riddler.Template.Compiled`
+(`lib/riddler/template/compiled.ex`), a struct whose every field is an enforced
+key and which a host keeps, caches and hands back to `render/3`, as its
+moduledoc says: a new field there is a change to a public surface hosts hold,
+not a private optimisation. The question is reopened when a host reports render
+latency, and not before.
+
+**Why a note and not an amendment.** Nothing here changes an answer this record
+gave: no template renders differently, no missing list changes, and no refusal
+is added. The entry records what the rule the note of 2026-09-17 decided costs
+at render and why that cost is kept where it is. Storing the positions at
+compile would change a public struct, and it is recorded when it is taken.
