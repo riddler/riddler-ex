@@ -2287,8 +2287,9 @@ rule stated above answers a call one way, and this entry answers the same call
 another". No rule above answers a press equal to a key that is not a string,
 and this entry records the answer the package already gives: no document that
 validates clean stops doing so, no code, field, message or node key moves, no
-refusal is added, and no line of `lib/` changes with it. Deciding a question the
-record left open is not the test either: "Deciding an open question and
+refusal is added, and no code in `lib/` changes with it: the request that lands
+it edits two comments in `lib/riddler/screens/compilers.ex` and nothing else
+under `lib/`. Deciding a question the record left open is not the test either: "Deciding an open question and
 changing what the record decides come apart, and it is the second that
 governs."
 
