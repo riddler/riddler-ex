@@ -1234,3 +1234,101 @@ the removed functions as history from that date, and the note of 2026-09-18
 quoted above reads the naming of the instance the same way. Neither is edited
 here, and this entry adds the capability to what those two places are read as
 history about.
+
+---
+
+## Amendment, 2026-09-18: a position's column counts in the unit of the parser that located it
+
+Status: proposed
+
+Recorded for campaign RF058, bead rd-i3a, against `main` at `66749fe`. The
+request carrying this amendment makes its moduledoc and typedoc text and adds
+its tests in its code commit, `a3a134d`; every code cite below is read at that
+commit and resolves by the anchor it names rather than by a line number.
+
+### What the record now decides
+
+**A finding's column counts in the unit of the parser that located it, and
+this package converts neither.** The note of 2026-09-17 headed
+"**`Riddler.Finding` carries a source position, and this record is where that
+is decided.**" gives the field as a map of a line and a column "with both
+numbers one-based and counting bytes, as the parser's own locations do". Read
+that as: both numbers one-based, and the column counting in the unit of the
+parser whose location it is. A column the template parser gave counts bytes. A column the condition
+compiler or the evaluator gave counts characters. When that note was written
+every site took its place from the template parser, so the two halves of its
+clause agreed; the sites the condition compiler and the evaluator locate came
+later, and with them the halves came apart. The two units give the same column
+where no multi-byte character stands before the place on its line, and differ
+by the extra bytes of each one that does.
+
+**Which finding gives which.** These are the sites in `lib/` that set
+`:position` at `a3a134d`, and the unit each one's column counts:
+
+| site | finding code | column counts |
+|---|---|---|
+| the parse-failure clause of `finding/1` in `Riddler.Template` | `template.parse_error` | bytes |
+| the subset clause of that same function | `template.tag_not_allowed`, `template.filter_not_allowed` | bytes |
+| the re-wrap in `refusals/3` in `Riddler.Screens.Document` | `document.invalid_template` | bytes, being the wrapped refusal's |
+| `invalid_condition/3` in `Riddler.Screens.Document` | `document.invalid_condition` | characters |
+| `undecidable_finding/2` in `Riddler.Screens.Validation` | `response.undecidable` | characters |
+
+The list is kept by a test rather than by this record. "every site in lib/
+that sets a position is named here with its unit", in
+`test/riddler/finding_position_units_test.exs` (read at `a3a134d`), reads each
+`Riddler.Finding` literal carrying `:position` out of the syntax tree of the
+files under `lib/` and fails when the sites it finds and the sites it names
+with a unit differ. A site added later fails that test until it is named there with its
+unit.
+
+**Each unit is pinned where it is given.** The tests under "a column the
+template parser gave counts bytes" and "a column the condition compiler or the
+evaluator gave counts characters", in the same file at the same SHA, put two
+two-byte characters before the defect at each site and assert the column its
+unit gives, after asserting that the two units disagree on that input. The
+subset clause is put to each route its place arrives by: the parser refusing a
+tag it does not know, the allowlist walk reading a filter's location and a
+tag's, and the check that locates a liquid tag. `response.undecidable` is put
+to the compiler's place and to the evaluator's.
+
+**The units are the dependencies'.** They are what `solid` 1.3.4 and
+`predicator` 9.4.1 answer, the versions `mix.lock` resolves (read at
+`a3a134d`). A release of either that changed its unit turns the tests above
+red rather than moving a host's columns without a word.
+
+**The module text says the same.** The `:position` bullet of
+`Riddler.Finding`'s moduledoc and the typedoc of `Riddler.Finding.position/0`
+(`lib/riddler/finding.ex`, read at `a3a134d`) name the unit per parser, and
+the bullet names it per site.
+
+### Why an amendment and not a note
+
+The test `docs/adr/README.md` states, under its "Note or Amendment" heading,
+is whether the entry changes an "answer the record gave". This entry changes
+one. The record answered what a column counts with bytes, for every finding
+carrying one. For `document.invalid_condition` and `response.undecidable` this
+entry answers characters. A host that read the record and mapped a condition
+finding's column onto an editor as a byte offset read an answer that this
+entry takes back. That the code does not change is not the test either, in
+the same way that changing it is not: no finding carries a number after this
+request that it did not carry before it, and the entry is an amendment for
+what it answers, not for what it does.
+
+### What is unchanged
+
+**The numbers.** No site converts, and no finding's position or message names
+a different line or column than it did at `66749fe`. Converting one unit into
+the other is not decided here: a column in a single unit would be a behaviour
+change for every host reading the sites that convert.
+
+**The field.** It is still `nil` or a map of a one-based line and column,
+still built only by `Riddler.Finding.position/2`, and still set by which
+checks carry a place. `document.invalid_pattern` still carries none; the byte
+offset the note of 2026-09-18 on it tabulates is not a position, and this
+entry gives it no unit.
+
+**The corpus.** The note of 2026-09-18 that decides the conformance corpus
+does not carry a finding's position names "bytes against characters for a
+column" among what two implementations compute differently. That decision
+stands. This entry says what the reference implementation fills the field
+with; it holds no second runtime to it.
