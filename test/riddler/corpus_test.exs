@@ -49,7 +49,7 @@ defmodule Riddler.CorpusTest do
     "corpus/screens/admit.json" => 42,
     "corpus/screens/resolve.json" => 21,
     "corpus/screens/validate_screen.json" => 34,
-    "corpus/templates/render.json" => 56
+    "corpus/templates/render.json" => 58
   }
 
   @draft_7 "http://json-schema.org/draft-07/schema#"
@@ -206,6 +206,44 @@ defmodule Riddler.CorpusTest do
 
       assert [{"expected.code", "actionType", "action"}] =
                retired_spellings_in(%{"expected" => %{"code" => "actionType"}})
+    end
+
+    # An acronym-led compound is the camelCase compound again, written with a
+    # run of capitals in front: `UIAction` has no lower-to-upper transition
+    # before its `Action`, so the first cut leaves it one word. A second cut
+    # runs where a capital starts a word after a run of capitals, which is the
+    # upper-to-upper boundary followed by a lower. A run of capitals with no
+    # lower after it is not cut, so an acronym stays one word and the words
+    # around it stay innocent.
+    #
+    # Sabotage: removed the upper-to-upper split from `words/1`; `UIAction`
+    # stayed one word and this test went red.
+    test "an acronym-led compound naming a retired spelling is a hit, key or value" do
+      assert [{"nodes.0.UIAction", "UIAction", "action"}] =
+               retired_spellings_in(%{"nodes" => [%{"UIAction" => true}]})
+
+      assert [{"expected.code", "HTTPPayloads", "payload"}] =
+               retired_spellings_in(%{"expected" => %{"code" => "HTTPPayloads"}})
+
+      assert retired_spellings_in(%{"UITransaction" => "JSONSchema", "URL" => "SMSAnswer"}) ==
+               []
+    end
+
+    # A possessive is cut at its apostrophe like any other character that is not
+    # a letter or a digit, so `action's` is the word `action` and a hit. A
+    # trailing `es` is deliberately not cut: none of the three retired spellings
+    # forms its plural with it, so an `es` arm would catch no inflection of them
+    # and could only reach a word the rule does not retire.
+    #
+    # Sabotage: let the word split keep an apostrophe inside a word; `action's`
+    # stayed one word and the first assertion went red. And again with an arm in
+    # `retired_spelling/1` cutting a trailing `es`; `actiones` came back as a hit
+    # and the second assertion went red.
+    test "a possessive is a hit and an -es ending is not cut" do
+      assert [{"name", "the action's key", "action"}] =
+               retired_spellings_in(%{"name" => "the action's key"})
+
+      assert retired_spellings_in(%{"actiones" => "payloades"}) == []
     end
 
     # A plural names the thing its singular names, so a document that carried
@@ -450,11 +488,12 @@ defmodule Riddler.CorpusTest do
   # it.
   #
   # Matching is by WORD, not by substring: each string is cut into words on
-  # everything that is not a letter or a digit and on every lower-to-upper
-  # transition, and each word is compared whole, singular or plural. So
-  # `on_action`, `onAction`, `actions` and "Action taken" are hits, while
-  # `transaction`, `answer_options` and the schema's own `additionalProperties`
-  # are not. A regular expression is the obvious way to say "whole word" and the
+  # everything that is not a letter or a digit, on every lower-to-upper
+  # transition, and before a capital that starts a word after a run of
+  # capitals, and each word is compared whole, singular or plural. So
+  # `on_action`, `onAction`, `UIAction`, `actions` and "Action taken" are hits,
+  # while `transaction`, `answer_options` and the schema's own
+  # `additionalProperties` are not. A regular expression is the obvious way to say "whole word" and the
   # wrong one here, because `\b` counts `_` as a word character:
   # `~r/\baction\b/` matches "Action taken" but misses `on_action`, which is the
   # compound a document is likeliest to carry.
@@ -480,7 +519,8 @@ defmodule Riddler.CorpusTest do
   # The spelling a word carries, or `nil`. A plural names what its singular
   # names, so `actions` is reported as `action`: the fix is the word, not the
   # inflection. `answers` is itself retired and its singular `answer` is not, so
-  # cutting one trailing `s` never reaches past the three spellings.
+  # cutting one trailing `s` never reaches past the three spellings. A trailing
+  # `es` is not cut: none of the three forms its plural with it.
   defp retired_spelling(word) do
     cond do
       word in @retired_spellings ->
@@ -512,11 +552,14 @@ defmodule Riddler.CorpusTest do
 
   defp location(path), do: Enum.join(path, ".")
 
-  # The case-boundary split runs before the downcase, because downcasing is what
-  # destroys the boundary.
+  # The case-boundary splits run before the downcase, because downcasing is what
+  # destroys the boundary. The first cuts a lower-to-upper transition
+  # (`onAction`); the second cuts before a capital that starts a word after a
+  # run of capitals (`UIAction`), and leaves a run with no lower after it whole.
   defp words(string) do
     string
     |> String.replace(~r/(?<=[a-z0-9])(?=[A-Z])/, " ")
+    |> String.replace(~r/(?<=[A-Z])(?=[A-Z][a-z])/, " ")
     |> String.downcase()
     |> String.split(~r/[^a-z0-9]+/, trim: true)
   end

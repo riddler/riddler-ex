@@ -1011,6 +1011,43 @@
       "expected": {
         "compiled": true,
         "missing": [
+          "responses.newsletter"
+        ],
+        "rendered": true,
+        "text": "Not subscribed"
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {}
+        },
+        "mode": "lenient",
+        "source": "{% case \"yes\" %}{% when responses.newsletter %}Subscribed{% else %}Not subscribed{% endcase %}"
+      },
+      "name": "Lenient mode renders a case whose when operand the root does not carry as its else branch and names the operand"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [
+          "responses.newsletter"
+        ],
+        "rendered": false
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {}
+        },
+        "mode": "strict",
+        "source": "{% case \"yes\" %}{% when responses.newsletter %}Subscribed{% else %}Not subscribed{% endcase %}"
+      },
+      "name": "Strict mode returns the same when operand as an error instead of rendering"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [
           "responses.first_name"
         ],
         "rendered": false
