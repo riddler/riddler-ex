@@ -1431,9 +1431,12 @@ is compared as `code`, `field` and `node_key` and nothing else
 
 Every function named in the table is in `Riddler.Corpus`.
 
-### The two cases whose names claimed more
+### The two known cases whose names claimed more
 
-Both are brought under the rule by the rename arm; no capability is widened.
+These are the two cases this request set out to bring under the rule, not
+every case whose name claims more than its capability compares; any other is
+left as it stands for a later request. Both are brought under the rule by the
+rename arm; no capability is widened.
 
 **The admit case for a question carrying `answer_options`.** The amendment
 above headed "the screens kind's corpus capability is
