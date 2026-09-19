@@ -229,39 +229,40 @@ defmodule Riddler.TemplateTest do
       assert [%Riddler.Finding{field: "liquid"}] = refusal!("{% liquid\n  assign who = 1\n%}")
     end
 
-    # Mutation: drop the verbatim-block masking in liquid_refusals/1 - the
-    # liquid opener inside raw is then read as a construct and the compile
-    # fails instead of succeeding.
+    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # parser's list rather than only first - the parser's recovery reads it
+    # as a tag, and the compile fails instead of succeeding.
     test "a liquid opener inside raw is text, not a construct" do
       assert {:ok, "{% liquid echo x %}", []} =
                render!("{% raw %}{% liquid echo x %}{% endraw %}")
     end
 
-    # Mutation: drop the verbatim-block masking in liquid_refusals/2 - the
-    # opener inside comment is read as a construct and the compile fails
-    # instead of rendering nothing.
+    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # parser's list rather than only first - the parser's recovery reads it
+    # as a tag, and the compile fails instead of rendering nothing.
     test "a liquid opener inside comment is text, not a construct" do
       assert {:ok, "", []} =
                render!("{% comment %}{% liquid echo x %}{% endcomment %}")
     end
 
-    # Mutation: drop the string-literal masking in liquid_refusals/2 - the
-    # opener inside the output tag's literal is read as a construct again and
-    # the compile fails instead of rendering the characters.
+    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # parser's list rather than only first - the parser's recovery reads it
+    # as a tag, and the compile fails instead of rendering the characters.
     test "a liquid opener inside an output tag's string literal is text" do
       assert {:ok, "{% liquid %}", []} = render!(~S({{ "{% liquid %}" }}))
     end
 
-    # Mutation: drop the string-literal masking in liquid_refusals/2 - the
-    # filter argument's literal is read as a construct and the compile fails.
+    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # parser's list rather than only first - the parser's recovery reads it
+    # as a tag, and the compile fails instead of rendering.
     test "a liquid opener inside a filter argument's literal is text" do
       assert {:ok, "Ada{% liquid %}", []} =
                render!(~S({{ responses.first_name | append: "{% liquid %}" }}))
     end
 
-    # Mutation: make literal_locs/2 skip tuples (the clause that unwraps a
-    # `when` branch's {values, body} pair) - the `when` literal is not masked
-    # and the template is refused again.
+    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # parser's list rather than only first - the parser's recovery reads it
+    # as a tag, and the compile fails instead of rendering.
     test "a liquid opener inside a when branch's literal is text" do
       assert {:ok, "no", []} =
                render!(
@@ -269,51 +270,50 @@ defmodule Riddler.TemplateTest do
                )
     end
 
-    # The exemption is the parse tree's, not the source's: these three pin
-    # that widening it did not let a real opener through.
+    # The exemption is the parser's, not the source's: these three pin that a
+    # quote character in the source decides nothing the parser did not.
     #
-    # Mutation: mask every quoted span in the source rather than the spans the
-    # tree reports as literals - the quotes in this prose then swallow the
-    # opener and the refusal disappears.
+    # Mutation: make liquid_refusals/1 blank every quoted span of the source
+    # before probing - the quotes in this prose then swallow the opener and
+    # the refusal disappears.
     test "quote characters in ordinary text do not exempt a liquid opener" do
       assert [%Riddler.Finding{field: "liquid"}] =
                refusal!(~S(He said "hello {% liquid %} world" and left))
     end
 
-    # Mutation: mask from a literal's opening quote to the end of the source
-    # instead of to its closing quote - the real opener after the literal is
-    # masked too and the refusal disappears.
+    # Mutation: make liquid_refusals/1 blank from the first quote character to
+    # the end of the source before probing - the real opener after the
+    # literal is blanked too and the refusal disappears.
     test "a real liquid block beside a literal holding the opener is refused" do
       assert [%Riddler.Finding{field: "liquid"}] =
                refusal!(~S({{ "{% liquid %}" }}{% liquid assign who = 1 %}))
     end
 
-    # Mutation: mask from a literal's opening quote to the end of the source -
-    # the apostrophe is inside the span either way, so what this case adds is
-    # that a stray quote character inside a literal does not move where the
-    # span ends; the real opener past the literal stays refused.
+    # Mutation: the same blanking to the end of the source - what this case
+    # adds is that a stray quote character inside a literal moves nothing;
+    # the real opener past the literal stays refused.
     test "an apostrophe inside a double-quoted literal masks nothing beyond it" do
       assert [%Riddler.Finding{field: "liquid"}] =
                refusal!(~S({{ "it's fine" }}{% liquid assign who = 1 %}))
     end
 
-    # The verbatim mask has to answer "is this a marker" the same way the
-    # literal mask does, or a template can print the characters of a block's
-    # opener and closer around a real refused tag and have the tag blanked
-    # before the scan ever sees it. These two pin the order of the two masks:
-    # a marker printed from a literal is not a marker.
+    # Whether characters are a block's marker is the parser's answer too: a
+    # template can print the characters of a block's opener and closer around
+    # a real refused tag, and any reading of the source ahead of the parser
+    # would take them for a block and blank the tag. A marker printed from a
+    # literal is not a marker.
     #
-    # Mutation: in liquid_refusals/2 mask verbatim blocks before literals
-    # rather than after - the printed markers are read as a real raw block,
-    # the tag between them is masked away, and compile/1 answers {:ok, _}.
+    # Mutation: make liquid_refusals/1 blank what the previous release's
+    # verbatim-block pattern matches before probing - the printed markers are
+    # read as a real raw block, the tag between them is blanked, and
+    # compile/1 answers {:ok, _}.
     test "raw markers printed from literals do not mask a real refused tag" do
       assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "liquid"}] =
                refusal!(~S({{ "{% raw %}" }}{% liquid assign who = 1 %}{{ "{% endraw %}" }}))
     end
 
-    # Mutation: the same reordering in liquid_refusals/2 - the printed comment
-    # markers are read as a real comment block and the tag between them is
-    # admitted.
+    # Mutation: the same blanking - the printed comment markers are read as a
+    # real comment block and the tag between them is admitted.
     test "comment markers printed from literals do not mask a real refused tag" do
       assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "liquid"}] =
                refusal!(
@@ -322,15 +322,15 @@ defmodule Riddler.TemplateTest do
     end
 
     # A bracket subscript is a string the template holds, exactly as a plain
-    # literal is, but the parser reports it as its own node type. Until the
-    # literal collector knew that node, a subscript's characters were not
-    # masked, so a printed marker inside one was read as a real block marker
-    # and blanked whatever stood between two of them. These four are the
-    # positions a subscript can be written in.
+    # literal is, but the parser reports it as its own node type, and a
+    # reading of the source that knew literals and not subscripts took a
+    # marker inside one for a real block marker. These are the positions a
+    # subscript can be written in.
     #
-    # Mutation: delete the Solid.AccessLiteral clause from literal_locs/2 -
-    # the subscripts are not masked, the printed markers open and close a raw
-    # block across the liquid tag, and compile/1 answers {:ok, _}.
+    # Mutation: make liquid_refusals/1 blank what the previous release's
+    # verbatim-block pattern matches before probing - the printed markers open
+    # and close a raw block across the liquid tag, and compile/1 answers
+    # {:ok, _}.
     test "raw markers in a bracket subscript do not mask a real refused tag" do
       assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "liquid"}] =
                refusal!(
@@ -339,8 +339,8 @@ defmodule Riddler.TemplateTest do
                )
     end
 
-    # Mutation: the same deletion - a single-quoted subscript is the same node
-    # and the comment markers in it mask the tag between them.
+    # Mutation: the same blanking - a single-quoted subscript is the same node
+    # and the comment markers in it blank the tag between them.
     test "comment markers in a bracket subscript do not mask a real refused tag" do
       assert [%Riddler.Finding{code: "template.tag_not_allowed", field: "liquid"}] =
                refusal!(
@@ -349,8 +349,8 @@ defmodule Riddler.TemplateTest do
                )
     end
 
-    # Mutation: the same deletion - the subscript in an assign's right-hand
-    # side is not masked and the tag between the two is admitted.
+    # Mutation: the same blanking - the markers in an assign's right-hand side
+    # pair across the tag between the two, which is admitted.
     test "markers in a subscript on an assign do not mask a real refused tag" do
       assert [%Riddler.Finding{field: "liquid"}] =
                refusal!(
@@ -359,8 +359,8 @@ defmodule Riddler.TemplateTest do
                )
     end
 
-    # Mutation: the same deletion - the subscript inside an if condition is
-    # not masked and the tag between the two is admitted.
+    # Mutation: the same blanking - the markers in an if condition pair across
+    # the tag between the two, which is admitted.
     test "markers in a subscript in a condition do not mask a real refused tag" do
       assert [%Riddler.Finding{field: "liquid"}] =
                refusal!(
@@ -369,8 +369,8 @@ defmodule Riddler.TemplateTest do
                )
     end
 
-    # Mutation: the same deletion - the subscript standing as a filter
-    # argument is not masked and the tag between the two is admitted.
+    # Mutation: the same blanking - the markers in a filter argument pair
+    # across the tag between the two, which is admitted.
     test "markers in a subscript as a filter argument do not mask a refused tag" do
       assert [%Riddler.Finding{field: "liquid"}] =
                refusal!(
@@ -379,13 +379,12 @@ defmodule Riddler.TemplateTest do
                )
     end
 
-    # The other direction of the same clause: a subscript holding a forbidden
-    # tag's characters is text and renders, as the same characters in a plain
-    # literal already did.
+    # The other direction: a subscript holding a forbidden tag's characters is
+    # text and renders, as the same characters in a plain literal do.
     #
-    # Mutation: delete the Solid.AccessLiteral clause from literal_locs/2 -
-    # the subscript is not masked, the opener in it is read as a construct,
-    # and the template is refused instead of rendering.
+    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # parser's list rather than only first - the parser's recovery reads it
+    # as a tag, and the compile fails instead of rendering.
     test "a liquid opener inside a bracket subscript is text, not a construct" do
       assert {:ok, "yes", []} =
                render!(
@@ -395,9 +394,9 @@ defmodule Riddler.TemplateTest do
                )
     end
 
-    # Mutation: mask from a subscript's opening quote to the end of the source
-    # instead of to its closing quote - the real opener after it is masked too
-    # and the refusal disappears.
+    # Mutation: make liquid_refusals/1 blank from the first quote character to
+    # the end of the source before probing - the real opener after the
+    # subscript is blanked too and the refusal disappears.
     test "a real liquid block beside a subscript holding the opener is refused" do
       assert [%Riddler.Finding{field: "liquid"}] =
                refusal!(~S({{ responses["{% liquid %}"] }}{% liquid assign who = 1 %}))

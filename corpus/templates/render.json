@@ -399,6 +399,201 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
+            "field": "liquid",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% comment note %}{% raw %}{% endcomment %}{% liquid assign greeting = 'Hello' %}{% raw %}{% endraw %}"
+      },
+      "name": "liquid is refused where a raw marker stands inside a comment whose opener carries trailing text"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "liquid",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% comment \"{% raw %}\" %}{% endcomment %}{% liquid assign greeting = 'Hello' %}{% raw %}{% endraw %}"
+      },
+      "name": "liquid is refused where a raw marker stands in the string a comment opener carries"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "liquid",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% comment %}{% endcomment \"{% raw %}\" %}{% liquid assign greeting = 'Hello' %}{% raw %}{% endraw %}"
+      },
+      "name": "liquid is refused where a raw marker stands in the string an endcomment carries"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "liquid",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% if true %}{% endif \"{% raw %}\" %}{% liquid assign greeting = 'Hello' %}{% raw %}{% endraw %}"
+      },
+      "name": "liquid is refused where a raw marker stands in the string an endif carries"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "liquid",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% if true %}{% else \"{% raw %}\" %}{% endif %}{% liquid assign greeting = 'Hello' %}{% raw %}{% endraw %}"
+      },
+      "name": "liquid is refused where a raw marker stands in the string an else carries"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "liquid",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% for i in (1..1) %}{% endfor \"{% raw %}\" %}{% liquid assign greeting = 'Hello' %}{% raw %}{% endraw %}"
+      },
+      "name": "liquid is refused where a raw marker stands in the string an endfor carries"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "liquid",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% raw %}x{% endraw note %}{% liquid assign greeting = 'Hello' %}{% raw %}{% endraw %}"
+      },
+      "name": "liquid is refused after a raw block whose closer carries a trailing word"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "liquid",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% raw %}x{% endraw \"note\" %}{% liquid assign greeting = 'Hello' %}{% raw %}{% endraw %}"
+      },
+      "name": "liquid is refused after a raw block whose closer carries a trailing string"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "liquid",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% comment %}x{% endcomment note %}{% liquid assign greeting = 'Hello' %}{% comment %}{% endcomment %}"
+      },
+      "name": "liquid is refused after a comment block whose closer carries a trailing word"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "{% liquid assign greeting = 'Hello' %}"
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {}
+        },
+        "mode": "both",
+        "source": "{% raw %}{% liquid assign greeting = 'Hello' %}{% endraw note %}"
+      },
+      "name": "A liquid tag's characters inside a raw block whose closer carries a trailing word are text: the block ends where the parser ends it"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": ""
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {}
+        },
+        "mode": "both",
+        "source": "{% comment note %}{% liquid assign greeting = 'Hello' %}{% endcomment %}"
+      },
+      "name": "A liquid tag's characters inside a comment block whose opener carries trailing text are text and render nothing"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": ""
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {}
+        },
+        "mode": "both",
+        "source": "{% comment %}{% liquid assign greeting = 'Hello' %}{% endcomment note %}"
+      },
+      "name": "A liquid tag's characters inside a comment block whose closer carries trailing text are text and render nothing"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
             "field": "echo",
             "node_key": null
           }

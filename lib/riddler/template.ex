@@ -173,14 +173,15 @@ defmodule Riddler.Template do
   # The parser erases exactly one excluded construct. `{% liquid %}` switches
   # its lexer into a mode where the tags inside it parse as ordinary tag
   # nodes, and nothing in the resulting tree records that they arrived that
-  # way - so the walk below cannot see it and the source is where it has to be
-  # found. Reading the source is what makes masking necessary: the characters
-  # of a liquid opener can appear in a template that holds no liquid tag at
-  # all. Verbatim blocks are masked because a liquid opener written inside
-  # `{% raw %}` or `{% comment %}` is text, and string literals are masked
-  # because an opener a template merely prints is text too.
-  @liquid_opener ~r/\{%-?\s*liquid\b/
-  @verbatim_block ~r/\{%-?\s*(raw|comment)\s*-?%\}.*?\{%-?\s*end\1\s*-?%\}/s
+  # way - so the walk below cannot see it, and the parser is asked where one
+  # begins instead (`liquid_refusals/1`).
+  @liquid "liquid"
+
+  # A tag name no tag answers to, written where a liquid tag's name would
+  # stand. The parser reports it as an unexpected tag only where it was
+  # reading a tag name.
+  @probe_name "riddler_liquid_probe"
+  @probe_reason "Unexpected tag '#{@probe_name}'"
 
   @unexpected_tag ~r/Unexpected tag '([^']+)'/
 
@@ -213,7 +214,7 @@ defmodule Riddler.Template do
   def compile(source) when is_binary(source) do
     case parse(source) do
       {:ok, %Solid.Template{parsed_template: tree} = parsed} ->
-        case refusals(tree) ++ liquid_refusals(source, tree) do
+        case refusals(tree) ++ liquid_refusals(source) do
           [] ->
             {:ok, %Compiled{source: source, parsed: parsed, defaulted: defaulted_positions(tree)}}
 
@@ -429,161 +430,74 @@ defmodule Riddler.Template do
 
   # -- the one construct the parse tree erases ------------------------------
 
-  # The two masks are both answers to the same question - is this run of
-  # characters a construct or is it text - and they have to answer it about
-  # the same source, or one of them decides the other's input. Literals are
-  # masked FIRST, because what a verbatim block is gets decided by the tree
-  # too: a template that prints the characters of `{% raw %}`, a refused tag,
-  # and the characters of `{% endraw %}` holds three constructs and no
-  # verbatim block, and masking the block first read the printed characters as
-  # a real opener and closer, blanked the tag between them, and admitted it.
-  # Masking literals first blanks the spans the tree reports as the template's
-  # own strings: a plain literal and a bracket subscript are the two shapes
-  # that carry one.
+  # Where a liquid tag begins is the parser's to say, so it is asked rather
+  # than second-guessed. Every place the characters `liquid` occur is a
+  # candidate - a liquid tag's name is those characters, so starting there
+  # misses none - and each candidate is put to the parser: the author's
+  # source up to the candidate, with a name no tag answers to written in its
+  # place and nothing after it. Where the parser was reading a tag name, it
+  # reports that name as an unexpected tag, located where the tag begins, and
+  # that is a liquid tag beginning there. Where it was reading anything else -
+  # text, a string, the body of a `raw` or `comment` block, a token a tag
+  # reads and throws away - no such report comes back.
   #
-  # That is all this ordering fixes, and the paragraph claims nothing more.
-  # Where a verbatim block ENDS is decided by the pattern below exactly as it
-  # was before, and the pattern recognises one spelling of a closing tag while
-  # the parser accepts several: `{% endraw xyz %}` closes a block at
-  # `solid` `1.3.4` and this pattern runs past it to the next closer, blanking
-  # the span between. A marker written inside a string the parser reads and
-  # then THROWS AWAY is the other gap - the trailing tokens of several
-  # admitted tags are discarded, so such a string is in no node, is never
-  # masked, and a marker in it pairs with a real marker later in the source.
+  # The prefix is the author's source byte for byte, so the parser reaches
+  # the candidate in the state the template put it in: whether the characters
+  # sit inside a verbatim block, and where such a block ended, is decided by
+  # the same lexer that decides it at render. Nothing here re-reads the source
+  # with a pattern, so there is no second reading of where a block ends, or of
+  # which strings a tag discards, for the parser to disagree with.
   #
-  # Be exact about what gets through either gap. `liquid` is excluded as an
-  # alternate SPELLING for constructs the subset already admits, not as a
-  # construct the subset forbids: the tags written inside it are ordinary tag
-  # nodes in the tree and the allowlist walk asks about every one of them, so
-  # `{% liquid echo x %}` is still refused on `echo`. What a blanked span
-  # admits is therefore an admitted construct in a spelling a second runtime
-  # need not implement - a hole in what the conformance corpus can hold two
-  # runtimes to - and not a forbidden construct escaping the walk.
-  #
-  # Both gaps are tracked separately, and the fix for them is not a wider
-  # pattern. A pattern is a hand-copy of the lexer and a hand-copy drifts; the
-  # end of a block is something to ask the parser for.
-  defp liquid_refusals(source, tree) do
-    masked =
-      source
-      |> mask_string_literals(tree)
-      |> mask_verbatim_blocks()
-
-    @liquid_opener
-    |> Regex.scan(masked, return: :index)
-    |> Enum.map(fn [{offset, _length} | _] ->
-      {line, column} = position(masked, offset)
-      {line, column, @tag_not_allowed, "liquid", "the tag"}
-    end)
+  # Be exact about what this refuses. `liquid` is excluded as an alternate
+  # SPELLING for constructs the subset already admits, not as a construct the
+  # subset forbids: the tags written inside it are ordinary tag nodes in the
+  # tree and the allowlist walk asks about every one of them, so
+  # `{% liquid echo x %}` is refused on `echo` whatever this check finds. What
+  # this check refuses is the spelling, so that a template this runtime admits
+  # is one a second runtime implementing the subset can admit without
+  # implementing the liquid tag.
+  defp liquid_refusals(source) do
+    source
+    |> :binary.matches(@liquid)
+    |> Enum.flat_map(fn {offset, _length} -> probe(binary_part(source, 0, offset)) end)
   end
 
-  # Runs over the literal-masked source, so a `{% raw %}` or `{% comment %}`
-  # marker the template merely prints is no longer here to be read as one.
-  # Masking preserves length and newlines here as it does everywhere else.
-  defp mask_verbatim_blocks(source) do
-    Regex.replace(@verbatim_block, source, fn match, _block -> mask(match) end)
-  end
-
-  # The exemption is the parse tree's, not the source's. A template that
-  # prints the characters of a liquid opener - a screen explaining to an
-  # author what the subset refuses - holds a string literal there and no tag,
-  # and the tree is what says so: the parser reports a `Solid.Literal` for a
-  # quoted argument and ordinary `Solid.Text` for prose that merely contains
-  # quotes. Masking the spans the tree calls literals therefore cannot hide a
-  # real opener, where masking every quoted span in the source could.
+  # Only the FIRST refusal answers. The source up to the candidate is the
+  # author's, and the author's source parsed, so nothing before the candidate
+  # is refused: where the candidate is a tag name, the probe name is the first
+  # thing the parser refuses. Where it is not - the characters sit in a
+  # string, say, which now runs to the end of the source unterminated - the
+  # first refusal is that, and the parser then recovers and reads on, and what
+  # it reads after recovering is not the author's template. The probe name
+  # read as a tag after such a recovery says nothing about the candidate.
   #
-  # Masking preserves length and newlines, so the offsets stay the ones the
-  # locs describe and the reported position is still the author's.
-  defp mask_string_literals(source, tree) do
-    tree
-    |> literal_locs([])
-    |> Enum.map(&literal_span(source, &1))
-    |> Enum.reject(&is_nil/1)
-    |> Enum.reduce(source, &mask_span(&2, &1))
-  end
-
-  # A literal's own traversal, because the general one reports struct nodes to
-  # the function it was given and what is wanted here is a list of locs rather
-  # than a fold over nodes. Two of the admitted tags hold a literal behind a
-  # tuple - a `case` branch is a `{values, body}` pair and an `elsif` a
-  # `{condition, body}` pair - which is why this walk has a tuple clause of
-  # its own and had one before the general reducer grew its own.
-  defp literal_locs(%Solid.Literal{loc: %Solid.Parser.Loc{} = loc}, acc),
-    do: [{loc.line, loc.column} | acc]
-
-  # A bracket subscript is a string written in the template exactly as any
-  # other literal is - `a["plan"]` - but the parser reports it as its own node
-  # type rather than as a literal, so the clause above does not see it. It is
-  # the same exemption for the same reason: `{{ a["{% liquid %}"] }}` prints
-  # those characters and holds no tag. A dot access is the same node with a
-  # different `access_type` and its loc is on the identifier rather than on a
-  # quote, and an integer subscript's loc is on a digit; both reach
-  # `literal_span/2`, which skips a loc that does not start at a quote, so
-  # this clause does not need to exclude them and is not written as though it
-  # does.
-  defp literal_locs(%Solid.AccessLiteral{loc: %Solid.Parser.Loc{} = loc}, acc),
-    do: [{loc.line, loc.column} | acc]
-
-  defp literal_locs(term, acc) when is_struct(term),
-    do: term |> Map.from_struct() |> Map.values() |> Enum.reduce(acc, &literal_locs/2)
-
-  defp literal_locs(term, acc) when is_tuple(term),
-    do: term |> Tuple.to_list() |> Enum.reduce(acc, &literal_locs/2)
-
-  defp literal_locs(term, acc) when is_list(term), do: Enum.reduce(term, acc, &literal_locs/2)
-
-  defp literal_locs(term, acc) when is_map(term),
-    do: term |> Map.values() |> Enum.reduce(acc, &literal_locs/2)
-
-  defp literal_locs(_other, acc), do: acc
-
-  # A literal's source span runs from its opening quote to the next occurrence
-  # of that same character: `solid` at `1.3.4` has no escape inside a string
-  # literal - `"a\"b"` is a parse error, not an escaped quote - so the next
-  # one is the closing one. A loc whose character is not a quote belongs to a
-  # number or a boolean and is skipped. This runs over the unmasked source -
-  # it is the first of the two masks - so every loc the tree reports still
-  # points at the character the author wrote.
-  defp literal_span(source, {line, column}) do
-    with offset when is_integer(offset) <- offset(source, line, column),
-         true <- offset < byte_size(source),
-         char when char in ["\"", "'"] <- binary_part(source, offset, 1),
-         from = offset + 1,
-         {at, 1} <-
-           :binary.match(source, char, scope: {from, byte_size(source) - from}) do
-      {offset, at - offset + 1}
+  # A candidate inside a block tag's body is refused by that tag in its own
+  # words, which end with the refusal of the name it met - `if` answers
+  # "Expected one of 'elsif', 'else', 'endif' tags. Got: " followed by it -
+  # and at that name's place, so the first refusal is read by how it ends.
+  #
+  # `Solid.Parser.parse/2` rather than `Solid.parse/2`: the probe reads a
+  # refusal's reason and location and nothing else, and the latter slices the
+  # offending line out of the source for every refusal, which is the step
+  # `parse/1` above guards against.
+  #
+  # One exception is rescued, `CaseClauseError`, which `parse/1` names too.
+  # At `solid` `1.3.4` the inline comment tag has no answer for reaching the
+  # end of the source inside its body and raises `CaseClauseError` there, and
+  # a candidate written in an inline comment's body puts the end of the source
+  # exactly there. The parser was reading a comment, not a tag name, so the
+  # answer is the same as for any other place that is not one. The inline
+  # comment tag is outside the subset and refused by the allowlist walk in any
+  # case.
+  defp probe(prefix) do
+    with {:error, [{reason, meta} | _recovered]} <- Solid.Parser.parse(prefix <> @probe_name),
+         true <- String.ends_with?(reason, @probe_reason) do
+      [{meta[:line], meta[:column], @tag_not_allowed, @liquid, "the tag"}]
     else
-      _no_span -> nil
+      _not_a_tag_name -> []
     end
-  end
-
-  defp mask_span(source, {offset, length}) do
-    binary_part(source, 0, offset) <>
-      mask(binary_part(source, offset, length)) <>
-      binary_part(source, offset + length, byte_size(source) - offset - length)
-  end
-
-  defp mask(text), do: String.replace(text, ~r/[^\n]/, " ")
-
-  # The inverse of `position/2`: a loc's line and column are one-based and
-  # count bytes, as the scan's offsets do.
-  defp offset(_source, 1, column), do: column - 1
-
-  defp offset(source, line, column) do
-    case Enum.at(:binary.matches(source, "\n"), line - 2) do
-      {at, 1} -> at + 1 + column - 1
-      nil -> nil
-    end
-  end
-
-  defp position(source, offset) do
-    prefix = binary_part(source, 0, offset)
-    newlines = :binary.matches(prefix, "\n")
-
-    case List.last(newlines) do
-      nil -> {1, offset + 1}
-      {at, 1} -> {length(newlines) + 1, offset - at}
-    end
+  rescue
+    _inside_an_inline_comment in CaseClauseError -> []
   end
 
   # -- parse errors ---------------------------------------------------------
