@@ -9,9 +9,10 @@ defmodule Riddler.FindingPositionUnitsTest do
   locates it, one where the condition compiler or the evaluator does - so the
   byte column and the character column to the same place differ by that
   count, and asserts the unit its site gives. The first test enumerates the
-  `Riddler.Finding` literals in `lib/` that carry `:position`, so such a
-  literal added without a unit named here turns this file red; a position set
-  by a struct update or a map write is not a literal and is not read.
+  `Riddler.Finding` literals that carry `:position` inside a `def` or a `defp`
+  in `lib/`, so such a literal added without a unit named here turns this file
+  red. A literal inside a `defmacro` or a module attribute is not read, and
+  neither is a position set by a struct update or a map write.
   """
 
   use ExUnit.Case, async: true
@@ -91,8 +92,8 @@ defmodule Riddler.FindingPositionUnitsTest do
 
   # -- the enumeration -------------------------------------------------------
 
-  # Every `%Finding{...}` or `%Riddler.Finding{...}` literal in `lib/` whose
-  # keys include `:position`, keyed by file, function and a one-based count
+  # Every `%Finding{...}` or `%Riddler.Finding{...}` literal inside a `def` or
+  # a `defp` in `lib/` whose keys include `:position`, keyed by file, function and a one-based count
   # within that function, read out of the source's syntax tree rather than
   # matched as text.
   defp position_sites do
