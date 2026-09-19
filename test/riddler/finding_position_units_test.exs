@@ -5,10 +5,13 @@ defmodule Riddler.FindingPositionUnitsTest do
   The column is the unit of whichever parser located the refusal, and this
   package converts neither: the template parser counts bytes, and the
   condition compiler and the evaluator count characters. Every case below puts
-  two two-byte characters before the defect, so the byte column and the
-  character column to the same place differ by two, and asserts the unit its
-  site gives. The first test enumerates the sites, so a site added to `lib/`
-  without a unit named here turns this file red.
+  two-byte characters before the defect - two where the template parser
+  locates it, one where the condition compiler or the evaluator does - so the
+  byte column and the character column to the same place differ by that
+  count, and asserts the unit its site gives. The first test enumerates the
+  `Riddler.Finding` literals in `lib/` that carry `:position`, so such a
+  literal added without a unit named here turns this file red; a position set
+  by a struct update or a map write is not a literal and is not read.
   """
 
   use ExUnit.Case, async: true
