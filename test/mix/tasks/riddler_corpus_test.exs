@@ -1,6 +1,6 @@
 defmodule Mix.Tasks.Riddler.CorpusTest do
   @moduledoc """
-  The emitter, run the way a person and CI run it.
+  The export task, run the way a person runs it.
 
   These tests are synchronous and some of them change the working directory,
   because the task reads the corpus by repository-relative path. A test that
@@ -143,9 +143,8 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
     end
 
     # Sabotage: made a file that is absent read as no drift; the empty checkout
-    # passed the check and this test went red. An empty checkout is the state
-    # riddler_spec is in until it receives its first emit, and what the drift
-    # step in CI reports until then.
+    # passed the check and this test went red. An empty directory is what an
+    # export target is before its first export.
     test "names every file an empty checkout is missing" do
       target = tmp_dir!("empty")
 
@@ -167,32 +166,28 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
   end
 
   describe "where it writes" do
-    # Sabotage: made the task read RIDDLER_SPEC_PATH before --to; the explicit
-    # path lost to the environment and this test went red.
-    test "prefers --to over RIDDLER_SPEC_PATH" do
-      chosen = tmp_dir!("chosen")
-      ignored = tmp_dir!("ignored")
+    # Sabotage: put the RIDDLER_SPEC_PATH fallback back behind --to; the export
+    # went into the directory the environment named, nothing was raised, and
+    # this test went red.
+    #
+    # Sabotage: put the ../riddler_spec default back behind --to; the export
+    # was refused for a missing directory rather than for a missing --to, the
+    # message did not match, and this test went red.
+    test "refuses an export without --to, whatever RIDDLER_SPEC_PATH names, and writes nothing" do
+      named = tmp_dir!("named-by-env")
 
-      System.put_env("RIDDLER_SPEC_PATH", ignored)
+      System.put_env("RIDDLER_SPEC_PATH", named)
       on_exit(fn -> System.delete_env("RIDDLER_SPEC_PATH") end)
 
-      Task.run(["--to", chosen])
-
-      assert File.ls!(ignored) == []
-      assert File.exists?(Path.join(chosen, "corpus/screens/admit.json"))
+      assert_raise Mix.Error, ~r/needs --to PATH/, fn -> Task.run([]) end
+      assert File.ls!(named) == []
     end
 
-    # Sabotage: dropped the RIDDLER_SPEC_PATH fallback, leaving only --to and
-    # the default; the environment was ignored and this test went red.
-    test "falls back to RIDDLER_SPEC_PATH when --to is absent" do
-      target = tmp_dir!("from-env")
-
-      System.put_env("RIDDLER_SPEC_PATH", target)
-      on_exit(fn -> System.delete_env("RIDDLER_SPEC_PATH") end)
-
-      Task.run([])
-
-      assert File.exists?(Path.join(target, "schemas/screen-document.schema.json"))
+    # Sabotage: put the ../riddler_spec default back behind --to; the check ran
+    # against that path and was refused for its missing files rather than for
+    # a missing --to, the message did not match, and this test went red.
+    test "refuses a check without --to" do
+      assert_raise Mix.Error, ~r/needs --to PATH/, fn -> Task.run(["--check"]) end
     end
   end
 

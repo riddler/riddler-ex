@@ -21,8 +21,8 @@ defmodule Riddler.CorpusTest do
   second runtime is not obliged to reproduce word for word.
 
   The runner and that encoder are `Riddler.Corpus`, not this file, because the
-  task that emits this corpus into a second repository runs every case before
-  it copies it out and has to run them the way this suite does.
+  task that exports this corpus runs every case before it copies it out and
+  has to run them the way this suite does.
   """
 
   use ExUnit.Case, async: true
@@ -42,9 +42,9 @@ defmodule Riddler.CorpusTest do
     @external_resource path
   end
 
-  # The corpus is emitted into a second repository and checked there for drift,
-  # so the count is part of what this version pins: a case lost in a rebase is
-  # a case a second runtime stops being held to, and nothing else would notice.
+  # A second runtime vendors the corpus from a tag of this repository, so the
+  # count is part of what this version pins: a case lost in a rebase is a case
+  # a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
     "corpus/screens/admit.json" => 42,
     "corpus/screens/resolve.json" => 21,
