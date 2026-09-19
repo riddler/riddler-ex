@@ -2158,7 +2158,12 @@ raised for an `id` or a screen `title` that is there and is not a string
 document `admit/1` takes carries such a value now, so neither code has a value
 left to be raised for, and both checks are removed from `validate/1`. A string
 `id` or `title` was never a finding, so no document that validated clean
-before stops doing so.
+before stops doing so. That holds of a struct `admit/1` builds; a struct a
+host builds itself can still carry an `id` or a `title` that is not a string,
+and unlike a key or a condition of the wrong type, whose clauses stay (below),
+such a struct raised `document.invalid_id` or `document.invalid_title` at
+`ef87a50ac596ab3ce5f2ed3138c035626470fc4e` and now raises neither, the field
+passing `validate/1` unreported.
 
 **The other codes the wrong-typed values raised keep the values that still
 reach them.** `document.unknown_kind`, `document.invalid_schema_version`,
