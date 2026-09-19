@@ -2236,3 +2236,100 @@ raises `document.invalid_schema_version` from `validate/1`, which compares the
 version with the integer 1 (the private `schema_version_findings/1` in
 `lib/riddler/screens/document.ex`); whether that number is version 1 is not
 decided here either.
+
+---
+
+Noted 2026-09-18, campaign RF058, beads rd-lgi and rd-5uc. Two notes by
+addition, each read against `main` at `6a3ee40`. The first records what the
+per-button opt-out does with a button key that is not a string, and why that is
+left where it stands; the second says where the pattern compiler two passages
+above name now lives, and where three line cites in the keyless-button
+amendment above land today. Nothing above is changed, and neither note changes
+what this record decides.
+
+**A button key that is not a string is the document's defect, and the opt-out
+is deliberately not hardened against it (rd-lgi).** The Decision above says
+that every node has a `key` matching `[a-z][a-z0-9_]*`, and the amendment above
+headed "a keyless button cannot opt out, and a call naming no button never
+does" makes `validates` as `false` "meaningful only on a button that carries a
+key, and only to a press that names that key". Neither says what a key that is
+there and is not a string does to a press, and the package answers it this way.
+`Riddler.Screens.Document.admit/1` answers `nil` for a document whose button
+carries `7`, `0`, `false`, `true` or `null` as its key (the private `typed?/2`
+in `lib/riddler/screens/document.ex`), so such a key reaches response
+validation only on a struct a host builds itself. On such a struct,
+`Riddler.Screens.Document.validate/1` reports the key as
+`document.invalid_key` with a `node_key` of `nil` (the private `key_findings/2`
+in the same file, its clause for a key that is there and is not a string).
+Response validation compares the pressed key with the node's key as they are
+(the private `button?/2` in `lib/riddler/screens/validation.ex`), so on a
+button keyed `7` that declares `validates` as `false`, a press of `7` answers
+`:ok`, and a press of `"7"` names no button and validates in full. The test
+named "a press equal to a non-string button key reaches that button's
+opt-out", in the describe block "a node key the record does not admit" of
+`test/riddler/screens/validation_test.exs`, pins those two answers and the
+document finding; it is added by this entry's own request and so is citable at
+no earlier SHA.
+
+That is left where it stands. The defect is the document's, and the layer this
+record names for it already reports it; the schema refuses such a key, and so
+does admission. What the amendment above removed was an `:ok` reached with no
+host naming anything, two absences comparing equal. A press equal to a
+non-string key is a host naming, in the same term it wrote onto the struct, the
+button it built, so the opt-out is still reached only through a button a press
+names, which is the condition that amendment sets. Hardening `button?/2` to
+match only a string key would add a second rule about keys to response
+validation, for a struct `admit/1` never builds.
+
+**Why a note and not an amendment.** The test these records state is whether an
+entry changes an answer the record gave: an entry is an amendment where "the
+rule stated above answers a call one way, and this entry answers the same call
+another". No rule above answers a press equal to a key that is not a string,
+and this entry records the answer the package already gives: no document that
+validates clean stops doing so, no code, field, message or node key moves, no
+refusal is added, and no line of `lib/` changes with it. Deciding a question the
+record left open is not the test either: "Deciding an open question and
+changing what the record decides come apart, and it is the second that
+governs."
+
+**The pattern compiler two passages above place in `Riddler.Screens.Validation`
+is `compile_pattern/1` in `Riddler.Screens.Compilers`, and three line cites in
+the keyless-button amendment above land on other lines today (rd-5uc).** The
+amendment above headed "an uncompilable pattern is the document's defect" says
+of the function the document check compiles through "That function is in
+`Riddler.Screens.Validation`", and the note above opening "Noted 2026-09-18.
+The three amendments above move from `proposed` to `accepted`" calls it "the
+one private regular-expression compiler in `Riddler.Screens.Validation`". Each
+was true of the module on its date. The function is now `compile_pattern/1` in
+`Riddler.Screens.Compilers` (`lib/riddler/screens/compilers.ex`), a `def`
+marked `@doc false` in a module marked `@moduledoc false`, and both checks call
+it there: the response check from the private `pattern/2` in
+`lib/riddler/screens/validation.ex`, and the document check from the private
+`usable?/1` in `lib/riddler/screens/type/text_question.ex`. "Private" in the
+second passage reads as no part of the package's surface: the function was a
+`def` marked `@doc false` on that note's date as well (read at `aa3e89d`). What
+each passage says of the function is as true in its new module: the document
+check and the format compile through the one function, and it answers `:error`
+rather than raising and never reaches the template compiler. The note of
+2026-09-18 on the move in `docs/adr/0001-riddler-one-package.md` says the same
+of that record's passages and of these two; this is ADR-0002's own entry.
+
+The amendment above headed "a keyless button cannot opt out, and a call naming
+no button never does" cites three places in `lib/riddler/screens/validation.ex`
+by line, each read at `543f35275f05f735a34e88777201fa2e4beb1016`: `:101` for
+the private `button?/2`, `:94` through `:99` for the private `opted_out?/2`, and
+`:39` through `:41` for where the opt-out stands in front of the checks. Each
+was right at that SHA, and none lands on its function now. Read at
+`6a3ee40a5f914a4208c0ff756fbee43249edccbd`, `button?/2` is line 172.
+`opted_out?/2` is lines 160 through 167, in two clauses: the first, at line
+160, answers `false` for a pressed key of `nil` and was added by that
+amendment's code half, and the second, at lines 162 through 167, is the search
+the amendment describes. The opt-out stands in front of the checks at lines 48
+through 50, the head of `validate/4` and the `if` whose true branch answers
+`:ok`. The function names are the anchors those cites resolve by; the lines
+here are where they resolve at this reading.
+
+**Why a note and not an amendment.** Naming the module a function now lives in
+and saying where three cites land changes no answer this record gave: no
+finding code, field, position or refusal moves with the file or the lines, and
+each passage says of the function what it said before.
