@@ -308,7 +308,7 @@ in `corpus/`, beside the code that has to satisfy them, and the JSON schemas in
 another language vendors the corpus from a tag of this repository and records
 the tag it took.
 
-The gate is the corpus runner and its tests. `Riddler.Corpus` runs each case
+The gate is the corpus runner and its tests. The internal Riddler.Corpus module runs each case
 through the function its `capability` names and compares the answer to the one
 the case states, and `test/riddler/corpus_test.exs` runs every case in
 `corpus/` that way as part of `mix quality`, so a case this implementation does
@@ -342,10 +342,10 @@ time.
 
 ## Architecture decisions
 
-The records in [`docs/adr/`](docs/adr/README.md) carry the decisions this
+The records in [`docs/adr/`](https://github.com/riddler/riddler-ex/blob/v0.3.0/docs/adr/README.md) carry the decisions this
 package is built on - what the screen document is, what the template subset
 admits, and where the boundary between this package and its hosts runs.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](https://github.com/riddler/riddler-ex/blob/v0.3.0/LICENSE).

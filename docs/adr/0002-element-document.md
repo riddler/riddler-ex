@@ -187,7 +187,7 @@ to. One builds `Riddler.Screens.Document.admit/1` and `validate/1` with the type
 registry, and is held to admitting the fixture named in the Context with zero
 findings. One builds `Riddler.Screens.resolve/2`, which produces the resolved
 document described above, diagnostics included. One builds
-`Riddler.Screens.validate_responses/3` and its arity-4 form, which is where
+Riddler.Screens.validate_responses/3 and its arity-4 form, which is where
 `required` and `format` are enforced and where a button's `validates` is
 consulted.
 
@@ -454,7 +454,7 @@ the host's root, because that is the root the visitor was shown through.
 
 ### What v1 did, and why it was wrong
 
-`Riddler.Screens.validate_responses/3` and `/4` built their own root out of
+Riddler.Screens.validate_responses/3 and `/4` built their own root out of
 the responses they were handed and an empty `context`
 (`lib/riddler/screens.ex`, in the arity-4 body, read at
 `e7d76bf07f43e1ff0473d511857e42ff2b770b3e`). The module documentation stated
@@ -619,7 +619,7 @@ written against. The code is `document.unreachable_variant_candidate`, one
 finding per unconditional candidate that is not last, carrying the variant's
 own key as the node key and `nodes` as the field, with the buried candidate
 named in the message - the variant is the node the author has to fix. It is
-raised by `Riddler.Screens.Type.Variant.validate/1`
+raised by Riddler.Screens.Type.Variant.validate/1
 (`lib/riddler/screens/type/variant.ex`, the private `unreachable/2`, read at
 `7a2dd8f`), listed with the other codes in `Riddler.Screens.Document`'s
 moduledoc (`lib/riddler/screens/document.ex`, read at `7a2dd8f`), and pinned
@@ -917,7 +917,7 @@ string field is literal text" now has this one stated exception.
 
 **And the Consequences section assigns the other side to response
 validation:** it commissions the half that builds
-`Riddler.Screens.validate_responses/3` "and its arity-4 form, which is where
+Riddler.Screens.validate_responses/3 "and its arity-4 form, which is where
 `required` and `format` are enforced". The compilability of a `pattern` was
 part of enforcing `format` there, and this amendment takes it out. v1
 implemented exactly what that sentence said: a question whose `pattern` was
@@ -955,7 +955,7 @@ format compiles through rather than carrying a second copy of the anchors,
 because a document check holding an expression to anchors the format did not
 apply would admit a pattern the format cannot use, or refuse one it can, which
 is this defect reintroduced from the other end. That function is in
-`Riddler.Screens.Validation`, which is `@moduledoc false` and no part of this
+Riddler.Screens.Validation, which is `@moduledoc false` and no part of this
 package's surface, as its own documentation says. Both are added by this
 bead's own commit and so are citable at no earlier SHA.
 
@@ -1188,7 +1188,7 @@ this amendment from the corpus side and is left for the corpus pass.
 The code half is the same bead as the finding itself, whose commit is the one
 that adds both the entry point taking the diagnostics behind the opt-out check
 and the pair of tests pinning the two halves against one document, so neither
-is citable at any earlier SHA. The behaviour is in `Riddler.Screens.Validation`,
+is citable at any earlier SHA. The behaviour is in Riddler.Screens.Validation,
 which is `@moduledoc false` and no part of this package's surface, reached from
 `Riddler.Screens.validate_screen/4` in `lib/riddler/screens.ex`.
 
@@ -1252,7 +1252,7 @@ open defect has `Riddler.Template.compile/1` raising on some malformed input,
 which sits under ADR-0003's compile contract. It does not bear on the second
 amendment: the expression that amendment holds a document to is the `pattern`
 format's, compiled by the one private regular-expression compiler in
-`Riddler.Screens.Validation`, which answers `:error` rather than raising and
+Riddler.Screens.Validation, which answers `:error` rather than raising and
 never reaches the template compiler. The two compile paths are distinct, and the
 amendment's claim survives.
 
@@ -1283,7 +1283,7 @@ pressed key of `nil`: an absent pressed key names no button, whatever nodes
 the screen carries.
 
 What the package does today is the other reading, and this amendment is the
-reason to change it. `Riddler.Screens.Validation` finds the pressed button with
+reason to change it. Riddler.Screens.Validation finds the pressed button with
 `node[:type] == "button" and node[:key] == key`
 (`lib/riddler/screens/validation.ex:101`, the private `button?/2`, read at
 `543f35275f05f735a34e88777201fa2e4beb1016`), and the arity-3 clause passes a
@@ -1814,7 +1814,7 @@ errors and carry no place, so the finding carries none. What decides the field
 is therefore the shape the dependency answers with, and of the five error
 structs `predicator` 9.4.1 defines, one requires a position, three carry it as
 an optional field that may be `nil`, and one has no such field at all. The
-finding takes it through `Riddler.Finding.position/2`, which builds the map
+finding takes it through Riddler.Finding.position/2, which builds the map
 only from a positive line and a positive column and answers `nil` for anything
 else (`lib/riddler/finding.ex`, `position/2` and its fallback clause, read at
 `b67dea5`). The message and the field cannot disagree about whether there is
@@ -2293,16 +2293,16 @@ under `lib/`. Deciding a question the record left open is not the test either: "
 changing what the record decides come apart, and it is the second that
 governs."
 
-**The pattern compiler two passages above place in `Riddler.Screens.Validation`
-is `compile_pattern/1` in `Riddler.Screens.Compilers`, and three line cites in
+**The pattern compiler two passages above place in Riddler.Screens.Validation
+is `compile_pattern/1` in Riddler.Screens.Compilers, and three line cites in
 the keyless-button amendment above land on other lines today (rd-5uc).** The
 amendment above headed "an uncompilable pattern is the document's defect" says
 of the function the document check compiles through "That function is in
-`Riddler.Screens.Validation`", and the note above opening "Noted 2026-09-18.
+Riddler.Screens.Validation", and the note above opening "Noted 2026-09-18.
 The three amendments above move from `proposed` to `accepted`" calls it "the
-one private regular-expression compiler in `Riddler.Screens.Validation`". Each
+one private regular-expression compiler in Riddler.Screens.Validation". Each
 was true of the module on its date. The function is now `compile_pattern/1` in
-`Riddler.Screens.Compilers` (`lib/riddler/screens/compilers.ex`), a `def`
+Riddler.Screens.Compilers (`lib/riddler/screens/compilers.ex`), a `def`
 marked `@doc false` in a module marked `@moduledoc false`, and both checks call
 it there: the response check from the private `pattern/2` in
 `lib/riddler/screens/validation.ex`, and the document check from the private
