@@ -24,7 +24,7 @@ defmodule Riddler do
       slice of Liquid, so that a host can let an author interpolate a value
       into copy without letting them run code.
 
-    * `Riddler.Corpus` - the conformance corpus. The cases are authored here,
+    * Riddler.Corpus (internal) - the conformance corpus. The cases are authored here,
       beside the code that has to satisfy them, and emitted into the corpus
       repository by `mix riddler.corpus` so that a runtime written in another
       language can be held to the same behavior.

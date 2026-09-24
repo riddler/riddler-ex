@@ -233,12 +233,12 @@ defmodule Riddler.Screens do
 
   What is checked is what the node declares. `required` is unanswered when the
   response is absent or is a string of whitespace. `format` names one of the
-  validation formats `Riddler.Screens.Document.formats/0` lists, and a blank
-  response that is not required is not put to it - a format has nothing to say
-  about text a visitor did not type. The numeric formats also honour `min` and
-  `max` where the question declares them. A question whose `pattern` does not
-  compile is not checked against that pattern here: the defect is the
-  document's and `Riddler.Screens.Document.validate/1` reports it as
+  validation formats the internal Riddler.Screens.Document.formats/0 lists,
+  and a blank response that is not required is not put to it - a format has
+  nothing to say about text a visitor did not type. The numeric formats also
+  honour `min` and `max` where the question declares them. A question whose
+  `pattern` does not compile is not checked against that pattern here: the
+  defect is the document's and `Riddler.Screens.Document.validate/1` reports it as
   `document.invalid_pattern`, so a host that validates responses without
   validating documents is not told, and every response to that question
   satisfies the pattern check.

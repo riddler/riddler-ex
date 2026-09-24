@@ -92,7 +92,7 @@ language is held to this package's behavior, not the reverse.
 say what the vocabulary admits and why a document is refused;
 `Riddler.Screens.resolve/2` resolves a document against a context, and
 `Riddler.Screens.resolve_screen/3` resolves one named screen of it;
-`Riddler.Screens.validate_responses/3`, and its arity-4 form naming the button
+Riddler.Screens.validate_responses/3, and its arity-4 form naming the button
 that was pressed, say what a set of responses has to satisfy before a host
 accepts it. They are pure: same inputs, same outputs, no process state, no I/O.
 Surface beyond those functions is added by a record, not by a commit.
@@ -281,13 +281,13 @@ them; it says in as many words that prose in this record naming
 it. Read those two places here as history from that date. The removal is a
 breaking change to a public function of 0.1.0 and ships in the next release cut
 after its code half lands; at `27faac3` that code half has not landed and
-`Riddler.Screens.validate_responses/3` and `/4` are still present in
+Riddler.Screens.validate_responses/3 and `/4` are still present in
 `lib/riddler/screens.ex`.
 
 Noted 2026-09-17, campaign RF051, bead rd-9j0. One note by addition, read
 against `main` at `6658ae4`. Nothing above is changed.
 
-**`Riddler.Corpus` and the `mix riddler.corpus` task ship in the Hex tarball,
+**Riddler.Corpus and the `mix riddler.corpus` task ship in the Hex tarball,
 and that is the decision, not an accident.** Both are files under `lib/`
 (`lib/riddler/corpus.ex` and `lib/mix/tasks/riddler.corpus.ex`, read at
 `6658ae4`), and `package/0`'s `files:` list in `mix.exs` names the whole `lib`
@@ -307,14 +307,14 @@ nothing else: no version, no commit.** The corpus paragraph above says that a
 from, and a drift check in this repository's CI fails when the emitted corpus
 and the cases disagree." That clause was already inaccurate at 0.1.0 in the
 noun it used: at `0d51acc` the emitter stamped the package VERSION, not the
-commit - `Riddler.Corpus.generated_by/1` in `lib/riddler/corpus.ex` answered
+commit - Riddler.Corpus.generated_by/1 in `lib/riddler/corpus.ex` answered
 the word `riddler`, the package version, the word `from` and the
 repository-relative source path. From this date the header carries neither.
 It is the word `riddler`, a space, the word `from`, a space and the source
 path, so an emit is byte-identical across commits AND across releases, and a
 difference the drift check reports is a difference in the corpus rather than
 in when or from what version it was emitted. In the corpus, not in the cases
-alone: `Riddler.Corpus.drift/1` walks `files/0`, which is the case files and
+alone: Riddler.Corpus.drift/1 walks `files/0`, which is the case files and
 the schemas together (`lib/riddler/corpus.ex`, read at `0d51acc`), so a
 schema that differs or is absent is reported exactly as a case file is - and
 a missing schema is what that check reports on the request carrying this
@@ -346,7 +346,7 @@ requires `generated_by` on every case file among its required top-level keys
 (read at `riddler_spec` `84d7a3e`), and it checks that the key is present and
 not what its value says. Removing the key would turn that repository's gate
 red; a corpus emitted under this note passes it unchanged. The package
-version itself is not removed and is not hidden: `Riddler.Corpus.version/0`
+version itself is not removed and is not hidden: Riddler.Corpus.version/0
 survives, and `mix riddler.corpus` still names the version on the console for
 whoever is running an emit. Console output is not an emitted byte, and a
 person running the task is entitled to know which checkout is writing.
@@ -367,7 +367,7 @@ word does not occur in this file at all. Where it occurs as this note lands,
 and where the header's shape is spelled out, is in the paragraphs of this
 note, which report the header rather than decide it. And the record does not
 put the header inside the contract it decides; the contract it decides is the
-content document. The note above headed "**`Riddler.Corpus` and the `mix
+content document. The note above headed "**Riddler.Corpus and the `mix
 riddler.corpus` task ship in the Hex tarball, and that is the decision, not
 an accident.**" is the precedent this follows - a deliberate choice about the
 emitter, locked in where a reader of the record will meet it, without
@@ -422,7 +422,7 @@ before any finding is built rather than producing one without a place
 worth stating carefully: it is what this package's checks and a fuzz of 19,683
 templates and 43,253 adversarial inputs established, finding no template
 finding with a `nil` position, and not a guarantee the parser makes. A
-metadata carrying a line and no column would reach `Riddler.Finding.position/2`
+metadata carrying a line and no column would reach Riddler.Finding.position/2
 and yield `nil`; no input has been found that produces one.
 
 The field and the checks that pin it are added by this request and so are
@@ -454,15 +454,15 @@ second runtime. Two flat fields would make "there is no source span" two facts
 that can disagree, where one nullable field makes it one. A nested struct
 would be a second public module for a pair of integers, and gains a host
 nothing a map with those keys does not already give it.
-`Riddler.Finding.position/2`, which is `@doc false` and no part of this
+Riddler.Finding.position/2, which is `@doc false` and no part of this
 package's public surface, turns a line and a column into the map and answers
 `nil` unless both are positive integers, so a parser error reported without a
 place could not put half a span on a finding. It is the same device, in the same
 module, and for the same reason, as
-`Riddler.Finding.node_key/1`, the `@doc false` coercion this package's findings
+Riddler.Finding.node_key/1, the `@doc false` coercion this package's findings
 already go through; each is `def` rather than `defp` because the checks that
 build findings call it from another module. The map's shape carries a name of
-its own: this addition exports the type `Riddler.Finding.position/0`, defined as
+its own: this addition exports the type `t:Riddler.Finding.position/0`, defined as
 `%{line: pos_integer(), column: pos_integer()}`, and the struct's `:position`
 is typed `position() | nil` (rd-0pi).
 
@@ -497,7 +497,7 @@ and the first by a corpus case in `corpus/templates/render.json` that expects a
 refusal naming no place.
 
 **A `nil` position is a reachable shape, not only an unreached one.**
-`Riddler.Finding.position/2` is where it is answered: it builds the map only
+Riddler.Finding.position/2 is where it is answered: it builds the map only
 when both the line and the column are positive integers and answers `nil`
 otherwise (`lib/riddler/finding.ex:97` and the fallback clause at `:101`). It
 is reached with no line at all, because the parser can refuse a source without
@@ -535,7 +535,7 @@ a guarantee:
 > it is what this package's checks and a fuzz of 19,683 templates and 43,253
 > adversarial inputs established, finding no template finding with a `nil`
 > position, and not a guarantee the parser makes. A metadata carrying a line
-> and no column would reach `Riddler.Finding.position/2` and yield `nil`; no
+> and no column would reach Riddler.Finding.position/2 and yield `nil`; no
 > input has been found that produces one.
 
 The care in that sentence was warranted and the sentence is now overtaken:
@@ -570,7 +570,7 @@ still reads as the amendment states, at the same line:
 - The one call into the parser, `Riddler.Template`'s private `parse/1`, and
   the two named exceptions it rescues, `ArithmeticError` and `CaseClauseError`
   (`lib/riddler/template.ex:210` and `:213`).
-- `Riddler.Finding.position/2`, building the map only for two positive
+- Riddler.Finding.position/2, building the map only for two positive
   integers, and its fallback answering `nil`
   (`lib/riddler/finding.ex:97` and `:101`).
 - The document door re-reporting a refusal as `document.invalid_template` and
@@ -725,7 +725,7 @@ applies here. A vendored copy is an artifact of the tag it was taken from, and
 a vendoring consumer that does not record the tag has no way to say which
 contract it implements.
 
-**The corpus runner and its tests are the gate.** `Riddler.Corpus` runs each
+**The corpus runner and its tests are the gate.** Riddler.Corpus runs each
 case through the function its `capability` names and compares the answer to
 the one the case states (`lib/riddler/corpus.ex`, its authored case and schema
 file lists at `:25` and `:32`, read at `a72788a`), and
@@ -870,7 +870,7 @@ itself carry no SHA and need none: what a label is for is a cite a reader
 cannot resolve inside this file (rd-q5d).
 
 **The conformance corpus does not ship in the Hex tarball, and that is decided,
-not an omission.** The note above headed "**`Riddler.Corpus` and the `mix
+not an omission.** The note above headed "**Riddler.Corpus and the `mix
 riddler.corpus` task ship in the Hex tarball, and that is the decision, not an
 accident.**" settles the two `lib/` files and says nothing about the cases. The
 cases do not ship, and do not gain a place in the package: `package/0`'s
@@ -892,7 +892,7 @@ Noted 2026-09-18, campaign RF055, bead rd-ai1. Two notes by addition, plus the
 paragraph that accounts for the instrument. The five sites enumerated below
 were read at `8331e97`, this request's code commit rather than a SHA on `main`,
 and no later commit of this request changes any of them. The cites below that
-are not to those sites are accounted for as follows. `Riddler.Finding.position/2`
+are not to those sites are accounted for as follows. Riddler.Finding.position/2
 is unchanged by this request, which touches no line of its definition. `span/1`,
 named in the first site's bullet, is `lib/riddler/template.ex`'s, and no commit
 of this request touches that file at all. `error_position/1` in
@@ -925,7 +925,7 @@ literal in `lib/` was enumerated at `8331e97`, and these are all of them:
   `defp finding({line, column, @parse_error, nil, reason})`, which carries the
   position it built and appends the same place to its message through `span/1`,
   and the subset clause, `defp finding({line, column, code, name, lead})`,
-  which takes the pair through `Riddler.Finding.position/2`
+  which takes the pair through Riddler.Finding.position/2
   (`lib/riddler/template.ex`, the `position:` assignment in each).
 - The `document.invalid_template` finding that re-reports a template refusal
   against the template a document node writes, carrying the position of the
@@ -954,8 +954,8 @@ this entry. The first is named there as
 "`document.invalid_condition` obtains a place for a condition the compiler
 refused and does not carry it". That one is fixed here.
 The condition compiler locates a condition it refuses, and the place now
-reaches the finding through `Riddler.Finding.position/2` by way of
-`error_position/1` in `Riddler.Screens.Validation`, the same helper the
+reaches the finding through Riddler.Finding.position/2 by way of
+`error_position/1` in Riddler.Screens.Validation, the same helper the
 response check reads it with, which is `@doc false` as `compile_pattern/1` in
 that module already is and no part of this package's documented surface. A
 condition that is not a string never reached the parser, has no place, and
@@ -966,7 +966,7 @@ by which checks carry a place, and a check that has one now carries it.
 here rather than a filed defect.** The paragraph above files the second of the
 three as "`document.invalid_pattern`'s place is discarded a layer below the
 finding". What is discarded is an offset, and an offset is not a place.
-`compile_pattern/1` in `Riddler.Screens.Validation` is the one function in this
+`compile_pattern/1` in Riddler.Screens.Validation is the one function in this
 package that turns a `pattern` source into a regular expression, and it
 compiles the author's expression inside the anchors that format applies, so
 what `Regex.compile/1` hands back on a refusal is a reason and a byte count
@@ -1032,7 +1032,7 @@ answers the same call another". What this entry restates is a count of where a
 rule renders in `lib/`, and it is the enumeration that moves and not the rule.
 The field is still `nil` or a map of a line and a column; it is still set by
 which checks carry a place rather than by which inputs have source text; it is
-still built only by `Riddler.Finding.position/2`; and no code, field or node
+still built only by Riddler.Finding.position/2; and no code, field or node
 key moves, no refusal is added, and no document that validates clean stops
 doing so. This record anticipated the move in the same paragraph that files
 three of these `nil`s as defects rather than explaining them, and
@@ -1063,7 +1063,7 @@ text above cites now live.
 **Two helpers the entries above cite moved to a neutral home.**
 `compile_pattern/1`, with the comment above it recording what was run against
 `Regex.compile/1`, and `error_position/1` are now in
-`Riddler.Screens.Compilers` (`lib/riddler/screens/compilers.ex`, both functions
+Riddler.Screens.Compilers (`lib/riddler/screens/compilers.ex`, both functions
 and that comment read there at `f2b4b2a`), a `@moduledoc false` module neither
 the document check nor the response check owns, and both layers call them
 there. Nothing else moved with them: the clauses, the specs, the `@doc false`
@@ -1113,7 +1113,7 @@ an amendment and not a note" below.
 `corpus/screens/validate_screen.json`, its `capability` member reads
 `screens.validate_screen`, and the `capability` enum in
 `priv/schemas/corpus-case.schema.json` carries the new string in place of the
-old one. The runner dispatches on it (`Riddler.Corpus`, its
+old one. The runner dispatches on it (Riddler.Corpus, its
 `defp run("screens.validate_screen", input)` clause and the private helper that
 clause calls, `defp validate_screen(document, input)`, in
 `lib/riddler/corpus.ex`), and the authored file lists in that module, in
@@ -1271,7 +1271,7 @@ by the extra bytes of each one that does.
 | the subset clause of that same function | `template.tag_not_allowed`, `template.filter_not_allowed` | bytes |
 | the re-wrap in `refusals/3` in `Riddler.Screens.Document` | `document.invalid_template` | bytes, being the wrapped refusal's |
 | `invalid_condition/3` in `Riddler.Screens.Document` | `document.invalid_condition` | characters |
-| `undecidable_finding/2` in `Riddler.Screens.Validation` | `response.undecidable` | characters |
+| `undecidable_finding/2` in Riddler.Screens.Validation | `response.undecidable` | characters |
 
 The list is kept by a test rather than by this record. "every site in lib/
 that sets a position is named here with its unit", in
@@ -1308,7 +1308,7 @@ evaluator's.
 red rather than moving a host's columns without a word.
 
 **The module text says the same.** The `:position` bullet of
-`Riddler.Finding`'s moduledoc and the typedoc of `Riddler.Finding.position/0`
+`Riddler.Finding`'s moduledoc and the typedoc of `t:Riddler.Finding.position/0`
 (`lib/riddler/finding.ex`, read at `a3a134d`) name the unit per parser, and
 the bullet names it per site.
 
@@ -1333,7 +1333,7 @@ the other is not decided here: a column in a single unit would be a behaviour
 change for every host reading the sites that convert.
 
 **The field.** It is still `nil` or a map of a one-based line and column,
-still built only by `Riddler.Finding.position/2`, and still set by which
+still built only by Riddler.Finding.position/2, and still set by which
 checks carry a place. `document.invalid_pattern` still carries none; the byte
 offset the note of 2026-09-18 on it tabulates is not a position, and this
 entry gives it no unit.
@@ -1398,7 +1398,7 @@ by a line number.
 
 **A case's name claims only what its capability compares.** A case passes when
 the answer this package gives equals the answer the case states, the two maps
-compared whole (`mismatches/1` in `Riddler.Corpus`, `lib/riddler/corpus.ex`).
+compared whole (`mismatches/1` in Riddler.Corpus, `lib/riddler/corpus.ex`).
 What a capability answers is therefore all that any case under it holds a
 second runtime to, and a case's name claims nothing that answer does not carry.
 A name may say what its input is; what it says the input comes to is what the
@@ -1417,7 +1417,7 @@ a fixture change and takes none (`changelog.d/README.md`).
 
 **What each capability compares at this date.** A finding in any answer below
 is compared as `code`, `field` and `node_key` and nothing else
-(`encode_findings/1` in `Riddler.Corpus`).
+(`encode_findings/1` in Riddler.Corpus).
 
 | capability | the answer compared | where it is built |
 |---|---|---|
@@ -1429,7 +1429,7 @@ is compared as `code`, `field` and `node_key` and nothing else
 | `templates.render`, rendered in one mode | `compiled`, `rendered` and `missing`, with `text` where it rendered | `render/3` |
 | `templates.render`, in both modes | the one answer both modes give; `modes_disagree` where they differ | `agreed/2` |
 
-Every function named in the table is in `Riddler.Corpus`.
+Every function named in the table is in Riddler.Corpus.
 
 ### The two known cases whose names claimed more
 
@@ -1524,7 +1524,7 @@ as `docs/adr/README.md` says under the same heading.
 case. One case name changes, in `corpus/templates/render.json`.
 
 **Every capability's comparison.** No capability is widened, and
-`priv/schemas/corpus-case.schema.json` and `Riddler.Corpus` are not edited by
+`priv/schemas/corpus-case.schema.json` and Riddler.Corpus are not edited by
 this request. A later request that widens one does so under the rule above.
 
 **The corpus carries no position.** The note that decides so stands, and so
@@ -1554,7 +1554,7 @@ Amendment" heading, is whether an entry changes an "answer the record gave",
 and none of the three does. The corpus-position paragraph decides a call this
 record had not answered: nothing above it said the corpus carries a position,
 and the encoder already compared a finding as `code`, `field` and `node_key`
-alone (`encode_findings/1` in `Riddler.Corpus`), so its decided reading "takes
+alone (`encode_findings/1` in Riddler.Corpus), so its decided reading "takes
 nothing away, and so changes nothing this record had decided", and "Deciding
 an open question and changing what the record decides come apart, and it is
 the second that governs". The cite-label paragraph says which file and which
@@ -1593,7 +1593,7 @@ those reasons that nobody ran, so a host could not trust it for any
 note headed "**`Riddler.Finding` carries a source position, and this record is
 where that is decided.**" took over a fuzz that was "not a guarantee the
 parser makes". The comment above `compile_pattern/1` in
-`Riddler.Screens.Compilers` and the `:position` bullet of `Riddler.Finding`'s
+Riddler.Screens.Compilers and the `:position` bullet of `Riddler.Finding`'s
 moduledoc already call the `nil` a decision, and neither is edited. This is a
 note: the record's answer for this code is `nil`, and this answers the call it
 left open the same way, so no finding, code, field or refusal moves. A later
@@ -1618,7 +1618,7 @@ was read:
 **The conformance corpus lives in this repository.**
 
 - The cases are in `corpus/` and the schemas in `priv/schemas/`, and
-  `Riddler.Corpus` lists them as its authored case and schema files
+  Riddler.Corpus lists them as its authored case and schema files
   (`lib/riddler/corpus.ex:25` and `:32`, the same lines the amendment cites).
 - `test/riddler/corpus_test.exs` holds this package to every one of those
   files (its file lists at `:30`, `:37` and `:38`, the same lines).
@@ -1644,7 +1644,7 @@ was read:
 
 - The runner carries one clause per capability,
   `screens.validate_screen` among them, and no fallback clause (`run/2` in
-  `Riddler.Corpus`, `lib/riddler/corpus.ex:121` for that clause), and the
+  Riddler.Corpus, `lib/riddler/corpus.ex:121` for that clause), and the
   private `validate_screen/2` it calls is at `lib/riddler/corpus.ex:149`.
 - The `capability` enum carries `screens.validate_screen`
   (`priv/schemas/corpus-case.schema.json:36`), and the `input` description
