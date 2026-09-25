@@ -22,7 +22,7 @@ The public fixture `priv/fixtures/signup_screens.json` in `statifier_examples`
 types, with a key on every node, a condition on six of them, one `format`, and
 Liquid output in four strings. It is the worked case this record has to admit.
 
-The second piece of public evidence is `docs/spikes/SF040-element-editor.md` in
+The second piece of public evidence is `docs/spikes/element-editor-spike.md` in
 `statifier_blocks` (added by that repository's PR 465; present at `cdfbc6c`),
 which re-authored that fixture in an editor vocabulary that had no screen
 container and no per-node key, condition, write or format. Its measurement is
@@ -400,12 +400,12 @@ survives:
 
 ---
 
-Recorded 2026-09-14, campaign RF049, bead rd-n0j. Rewritten in place while
-still proposed on 2026-09-15, campaign RF049, bead rd-9wd: the record is now
+Recorded 2026-09-14, bead rd-n0j. Rewritten in place while
+still proposed on 2026-09-15, bead rd-9wd: the record is now
 the screens kind's document, the envelope carries an optional `kind`, and the
 rules that are screen-only are named as such.
 
-Accepted 2026-09-15, campaign RF049, bead rd-5c3, after a claim-by-claim
+Accepted 2026-09-15, bead rd-5c3, after a claim-by-claim
 reading against `main` at `b790db1` (riddler 0.1.0, published). The code halves
 that built what this record decides: `Riddler.Screens.Document.admit/1`,
 `validate/1` and the type registry (PR 6), `resolve/2` and `resolve_screen/3`
@@ -583,7 +583,7 @@ of it.
 
 ---
 
-Noted 2026-09-17, campaign RF051, beads rd-gwn, rd-d8e, rd-xvv and rd-xva.
+Noted 2026-09-17, beads rd-gwn, rd-d8e, rd-xvv and rd-xva.
 Four notes by addition, each read against `main` at `7a2dd8f`. They record
 what this record was silent on; none of them changes what it decides, and
 none of them bears on the amendment above.
@@ -680,7 +680,7 @@ consults.
 
 ---
 
-Noted 2026-09-17, campaign RF051, bead rd-xxb. One note by addition, read
+Noted 2026-09-17, bead rd-xxb. One note by addition, read
 against `main` at `342c790`. It records the codes that check the envelope and
 boolean shapes this record already states; it changes nothing this record
 decides, and it does not bear on the amendment above.
@@ -969,7 +969,7 @@ half of this boundary and is left for the corpus pass.
 
 ---
 
-Noted 2026-09-17, campaign RF051, bead rd-mnp. One note by addition, read
+Noted 2026-09-17, bead rd-mnp. One note by addition, read
 against `main` at `4208433`. It re-labels three of this record's own citations
 because the change that carries this note renames the file they cite; it
 records nothing new about the document, changes nothing this record
@@ -1260,7 +1260,7 @@ amendment's claim survives.
 
 Status: accepted (2026-09-19)
 
-Recorded 2026-09-18, campaign RF055, bead rd-ncs. The amendment above, on the
+Recorded 2026-09-18, bead rd-ncs. The amendment above, on the
 per-button opt-out, names one case and declines it in these words: "Whether a
 keyless button should be able to opt out at all is left open exactly as this
 amendment found it." This amendment closes that question, and closes it the
@@ -1426,7 +1426,7 @@ key, and the question there is about resolution rather than about naming.
 
 ---
 
-Noted 2026-09-18, campaign RF055, beads rd-0yg, rd-uq9 and rd-pli. Three notes
+Noted 2026-09-18, beads rd-0yg, rd-uq9 and rd-pli. Three notes
 by addition, each read against `main` at `9e5d667`. They narrow a claim an
 amendment above makes about how far its own change reaches, say where the four
 places the acceptance note lists as not yet lined up are now answered, and
@@ -1487,14 +1487,14 @@ this record grows by addition, so this note is the pointer the list cannot carry
 itself. In the order the list gives them:
 
 - The envelope shapes "stated here and not yet checked by `validate/1`" (rd-xxb)
-  are answered by the entry opening "Noted 2026-09-17, campaign RF051, bead
+  are answered by the entry opening "Noted 2026-09-17, bead
   rd-xxb.", whose one note is headed "The envelope and boolean shapes this
   record states are checked, one code each, and only where the document carries
   the field."
 - The unreachable variant candidate, "which this record describes as dead weight
   without saying it is refused" (rd-d8e), is answered by the note headed "An
   unconditional variant candidate that is not last is an admit finding." in the
-  entry opening "Noted 2026-09-17, campaign RF051, beads rd-gwn, rd-d8e, rd-xvv
+  entry opening "Noted 2026-09-17, beads rd-gwn, rd-d8e, rd-xvv
   and rd-xva."
 - `resolve_screen/3` returning "a screen without the diagnostics its resolution
   produced, which this record does not decide either way" (rd-439) is decided by
@@ -1540,7 +1540,7 @@ them. This note states the contract the package ships and changes nothing.
 
 ---
 
-Noted 2026-09-18, campaign RF055, beads rd-cay, rd-qr5 and rd-x6t. Three notes
+Noted 2026-09-18, beads rd-cay, rd-qr5 and rd-x6t. Three notes
 by addition, read against `main` at `474a963`. Two of them settle and then
 record the one case the pattern amendment above leaves with response
 validation; the third re-states where a phrase the note above cites first
@@ -1610,7 +1610,7 @@ attribution, stated here once rather than adjusted again.
 
 ---
 
-Noted 2026-09-18, campaign RF055, beads rd-5v2, rd-6kl and rd-hky. Three notes
+Noted 2026-09-18, beads rd-5v2, rd-6kl and rd-hky. Three notes
 by addition, read against `main` at `0214837`. The first two decide the two
 questions the note above on shape checks carries as open, and decide both by
 recording what this record and the code already do; the third says which block
@@ -1688,10 +1688,10 @@ single-note block, of its own note:" and gives after it the quotation "it
 changes nothing this record decides, and it does not bear on the amendment
 above." Two single-note blocks stand above that reference, so its description
 does not pick out one of them on its own. The block it names is the one
-opening "Noted 2026-09-17, campaign RF051, bead rd-xxb. One note by addition,
+opening "Noted 2026-09-17, bead rd-xxb. One note by addition,
 read against `main` at `342c790`." The quotation that follows the description
 resolves uniquely: the other single-note block, the one opening "Noted
-2026-09-17, campaign RF051, bead rd-mnp. One note by addition, read against
+2026-09-17, bead rd-mnp. One note by addition, read against
 `main` at `4208433`.", accounts for itself in different words, as recording
 "nothing new about the document" and as changing "nothing either amendment
 above decides". Nothing in that section's argument moves, and the
@@ -1700,7 +1700,7 @@ is stated here is only which block it meant.
 
 ---
 
-Noted 2026-09-18, campaign RF055, bead rd-7lu. One note by addition, read
+Noted 2026-09-18, bead rd-7lu. One note by addition, read
 against `main` at `3ff9a42`. It records a naming decision and what follows from
 it for a host, and changes no answer this record gave.
 
@@ -1763,7 +1763,7 @@ where it is changes no answer this record gave.
 
 ---
 
-Noted 2026-09-18, campaign RF055, bead rd-d9n. Three notes by addition, read
+Noted 2026-09-18, bead rd-d9n. Three notes by addition, read
 against `main` at `90f5930`, with the code half that makes the first two true
 in the same request at `b67dea5`. Nothing above is changed; each paragraph
 below says what the text above means now.
@@ -1869,7 +1869,7 @@ rather than for this one.
 
 ---
 
-Noted 2026-09-18, campaign RF055, bead rd-7ue. One note by addition, read
+Noted 2026-09-18, bead rd-7ue. One note by addition, read
 against `main` at `26b52cc`. It answers the one edge the amendment above names
 as left open, and answers it by recording what this record already decides and
 what the package already does. Nothing above is changed, and no answer this
@@ -2024,7 +2024,7 @@ behaviour where it stands is what these records treat as a note.
 
 ---
 
-Noted 2026-09-18, campaign RF055, bead rd-ve3. One note by addition, read
+Noted 2026-09-18, bead rd-ve3. One note by addition, read
 against `main` at `c05df20`. It records what the amendment above already
 decides looks like from the submission side, and changes no answer this record
 gave.
@@ -2091,7 +2091,7 @@ changes with this entry.
 
 Status: proposed
 
-Recorded 2026-09-18, campaign RF058, beads rd-f9k, rd-w5i and rd-rp3. The
+Recorded 2026-09-18, beads rd-f9k, rd-w5i and rd-rp3. The
 document schema and the runtime agreed in one direction only: a value the
 schema calls a document was admitted, but a value it refuses for holding the
 wrong JSON type in a field it types was admitted too, with a finding or with
@@ -2239,7 +2239,7 @@ decided here either.
 
 ---
 
-Noted 2026-09-18, campaign RF058, beads rd-lgi and rd-5uc. Two notes by
+Noted 2026-09-18, beads rd-lgi and rd-5uc. Two notes by
 addition, each read against `main` at `6a3ee40`. The first records what the
 per-button opt-out does with a button key that is not a string, and why that is
 left where it stands; the second says where the pattern compiler two passages
@@ -2337,7 +2337,7 @@ each passage says of the function what it said before.
 
 ---
 
-Noted 2026-09-18, campaign RF058, beads rd-32y and rd-c2x. Notes by addition,
+Noted 2026-09-18, beads rd-32y and rd-c2x. Notes by addition,
 each read against `main` at `07b86e6759baad64b995004b971f86d4346f4672` unless
 it names another SHA. Nothing above is changed; each paragraph below says what
 the text above means now. In order, they are about the amendment above headed

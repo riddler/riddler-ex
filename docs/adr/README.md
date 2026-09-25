@@ -32,12 +32,12 @@ in parentheses at the end where one note among several needs distinguishing. No
 Note in these records carries a `##` heading of its own, and none carries a
 `Status:` line.
 
-A Note recording work names its provenance in that opening too - the campaign
-and the bead it was recorded for. New Notes use this form, which seven of the
+A Note recording work names its provenance in that opening too - the date and
+the bead it was recorded for. New Notes use this form, which seven of the
 ten dated Note entries written so far use:
 
 ```
-Noted 2026-09-17, campaign RF051, beads rd-2b2, rd-c6t, rd-aya and rd-cpx, and
+Noted 2026-09-17, beads rd-2b2, rd-c6t, rd-aya and rd-cpx, and
 one item carried out of the direction review of ADR-0002's amendment of the same
 date. Five notes by addition, each read against `main` at `27faac3`. Nothing
 above is changed; each paragraph below says what the text above means now.
@@ -59,12 +59,12 @@ ADR-0003 opens its one Note with the third accepted form, and that form is
 accepted where it already stands:
 
 ```
-Note, 2026-09-17, campaign RF051, bead rd-1jj. The question the paragraph above
+Note, 2026-09-17, bead rd-1jj. The question the paragraph above
 carries by addition - whether a variable that appears only as an `if` or
 `unless` condition is a missing variable under strict mode - is decided here.
 ```
 
-So of the ten dated Note entries: seven open `Noted <date>, campaign ..., bead
+So of the ten dated Note entries: seven open `Noted <date>, bead
 ...`, two are flip Notes opening `Noted <date>.`, and one opens `Note, <date>,
 ...`. The entry that files a record and the entry that accepts it are the same
 shape under other verbs, `Recorded ...` and `Accepted ...`.
@@ -142,9 +142,13 @@ decides nothing; it says which sentence already decided.
 
 The rule that keeps process artifacts out of shipped prose (`CLAUDE.md`)
 exempts dated correction and note blocks, and this convention extends that
-exemption to these records: a Note recording work opens by naming the campaign
-and the bead it was recorded for, and an Amendment's provenance does the same,
-because that id is the only trace of why the paragraph exists. A flip Note
+exemption to these records: a Note recording work opens by naming the date and
+the bead it was recorded for, and an Amendment's provenance does the same,
+because that id is the only trace of why the paragraph exists. The exemption
+covers a bead id, never a campaign id or any other id from the maintainers'
+private planning: where a ruling is the provenance, the line reads "ruled by
+the operator, YYYY-MM-DD" or restates the reason, and a new Note opens
+`Noted YYYY-MM-DD`. A flip Note
 carries no id, having no work of its own to account for. The id belongs in the body, not in an
 Amendment's heading, which names the decision the Amendment records - it is
 what a reader scans and what another record cites.
