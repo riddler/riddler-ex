@@ -117,9 +117,8 @@ operator has adopted verbatim that names automatic merges, with every
 condition that consent names met (full gate green, CI green, firewall scan
 clean with a positive control, any named review gate passed), the conductor's
 merge executes the operator's own authorization - the consent's text is what
-may be done and nothing more. (Recorded 2026-09-01 by the operator, campaign
-025 post-wrap queue walk; adopted here at bootstrap with the rest of the
-satellite authority table.)
+may be done and nothing more. (Recorded 2026-09-01 by the operator; adopted
+here at bootstrap with the rest of the satellite authority table.)
 
 Widening this section is a decision for the operator to make and record here.
 An agent may draft the change; it does not adopt it.
@@ -144,7 +143,11 @@ An agent may draft the change; it does not adopt it.
   moduledocs and corpus files. Dated correction and note blocks inside a
   moduledoc, dated provenance lines in `docs/adr/`, and a test-file comment
   naming a fixture's source SHA are exempt: the id is the only trace of why a
-  paragraph or a fixture exists.
+  paragraph or a fixture exists. The exemption covers a bead id or a SHA,
+  never a campaign id or any other id from the maintainers' private
+  planning, which appears nowhere in this public repository: a dated
+  provenance line reads "Noted YYYY-MM-DD" or "ruled by the operator,
+  YYYY-MM-DD", or restates the reason.
 - Examples, fixtures and doctests use the two canonical domains - a
   multi-tenant host application doing credit-card processing, and a signup
   wizard with A/B testing - and no others.

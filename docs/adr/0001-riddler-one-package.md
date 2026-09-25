@@ -24,7 +24,7 @@ is a screen document written by hand: three screens of a signup wizard, each
 a list of nodes with keys, carrying a `schema_version` and a `metadata` block,
 and explicitly not a block document - the chart that drives it is a separate
 fixture beside it. It is the shape a host already wants to author. The findings
-document `docs/spikes/SF040-element-editor.md` in `statifier_blocks` (added by
+document `docs/spikes/element-editor-spike.md` in `statifier_blocks` (added by
 that repository's PR 465; present at `cdfbc6c`) weighs, against two spikes,
 whether the block editor should emit that shape itself, and separates the cost
 of the emit seam from the cost of the element vocabulary it emits. Both are
@@ -196,13 +196,13 @@ the reference implementation is written in Elixir.
 
 ---
 
-Recorded 2026-09-14, campaign RF049, bead rd-1dt. Rewritten in place while
-still proposed on 2026-09-15, campaign RF049, bead rd-9wd: the record now
+Recorded 2026-09-14, bead rd-1dt. Rewritten in place while
+still proposed on 2026-09-15, bead rd-9wd: the record now
 frames Riddler as a dynamic content runtime with content kinds, names the
 screens kind's modules and corpus capabilities, and delegates the screen
 document to ADR-0002 and the shared machinery to a forthcoming ADR-0004.
 
-Accepted 2026-09-15, campaign RF049, bead rd-v1w, after a claim-by-claim
+Accepted 2026-09-15, bead rd-v1w, after a claim-by-claim
 reading against `main` at `0d1979b` (riddler 0.1.0, published). The code halves
 that built what this record asserts: the package boundary and the two runtime
 dependencies (PR 1), the template subset (PR 5), `Riddler.Screens.Document`
@@ -219,7 +219,7 @@ kind in its name still lives under `Riddler.Screens` (rd-2b2), and the
 `<kind>.<function>` capability rule wants a clause for the shared
 `templates.render` (rd-c6t).
 
-Noted 2026-09-17, campaign RF051, beads rd-2b2, rd-c6t, rd-aya and rd-cpx, and
+Noted 2026-09-17, beads rd-2b2, rd-c6t, rd-aya and rd-cpx, and
 one item carried out of the direction review of ADR-0002's amendment of the same
 date. Five notes by addition, each read against `main` at `27faac3`. Nothing
 above is changed; each paragraph below says what the text above means now.
@@ -284,7 +284,7 @@ after its code half lands; at `27faac3` that code half has not landed and
 Riddler.Screens.validate_responses/3 and `/4` are still present in
 `lib/riddler/screens.ex`.
 
-Noted 2026-09-17, campaign RF051, bead rd-9j0. One note by addition, read
+Noted 2026-09-17, bead rd-9j0. One note by addition, read
 against `main` at `6658ae4`. Nothing above is changed.
 
 **Riddler.Corpus and the `mix riddler.corpus` task ship in the Hex tarball,
@@ -298,7 +298,7 @@ riddler_spec, and excluding individual `lib/` files by enumerating paths in
 `files:` is a list that has to be maintained against every future file under
 `lib/` (rd-9j0).
 
-Noted 2026-09-17, campaign RF051, bead rd-pqf. One note by addition, read
+Noted 2026-09-17, bead rd-pqf. One note by addition, read
 against `main` at `0d51acc`. Nothing above is changed.
 
 **The provenance an emitted case file carries names the source file and
@@ -387,7 +387,7 @@ This note is recorded with the code half that makes it true, in one request:
 at `0d51acc` the emitter still stamps the version, and the request carrying
 this note is the one that stops it (rd-pqf).
 
-Noted 2026-09-17, campaign RF051, bead rd-0pi. One note by addition, read
+Noted 2026-09-17, bead rd-0pi. One note by addition, read
 against `main` at `63c432f`. Nothing above is changed.
 
 **`Riddler.Finding` carries a source position, and this record is where that
@@ -595,7 +595,7 @@ place".
 
 ---
 
-Noted 2026-09-18, campaign RF055, beads rd-54p, rd-5eq and rd-xhv. Three notes
+Noted 2026-09-18, beads rd-54p, rd-5eq and rd-xhv. Three notes
 by addition, each read against `main` at `9e5d667`. Nothing above is changed;
 each paragraph below says what the text above means now.
 
@@ -698,7 +698,7 @@ own, and the drift check turned every corpus-changing request here red until a
 second request landed in a repository nobody read. This amendment changes what
 the record decides about where the corpus is and how a second runtime gets it.
 
-Recorded for campaign RF055, bead rd-4lk, against `main` at `a72788a`. The
+Recorded for bead rd-4lk, against `main` at `a72788a`. The
 request carrying this amendment removes the drift job in the same commit; it
 changes nothing under `lib/`, `test/`, `corpus/` or `priv/`.
 
@@ -779,10 +779,10 @@ on. Whether its default target and its documentation should still name the
 archived repository is left to a later request.
 
 **The earlier notes that quote the archived repository are history.** Two dated
-Note entries above name it. The one opening "Noted 2026-09-17, campaign RF051,
+Note entries above name it. The one opening "Noted 2026-09-17,
 bead rd-9j0." says the corpus module and the task ship in the Hex tarball and
 describes how the corpus reaches that repository; the one opening "Noted
-2026-09-17, campaign RF051, bead rd-pqf." quotes that repository's `bin/lint`
+2026-09-17, bead rd-pqf." quotes that repository's `bin/lint`
 read at a SHA there, in support of keeping the `generated_by` key. Read both as
 history from this date: what they decided about this package - that the two
 files stay in the tarball, and that the key stays while its value changes - is
@@ -802,7 +802,7 @@ runtime is held to these cases - is unaffected by where the files sit.
 
 ---
 
-Noted 2026-09-18, campaign RF055, beads rd-7l8, rd-q5d and rd-2x5. Four notes
+Noted 2026-09-18, beads rd-7l8, rd-q5d and rd-2x5. Four notes
 by addition, each read against `main` at `9ec64e7`. Nothing above is changed.
 
 **The conformance corpus does not carry a finding's position, and a second
@@ -888,7 +888,7 @@ better route already. `mix.exs` is not changed by this entry (rd-2x5).
 
 ---
 
-Noted 2026-09-18, campaign RF055, bead rd-ai1. Two notes by addition, plus the
+Noted 2026-09-18, bead rd-ai1. Two notes by addition, plus the
 paragraph that accounts for the instrument. The five sites enumerated below
 were read at `8331e97`, this request's code commit rather than a SHA on `main`,
 and no later commit of this request changes any of them. The cites below that
@@ -1055,7 +1055,7 @@ one would amend a record."
 
 ---
 
-Noted 2026-09-18, campaign RF055, bead rd-hdm. One note by addition, read
+Noted 2026-09-18, bead rd-hdm. One note by addition, read
 against `f2b4b2a`, this request's code commit rather than a SHA on `main`.
 Nothing above is changed; the paragraph below says where two functions the
 text above cites now live.
@@ -1085,7 +1085,7 @@ resolves by, rather than the file it was in on its date.
 
 Status: accepted (2026-09-19)
 
-Recorded for campaign RF055, bead rd-78k, against `main` at `8a86030`. The
+Recorded for bead rd-78k, against `main` at `8a86030`. The
 request carrying this amendment makes the rename in its code commit, `e0f79df`;
 every code cite below is read at that commit and resolves by the anchor it
 names rather than by a line number.
@@ -1241,7 +1241,7 @@ history about.
 
 Status: proposed
 
-Recorded for campaign RF058, bead rd-i3a, against `main` at `66749fe`. The
+Recorded for bead rd-i3a, against `main` at `66749fe`. The
 request carrying this amendment makes its moduledoc and typedoc text and adds
 its tests in its code commit, `a3a134d`; every code cite below is read at that
 commit and resolves by the anchor it names rather than by a line number.
@@ -1346,7 +1346,7 @@ with; it holds no second runtime to it.
 
 ---
 
-Noted 2026-09-18, campaign RF058, bead rd-6z8, and one item carried out of the
+Noted 2026-09-18, bead rd-6z8, and one item carried out of the
 direction review of the amendment above headed "the conformance corpus lives
 in this repository". Two notes by addition, each read against `main` at
 `5c2e34e`; the one code cite is read at `570272c`, the code commit of the
@@ -1388,7 +1388,7 @@ next clause already states.
 
 Status: proposed
 
-Recorded for campaign RF058, bead rd-mbp, against `main` at `c666ccf`. The
+Recorded for bead rd-mbp, against `main` at `c666ccf`. The
 request carrying this amendment renames one case and brings the one moduledoc
 sentence quoting it in step in its code commit, `df476af`; every code cite
 below is read at that commit and resolves by the anchor it names rather than
@@ -1537,12 +1537,12 @@ capability and renames none.
 
 ---
 
-Noted 2026-09-18, campaign RF058, beads rd-p7z and rd-bug. Two notes by
+Noted 2026-09-18, beads rd-p7z and rd-bug. Two notes by
 addition, each read against `main` at `893425d`. Nothing above is changed;
 each paragraph below says what the text above means now.
 
 **Three notes of 2026-09-18 are notes and not amendments, and this is why.**
-The entry opening "Noted 2026-09-18, campaign RF055, beads rd-7l8, rd-q5d and
+The entry opening "Noted 2026-09-18, beads rd-7l8, rd-q5d and
 rd-2x5." carries the paragraphs headed "**The conformance corpus does not
 carry a finding's position, and a second runtime is not held to one.**",
 "**Two cross-file cites in the note of 2026-09-17 on the emitter's provenance

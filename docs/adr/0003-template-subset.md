@@ -181,12 +181,12 @@ visitor, no responses, no context was needed to reach it.
 
 ---
 
-Recorded 2026-09-14, campaign RF049, bead rd-61p. Rewritten in place while
-still proposed on 2026-09-15, campaign RF049, bead rd-9wd: the text-only rule
+Recorded 2026-09-14, bead rd-61p. Rewritten in place while
+still proposed on 2026-09-15, bead rd-9wd: the text-only rule
 became the output-mode rule, which each content kind declares, and each kind's
 record now names its own render-mode default.
 
-Accepted 2026-09-15, campaign RF049, bead rd-x59, after a claim-by-claim
+Accepted 2026-09-15, bead rd-x59, after a claim-by-claim
 reading against `main` (riddler 0.1.0, published). The code half that built
 what this record decides is `Riddler.Template.compile/1` and `render/3` behind
 the allowlist (PR 5), with the `templates.render` corpus (PR 9); the
@@ -205,7 +205,7 @@ carried as a note by addition: strict mode is stated for a missing variable
 and a missing filter, and a variable used only as an `if` or `unless` condition
 is neither plainly one nor plainly outside the rule (rd-1jj).
 
-Note, 2026-09-17, campaign RF051, bead rd-1jj. The question the paragraph above
+Note, 2026-09-17, bead rd-1jj. The question the paragraph above
 carries by addition - whether a variable that appears only as an `if` or
 `unless` condition is a missing variable under strict mode - is decided here.
 
@@ -268,7 +268,7 @@ holds. A second runtime that reports either of them fails the corpus.
 
 ---
 
-Noted 2026-09-18, campaign RF055, bead rd-tmv. One note by addition, read
+Noted 2026-09-18, bead rd-tmv. One note by addition, read
 against `main` at `90f5930`. Nothing above is changed.
 
 **A `when` operand is a read position, and the list of positions the rule above
@@ -316,7 +316,7 @@ rather than settles.
 
 ---
 
-Noted 2026-09-18, campaign RF058, bead rd-6h8. One note by addition, read
+Noted 2026-09-18, bead rd-6h8. One note by addition, read
 against `main` at `a4f731d`. Nothing above is changed.
 
 **The condition rule costs a walk of the whole parse tree at render, and for a
@@ -374,7 +374,7 @@ compile would change a public struct, and it is recorded when it is taken.
 
 Status: proposed
 
-Recorded 2026-09-18, campaign RF058, bead rd-zar. The Decision excludes
+Recorded 2026-09-18, bead rd-zar. The Decision excludes
 `liquid` as an alternate spelling for constructs already in the allowlist. The
 parse tree does not record that a liquid tag was there - the tags written inside
 one arrive as ordinary nodes - so refusing the spelling means finding it
@@ -467,7 +467,7 @@ discards at all is a question this amendment does not decide.
 
 ---
 
-Noted 2026-09-18, campaign RF058, bead rd-d5c. One note by addition, read
+Noted 2026-09-18, bead rd-d5c. One note by addition, read
 against `main` at `893425d`; the code and the corpus it cites are read at
 `d24d896`, the code commit of the request that carries it. Nothing above is
 changed.
