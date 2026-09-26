@@ -2089,7 +2089,7 @@ changes with this entry.
 
 ## Amendment, 2026-09-18: a value of the wrong type in a field the schema types is not a document
 
-Status: proposed
+Status: accepted (2026-09-26)
 
 Recorded 2026-09-18, beads rd-f9k, rd-w5i and rd-rp3. The
 document schema and the runtime agreed in one direction only: a value the
@@ -2538,3 +2538,36 @@ note above gives for keeping it outside the amendment; this entry does not
 reach it. The later notes above that read the amendment's wording, and the
 readings they give, stand under the acceptance. CI on `main` at `ade824f` is
 green.
+
+---
+
+Noted 2026-09-26. The amendment above headed "a value of the wrong type in a
+field the schema types is not a document" moves from `proposed` to
+`accepted`, its Status line flipped in place and nothing else in it reworded.
+With it, every amendment in this record reads accepted.
+
+It shipped in riddler 0.3.0, the commit tagged `v0.3.0` (`97f5b18`) and
+published on Hex; its code half is `11f0457` (request 77), which the tag
+contains, and the 0.3.0 changelog's `Fixed` section states both the refusal
+and the retired codes. It was re-verified at the tag, every cite re-located by
+anchor there; none of the code it cites has moved on `main` since. What was
+read:
+
+- `Riddler.Screens.Document.admit/1` refuses a wrongly typed scalar through
+  the private `typed?/2`, a field that is absent being not its question, and
+  a `nodes` on a node whose type reads none through the private
+  `unread_nodes/1`, in `lib/riddler/screens/document.ex`.
+- `document.invalid_id` and `document.invalid_title` appear nowhere under
+  `lib/`, and `id_findings/1` and `title_findings/1` are gone.
+- The clauses of the private `key_findings/2` and `condition_findings/2` for a
+  value that is not a string stay, as the amendment says.
+- `test/riddler/corpus_test.exs` carries "admits exactly the values the
+  admission corpus calls documents".
+- `priv/schemas/screen-document.schema.json` is byte-identical between the
+  amendment's `ef87a50` and the tag.
+- The two things the amendment does not reach are still where it left them:
+  the private `admit_metadata/1` admits a `metadata` written as `null`, and
+  the private `schema_version_findings/1` compares the version with the
+  integer 1.
+
+The later notes above that read the amendment stand under the acceptance.

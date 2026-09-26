@@ -1239,7 +1239,7 @@ history about.
 
 ## Amendment, 2026-09-18: a position's column counts in the unit of the parser that located it
 
-Status: proposed
+Status: accepted (2026-09-26)
 
 Recorded for bead rd-i3a, against `main` at `66749fe`. The
 request carrying this amendment makes its moduledoc and typedoc text and adds
@@ -1386,7 +1386,7 @@ next clause already states.
 
 ## Amendment, 2026-09-18: a corpus case's name claims only what its capability compares
 
-Status: proposed
+Status: accepted (2026-09-26)
 
 Recorded for bead rd-mbp, against `main` at `c666ccf`. The
 request carrying this amendment renames one case and brings the one moduledoc
@@ -1682,3 +1682,59 @@ read either amendment stand under the acceptance. One of them reads an earlier
 note's phrase "either repository" as history "on the acceptance of" the first
 of the two amendments; that acceptance is this entry. CI on `main` at
 `ade824f` is green.
+
+---
+
+Noted 2026-09-26. The two amendments above headed "a position's column counts
+in the unit of the parser that located it" and "a corpus case's name claims
+only what its capability compares" move from `proposed` to `accepted`, each
+Status line flipped in place and nothing else in them reworded. With them,
+every amendment in this record reads accepted.
+
+Both shipped in riddler 0.3.0, the commit tagged `v0.3.0` (`97f5b18`) and
+published on Hex. The first amendment cites its code commit as `a3a134d`,
+which reached `main` as `fb879bb` (request 78); the second cites `df476af`,
+which reached `main` as `0b850c8` (request 80). Both are in `v0.3.0`. Each was
+re-verified at the tag, and every cite re-located by anchor there; nothing
+under `lib/`, `corpus/` or `test/` that either cites has moved on `main`
+since. What was read:
+
+**A position's column counts in the unit of the parser that located it.**
+
+- `test/riddler/finding_position_units_test.exs` carries "every site in lib/
+  that sets a position is named here with its unit" and the two describe
+  blocks "a column the template parser gave counts bytes" and "a column the
+  condition compiler or the evaluator gave counts characters".
+- The sites in `lib/` that set `:position` are the five the table names: two
+  in `Riddler.Template`, the re-wrap and `invalid_condition/3` in
+  `Riddler.Screens.Document`, and the one in `Riddler.Screens.Validation`.
+- The `:position` bullet of `Riddler.Finding`'s moduledoc and the typedoc of
+  `t:Riddler.Finding.position/0` name the unit per parser.
+- `mix.lock` at the tag resolves `solid` 1.3.4 and `predicator` 9.4.1, the
+  versions the amendment names, and still does on `main`.
+- The 0.3.0 changelog's `Changed` section gives `document.invalid_condition`
+  and `response.undecidable` their positions, the two findings the
+  amendment says count characters.
+
+**A corpus case's name claims only what its capability compares.**
+
+- The render case is named "A render tag naming no template is refused as a
+  parse error, as a finding rather than a raise, and the finding names no
+  field" (`corpus/templates/render.json`), and `Riddler.Template`'s moduledoc
+  quotes that name.
+- The admit case for `answer_options` carries the name the amendment quotes
+  (`corpus/screens/admit.json`), and the drop is still pinned by "does not
+  carry answer_options, the field reserved for question types this version
+  does not build" (`test/riddler/screens/document_test.exs`).
+- The `nil` position is pinned by "a template the parser refuses without a
+  place is a finding, not a raise" and "a refusal the parser did not locate
+  names no place in its message" (`test/riddler/template_test.exs`).
+- Every function the capability table names is in `Riddler.Corpus` at the
+  tag: `mismatches/1`, `encode_findings/1`, which compares a finding as
+  `code`, `field` and `node_key` alone, `encode_validation/1`,
+  `render_modes/2`, `render/3` and `agreed/2`.
+
+The second amendment's "no file gains or loses a case" is a claim about its
+own request, and holds there; the file counts have moved since by cases
+later requests added, as the entry above says. The later notes above that
+read either amendment stand under the acceptance.
