@@ -85,7 +85,14 @@ irreversible step, and report.
 | merging a campaign PR | a campaign consent the operator adopted verbatim that names automatic merges, with every named condition met (full gate green, CI green, firewall scan clean with a positive control, any named review gate passed) | outside such a consent; any named condition unmet; any PR the consent's carve-outs hold for the operator |
 | `bd close <id>` | never for a mirrored bead whose other half is not merged to its own repo's `origin/main`; a mirrored bead whose other half has ALSO landed may be closed by the campaign conductor under a consent naming this exception, both halves together, each verified against its remote; otherwise the operator's call | for a bead whose description carries a `mirrors:` line while its other half is unlanded, campaign consent included |
 | `bd dolt push` | the operator's call | inside a campaign that spans mirrored trackers - the conductor pushes those atomically |
-| a release, a version bump | never, with one named exception: a release-prep request - a version bump and a changelog promotion, no tag - under a campaign consent clause that names it | always for the tag, the publish and the release itself, and always for the prep request too when the consent does not name it |
+| a release, a version bump | never, with one named exception: a release-prep request - a version bump and a changelog promotion, no tag - under a campaign consent clause that names it | always for the tag, the publish and the release itself, and always for the prep request too when the consent does not name it. See Campaign consent below the table. |
+
+**Campaign consent.** An adopted fleet campaign consent may grant the
+campaign's conductor three acts this table otherwise reserves: merging a
+campaign pull request, the version bump and tag of a release prep, and
+flipping a decision record to accepted. Each is granted only as far as that
+consent's text names it. `mix hex.publish` and the flip of a record whose
+decision is cryptographic stay the operator's in every campaign.
 
 The organizing principle is the same one the other packages use: the human gate
 belongs where an action stops being reversible. A commit on a per-bead branch
@@ -105,12 +112,11 @@ authority is the operator's and the subagent is only the hands, so it may act.
 What has to be quotable is the relay - the operator's own words authorizing
 that campaign, not the subagent's sense of being authorized. A subagent that
 cannot quote them reports and stops. A relay unlocks nothing the rows above
-forbid outright: closing a mirrored bead, and tagging, publishing or
-cutting a release stay forbidden however the consent arrives. The release-prep
-request in the row above is the one named exception, and it is narrow: a
-version bump and a changelog promotion with no tag, opened and landed only
-under a campaign's own explicit consent clause naming it, with the tag and the
-publish that follow still the operator's.
+forbid outright: closing a mirrored bead and `mix hex.publish` stay forbidden
+however the consent arrives. The release-prep request in the row above is
+narrow: a version bump and a changelog promotion, and the tag of that prep,
+each opened and landed only as far as an adopted consent's text names it,
+with the publish that follows still the operator's.
 
 Merging a campaign PR is a recorded exception: under a campaign consent the
 operator has adopted verbatim that names automatic merges, with every
