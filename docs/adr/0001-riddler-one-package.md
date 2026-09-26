@@ -1707,7 +1707,7 @@ since. What was read:
   condition compiler or the evaluator gave counts characters".
 - The sites in `lib/` that set `:position` are the five the table names: two
   in `Riddler.Template`, the re-wrap and `invalid_condition/3` in
-  `Riddler.Screens.Document`, and the one in `Riddler.Screens.Validation`.
+  `Riddler.Screens.Document`, and the one in Riddler.Screens.Validation.
 - The `:position` bullet of `Riddler.Finding`'s moduledoc and the typedoc of
   `t:Riddler.Finding.position/0` name the unit per parser.
 - `mix.lock` at the tag resolves `solid` 1.3.4 and `predicator` 9.4.1, the
@@ -1729,7 +1729,7 @@ since. What was read:
 - The `nil` position is pinned by "a template the parser refuses without a
   place is a finding, not a raise" and "a refusal the parser did not locate
   names no place in its message" (`test/riddler/template_test.exs`).
-- Every function the capability table names is in `Riddler.Corpus` at the
+- Every function the capability table names is in Riddler.Corpus at the
   tag: `mismatches/1`, `encode_findings/1`, which compares a finding as
   `code`, `field` and `node_key` alone, `encode_validation/1`,
   `render_modes/2`, `render/3` and `agreed/2`.
