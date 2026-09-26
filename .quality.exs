@@ -34,8 +34,9 @@
   # package's HexDocs and hex.pm pages. The Docs stage fails on any ExDoc
   # warning. The doc_links stage fails on the link rules ExDoc accepts
   # silently: a README relative link not in the package files, a relative
-  # link in a Markdown extra to a file that is not itself an extra, two
-  # extras sharing a basename, and a silent rewrite to a different extra.
+  # link in a Markdown extra to a file that is not itself an extra (moduledoc
+  # links are the Docs stage's), two extras sharing a basename, and a silent
+  # rewrite to a different extra.
   # `:auto` runs both wherever ex_doc is installed.
   docs: [
     enabled: :auto
