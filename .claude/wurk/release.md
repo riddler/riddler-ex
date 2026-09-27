@@ -173,8 +173,14 @@ Exactly these, and a release commit that touches anything else is wrong:
 ## What a release here still is not
 
 The skill does not tag, push, open a request or publish, and this extension
-does not either. In this repo those are the operator's, in every campaign and
-outside every campaign - `CLAUDE.md`'s authority table says so, and the one
-exception it names is a release-prep request: the version bump and the
-changelog promotion above, no tag, under a campaign consent clause that names
-it.
+does not either. The prep - the version bump and the changelog promotion
+above - is work on a release bead the operator has named, in the campaign
+plan or their own words, and it lands through `CLAUDE.md`'s authority table
+like any other change: its commit, push and request rows, and its merge row.
+Once that prep is merged to `origin/main`, and not before, the conductor or
+the session that owns the release bead tags the merged commit with the new
+version and pushes the tag - the table's release-prep row and its Release
+preps paragraph record that as the family norm, not a grant a consent has to
+name. Publishing (`mix hex.publish`, a docs republish included) and the
+release itself stay the operator's, in every campaign and outside every
+campaign, and no consent or relay delegates them.
