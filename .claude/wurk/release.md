@@ -181,6 +181,7 @@ Once that prep is merged to `origin/main`, and not before, the conductor or
 the session that owns the release bead tags the merged commit with the new
 version and pushes the tag - the table's release-prep row and its Release
 preps paragraph record that as the family norm, not a grant a consent has to
-name. Publishing (`mix hex.publish`, a docs republish included) and the
-release itself stay the operator's, in every campaign and outside every
-campaign, and no consent or relay delegates them.
+name. An agent or a session never runs `mix hex.publish` (a docs republish
+included): the release workflow publishes on that tag's push, and a failed
+workflow is re-run from its Actions page, never worked round by a local
+publish.
