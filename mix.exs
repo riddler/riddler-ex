@@ -44,15 +44,16 @@ defmodule Riddler.MixProject do
       canonical: "https://hexdocs.pm/riddler",
       source_url: @source_url,
       main: "readme",
-      # The records ship as extras because this package's decisions are its
-      # reference: a reader deciding what a screen document admits, or which
-      # template constructs are in the subset, reads the record. The glob takes
-      # the numbered records and not `docs/adr/README.md`, whose page id would
-      # collide with the front page's.
-      extras: ["README.md", "CHANGELOG.md"] ++ Path.wildcard("docs/adr/0*.md"),
-      groups_for_extras: [
-        "Architecture decisions": ~r{docs/adr/}
-      ],
+      # The README is the front page and the CHANGELOG sits beside it, both
+      # ungrouped at the top of the sidebar. Every other page is grouped by
+      # the kind of page it is, in this order and under these names only:
+      # Tutorials, How-to guides, Reference, Explanation, Upgrading. A group
+      # is added with its first page, never empty, so there is none yet.
+      # The decision records under docs/adr are a record for contributors,
+      # not pages for a reader of the package: they are not extras, and the
+      # README links them on GitHub by absolute URL.
+      extras: ["README.md", "CHANGELOG.md"],
+      groups_for_extras: [],
       # The groups follow the package's own seams so the sidebar reads as the
       # architecture rather than as the alphabet: the screen document and the
       # vocabulary it admits, the template subset, and the corpus the package
