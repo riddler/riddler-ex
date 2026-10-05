@@ -10,6 +10,32 @@ fragment in [`changelog.d/`](https://github.com/riddler/riddler-ex/blob/v0.3.0/c
 into a version section at release. See that README for the format and for when a
 change warrants an entry at all.
 
+## [0.3.1] 2026-10-05
+
+A documentation release. The code and the behavior of the package are the
+same as in 0.3.0; what changes is what a reader finds on hexdocs, on hex.pm and
+in the README. Documentation takes no `changelog.d` fragment, so this section
+is written by hand.
+
+### Added
+
+- An explanation page, "What Riddler is for: elements, templates and
+  conditions", at `docs/explanation/what-riddler-is-for.md`. It is published on
+  hexdocs and ships in the package, because the README links it by a relative
+  path.
+
+### Changed
+
+- The hexdocs sidebar groups pages by the kind of page they are. The README
+  and this changelog stay ungrouped at the top, and the explanation page sits
+  under Explanation.
+- The decision records under `docs/adr/` are no longer published as hexdocs
+  pages. They are a record for contributors, and the README links them on
+  GitHub.
+- The README is rewritten as an introduction: what the package is, why it
+  exists, installation, one worked example, and a Documentation section that
+  maps the pages under Learn, Do, Look up and Understand.
+
 ## [0.3.0] 2026-09-19
 
 The conformance release after 0.2.0, and the first tag a runtime written in
