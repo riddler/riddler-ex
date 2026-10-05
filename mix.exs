@@ -48,12 +48,18 @@ defmodule Riddler.MixProject do
       # ungrouped at the top of the sidebar. Every other page is grouped by
       # the kind of page it is, in this order and under these names only:
       # Tutorials, How-to guides, Reference, Explanation, Upgrading. A group
-      # is added with its first page, never empty, so there is none yet.
+      # is added with its first page, never empty.
       # The decision records under docs/adr are a record for contributors,
       # not pages for a reader of the package: they are not extras, and the
       # README links them on GitHub by absolute URL.
-      extras: ["README.md", "CHANGELOG.md"],
-      groups_for_extras: [],
+      extras: [
+        "README.md",
+        "CHANGELOG.md",
+        "docs/explanation/what-riddler-is-for.md"
+      ],
+      groups_for_extras: [
+        Explanation: ~r{docs/explanation/}
+      ],
       # The groups follow the package's own seams so the sidebar reads as the
       # architecture rather than as the alphabet: the screen document and the
       # vocabulary it admits, the template subset, and the corpus the package
@@ -82,7 +88,10 @@ defmodule Riddler.MixProject do
       # in the tarball - but a later `priv/` addition should have to say that it
       # ships rather than ship by being in the right folder. `test/packaging_test.exs`
       # fails on a schema this list does not cover.
-      files: ~w(lib priv/schemas mix.exs .formatter.exs README.md LICENSE CHANGELOG.md),
+      # The explanation page ships because the README links it by a relative
+      # path, and hex.pm resolves README links against the tarball.
+      files: ~w(lib priv/schemas mix.exs .formatter.exs README.md LICENSE CHANGELOG.md
+           docs/explanation/what-riddler-is-for.md),
       links: %{
         "GitHub" => @source_url,
         "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md"
