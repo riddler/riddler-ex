@@ -98,6 +98,7 @@ iex> {finding.code, finding.node_key}
   - [The conformance corpus](https://github.com/riddler/riddler-ex/tree/v0.3.0/corpus): the cases that hold a Riddler runtime to this contract, which a runtime in another language vendors from a tag of this repository.
   - [The changelog](https://hexdocs.pm/riddler/changelog.html): what changed in each version.
 - Understand
+  - [What Riddler is for: elements, templates and conditions](docs/explanation/what-riddler-is-for.md): why content moves into a document, why the vocabulary, the template subset and the conditions are each as small as they are, the alternatives turned down, and what is left to the host.
   - [What Riddler is](https://hexdocs.pm/riddler/Riddler.html): content kinds, the seams the package is divided along, and what it depends on.
   - [The decision records](https://github.com/riddler/riddler-ex/tree/v0.3.0/docs/adr): why the screen document, the template subset and the boundary with a host are shaped as they are.
 
