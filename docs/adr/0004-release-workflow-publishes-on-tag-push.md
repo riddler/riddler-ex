@@ -1,6 +1,6 @@
 # ADR-0004: A release workflow publishes to Hex on the push of a version tag, and only from a green, matching commit on the default branch
 
-Status: proposed. It is accepted once a version of this package has been
+Status: accepted (2026-10-10, riddler 0.3.1). It is accepted once a version of this package has been
 published through the workflow it records; this record does not flip its own
 status.
 
@@ -131,3 +131,66 @@ make a publish work.
   carries no typespecs or worked example for that reason.
 - This record is accepted under the family's standard once a version has
   been published through the workflow, with that run as the evidence.
+
+---
+
+Accepted 2026-10-10. This record moves from `proposed` to `accepted`, its
+Status line flipped in place and nothing else in it reworded. The condition
+that the Status line and the last bullet of Consequences name is met: a
+version of this package has been published through the workflow, and that
+run is the evidence, as ruled by the operator, 2026-10-06. Each paragraph
+below says what was read; none of them changes what the record decides.
+
+**The first publish through the workflow.** riddler 0.3.1, from the tag
+`v0.3.1` on `8294e54`: the run
+https://github.com/riddler/riddler-ex/actions/runs/37309050143, started by
+the push of that tag, completed on its first attempt with every step green,
+"Full quality gate" and "Publish to Hex" included, and hex.pm shows 0.3.1
+with its docs. No later version has been published through the workflow:
+that run is the workflow's only one.
+
+**Read against `main` at `8294e54`.** Every claim above was re-verified
+there, by anchor, on the day of this entry:
+
+- Decision 1: the `on:` block of `.github/workflows/release.yml` names a push
+  of a tag matching `v*.*.*` and nothing else; `concurrency` is keyed by
+  `github.ref` with `cancel-in-progress: false`; `permissions` is
+  `contents: read`.
+- Decision 2: the steps "Check the tagged commit is on the default branch"
+  and "Check the tag names the version in mix.exs" run before anything is
+  built, the branch read from `github.event.repository.default_branch`;
+  "Check Hex does not already show this version" runs before the toolchain
+  is installed and stops on any answer but not found; "Full quality gate"
+  runs the `gate.full` command of `.claude/wurk.json`, `mix quality`. The
+  toolchain, cache, dependency and gate steps are byte-identical to
+  `ci.yml`'s.
+- Decision 3: "Publish to Hex" runs `mix hex.publish --yes` with
+  `HEX_API_KEY` in its own `env:`, the only step that names it, and no other
+  file outside this record names it; "Print the published version's
+  address" prints the hex.pm and HexDocs addresses.
+- Decision 4: the comment above "Publish to Hex" keeps the default that
+  publishes the docs with the package, and `.quality.exs` runs the `docs`
+  stage (`enabled: :auto`); the 0.3.1 run's gate reported it with no
+  warnings before the publish built and published the docs.
+- Decisions 5 and 6: nothing in the workflow retries, re-runs or replaces a
+  version.
+- Context and Consequences: `CLAUDE.md`'s release-prep row, its relay
+  paragraph and its "Release preps" paragraph, and the closing paragraph of
+  `.claude/wurk/release.md`, say an agent or a session never runs the
+  publish and a failed workflow is re-run from its Actions page;
+  `CLAUDE.md`, "What this project is", still says a runtime in another
+  language vendors the corpus from a tag; the commit that added the
+  workflow, `d92e1ad`, changed nothing under `lib/`.
+
+**A sentence of Decision 4 that a later change superseded.** Decision 4
+says the default publish means "HexDocs shows every version's
+documentation, these records among its extras, as it does today". Commit
+`8557d1d` (2026-10-05, inside `v0.3.1`) took the records out of the docs
+extras: the `docs` function in `mix.exs` now lists the README, the CHANGELOG
+and one explanation page, and its comment says the records under `docs/adr`
+"are not extras, and the README links them on GitHub by absolute URL". So
+HexDocs for 0.3.1 carries no record, and "these records among its extras"
+describes the extras as they stood when this record was written. This note
+decides nothing: what Decision 4 decides, that the workflow keeps the
+default and publishes the docs with the package, built warning-free by the
+gate's Docs stage at the same commit, still holds.

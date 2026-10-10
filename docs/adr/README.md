@@ -5,7 +5,7 @@
 | [0001](0001-riddler-one-package.md) | Riddler is one package: a dynamic content runtime that consumes the statifier family, and the content document is its contract | accepted |
 | [0002](0002-element-document.md) | The screen document v1 | accepted |
 | [0003](0003-template-subset.md) | The template subset | accepted |
-| [0004](0004-release-workflow-publishes-on-tag-push.md) | A release workflow publishes to Hex on the push of a version tag, and only from a green, matching commit on the default branch | proposed |
+| [0004](0004-release-workflow-publishes-on-tag-push.md) | A release workflow publishes to Hex on the push of a version tag, and only from a green, matching commit on the default branch | accepted |
 
 New ADRs: next number, same three-section format (Context, Decision,
 Consequences), plus the typespecs and worked-example sections this family's
