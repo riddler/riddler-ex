@@ -25,9 +25,9 @@ defmodule Riddler do
       into copy without letting them run code.
 
     * Riddler.Corpus (internal) - the conformance corpus. The cases are authored here,
-      beside the code that has to satisfy them, and emitted into the corpus
-      repository by `mix riddler.corpus` so that a runtime written in another
-      language can be held to the same behavior.
+      beside the code that has to satisfy them, and stay in this repository.
+      `mix riddler.corpus` writes a copy as files, so that a runtime written in
+      another language can be held to the same behavior.
 
   Conditions are evaluated by predicator and templates are parsed by solid.
   Nothing else is a runtime dependency, and nothing in the statifier family
