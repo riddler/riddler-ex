@@ -44,6 +44,11 @@
   doc_links: [
     enabled: :auto
   ],
+  # The README stage checks the README keeps the shape of an introduction
+  # and a map: what, why, install, one basic-usage snippet, and the links
+  # grouped by the reader's question. Findings fail the gate; the stage is
+  # never lowered to a warning to get a run green.
+  readme: [enabled: :auto, severity: :error],
   profiles: [
     loop: [
       stages: [:format, :compile, :credo, :test],

@@ -125,9 +125,9 @@ what this README should end up with.
 
 The pin is written to the exact minor that the release cuts, patch component
 `0` included - `~> 0.5.0` for a 0.5.0 release, not `~> 0.5`. That is the form
-the pre-1.0 banner at the top of the same README recommends to consumers, and
-a snippet that shows a looser pin than the banner asks for contradicts the
-banner a couple of dozen lines above it. So a prep that finds the skill has
+the pre-1.0 banner under the Installation heading of the same README recommends to
+consumers, and a snippet that shows a looser pin than the banner asks for
+contradicts the banner directly beneath it. So a prep that finds the skill has
 written `~> X.Y` finishes the job by hand and restores the `.0`.
 
 The pin's current value is not written down here, for the same reason no
