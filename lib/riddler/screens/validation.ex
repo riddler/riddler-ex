@@ -31,11 +31,17 @@ defmodule Riddler.Screens.Validation do
 
   # A node a response answers is a node that declares something about the
   # response: whether it is required, or the format it has to be in. A node
-  # that declares neither has nothing to check, whatever its type is.
+  # that declares neither has nothing to check. The two choice types are the
+  # exception, and are checked whatever they declare: a choice question's
+  # options are a declaration, and a boolean question is held to its shape.
   @declaring_fields [:required, :format]
 
-  # A response is one line of text a visitor typed, so every format below
-  # reads it as text or as the number a decoder already made of it.
+  @choice_type "choice_question"
+  @boolean_type "boolean_question"
+
+  # A response to a question carrying a format is one line of text a visitor
+  # typed, so every format below reads it as text or as the number a decoder
+  # already made of it.
   @email ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/
   @phone ~r/^\+?[0-9][0-9 ()\.\-]*$/
 
@@ -173,6 +179,12 @@ defmodule Riddler.Screens.Validation do
 
   # -- one node ---------------------------------------------------------------
 
+  defp node_findings(%{type: @choice_type} = node, responses),
+    do: choice_findings(node, Map.get(responses, node[:key]))
+
+  defp node_findings(%{type: @boolean_type} = node, responses),
+    do: boolean_findings(node, Map.get(responses, node[:key]))
+
   defp node_findings(node, responses) do
     if Enum.any?(@declaring_fields, &Map.has_key?(node, &1)) do
       checks(node, Map.get(responses, node[:key]))
@@ -203,6 +215,161 @@ defmodule Riddler.Screens.Validation do
       "required",
       "#{inspect(label(node))} has to be answered"
     )
+  end
+
+  # -- the choice types -------------------------------------------------------
+
+  # A choice question answers at most one finding, the first of the checks the
+  # amendment to `docs/adr/0002-element-document.md` headed "two choice node
+  # types" orders: nothing selected, the shape `select` fixes, a value no
+  # option carries, and the selection bounds. Its `format` is a field nothing
+  # consults, so no clause here reads it.
+  #
+  # A `select` that is neither "one" nor "many" is the document's defect,
+  # reported at admit; no shape can be read from it, so the response is held
+  # to `required` and to nothing else, as a format name the package does not
+  # know holds a response to nothing.
+  defp choice_findings(node, response) do
+    select = Map.get(node, :select)
+
+    cond do
+      nothing_selected?(select, response) -> unanswered(node)
+      select not in ["one", "many"] -> []
+      not choice_shape?(select, response) -> [choice_shape_finding(node, select)]
+      true -> option_findings(node, select, response)
+    end
+  end
+
+  # What counts as nothing selected is fixed by `select`: an empty string is
+  # no option under "one", and an empty list no options under "many". A list
+  # under "one" and a string under "many" are the wrong shape, empty or not.
+  # Under a `select` neither value names, any of the three empty forms is
+  # nothing selected, since no shape says which one the visitor meant.
+  defp nothing_selected?(_select, nil), do: true
+  defp nothing_selected?("one", response), do: response == ""
+  defp nothing_selected?("many", response), do: response == []
+  defp nothing_selected?(_select, response), do: response in ["", []]
+
+  # An empty selection on a question that is not required is accepted whatever
+  # its bounds, as a blank text response that is not required is never put to
+  # its format.
+  defp unanswered(node) do
+    if Map.get(node, :required, false) == true, do: [required_finding(node)], else: []
+  end
+
+  defp choice_shape?("one", response), do: is_binary(response)
+
+  defp choice_shape?("many", response) do
+    is_list(response) and Enum.all?(response, &is_binary/1) and
+      length(Enum.uniq(response)) == length(response)
+  end
+
+  defp choice_shape_finding(node, "one") do
+    finding(
+      node,
+      "response.invalid_shape",
+      "select",
+      "#{inspect(label(node))} is answered with one option's value, a string, and the response is not one"
+    )
+  end
+
+  defp choice_shape_finding(node, "many") do
+    finding(
+      node,
+      "response.invalid_shape",
+      "select",
+      "#{inspect(label(node))} is answered with a list of different option values, each a string, and the response is not one"
+    )
+  end
+
+  # Values are compared as written: none is trimmed or folded, so a response
+  # carrying an option's value with a space around it is not that option.
+  defp option_findings(node, select, response) do
+    values = if select == "one", do: [response], else: response
+    offered = offered_values(node)
+
+    case Enum.reject(values, &(&1 in offered)) do
+      [] when select == "many" -> selection_findings(node, length(values))
+      [] -> []
+      strays -> [not_an_option_finding(node, strays)]
+    end
+  end
+
+  defp offered_values(node) do
+    case Map.get(node, :answer_options) do
+      options when is_list(options) -> for %{value: value} <- options, do: value
+      _absent -> []
+    end
+  end
+
+  defp not_an_option_finding(node, strays) do
+    finding(
+      node,
+      "response.not_an_option",
+      "answer_options",
+      "#{inspect(label(node))} offers no option with the value #{Enum.map_join(strays, ", ", &inspect/1)}"
+    )
+  end
+
+  # The bounds are counts of options. A bound that is not a non-negative
+  # integer is the document's defect, `document.invalid_selection_bounds`,
+  # raised before a visitor arrives, so it bounds nothing here.
+  defp selection_findings(node, count) do
+    min = Map.get(node, :min_selections)
+    max = Map.get(node, :max_selections)
+
+    cond do
+      count?(min) and count < min ->
+        [selection_finding(node, "min_selections", "at least", min, count)]
+
+      count?(max) and count > max ->
+        [selection_finding(node, "max_selections", "at most", max, count)]
+
+      true ->
+        []
+    end
+  end
+
+  defp count?(bound), do: is_integer(bound) and bound >= 0
+
+  defp selection_finding(node, field, direction, bound, count) do
+    finding(
+      node,
+      "response.out_of_range",
+      field,
+      "#{inspect(label(node))} takes #{direction} #{bound} of its options, and #{count} were picked"
+    )
+  end
+
+  # A boolean question is a lone checkbox: absent or null is nothing selected,
+  # and `false` is the visitor declining, which a question that is required
+  # does not accept.
+  defp boolean_findings(node, nil), do: unanswered(node)
+
+  defp boolean_findings(node, response) when is_boolean(response) do
+    if response == false and Map.get(node, :required, false) == true do
+      [
+        finding(
+          node,
+          "response.required",
+          "required",
+          "#{inspect(label(node))} has to be answered yes, and the response is false"
+        )
+      ]
+    else
+      []
+    end
+  end
+
+  defp boolean_findings(node, _response) do
+    [
+      finding(
+        node,
+        "response.invalid_shape",
+        "type",
+        "#{inspect(label(node))} is answered true or false, and the response is neither"
+      )
+    ]
   end
 
   # -- the formats ------------------------------------------------------------
