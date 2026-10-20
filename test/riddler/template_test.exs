@@ -691,38 +691,39 @@ defmodule Riddler.TemplateTest do
       end
     end
 
-    # Mutation: have trailing_text/5 take a token holding only its end, as
+    # Mutation: have carrying_text/2 take a token holding only its end, as
     # `[_end | _]`, for one carrying text - every closer is then refused, and
     # this template with it.
     test "a closing tag followed only by whitespace and a newline carries no text" do
       assert {:ok, "Pro", []} = render!("{% if responses.plan %}Pro{% endif\n  %}")
     end
 
-    # Mutation: delete the second question trailing_text/5 asks (the name and
-    # the text written over together) - the endif in the comment body is
+    # Mutation: have kept?/3 answer true - the endif in the comment body is
     # refused, and the template with it.
     test "a token in a comment body is text: the parser throws the whole body away" do
       assert {:ok, "Welcome", []} =
                render!(~S({% comment %}{% endif "plan" %}{% endcomment %}Welcome))
     end
 
-    # Mutation: delete the first question trailing_text/5 asks (the text
-    # written over alone) - the endif's characters in the string and in the
-    # raw body are refused as a token carrying text, and neither compiles.
+    # Mutation: have kept?/3 answer true - the endif's characters in the
+    # string and in the raw body are refused as a token carrying text, and
+    # neither compiles.
     test "text the parser keeps is not text it throws away" do
       assert {:ok, "{% endif plan %}", []} = render!(~S({{ "{% endif plan %}" }}))
       assert {:ok, "{% endif plan %}", []} = render!("{% raw %}{% endif plan %}{% endraw %}")
     end
 
-    # Mutation: have beside/2 keep a token refused as a tag - the stray
-    # endif is refused twice, as itself and for its string.
+    # Mutation: have trailing_text_refusals/2 skip no token the second
+    # reading holds as a tag it does not know - the stray endif is refused
+    # twice, as itself and for its string.
     test "a stray closer carrying text is refused once, as itself" do
       assert [{"template.tag_not_allowed", "endif", 1, 8}] =
                trailing(~S(Welcome{% endif "plan" %}))
     end
 
-    # Mutation: drop trailing_text_refusals/2 from unparsed_refusals/2 - the
-    # parser refuses the include, and the endif's text goes unreported.
+    # Mutation: have unparsed_refusals/2 answer `refusals` without the
+    # trailing findings - the parser refuses the include, and the endif's
+    # text goes unreported.
     test "text after a tag is refused beside a refusal the parser reads" do
       assert [{"template.tag_not_allowed", "include", 1, 1}, {@trailing, "endif", 1, 47}] =
                trailing("{% include 'footer' %}{% if responses.plan %}a{% endif later %}")
@@ -742,6 +743,69 @@ defmodule Riddler.TemplateTest do
       assert byte_size(prefix) == 8
       source = prefix <> "{% if responses.plan %}x{% endif later %}"
       assert [{@trailing, "endif", 1, 33}] = trailing(source)
+    end
+
+    # Mutation: have carrying_text/2 take the token's end from the line and
+    # column the lexer reports rather than from what it leaves unread - the
+    # lexer counts a newline in a string as a new line without a new column,
+    # the output tag kept?/3 prints lands inside the token, and the else is
+    # admitted.
+    test "a string carrying a newline is text after the tag like any other" do
+      for {field, source} <- [
+            {"endif", "{% if responses.plan %}y{% endif 'a\nb' %}"},
+            {"endif", "{% if responses.plan %}\n{% endif 'x\ny' %}"},
+            {"endraw", "{% raw %}a{% endraw 'x\ny' %}"},
+            {"comment", "{% comment 'a\nb' %}x{% endcomment %}"},
+            {"else", "{% if responses.plan %}a{% else 'a\nb' %}b{% endif %}"}
+          ] do
+        assert [%Riddler.Finding{code: @trailing, field: ^field}] = refusal!(source)
+      end
+    end
+
+    # Mutation: have kept?/3 answer true - the token in each region the
+    # parser reads and throws away is refused for its text, and each
+    # template, admitted before this rule, is refused.
+    test "a token in a region the parser throws away is not refused for its text" do
+      for source <- [
+            "{% if responses.plan %}{% else %}{% else later %}{% endif %}",
+            "{% if responses.plan %}{% else %}{% else %}{% endif later %}",
+            "{% case responses.plan %}{% if a %}{% endif later %}{% when 1 %}{% endcase %}",
+            "{% if a %}{% else %}{% elsif a %}{% endif %}{% if b %}y{% endif %}"
+          ] do
+        assert {:ok, _compiled} = Template.compile(source)
+      end
+    end
+
+    # Mutation: have unparsed_refusals/2 answer the trailing findings alone
+    # where the second reading refuses nothing else, without the first
+    # reading's answer - the keywords the first reading refused are lost.
+    test "beside the first reading's keywords, those keywords are kept" do
+      assert [
+               {"template.tag_not_allowed", "endif", 1, 13},
+               {"template.tag_not_allowed", "when", 1, 24},
+               {"template.tag_not_allowed", "endcase", 1, 36},
+               {@trailing, "endif", 1, 59}
+             ] =
+               trailing("{% case a %}{% endif %}{% when 1 %}{% endcase %}{% if b %}{% endif x %}")
+
+      assert [
+               {"template.tag_not_allowed", "endif", 1, 13},
+               {"template.tag_not_allowed", "endcase", 1, 26}
+             ] = trailing("{% case a %}{% endif x %}{% endcase %}")
+    end
+
+    # Mutation: have first_reading/2 add the trailing findings beside a
+    # parse failure - the endif of the first block is reported and the parse
+    # failure is not alone.
+    test "beside a parse failure, text after a tag is not reported" do
+      assert [%Riddler.Finding{code: "template.parse_error"}] =
+               refusal!(~S({% if a %}{% else %}{% else %}{% elsif a %}{% endif "{% raw %}" %}))
+
+      assert [%Riddler.Finding{code: "template.parse_error"}] =
+               refusal!(
+                 "{% if b %}x{% endif later %}" <>
+                   ~S({% if a %}{% else %}{% else %}{% elsif a %}{% endif "{% raw %}" %})
+               )
     end
 
     # The oracle is the parser and the engine underneath `Riddler.Template`,
@@ -769,7 +833,18 @@ defmodule Riddler.TemplateTest do
         {"else", &"{% case responses.plan %}{% when 'x' %}a{% else#{&1} %}b{% endcase %}"}
       ]
 
-      tails = [" later", ~S| "plan"|, ~S| 'plan'|, " a.b | upcase", "\n  later", " 1", " (1..2)"]
+      tails = [
+        " later",
+        ~S| "plan"|,
+        ~S| 'plan'|,
+        " a.b | upcase",
+        "\n  later",
+        " 1",
+        " (1..2)",
+        " 'a\nb'",
+        ~S| "x
+"|
+      ]
 
       outcomes =
         for {field, carrier} <- carriers, tail <- tails do
