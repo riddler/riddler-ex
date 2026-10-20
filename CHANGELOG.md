@@ -10,6 +10,41 @@ fragment in [`changelog.d/`](https://github.com/riddler/riddler-ex/blob/v0.3.0/c
 into a version section at release. See that README for the format and for when a
 change warrants an entry at all.
 
+## [0.4.0] 2026-10-20
+
+A minor release for questions that ask a visitor to choose, for presenting a
+Journey as data, and for the template subset's refusals. A screen document may
+carry `choice_question` and `boolean_question` nodes, and
+`Riddler.Screens.validate_screen/3` and `/4` check a response to either.
+`Riddler.Journey` presents the status a host passes as a screen, waiting or
+done, and replaces a root's `context` whole. The template subset reports the
+refusals a tag the parser does not know used to hide, refuses a misplaced
+keyword as itself, and refuses a tag carrying text it throws away. A
+`schema_version` written as `1.0` reads as version 1, a `metadata` written as
+`null` is not a document, and the `response.undecidable` message says what the
+evaluator answered.
+
+### Added
+
+- A screen document may carry a `choice_question` node, which asks a visitor to pick one option or several (`select` of `"one"` or `"many"`) from `answer_options`, each option a `value` in the key shape and a `label` template, with an optional `style` hint, `required`, and `min_selections` and `max_selections` under `"many"`; a document using it was refused `document.unknown_type` before, and no document admitted before changes its answer.
+- A screen document may carry a `boolean_question` node, a lone checkbox or toggle with a `label` template and an optional `required`; a document using it was refused `document.unknown_type` before.
+- `Riddler.Screens.Document.validate/1` refuses a choice question's defects with five new codes, each naming the question's key: `document.invalid_select`, `document.empty_answer_options`, `document.invalid_option`, `document.duplicate_option_value` and `document.invalid_selection_bounds`; an option label outside the template subset is `document.invalid_template`, and `document.invalid_style` now covers a choice question's `style`; the `document.unknown_type` message, which lists the types this version knows, now also names `choice_question` and `boolean_question`.
+- `Riddler.Screens.Document.admit/1` and the document schema refuse a choice question whose `answer_options` is not a list of objects with string `value` and `label` fields, as for every field the schema types; on any other node `answer_options` is still dropped whatever it holds.
+- `Riddler.Screens.resolve/2` and `resolve_screen/3` render each choice question option's `label` against the root, reporting a missing variable under the question's key, and leave each `value` as written; a selection bound written with no fractional part is admitted and resolved as its integer.
+- `Riddler.Screens.validate_screen/3` and `validate_screen/4` check a response to a `choice_question` and a `boolean_question` whatever the question declares, with at most one finding per question naming its key: nothing selected on a required question is `response.required`, a response not of the shape the type fixes (one string under `select: "one"`, a list of different strings under `"many"`, `true` or `false` for a boolean question) is the new `response.invalid_shape`, a required boolean question answered `false` is `response.required`, a value no option carries is the new `response.not_an_option`, and under `"many"` a count outside `min_selections` or `max_selections` is `response.out_of_range`; a `format` on either type is never applied to its response, and no answer for any other node type changes.
+- `Riddler.Journey.present/3` presents the status a host passes - `{:screen, key}`, `:waiting` or `:done` - as a string-keyed map whose `"state"` is `"screen"`, `"waiting"` or `"done"`, a screen carrying its resolved nodes and diagnostics, and `Riddler.Journey.put_context/2` replaces a root's `"context"` whole with the responses untouched; the corpus holds both as `journey.present` and `journey.put_context`.
+
+### Changed
+
+- `Riddler.Screens.Document.admit/1` reads a `schema_version` written with no fractional part as its integer, so `validate/1` accepts a document declaring `1.0` where it refused it with `document.invalid_schema_version`, and `Riddler.Screens.resolve/2` carries `1` onto the resolved document; a `schema_version` with a fractional part is still not a document.
+- `Riddler.Template.compile/1` reports every refusal the parser used to hide when a template holds a tag the parser does not know: a branch or closing keyword written where no block of its own is open is refused as itself beside every other refusal, the closing tag of a block the author opened is no longer refused (outside the parts of a block the parser throws away, such as what stands before a `case` tag's first `when`), a tag such as `include` no longer hides a refused tag, filter or liquid tag beside it, and a liquid tag holding such a tag now reports the liquid tag and the tags inside it where it reported a parse error, so a host that matched on the old findings should match on the new list.
+- A template whose tag carries text after its name that the tag does not read (a string on an `endif`, a word on an `else`, `endunless`, `endfor`, `endcapture` or `endraw`, a note on a `comment` opener or an `endcomment`) is refused with `template.trailing_text_not_allowed` naming that tag, where it compiled before; delete the text, or move a note into the comment's body.
+- The `message` of a `response.undecidable` finding for a condition that compiles now says what the evaluator answered: a name the root does not carry, a value that is not true or false, or a condition that fails to evaluate; where the answer does not tell a missing key from an operand of the wrong type it says only that the condition could not be decided. The `code`, `field`, `node_key` and `position` are unchanged, so a host that matches on the code reads what it read before; a host that matched the old sentence "could not be decided against the root this screen was validated with" matches the code instead.
+
+### Fixed
+
+- `Riddler.Screens.Document.admit/1` answers `nil` for a document whose `metadata` is written as `null`, as it does for any other value that is not an object, because the document schema types `metadata` as an object; a document that leaves `metadata` out is admitted exactly as before. A host that wrote `"metadata": null` writes an object, or leaves `metadata` out.
+
 ## [0.3.1] 2026-10-05
 
 A documentation release. The code and the behavior of the package are the

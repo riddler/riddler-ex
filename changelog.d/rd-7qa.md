@@ -1,3 +1,0 @@
-### Changed
-
-- `Riddler.Template.compile/1` reports every refusal the parser used to hide when a template holds a tag the parser does not know: a branch or closing keyword written where no block of its own is open is refused as itself beside every other refusal, the closing tag of a block the author opened is no longer refused (outside the parts of a block the parser throws away, such as what stands before a `case` tag's first `when`), a tag such as `include` no longer hides a refused tag, filter or liquid tag beside it, and a liquid tag holding such a tag now reports the liquid tag and the tags inside it where it reported a parse error, so a host that matched on the old findings should match on the new list.

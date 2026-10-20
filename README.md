@@ -27,7 +27,7 @@ Add `riddler` to the dependencies in your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:riddler, "~> 0.3.0"}
+    {:riddler, "~> 0.4.0"}
   ]
 end
 ```
@@ -98,13 +98,13 @@ iex> {finding.code, finding.node_key}
   - [`Riddler.Screens.Registry`](https://hexdocs.pm/riddler/Riddler.Screens.Registry.html): the node types this version knows, by the name a document spells them with.
   - [`Riddler.Template`](https://hexdocs.pm/riddler/Riddler.Template.html): the tags and filters the template subset admits, and how a refusal is reported.
   - [`Riddler.Finding`](https://hexdocs.pm/riddler/Riddler.Finding.html): the fields of a finding, the unit every refusal reports.
-  - [The screen document schema](https://github.com/riddler/riddler-ex/blob/v0.3.0/priv/schemas/screen-document.schema.json): the JSON schema of a screen document, shipped in the package under `priv/schemas`.
-  - [The conformance corpus](https://github.com/riddler/riddler-ex/tree/v0.3.0/corpus): the cases that hold a Riddler runtime to this contract, which a runtime in another language vendors from a tag of this repository.
+  - [The screen document schema](https://github.com/riddler/riddler-ex/blob/v0.4.0/priv/schemas/screen-document.schema.json): the JSON schema of a screen document, shipped in the package under `priv/schemas`.
+  - [The conformance corpus](https://github.com/riddler/riddler-ex/tree/v0.4.0/corpus): the cases that hold a Riddler runtime to this contract, which a runtime in another language vendors from a tag of this repository.
   - [The changelog](https://hexdocs.pm/riddler/changelog.html): what changed in each version.
 - Understand
   - [What Riddler is for: elements, templates and conditions](docs/explanation/what-riddler-is-for.md): why content moves into a document, why the vocabulary, the template subset and the conditions are each as small as they are, the alternatives turned down, and what is left to the host.
   - [What Riddler is](https://hexdocs.pm/riddler/Riddler.html): content kinds, the seams the package is divided along, and what it depends on.
-  - [The decision records](https://github.com/riddler/riddler-ex/tree/v0.3.0/docs/adr): why the screen document, the template subset and the boundary with a host are shaped as they are.
+  - [The decision records](https://github.com/riddler/riddler-ex/tree/v0.4.0/docs/adr): why the screen document, the template subset and the boundary with a host are shaped as they are.
 
 ## Compatibility
 
@@ -121,4 +121,4 @@ reverse.
 
 ## License
 
-MIT. See [LICENSE](https://github.com/riddler/riddler-ex/blob/v0.3.0/LICENSE).
+MIT. See [LICENSE](https://github.com/riddler/riddler-ex/blob/v0.4.0/LICENSE).
