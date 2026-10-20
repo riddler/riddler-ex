@@ -2969,3 +2969,69 @@ The admission corpus carries the case, "Metadata written as null is not a
 screen document". The decision was taken by the conductor under a standing
 consent, 2026-10-19. The integer-1 `schema_version` comparison that note names
 stays open and is not touched here.
+
+---
+
+## Amendment, 2026-10-20: a `schema_version` written with no fractional part is its integer, so `1.0` is version 1
+
+Status: proposed
+
+Recorded 2026-10-20, bead rd-047. The amendment above of 2026-09-18, "a value
+of the wrong type in a field the schema types is not a document", left open
+under "Two things this entry does not reach" whether a `schema_version` of
+`1.0` is version 1; the note of 2026-09-26 records the comparison with the
+integer 1 still standing, and the note of 2026-10-20 leaves it open. It was
+ruled by the operator, 2026-10-19: `1.0` counts as 1, an integral number reads
+as its integer in admission and resolution alike, and a version with a
+fractional part is a finding at admission. Every cite below
+of the package before this entry is read at
+`2120b2c6e05e71762dde890291885b606955f54e`; the code half lands in the same
+request and is cited by anchor.
+
+### What the record now decides
+
+**A `schema_version` with no fractional part is read as its integer.**
+`Riddler.Screens.Document.admit/1` carries the envelope's `schema_version`
+into the admitted struct through the private `integral/1` in
+`lib/riddler/screens/document.ex`, which reads a number with no fractional
+part as its integer and leaves every other value as it was written. A document
+declaring `1.0` is admitted with a `schema_version` of `1`, `validate/1`
+answers `{:ok, document}` for it where it raised
+`document.invalid_schema_version` before, and `Riddler.Screens.resolve/2`
+carries `1` onto the resolved document. A document declaring `2.0` is admitted
+as `2` and still raises `document.invalid_schema_version`, its message naming
+`2`. The struct's typespec narrows the field from `number() | nil` to
+`integer() | nil`. The same helper reads a choice question's
+`min_selections` and `max_selections`, which the amendment above of
+2026-10-20 already admits as their integers, so the envelope and the node read
+an integral number one way.
+
+**A `schema_version` with a fractional part stays not a document.** The
+ruling's "1.5 is an admit finding" is the refusal admission already gives:
+`priv/schemas/screen-document.schema.json` types `schema_version` as
+`integer`, and the private `of_type?/2` counts `1.5` as not one, so `admit/1`
+answers `nil` for it under the amendment of 2026-09-18 above, as it did
+before this entry. No answer for such a document changes.
+
+The admission corpus carries both: "A schema version written as 1.0 is
+version 1, and is admitted with no finding" and "A schema version with a
+fractional part is not an integer, and is not a screen document".
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the rule
+stated above answers a call one way, and this entry answers the same call
+another". A document declaring `1.0` was admitted and refused by `validate/1`
+with `document.invalid_schema_version`; it now validates with no finding.
+The second of the "Two things this entry does not reach" in the amendment of
+2026-09-18 above is answered here, and the last bullet of the note of
+2026-09-26 above describes the code before this entry.
+
+### What is unchanged
+
+The Decision's "`schema_version`, an integer, `1` in this version" stands; this
+entry says only that `1.0` is that integer. The schema is not edited. An absent
+`schema_version` is admitted as `nil` and raises nothing. A version that is
+not a number is not a document, as before. A document declaring the integer
+`1` or any other integer answers what it answered before, finding for finding
+and message for message.

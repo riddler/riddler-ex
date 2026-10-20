@@ -40,7 +40,8 @@ defmodule Riddler.Screens.Document do
   `nil` too for a value of the wrong JSON type in a field the document schema
   types: an `id`, a `kind`, a screen's `key` or `title`, or a node's `key`,
   `type` or `condition` that is there and is not a string, `null` included; a
-  `schema_version` that is there and is not an integer; a `nodes` on a
+  `schema_version` that is there and is not an integer, a number with no
+  fractional part counting as one and admitted as its integer; a `nodes` on a
   node whose type reads none that is not a list of nodes; and an
   `answer_options` on a choice question that is not a list of objects, or an
   option whose `value` or `label` is there and is not a string. A list of nodes
@@ -156,7 +157,9 @@ defmodule Riddler.Screens.Document do
   # The version of this contract this package implements. The envelope's
   # `schema_version` is an integer and it is this integer in this version, so
   # a document authored against a contract this package is not the runtime for
-  # says so in one field rather than by failing somewhere inside.
+  # says so in one field rather than by failing somewhere inside. `admit/1`
+  # reads a version written with no fractional part as its integer, so `1.0`
+  # is this version.
   @schema_version 1
 
   # The kinds this version has a runtime for. It is the registry of kinds,
@@ -175,7 +178,7 @@ defmodule Riddler.Screens.Document do
 
   @typedoc "An admitted document."
   @type t :: %__MODULE__{
-          schema_version: number() | nil,
+          schema_version: integer() | nil,
           kind: String.t(),
           id: String.t() | nil,
           metadata: %{optional(String.t()) => term()},
@@ -239,7 +242,7 @@ defmodule Riddler.Screens.Document do
          {:ok, metadata} <- admit_metadata(Map.fetch(raw, "metadata")),
          {:ok, admitted} <- admit_each(screens, &admit_screen/1) do
       %__MODULE__{
-        schema_version: Map.get(raw, "schema_version"),
+        schema_version: integral(Map.get(raw, "schema_version")),
         kind: admit_kind(Map.get(raw, "kind")),
         id: Map.get(raw, "id"),
         metadata: metadata,
@@ -415,13 +418,22 @@ defmodule Riddler.Screens.Document do
 
   defp integral_bound(bound, typed) do
     case Map.fetch(typed, bound) do
-      {:ok, value} when is_float(value) ->
-        if Float.round(value) == value, do: %{typed | bound => trunc(value)}, else: typed
-
-      _other ->
-        typed
+      {:ok, value} -> %{typed | bound => integral(value)}
+      :error -> typed
     end
   end
+
+  # A number with no fractional part read as its integer, and any other value
+  # as it was written. JSON does not tell `1.0` from `1`, and a runtime whose
+  # parser cannot see the difference has to read a document the same way this
+  # one does, so `admit/1` reads the envelope's `schema_version` and a choice
+  # question's selection bounds through this, and `resolve/2` and `validate/1`
+  # see the integer.
+  defp integral(value) when is_float(value) do
+    if Float.round(value) == value, do: trunc(value), else: value
+  end
+
+  defp integral(value), do: value
 
   # A `nodes` on a node whose type reads none - every type but the container,
   # and a type the registry does not know - is carried nowhere, as no field a

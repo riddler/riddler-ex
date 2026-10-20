@@ -369,7 +369,9 @@ defmodule Riddler.Screens.DocumentTest do
 
     # The schema's draft counts a number with no fractional part as an
     # integer, and so does admission. Whether that number is the version this
-    # package implements is not admission's question.
+    # package implements is not admission's question; that it is read as its
+    # integer is checked under "a schema_version written with no fractional
+    # part" below.
     #
     # Sabotage: dropped the float clause of `of_type?/2`; a schema_version of
     # 1.0 was refused and this went red.
@@ -1248,4 +1250,50 @@ defmodule Riddler.Screens.DocumentTest do
       refute finding.message =~ "column"
     end
   end
+
+  # JSON does not tell `1.0` from `1`, so a version written with no fractional
+  # part is read as its integer at admission, and validation and resolution
+  # both see the integer. A version with a fractional part is not an integer
+  # to the schema and stays not a document. The assertions use `===` because
+  # `1.0 == 1` holds in Elixir and would let the float through unnoticed.
+  describe "a schema_version written with no fractional part" do
+    # Sabotage: made `admit/1` carry the `schema_version` as written rather
+    # than through `integral/1`; the version came back as 1.0, the `=== 1`
+    # assertion failed, and this went red.
+    test "is version 1 when it is 1.0, and validates with no finding" do
+      document = Document.admit(Map.put(document([text_node()]), "schema_version", 1.0))
+
+      assert document.schema_version === 1
+      assert {:ok, ^document} = Document.validate(document)
+    end
+
+    # Sabotage: made `integral/1` return a float with no fractional part as
+    # written; the resolved version came back as 1.0 and this went red.
+    test "resolves as the integer it was admitted as" do
+      document = Document.admit(Map.put(document([text_node()]), "schema_version", 1.0))
+
+      assert {:ok, resolved} =
+               Riddler.Screens.resolve(document, %{"context" => %{}, "responses" => %{}})
+
+      assert resolved.schema_version === 1
+    end
+
+    # Sabotage: made `admit/1` carry the `schema_version` as written; the
+    # message named 2.0 and this went red.
+    test "is read as its integer when it is not this version, and refused naming the integer" do
+      [finding] = findings(Map.put(document([text_node()]), "schema_version", 2.0))
+
+      assert finding.code == "document.invalid_schema_version"
+      assert finding.message =~ "not 2"
+      refute finding.message =~ "2.0"
+    end
+
+    # Sabotage: made the float clause of `of_type?/2` count every float as an
+    # integer; 1.5 was admitted and this went red.
+    test "is not a document when the version carries a fractional part" do
+      assert Document.admit(Map.put(document([text_node()]), "schema_version", 1.5)) == nil
+    end
+  end
+
+  defp text_node, do: %{"type" => "text", "key" => "account_intro", "text" => "Hi"}
 end
