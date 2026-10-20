@@ -40,8 +40,10 @@ defmodule Riddler.Screens.Document do
   `nil` too for a value of the wrong JSON type in a field the document schema
   types: an `id`, a `kind`, a screen's `key` or `title`, or a node's `key`,
   `type` or `condition` that is there and is not a string, `null` included; a
-  `schema_version` that is there and is not an integer; and a `nodes` on a
-  node whose type reads none that is not a list of nodes. A list of nodes
+  `schema_version` that is there and is not an integer; a `nodes` on a
+  node whose type reads none that is not a list of nodes; and an
+  `answer_options` on a choice question that is not a list of objects, or an
+  option whose `value` or `label` is there and is not a string. A list of nodes
   there is admitted and dropped, as any field the type does not name is. That
   is the whole of what it refuses, and the document schema refuses each of
   them too, so a value the schema calls a document is admitted. Everything
@@ -85,17 +87,33 @@ defmodule Riddler.Screens.Document do
     * `document.level_out_of_range` - a heading level outside 1 to 6.
     * `document.invalid_condition` - a condition that does not parse.
     * `document.invalid_template` - a template field holding a construct
-      outside the template subset. The finding carries the construct the
-      template refused, and the node's key.
+      outside the template subset, a choice question option's `label`
+      among them. The finding carries the construct the template refused,
+      and the node's key.
     * `document.invalid_writes` - a write that does not address a response,
       or whose value is not the constant form.
-    * `document.invalid_style` - a button's `style` is there and is not a
-      string. Which string it is stays the renderer's business; that it is a
-      string is this package's.
+    * `document.invalid_style` - a `style` is there and is not a string, on a
+      node whose type names one: a button or a choice question. Which string
+      it is stays the renderer's business; that it is a string is this
+      package's.
     * `document.invalid_validates` - a button's `validates` is there and is
       not a boolean.
     * `document.invalid_required` - a question's `required` is there and is
       not a boolean.
+    * `document.invalid_select` - a choice question's `select` is there and
+      is neither `"one"` nor `"many"`.
+    * `document.empty_answer_options` - a choice question's `answer_options`
+      is an empty list.
+    * `document.invalid_option` - a choice question's option carries no
+      `value`, a `value` not matching `[a-z][a-z0-9_]*`, or no `label`.
+    * `document.duplicate_option_value` - two options of one choice question
+      carry the same `value`. Option values are not keys, so two questions
+      may offer the same one.
+    * `document.invalid_selection_bounds` - a choice question's
+      `min_selections` or `max_selections` on a question whose `select` is
+      not `"many"`, one that is not a non-negative integer, a
+      `min_selections` above `max_selections`, or either above the number of
+      options. A bound with no fractional part counts as its integer.
     * `document.unknown_format` - a format name this package does not know.
     * `document.invalid_pattern` - a question that asks for the `pattern`
       format declares a `pattern` that format cannot compile. Nothing a
@@ -175,6 +193,15 @@ defmodule Riddler.Screens.Document do
   # admit-time refusal below and `Riddler.Screens`' resolve-time render are two
   # passes over the same fields, and both read it through `template_fields/0`.
   @template_fields [:text, :label, :placeholder]
+
+  # A choice question's options. An option's `label` is a template too, but it
+  # is not a field of the node, so it is not on the list above: the refusal
+  # below and the render in `Riddler.Screens` each read it beside that list.
+  # An option's `value` is literal text.
+  @choice_type "choice_question"
+  @option_fields [:value, :label]
+  @option_scalars [{"value", :string}, {"label", :string}]
+  @selection_bounds [:min_selections, :max_selections]
 
   # The validation formats this package will recognize when a response
   # arrives. A document naming one of these is admitted; the checks
@@ -325,8 +352,13 @@ defmodule Riddler.Screens.Document do
 
   defp admit_typed(raw, common, module) do
     %{required: required, optional: optional} = module.fields()
-    typed = Map.merge(common, take(raw, required ++ optional))
 
+    with {:ok, typed} <- admit_choice(Map.merge(common, take(raw, required ++ optional))) do
+      admit_candidates(raw, typed)
+    end
+  end
+
+  defp admit_candidates(raw, typed) do
     case Map.fetch(typed, :nodes) do
       {:ok, candidates} when is_list(candidates) ->
         with {:ok, admitted} <- admit_each(candidates, &admit_node/1) do
@@ -338,6 +370,53 @@ defmodule Riddler.Screens.Document do
 
       :error ->
         with :ok <- unread_nodes(raw), do: {:ok, typed}
+    end
+  end
+
+  # A choice question's `answer_options` is the one field a type names that
+  # the document schema types, under a conditional on the node's `type`: an
+  # array of objects, each `value` and `label` a string where present. A value
+  # of another shape there is not a document, as for every field the schema
+  # types. Each option is admitted atom-keyed, carrying the `value` and `label`
+  # the document wrote and nothing else, as a node carries only the fields its
+  # type names. On every other node `answer_options` is a field the type does
+  # not name, untyped by the schema and dropped above whatever it holds.
+  #
+  # The selection bounds are not typed by the schema, and a bound with no
+  # fractional part is admitted as its integer: JSON does not tell `2.0` from
+  # `2`, and a resolved question carrying `2.0` would read differently to a
+  # runtime whose parser cannot see the difference. Any other value is carried
+  # as written and is `validate/1`'s to refuse.
+  defp admit_choice(%{type: @choice_type} = typed) do
+    with {:ok, typed} <- admit_options(typed) do
+      {:ok, Enum.reduce(@selection_bounds, typed, &integral_bound/2)}
+    end
+  end
+
+  defp admit_choice(typed), do: {:ok, typed}
+
+  defp admit_options(%{answer_options: options} = typed) when is_list(options) do
+    with {:ok, admitted} <- admit_each(options, &admit_option/1) do
+      {:ok, %{typed | answer_options: admitted}}
+    end
+  end
+
+  defp admit_options(%{answer_options: _not_a_list}), do: :error
+  defp admit_options(typed), do: {:ok, typed}
+
+  defp admit_option(raw) when is_map(raw) and not is_struct(raw) do
+    if typed?(raw, @option_scalars), do: {:ok, take(raw, @option_fields)}, else: :error
+  end
+
+  defp admit_option(_raw), do: :error
+
+  defp integral_bound(bound, typed) do
+    case Map.fetch(typed, bound) do
+      {:ok, value} when is_float(value) ->
+        if Float.round(value) == value, do: %{typed | bound => trunc(value)}, else: typed
+
+      _other ->
+        typed
     end
   end
 
@@ -610,14 +689,32 @@ defmodule Riddler.Screens.Document do
   end
 
   defp template_findings(node, key) do
-    for field <- @template_fields,
-        {:ok, source} <- [Map.fetch(node, field)],
-        finding <- refusals(source, field, key) do
+    node_fields =
+      for field <- @template_fields,
+          {:ok, source} <- [Map.fetch(node, field)],
+          finding <- refusals(source, "the #{field} template", Atom.to_string(field), key) do
+        finding
+      end
+
+    node_fields ++ option_template_findings(node, key)
+  end
+
+  # Each option's `label`, after the node's own template fields and in the
+  # order the options are listed. The finding is the one a node's template
+  # field raises, on the question's key; the message names the option.
+  defp option_template_findings(%{type: @choice_type, answer_options: options}, key)
+       when is_list(options) do
+    for {option, position} <- Enum.with_index(options, 1),
+        is_map(option),
+        {:ok, source} <- [Map.fetch(option, :label)],
+        finding <- refusals(source, "the label template of option #{position}", "label", key) do
       finding
     end
   end
 
-  defp refusals(source, field, key) when is_binary(source) do
+  defp option_template_findings(_node, _key), do: []
+
+  defp refusals(source, what, _field, key) when is_binary(source) do
     case Template.compile(source) do
       {:ok, _compiled} ->
         []
@@ -631,7 +728,7 @@ defmodule Riddler.Screens.Document do
           # document comes through.
           %Finding{
             code: "document.invalid_template",
-            message: "the #{field} template is refused: #{finding.message}",
+            message: "#{what} is refused: #{finding.message}",
             field: finding.field,
             node_key: key,
             position: finding.position
@@ -640,12 +737,12 @@ defmodule Riddler.Screens.Document do
     end
   end
 
-  defp refusals(source, field, key) do
+  defp refusals(source, what, field, key) do
     [
       %Finding{
         code: "document.invalid_template",
-        message: "the #{field} template is refused: #{inspect(source)} is not template source",
-        field: Atom.to_string(field),
+        message: "#{what} is refused: #{inspect(source)} is not template source",
+        field: field,
         node_key: key
       }
     ]

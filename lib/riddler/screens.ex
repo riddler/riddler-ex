@@ -38,10 +38,11 @@ defmodule Riddler.Screens do
   and the winner replaces the container, so nothing downstream needs to know a
   container was ever there. A container no candidate wins resolves to nothing.
 
-  Every template field - `text`, `label` and `placeholder` - is rendered
-  leniently: a variable the root does not carry renders as the empty string and
-  is reported in `missing_variables`, so a visitor sees a screen rather than an
-  error page. A node that is hidden is never rendered, so it contributes no
+  Every template field - `text`, `label` and `placeholder`, and the `label` of
+  each of a choice question's `answer_options` - is rendered leniently: a
+  variable the root does not carry renders as the empty string and is reported
+  in `missing_variables`, so a visitor sees a screen rather than an error page.
+  An option's `value` is literal and is left as written. A node that is hidden is never rendered, so it contributes no
   missing variables.
 
   The output carries no `condition` anywhere, and carries `writes` through
@@ -462,28 +463,49 @@ defmodule Riddler.Screens do
     # The list is the document's - `Riddler.Screens.Document.template_fields/0`.
     # Rendering and refusing are two passes over the same fields, and a field
     # added there is rendered here without a second edit.
-    Enum.reduce(Document.template_fields(), {node, diagnostics}, fn field, {node, diagnostics} ->
-      case Map.fetch(node, field) do
-        {:ok, source} when is_binary(source) ->
-          render_field(node, field, source, root, diagnostics)
+    {node, diagnostics} =
+      Enum.reduce(Document.template_fields(), {node, diagnostics}, fn field,
+                                                                      {node, diagnostics} ->
+        render_field(node, field, root, diagnostics, node[:key])
+      end)
 
-        _absent ->
-          {node, diagnostics}
-      end
-    end)
+    render_options(node, root, diagnostics)
   end
 
-  defp render_field(node, field, source, root, diagnostics) do
-    with {:ok, compiled} <- Template.compile(source),
+  # A choice question's option labels are templates, after the node's own
+  # fields and in the order the options are listed; each option's `value` is
+  # literal and left as written. An option label is not a field of the node,
+  # so it is read here beside the document's list, as `validate/1` refuses it
+  # beside that list. A variable one wants is reported under the question's
+  # key. Only a choice question carries `answer_options`: on every other type
+  # admission drops the field.
+  defp render_options(%{answer_options: options} = node, root, diagnostics)
+       when is_list(options) do
+    {options, diagnostics} =
+      Enum.map_reduce(options, diagnostics, fn option, diagnostics ->
+        render_field(option, :label, root, diagnostics, node[:key])
+      end)
+
+    {%{node | answer_options: options}, diagnostics}
+  end
+
+  defp render_options(node, _root, diagnostics), do: {node, diagnostics}
+
+  defp render_field(holder, field, root, diagnostics, key) when is_map(holder) do
+    with {:ok, source} when is_binary(source) <- Map.fetch(holder, field),
+         {:ok, compiled} <- Template.compile(source),
          {:ok, text, missing} <- Template.render(compiled, root, :lenient) do
-      {Map.put(node, field, text), missing(diagnostics, node[:key], missing)}
+      {Map.put(holder, field, text), missing(diagnostics, key, missing)}
     else
-      # A template that does not compile is a document finding, raised before a
-      # visitor arrives. Resolution neither repeats it nor invents text for it:
-      # the source stands, and the author is told by `validate/1`.
-      _refused -> {node, diagnostics}
+      # An absent field has nothing to render. A template that does not compile
+      # is a document finding, raised before a visitor arrives. Resolution
+      # neither repeats it nor invents text for it: the source stands, and the
+      # author is told by `validate/1`.
+      _absent_or_refused -> {holder, diagnostics}
     end
   end
+
+  defp render_field(holder, _field, _root, diagnostics, _key), do: {holder, diagnostics}
 
   defp missing(diagnostics, _key, []), do: diagnostics
 

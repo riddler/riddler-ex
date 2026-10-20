@@ -1684,6 +1684,225 @@
         }
       },
       "name": "A text question's label is a template and renders against the root"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "plan_choice",
+              "variable": "responses.first_name"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_plan_choice",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "plan",
+            "nodes": [
+              {
+                "answer_options": [
+                  {
+                    "label": "Personal, for ",
+                    "value": "personal"
+                  },
+                  {
+                    "label": "Business, for Acme",
+                    "value": "business"
+                  }
+                ],
+                "key": "plan_choice",
+                "label": "Which plan suits Acme?",
+                "select": "one",
+                "style": "radio",
+                "type": "choice_question"
+              }
+            ],
+            "title": "Pick a plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_plan_choice",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal, for {{ responses.first_name }}",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business, for {{ context.tenant_name }}",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan suits {{ context.tenant_name }}?",
+                  "select": "one",
+                  "style": "radio",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {}
+        }
+      },
+      "name": "A choice question's option labels are templates and render against the root, each value as written"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_terms",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "plan",
+            "nodes": [
+              {
+                "format": "checkbox",
+                "key": "plan_terms",
+                "label": "I agree to the terms of Acme.",
+                "required": true,
+                "type": "boolean_question"
+              }
+            ],
+            "title": "Pick a plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_terms",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "format": "checkbox",
+                  "key": "plan_terms",
+                  "label": "I agree to the terms of {{ context.tenant_name }}.",
+                  "required": true,
+                  "style": "toggle",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {}
+        }
+      },
+      "name": "A boolean question's label renders, its format is carried, and a style written on it is dropped"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_heard_from",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "plan",
+            "nodes": [
+              {
+                "answer_options": [
+                  {
+                    "label": "A search engine",
+                    "value": "search"
+                  },
+                  {
+                    "label": "A friend or colleague",
+                    "value": "referral"
+                  },
+                  {
+                    "label": "An advertisement",
+                    "value": "advert"
+                  }
+                ],
+                "key": "plan_heard_from",
+                "label": "Where did you hear about us?",
+                "max_selections": 2,
+                "min_selections": 1,
+                "select": "many",
+                "type": "choice_question"
+              }
+            ],
+            "title": "Pick a plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_heard_from",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "max_selections": 2.0,
+                  "min_selections": 1.0,
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "A selection bound written with no fractional part resolves as its integer"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"
