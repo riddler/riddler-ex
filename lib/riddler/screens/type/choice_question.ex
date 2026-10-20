@@ -42,7 +42,10 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
 
   @selects ["one", "many"]
 
-  @value_shape ~r/^[a-z][a-z0-9_]*$/
+  # Anchored with \A and \z rather than ^ and $: `$` also matches before a
+  # trailing newline, so "adult\n" would pass here where a runtime whose
+  # end anchor means the end of the string refuses it.
+  @value_shape ~r/\A[a-z][a-z0-9_]*\z/
 
   @bounds [:min_selections, :max_selections]
 

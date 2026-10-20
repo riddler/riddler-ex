@@ -2247,6 +2247,49 @@
         }
       },
       "name": "A format on a choice or a boolean question is carried and raises nothing, whatever it names"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_option",
+            "field": "answer_options",
+            "node_key": "plan_choice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal\n"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "An option value followed by a line break is not in the key shape, and is refused"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"
