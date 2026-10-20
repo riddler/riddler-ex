@@ -51,7 +51,7 @@ defmodule Riddler.CorpusTest do
     "corpus/screens/admit.json" => 68,
     "corpus/screens/resolve.json" => 24,
     "corpus/screens/validate_screen.json" => 61,
-    "corpus/templates/render.json" => 64,
+    "corpus/templates/render.json" => 74,
     "corpus/journey/present.json" => 8,
     "corpus/journey/put_context.json" => 8
   }

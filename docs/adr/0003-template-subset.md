@@ -737,3 +737,137 @@ acceptance those two paragraphs are answered here. Its account of how the
 package reaches its second rule, `drop_derivative/1`, describes the code at
 `d24d896`; from this entry's commit the rule is reached by the second
 reading, and `drop_derivative/1` answers only where that reading has none.
+
+---
+
+## Amendment, 2026-10-20: a tag carrying text it does not read is refused as text after the tag
+
+Status: proposed
+
+Recorded 2026-10-20, bead rd-9fy, on the ruling of 2026-09-19 (ruled by the
+operator, 2026-09-19): fail closed. The Amendment of 2026-09-18 above leaves
+open whether the subset admits a tag token carrying text the parser reads and
+throws away, and the corpus cases it adds hold a second runtime to the
+reference parser's reading of such tokens. This amendment decides it. Cites to
+the code it changes are read at `47c7932`; the code it describes is added by
+this entry's own commit and is cited by name alone.
+
+### What the record now decides
+
+**A tag that takes nothing after its name is refused when text is written
+there.** Its finding is a code of its own, `template.trailing_text_not_allowed`,
+naming the tag in `field`, at the place the tag begins. Text is anything but
+whitespace: a tag whose name is followed only by spaces, tabs or newlines
+carries none. The tags it reaches:
+
+| What the author wrote | Example | `field` |
+|---|---|---|
+| text after the `endif`, `endunless`, `endfor` or `endcapture` that closes a block | `{% endif "plan" %}` | `endif`, `endunless`, `endfor`, `endcapture` |
+| text after the `else` of an `if`, an `unless` or a `for` | `{% else later %}` | `else` |
+| text after a `comment` opener | `{% comment note %}` | `comment` |
+| text after the `endcomment` or `endraw` that closes a block | `{% endraw note %}` | `endcomment`, `endraw` |
+
+**A tag written inside a `comment` body is text**, as everything there is, and
+carries nothing to refuse; so are the characters of a tag inside a string or a
+`raw` body.
+
+**A tag refused as itself is refused once.** A tag outside the subset, or a
+branch or closing keyword written where no block it belongs to is open, is the
+one finding for its token whatever text it carries.
+
+**Text after a tag is refused beside every other refusal.** It neither hides
+nor is hidden by a refused tag, filter, keyword or liquid tag, as the Amendment
+of 2026-10-20 above holds for every refused construct.
+
+Worked answers, each the findings' codes and fields in source order:
+
+| Source | Findings |
+|---|---|
+| `{% if responses.plan %}Pro{% endif "plan" %}` | `template.trailing_text_not_allowed` `endif` |
+| `{% raw %}{% liquid assign greeting = 'Hello' %}{% endraw note %}` | `template.trailing_text_not_allowed` `endraw` |
+| `{% if true %}{% endif "{% raw %}" %}{% liquid assign greeting = 'Hello' %}{% raw %}{% endraw %}` | `template.trailing_text_not_allowed` `endif`; `template.tag_not_allowed` `liquid` |
+| `{% include 'footer' %}{% if responses.plan %}a{% endif later %}` | `template.tag_not_allowed` `include`; `template.trailing_text_not_allowed` `endif` |
+| `Welcome{% endif "plan" %}` | `template.tag_not_allowed` `endif` |
+| `{% comment %}{% endif "plan" %}{% endcomment %}Welcome` | none: admitted, and renders `Welcome` |
+
+### Why an amendment and not a note
+
+Because it refuses templates this version admitted, and it changes the
+findings of templates it refused. At `47c7932` the first and second templates
+above compiled with the text thrown away, the second rendering its liquid
+tag's characters as text, as did any template refusing nothing else that held
+a tag the first table names carrying text; the third answered the `liquid` finding alone, and the
+fourth the `include` finding alone. The fifth and sixth answer as they did. No
+template this version refused is admitted.
+
+### What the code does
+
+`Riddler.Template.compile/1` asks the reference parser, for each tag token
+carrying text after its name, whether the template reads the same with that
+text written over in spaces, and whether it reads the same with the tag's name
+written over too. A token whose text changes nothing, in a template the
+second rewrite does change, carries text the parser throws away, and is
+refused (`Riddler.Template`, the private `trailing_text_refusals/2`). The
+source is not re-read with a pattern of its own: which characters form a tag
+and where a block ends stay the parser's answers, as the Amendment of
+2026-09-18 above decides for the liquid check.
+
+The tests in the describe block "compile/1 on a tag token carrying text the
+parser throws away" (`test/riddler/template_test.exs`) pin each shape with its
+position, and its test "generated agreement with the parser" holds the check
+to the parser across the tags in the first table and the tails a token can
+carry.
+
+### What is unchanged
+
+The allowlist, the exclusion list, refusal at compile, and one finding per
+refused construct. A template carrying no text after a tag that takes none
+answers as it did. Where a liquid tag begins, and where a `raw` or `comment`
+block begins and ends, are the parser's answers as the Amendment of 2026-09-18
+above decides: a closer carrying text still ends its block, and a liquid tag's
+characters inside the block are still text. What that amendment says of a
+token a tag reads and discards, that it is "not a liquid tag" and refuses
+nothing, holds for the liquid check; the token is now refused for the text it
+carries. The Amendment of 2026-10-20 above names three finding codes as
+unchanged by it; this amendment adds a fourth.
+
+### What this amendment does not decide
+
+**A tag the reference parser refuses for its text.** An `endcase`, the `else`
+of a `case` and a `raw` opener carrying text are refused by the parser outright
+and answer a parse failure with no field, as they did. Whether they take this
+code instead is left open.
+
+**Text after a tag beside a parse failure.** Where the source fails for a
+reason other than a tag the parser does not know, the answer is the parse
+failure, as the Amendment of 2026-10-20 above leaves it.
+
+**A tag inside a liquid tag, and the regions the Amendment of 2026-10-20 above
+leaves open.** Text after a closing tag written inside a liquid tag is not
+reported on its own account; the liquid tag is refused. What a second `else`
+carries, and what stands after it or before a `case`'s first `when`, is in
+regions that amendment leaves open. The corpus states no answer for any of
+these.
+
+### Consequences
+
+The corpus (`corpus/templates/render.json`) states the refusal rather than the
+reference parser's leniency. The refusal cases the Amendment of 2026-09-18
+above adds, each named "liquid is refused where a raw marker stands ..." or
+"liquid is refused after a ... block whose closer carries ...", keep their
+names and now state the text after the tag beside the liquid refusal. Its text
+cases are re-stated as refusals of the opener or closer alone: "A liquid tag's
+characters inside a raw block whose closer carries a trailing word are text:
+the closer is the one finding, for the word it carries", "A liquid tag's
+characters inside a comment block whose opener carries trailing text are text:
+the opener is the one finding, for the text it carries" and "A liquid tag's
+characters inside a comment block whose closer carries trailing text are text:
+the closer is the one finding, for the text it carries". New cases state the
+refusal for each tag in the first table, beside a refused filter, and its
+absence for a stray closer, for whitespace, and inside a comment body.
+
+The question the Consequences of the Amendment of 2026-09-18 above leave open,
+whether the subset admits a tag token carrying text the parser discards, is
+answered here. A second runtime meets the rule by knowing which tags take no
+text and which characters form a tag, whatever its Liquid library does with
+the text.
