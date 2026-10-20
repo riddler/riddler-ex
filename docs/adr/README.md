@@ -6,6 +6,7 @@
 | [0002](0002-element-document.md) | The screen document v1 | accepted |
 | [0003](0003-template-subset.md) | The template subset | accepted |
 | [0004](0004-release-workflow-publishes-on-tag-push.md) | A release workflow publishes to Hex on the push of a version tag, and only from a green, matching commit on the default branch | accepted |
+| [0005](0005-journey-presented-as-data.md) | A Journey is presented as data - a screen, waiting or done - and a host's context is replaced whole | proposed |
 
 New ADRs: next number, same three-section format (Context, Decision,
 Consequences), plus the typespecs and worked-example sections this family's
