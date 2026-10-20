@@ -278,9 +278,15 @@ defmodule Riddler.Screens do
   every condition resolution could not decide, so that a host which skipped
   `Riddler.Screens.Document.validate/1` is told rather than let through. The
   `message` says which of the three it was, and carries the place the compiler
-  or the evaluator gave where there is one, as `position` does. A condition
-  that does not parse is also the document's own `document.invalid_condition`,
-  which is where an author fixing the document is told about it.
+  or the evaluator gave where there is one, as `position` does. For a
+  condition that compiles, the message also says what the evaluator answered:
+  a name the root does not carry, a value that is not true or false, or an
+  evaluation error such as a division by zero or an unknown function. Where
+  the evaluator's answer does not tell a missing key from an operand of the
+  wrong type, the message says only that the condition could not be decided.
+  A condition that does not parse is also the document's own
+  `document.invalid_condition`, which is where an author fixing the document
+  is told about it.
 
   A condition that could not be decided says the
   root the host handed in does not carry what the document asks about, which

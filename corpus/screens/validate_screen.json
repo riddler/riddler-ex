@@ -1514,6 +1514,54 @@
       "expected": {
         "findings": [
           {
+            "code": "response.invalid_shape",
+            "field": "select",
+            "node_key": "plan_choice"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_choice": []
+        },
+        "screen": "plan"
+      },
+      "name": "A required choice question picking one refuses an empty list as the wrong shape, not as nothing selected"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
             "code": "response.required",
             "field": "required",
             "node_key": "plan_choice"
@@ -1695,6 +1743,58 @@
         "screen": "plan"
       },
       "name": "A choice question picking several refuses a string as the wrong shape"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.invalid_shape",
+            "field": "select",
+            "node_key": "plan_heard_from"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "required": true,
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": ""
+        },
+        "screen": "plan"
+      },
+      "name": "A required choice question picking several refuses an empty string as the wrong shape, not as nothing selected"
     },
     {
       "expected": {

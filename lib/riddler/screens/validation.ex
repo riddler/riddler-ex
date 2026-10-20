@@ -25,6 +25,8 @@ defmodule Riddler.Screens.Validation do
   # part of what `resolve_screen/3` answers, and a second key on it would be a
   # new public field for something only this module reads.
 
+  alias Predicator.Errors.EvaluationError
+  alias Predicator.Errors.UndefinedVariableError
   alias Riddler.Finding
   alias Riddler.Screens.Compilers
   alias Riddler.Screens.Resolved
@@ -123,23 +125,37 @@ defmodule Riddler.Screens.Validation do
   # not a string never reached the parser and has no place to name.
   defp cause(condition, root) when is_binary(condition) do
     case Predicator.compile(condition) do
-      {:ok, _instructions} ->
-        {"could not be decided against the root this screen was validated with",
-         undecided_position(condition, root)}
-
-      {:error, error} ->
-        {"is not valid predicator", Compilers.error_position(error)}
+      {:ok, _instructions} -> undecided(Predicator.evaluate(condition, root))
+      {:error, error} -> {"is not valid predicator", Compilers.error_position(error)}
     end
   end
 
   defp cause(_condition, _root), do: {"is not a string", nil}
 
-  defp undecided_position(condition, root) do
-    case Predicator.evaluate(condition, root) do
-      {:error, error} -> Compilers.error_position(error)
-      _placeless -> nil
-    end
-  end
+  # A condition that compiles and was undecided, told apart by what the
+  # evaluator answered and by nothing else: no code here walks the condition's
+  # reads against the root. Three answers each name what went wrong. An unbound
+  # top-level name is a name the root does not carry; a value that is decided
+  # but is not a boolean is a condition that does not answer true or false; an
+  # evaluation error, such as a division by zero or a function the evaluator
+  # does not know, is a condition that fails to evaluate. Two answers do not: `:undefined`
+  # comes back both for a key missing from a map the root holds and for operands
+  # of types an operator does not compare, and a type mismatch comes back both
+  # for a real type error and for a missing key under an operator that wants a
+  # boolean or a number. Those, and any error not named here, take one wording
+  # that names neither cause. The place is the evaluator's wherever it gave one,
+  # whichever wording the answer takes.
+  defp undecided({:error, %UndefinedVariableError{} = error}),
+    do:
+      {"reads a name the root this screen was validated with does not carry",
+       Compilers.error_position(error)}
+
+  defp undecided({:error, %EvaluationError{} = error}),
+    do: {"fails to evaluate", Compilers.error_position(error)}
+
+  defp undecided({:error, error}), do: {"could not be decided", Compilers.error_position(error)}
+  defp undecided({:ok, :undefined}), do: {"could not be decided", nil}
+  defp undecided({:ok, _not_a_boolean}), do: {"does not answer true or false", nil}
 
   # The place is appended from the position rather than from the numbers it was
   # built out of, so the message and the field cannot disagree about whether
