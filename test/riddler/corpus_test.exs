@@ -31,7 +31,9 @@ defmodule Riddler.CorpusTest do
     "corpus/screens/admit.json",
     "corpus/screens/resolve.json",
     "corpus/screens/validate_screen.json",
-    "corpus/templates/render.json"
+    "corpus/templates/render.json",
+    "corpus/journey/present.json",
+    "corpus/journey/put_context.json"
   ]
 
   @document_schema "priv/schemas/screen-document.schema.json"
@@ -49,7 +51,9 @@ defmodule Riddler.CorpusTest do
     "corpus/screens/admit.json" => 68,
     "corpus/screens/resolve.json" => 24,
     "corpus/screens/validate_screen.json" => 61,
-    "corpus/templates/render.json" => 64
+    "corpus/templates/render.json" => 64,
+    "corpus/journey/present.json" => 8,
+    "corpus/journey/put_context.json" => 8
   }
 
   @draft_7 "http://json-schema.org/draft-07/schema#"
@@ -363,6 +367,19 @@ defmodule Riddler.CorpusTest do
     test "every template case answers what the corpus states" do
       assert mismatches("corpus/templates/render.json") == []
     end
+
+    # Sabotage: made `Riddler.Journey.present/3` answer the screen without its
+    # diagnostics; the four screen cases came back short of them and this test
+    # went red.
+    test "every journey presentation case answers what the corpus states" do
+      assert mismatches("corpus/journey/present.json") == []
+    end
+
+    # Sabotage: made `Riddler.Journey.put_context/2` merge the new context into
+    # the old; the withdrawn keys survived and this test went red.
+    test "every journey context case answers what the corpus states" do
+      assert mismatches("corpus/journey/put_context.json") == []
+    end
   end
 
   describe "the screen document schema" do
@@ -455,7 +472,11 @@ defmodule Riddler.CorpusTest do
   end
 
   defp carried_documents do
-    for path <- ["corpus/screens/resolve.json", "corpus/screens/validate_screen.json"],
+    for path <- [
+          "corpus/screens/resolve.json",
+          "corpus/screens/validate_screen.json",
+          "corpus/journey/present.json"
+        ],
         one <- cases(path),
         do: {one["name"], one["input"]["document"]}
   end

@@ -16,6 +16,8 @@ defmodule Riddler.Corpus do
   # files and the schemas are not in the package tarball, so this module is
   # meaningful in a checkout of this repository and nowhere else.
 
+  alias Riddler.Encoding
+  alias Riddler.Journey
   alias Riddler.Screens
   alias Riddler.Screens.Document
   alias Riddler.Template
@@ -26,7 +28,9 @@ defmodule Riddler.Corpus do
     "corpus/screens/admit.json",
     "corpus/screens/resolve.json",
     "corpus/screens/validate_screen.json",
-    "corpus/templates/render.json"
+    "corpus/templates/render.json",
+    "corpus/journey/present.json",
+    "corpus/journey/put_context.json"
   ]
 
   @schema_files [
@@ -132,6 +136,31 @@ defmodule Riddler.Corpus do
     end
   end
 
+  defp run("journey.present", input) do
+    document = admitted(input["document"])
+
+    case Journey.present(document, status(input), input["root"] || %{}) do
+      {:ok, answer} -> answer
+      {:error, reason} -> %{"error" => Atom.to_string(reason)}
+    end
+  end
+
+  defp run("journey.put_context", input) do
+    case Journey.put_context(input["root"] || %{}, input["context"]) do
+      {:ok, root} -> root
+      {:error, reason} -> %{"error" => Atom.to_string(reason)}
+    end
+  end
+
+  # A case states the status a host passes as JSON, which has no tuple and no
+  # atom: `"waiting"` and `"done"` are the two bare statuses, `"screen"` is
+  # `{:screen, key}` with the key under the input's own `"screen"`, and any
+  # other value is handed over as itself, which is a status outside the three.
+  defp status(%{"status" => "screen"} = input), do: {:screen, input["screen"]}
+  defp status(%{"status" => "waiting"}), do: :waiting
+  defp status(%{"status" => "done"}), do: :done
+  defp status(input), do: input["status"]
+
   defp admit_findings(document) do
     case Document.validate(document) do
       {:ok, _document} -> []
@@ -209,18 +238,10 @@ defmodule Riddler.Corpus do
     end)
   end
 
-  defp encode(struct) when is_struct(struct), do: struct |> Map.from_struct() |> encode()
-
-  defp encode(map) when is_map(map),
-    do: Map.new(map, fn {key, value} -> {encode_key(key), encode(value)} end)
-
-  defp encode(list) when is_list(list), do: Enum.map(list, &encode/1)
-  defp encode(value) when value in [nil, true, false], do: value
-  defp encode(atom) when is_atom(atom), do: Atom.to_string(atom)
-  defp encode(value), do: value
-
-  defp encode_key(key) when is_atom(key), do: Atom.to_string(key)
-  defp encode_key(key), do: key
+  # The rules themselves are `Riddler.Encoding`'s, shared with `Riddler.Journey`,
+  # whose answer is already in this form: a journey case compares that answer
+  # as the function gives it, without putting it through the encoder again.
+  defp encode(value), do: Encoding.to_data(value)
 
   # -- reading and canonical form ---------------------------------------------
 

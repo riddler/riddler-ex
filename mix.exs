@@ -64,8 +64,8 @@ defmodule Riddler.MixProject do
       ],
       # The groups follow the package's own seams so the sidebar reads as the
       # architecture rather than as the alphabet: the screen document and the
-      # vocabulary it admits, the template subset, and the corpus the package
-      # emits. Order matters: ex_doc assigns each module to the first group
+      # vocabulary it admits, the template subset, a Journey's step as data,
+      # and the corpus the package emits. Order matters: ex_doc assigns each module to the first group
       # whose pattern matches. `Riddler` itself matches none of them on
       # purpose - the root module is the package's own overview and belongs
       # above the seams, not inside one of them. The groups are declared
@@ -74,6 +74,7 @@ defmodule Riddler.MixProject do
       groups_for_modules: [
         Screens: [~r/^Riddler\.Screens($|\.)/],
         Template: [~r/^Riddler\.Template($|\.)/],
+        Journey: [~r/^Riddler\.Journey($|\.)/],
         Corpus: [~r/^Riddler\.Corpus($|\.)/, ~r/^Mix\.Tasks\.Riddler\.Corpus$/]
       ],
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"]

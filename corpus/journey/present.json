@@ -1,0 +1,821 @@
+{
+  "capability": "journey.present",
+  "cases": [
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "account",
+          "nodes": [
+            {
+              "key": "account_heading",
+              "level": 1,
+              "text": "Create your account",
+              "type": "heading"
+            },
+            {
+              "key": "account_greeting",
+              "text": "Nice to meet you, Ada.",
+              "type": "text"
+            },
+            {
+              "key": "first_name",
+              "label": "First name",
+              "required": true,
+              "type": "text_question"
+            },
+            {
+              "key": "account_continue",
+              "label": "Continue",
+              "outcome": "account_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Create your account"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_journey",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_hint",
+                  "text": "Billed to {{ context.company }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.seats > 1",
+                      "key": "plan_business",
+                      "label": "Business",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "business"
+                      }
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "personal"
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "Ada"
+          }
+        },
+        "screen": "account",
+        "status": "screen"
+      },
+      "name": "A screen status presents the resolved screen, its greeting rendered from the responses, with empty diagnostics inside it"
+    },
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": [
+              {
+                "condition": "responses.first_name != ''",
+                "key": "account_greeting"
+              }
+            ]
+          },
+          "key": "account",
+          "nodes": [
+            {
+              "key": "account_heading",
+              "level": 1,
+              "text": "Create your account",
+              "type": "heading"
+            },
+            {
+              "key": "first_name",
+              "label": "First name",
+              "required": true,
+              "type": "text_question"
+            },
+            {
+              "key": "account_continue",
+              "label": "Continue",
+              "outcome": "account_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Create your account"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_journey",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_hint",
+                  "text": "Billed to {{ context.company }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.seats > 1",
+                      "key": "plan_business",
+                      "label": "Business",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "business"
+                      }
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "personal"
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "screen": "account",
+        "status": "screen"
+      },
+      "name": "A screen status with no responses hides the greeting and reports its condition in the diagnostics inside the screen"
+    },
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [
+              {
+                "key": "plan_hint",
+                "variable": "context.company"
+              }
+            ],
+            "undecidable_conditions": []
+          },
+          "key": "plan",
+          "nodes": [
+            {
+              "key": "plan_hint",
+              "text": "Billed to .",
+              "type": "text"
+            },
+            {
+              "key": "plan_business",
+              "label": "Business",
+              "outcome": "plan_chosen",
+              "type": "button",
+              "writes": {
+                "plan": "business"
+              }
+            }
+          ],
+          "title": "Pick a plan"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_journey",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_hint",
+                  "text": "Billed to {{ context.company }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.seats > 1",
+                      "key": "plan_business",
+                      "label": "Business",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "business"
+                      }
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "personal"
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "seats": 3
+          },
+          "responses": {}
+        },
+        "screen": "plan",
+        "status": "screen"
+      },
+      "name": "A screen status collapses a container to its winner, carries the winning button's writes through, and reports a variable the context lacks"
+    },
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [
+              {
+                "key": "plan_hint",
+                "variable": "context.company"
+              }
+            ],
+            "undecidable_conditions": []
+          },
+          "key": "plan",
+          "nodes": [
+            {
+              "key": "plan_hint",
+              "text": "Billed to .",
+              "type": "text"
+            },
+            {
+              "key": "plan_personal",
+              "label": "Personal",
+              "outcome": "plan_chosen",
+              "type": "button",
+              "writes": {
+                "plan": "personal"
+              }
+            }
+          ],
+          "title": "Pick a plan"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_journey",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_hint",
+                  "text": "Billed to {{ context.company }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.seats > 1",
+                      "key": "plan_business",
+                      "label": "Business",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "business"
+                      }
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "personal"
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "company": "Acme",
+          "context": {
+            "seats": 1
+          }
+        },
+        "screen": "plan",
+        "status": "screen"
+      },
+      "name": "The root is read for context and responses only: a third root key renders nothing and its path is reported missing"
+    },
+    {
+      "expected": {
+        "state": "waiting"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_journey",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_hint",
+                  "text": "Billed to {{ context.company }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.seats > 1",
+                      "key": "plan_business",
+                      "label": "Business",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "business"
+                      }
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "personal"
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "status": "waiting"
+      },
+      "name": "A waiting status is presented as the state alone"
+    },
+    {
+      "expected": {
+        "state": "done"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_journey",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_hint",
+                  "text": "Billed to {{ context.company }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.seats > 1",
+                      "key": "plan_business",
+                      "label": "Business",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "business"
+                      }
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "personal"
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "status": "done"
+      },
+      "name": "A done status is presented as the state alone"
+    },
+    {
+      "expected": {
+        "error": "no_such_screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_journey",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_hint",
+                  "text": "Billed to {{ context.company }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.seats > 1",
+                      "key": "plan_business",
+                      "label": "Business",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "business"
+                      }
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "personal"
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "screen": "confirm",
+        "status": "screen"
+      },
+      "name": "A screen status naming a key the document does not declare is an error, not an empty screen"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_journey",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "account_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_continue",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_hint",
+                  "text": "Billed to {{ context.company }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.seats > 1",
+                      "key": "plan_business",
+                      "label": "Business",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "business"
+                      }
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal",
+                      "outcome": "plan_chosen",
+                      "type": "button",
+                      "writes": {
+                        "plan": "personal"
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "status": "paused"
+      },
+      "name": "A status outside screen, waiting and done is an error"
+    }
+  ],
+  "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"
+}

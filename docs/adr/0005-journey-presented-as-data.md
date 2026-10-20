@@ -363,3 +363,28 @@ Riddler.Journey.present(document, :card_issued, root)
 Riddler.Journey.put_context(root, ["first_name", "Ada"])
 #=> {:error, :context_not_a_map}
 ```
+
+---
+
+Noted 2026-10-20, bead rd-qs0. Two notes by addition, recorded with the
+code half that makes them true, in one request. Nothing above is changed;
+each paragraph says how a passage above is carried out.
+
+**How a case states the status.** Section 5 names the capabilities, their
+files and their answers; a case also has to state its input, and JSON has
+no tuple and no atom. A `journey.present` case gives `document`, `root` and
+`status`: `"waiting"` and `"done"` are the two bare statuses, `"screen"` is
+`{:screen, key}` with the key under the input's own `"screen"`, the way a
+`screens.resolve` case names its one screen, and any other value is handed
+to `present/3` as itself, which is a status outside the three. A
+`journey.put_context` case gives `root` and `context`, and the context may
+be any JSON value. The corpus case schema's input description says the
+same (`priv/schemas/corpus-case.schema.json`).
+
+**One encoder, not two.** Section 3 says the screen's data form follows
+the corpus runner's encoding rules. Those rules now sit in one internal
+module, `Riddler.Encoding`, called by both the runner and
+`Riddler.Journey`, so the form a `journey.present` case states and the form
+`present/3` gives cannot drift apart. A `journey.present` answer is compared
+as the function gives it, without passing through the encoder a second
+time, so a key left an atom by `present/3` is a failing case.
