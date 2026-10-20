@@ -17,16 +17,25 @@ defmodule Riddler.Template.UnknownTag do
 
   @behaviour Solid.Tag
 
-  @enforce_keys [:loc, :name]
-  defstruct [:loc, :name]
+  # `rest` is how much of the source is left after the tag's name, so that
+  # the node's place can be told apart from a place the parser reports.
+  @enforce_keys [:loc, :name, :rest]
+  defstruct [:loc, :name, :rest]
 
-  @type t :: %__MODULE__{loc: Solid.Parser.Loc.t(), name: String.t()}
+  @type t :: %__MODULE__{
+          loc: Solid.Parser.Loc.t(),
+          name: String.t(),
+          rest: non_neg_integer()
+        }
 
   @impl true
   def parse(name, loc, context) do
     case Solid.Lexer.tokenize_tag_end(context) do
-      {:ok, _tokens, context} -> {:ok, %__MODULE__{loc: loc, name: name}, context}
-      {:error, reason, rest, meta} -> {:error, reason, rest, meta}
+      {:ok, _tokens, after_tag} ->
+        {:ok, %__MODULE__{loc: loc, name: name, rest: byte_size(context.rest)}, after_tag}
+
+      {:error, reason, rest, meta} ->
+        {:error, reason, rest, meta}
     end
   end
 end
