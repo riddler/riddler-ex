@@ -1,3 +1,0 @@
-### Changed
-
-- The `message` of a `response.undecidable` finding for a condition that compiles now says what the evaluator answered: a name the root does not carry, a value that is not true or false, or a condition that fails to evaluate; where the answer does not tell a missing key from an operand of the wrong type it says only that the condition could not be decided. The `code`, `field`, `node_key` and `position` are unchanged, so a host that matches on the code reads what it read before; a host that matched the old sentence "could not be decided against the root this screen was validated with" matches the code instead.
