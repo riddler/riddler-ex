@@ -6,20 +6,20 @@ defmodule Riddler.JourneyTest do
   alias Riddler.Journey
   alias Riddler.Screens.Document
 
-  # The signup wizard: an account screen whose greeting reads a response, a
-  # plan screen whose hint reads the host's context, and a plan button that
+  # Patron registration: a details screen whose greeting reads a response,
+  # and a pickup screen whose hint reads the host's context and whose button
   # writes.
   @document %{
     "schema_version" => 1,
-    "id" => "edoc_signup_journey",
+    "id" => "patron_registration",
     "screens" => [
       %{
-        "key" => "account",
-        "title" => "Create your account",
+        "key" => "patron_details",
+        "title" => "Get your library card",
         "nodes" => [
           %{
             "type" => "text",
-            "key" => "account_greeting",
+            "key" => "details_greeting",
             "condition" => "responses.first_name != ''",
             "text" => "Nice to meet you, {{ responses.first_name }}."
           },
@@ -32,20 +32,20 @@ defmodule Riddler.JourneyTest do
         ]
       },
       %{
-        "key" => "plan",
-        "title" => "Pick a plan",
+        "key" => "card_pickup",
+        "title" => "Pick up your card",
         "nodes" => [
           %{
             "type" => "text",
-            "key" => "plan_hint",
-            "text" => "Billed to {{ context.company }}."
+            "key" => "pickup_hint",
+            "text" => "Collect your card at {{ context.branch_name }}."
           },
           %{
             "type" => "button",
-            "key" => "plan_business",
-            "label" => "Business",
-            "outcome" => "plan_chosen",
-            "writes" => %{"plan" => "business"}
+            "key" => "card_adult",
+            "label" => "Adult card",
+            "outcome" => "card_chosen",
+            "writes" => %{"responses.card_type" => ["const", "adult"]}
           }
         ]
       }
@@ -67,12 +67,12 @@ defmodule Riddler.JourneyTest do
               %{
                 "state" => "screen",
                 "screen" => %{
-                  "key" => "account",
-                  "title" => "Create your account",
+                  "key" => "patron_details",
+                  "title" => "Get your library card",
                   "nodes" => [
                     %{
                       "type" => "text",
-                      "key" => "account_greeting",
+                      "key" => "details_greeting",
                       "text" => "Nice to meet you, Ada."
                     },
                     %{
@@ -84,48 +84,52 @@ defmodule Riddler.JourneyTest do
                   ],
                   "diagnostics" => %{"missing_variables" => [], "undecidable_conditions" => []}
                 }
-              }} = Journey.present(document, {:screen, "account"}, root)
+              }} = Journey.present(document, {:screen, "patron_details"}, root)
     end
 
     # Sabotage: answered the screen without its diagnostics, as the corpus
     # runner's single-screen path for resolution does; the answer carried no
     # "diagnostics" key and this test went red.
     test "carries the diagnostics of resolving that screen inside it", %{document: document} do
-      assert {:ok, %{"screen" => screen}} = Journey.present(document, {:screen, "account"}, %{})
+      assert {:ok, %{"screen" => screen}} =
+               Journey.present(document, {:screen, "patron_details"}, %{})
 
       assert screen["nodes"] |> Enum.map(& &1["key"]) == ["first_name"]
 
       assert screen["diagnostics"] == %{
                "missing_variables" => [],
                "undecidable_conditions" => [
-                 %{"key" => "account_greeting", "condition" => "responses.first_name != ''"}
+                 %{"key" => "details_greeting", "condition" => "responses.first_name != ''"}
                ]
              }
 
-      assert {:ok, %{"screen" => screen}} = Journey.present(document, {:screen, "plan"}, %{})
+      assert {:ok, %{"screen" => screen}} =
+               Journey.present(document, {:screen, "card_pickup"}, %{})
 
       assert screen["diagnostics"]["missing_variables"] == [
-               %{"key" => "plan_hint", "variable" => "context.company"}
+               %{"key" => "pickup_hint", "variable" => "context.branch_name"}
              ]
     end
 
     # Sabotage: dropped the writes from the encoded node; the button came back
     # without them and this test went red.
     test "carries a button's writes through untouched", %{document: document} do
-      root = %{"context" => %{"company" => "Acme"}}
+      root = %{"context" => %{"branch_name" => "Central"}}
 
       assert {:ok, %{"screen" => %{"nodes" => [hint, button]}}} =
-               Journey.present(document, {:screen, "plan"}, root)
+               Journey.present(document, {:screen, "card_pickup"}, root)
 
-      assert hint["text"] == "Billed to Acme."
-      assert button["writes"] == %{"plan" => "business"}
+      assert hint["text"] == "Collect your card at Central."
+      assert button["writes"] == %{"responses.card_type" => ["const", "adult"]}
       refute Map.has_key?(button, "condition")
     end
 
     # Sabotage: answered an undeclared key with a screen state and an empty
     # screen; the error was not returned and this test went red.
     test "refuses a key the document does not declare", %{document: document} do
-      assert Journey.present(document, {:screen, "confirm"}, %{}) == {:error, :no_such_screen}
+      assert Journey.present(document, {:screen, "card_renewal"}, %{}) ==
+               {:error, :no_such_screen}
+
       assert Journey.present(document, {:screen, nil}, %{}) == {:error, :no_such_screen}
     end
 
@@ -133,12 +137,12 @@ defmodule Riddler.JourneyTest do
     # resolving; the third root key reached the template and this test went
     # red.
     test "reads the root for context and responses and nothing else", %{document: document} do
-      root = %{"context" => %{}, "company" => "Acme"}
+      root = %{"context" => %{}, "branch_name" => "Central"}
 
       assert {:ok, %{"screen" => %{"nodes" => [hint, _button]}}} =
-               Journey.present(document, {:screen, "plan"}, root)
+               Journey.present(document, {:screen, "card_pickup"}, root)
 
-      assert hint["text"] == "Billed to ."
+      assert hint["text"] == "Collect your card at ."
     end
   end
 
@@ -155,7 +159,11 @@ defmodule Riddler.JourneyTest do
     # rather than the state and this test went red.
     test "does not read the document" do
       empty =
-        Document.admit(%{"schema_version" => 1, "id" => "edoc_signup_empty", "screens" => []})
+        Document.admit(%{
+          "schema_version" => 1,
+          "id" => "patron_registration_empty",
+          "screens" => []
+        })
 
       assert Journey.present(empty, :waiting, %{}) == {:ok, %{"state" => "waiting"}}
       assert Journey.present(empty, :done, %{}) == {:ok, %{"state" => "done"}}
@@ -170,7 +178,7 @@ defmodule Riddler.JourneyTest do
             :card_issued,
             "waiting",
             {:screen},
-            {:screen, "account", "extra"},
+            {:screen, "patron_details", "extra"},
             {:waiting, "reason"},
             nil,
             %{"state" => "done"}
