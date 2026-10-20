@@ -34,9 +34,9 @@ defmodule Riddler.Screens.Document do
 
   `admit/1` answers `nil` for an input that is not a screen document - not
   a map, or a map whose spine is not a document's: no list of screens, a
-  `metadata` that is neither an object nor `null`, a screen that is not an
-  object, a screen with no list of nodes, a node that is not an object, a
-  variant whose candidates are not a list. It answers
+  `metadata` that is there and is not an object, `null` included, a screen
+  that is not an object, a screen with no list of nodes, a node that is not
+  an object, a variant whose candidates are not a list. It answers
   `nil` too for a value of the wrong JSON type in a field the document schema
   types: an `id`, a `kind`, a screen's `key` or `title`, or a node's `key`,
   `type` or `condition` that is there and is not a string, `null` included; a
@@ -236,7 +236,7 @@ defmodule Riddler.Screens.Document do
   def admit(raw) when is_map(raw) and not is_struct(raw) do
     with screens when is_list(screens) <- Map.get(raw, "screens"),
          true <- typed?(raw, @envelope_scalars),
-         {:ok, metadata} <- admit_metadata(Map.get(raw, "metadata")),
+         {:ok, metadata} <- admit_metadata(Map.fetch(raw, "metadata")),
          {:ok, admitted} <- admit_each(screens, &admit_screen/1) do
       %__MODULE__{
         schema_version: Map.get(raw, "schema_version"),
@@ -306,9 +306,12 @@ defmodule Riddler.Screens.Document do
   defp admit_kind(nil), do: @default_kind
   defp admit_kind(kind), do: kind
 
-  defp admit_metadata(nil), do: {:ok, %{}}
-  defp admit_metadata(map) when is_map(map) and not is_struct(map), do: {:ok, map}
-  defp admit_metadata(_other), do: :error
+  # Only an absent `metadata` is the empty map: one written as `null` is a
+  # value of the wrong type in a field the schema types, so it is not a
+  # document, as for every other typed field.
+  defp admit_metadata(:error), do: {:ok, %{}}
+  defp admit_metadata({:ok, map}) when is_map(map) and not is_struct(map), do: {:ok, map}
+  defp admit_metadata({:ok, _other}), do: :error
 
   defp admit_each(list, fun) do
     Enum.reduce_while(list, {:ok, []}, fn item, {:ok, acc} ->

@@ -226,6 +226,16 @@ defmodule Riddler.Screens.DocumentTest do
                nil
     end
 
+    # Sabotage: made admit_metadata/1 answer {:ok, %{}} for a null again; the
+    # null case came back admitted and this test went red. Made an absent
+    # metadata refused too; the left-out assertion went red.
+    test "refuses a metadata written as null, and admits one that is left out" do
+      assert Document.admit(%{"screens" => [], "metadata" => nil}) == nil
+      assert Document.admit(%{"screens" => [], "metadata" => %Document{}}) == nil
+      assert %Document{metadata: %{}} = Document.admit(%{"screens" => []})
+      assert %Document{metadata: %{}} = Document.admit(%{"screens" => [], "metadata" => %{}})
+    end
+
     # Sabotage: admit the type-declared fields under their string keys and the
     # struct's atom-keyed reads go nil.
     test "builds an atom-keyed struct from the string-keyed decoded map, keeping metadata open" do
