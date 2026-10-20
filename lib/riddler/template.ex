@@ -54,6 +54,22 @@ defmodule Riddler.Template do
       iex> Enum.map(findings, & &1.field)
       ["render", "endif"]
 
+  ## Text written after a tag that reads none is refused
+
+  A tag that takes nothing after its name - a closing tag such as `endif`,
+  an `else`, a `comment` opener - is refused when text is written there
+  anyway, as `template.trailing_text_not_allowed` naming the tag, at the
+  place the tag begins. The parser underneath this module reads such text
+  and throws it away, where another Liquid library may refuse the template
+  for it, so the subset refuses the text rather than leaving what it means
+  to one parser. A tag whose name is followed only by whitespace carries no
+  text, and a tag written inside a `comment` body is text like the rest of
+  that body. A tag refused as itself is refused once, whatever it carries.
+
+      iex> {:error, [finding]} = Riddler.Template.compile(~S({% if responses.library_card %}Welcome back{% endif "card" %}))
+      iex> {finding.code, finding.field}
+      {"template.trailing_text_not_allowed", "endif"}
+
   ## A source that does not parse is refused, and as what depends on the reason
 
   A template the parser cannot read is refused like any other template, and
@@ -159,6 +175,7 @@ defmodule Riddler.Template do
 
   @tag_not_allowed "template.tag_not_allowed"
   @filter_not_allowed "template.filter_not_allowed"
+  @trailing_text_not_allowed "template.trailing_text_not_allowed"
   @parse_error "template.parse_error"
 
   # What a refusal that names no place says instead of naming one.
@@ -244,7 +261,7 @@ defmodule Riddler.Template do
   def compile(source) when is_binary(source) do
     case parse(source) do
       {:ok, %Solid.Template{parsed_template: tree} = parsed} ->
-        case refusals(tree) ++ liquid_refusals(source) do
+        case beside(refusals(tree) ++ liquid_refusals(source), trailing_text_refusals(source)) do
           [] ->
             {:ok, %Compiled{source: source, parsed: parsed, defaulted: defaulted_positions(tree)}}
 
@@ -522,6 +539,130 @@ defmodule Riddler.Template do
     _inside_an_inline_comment in CaseClauseError -> []
   end
 
+  # -- text a tag reads and throws away -------------------------------------
+
+  # A tag token can carry text after its name that the parser reads and
+  # throws away: a string on an `endif`, a word on an `else`, a note on a
+  # `comment` opener or on an `endraw`. Nothing in the tree records it, and a
+  # Liquid library that refuses such a token outright is not wrong to, so the
+  # subset refuses it, as text after the tag's name, rather than holding a
+  # second runtime to one parser's leniency.
+  #
+  # Whether a token's text is thrown away is the parser's to say, as where a
+  # liquid tag begins is. Every place the characters `{%` occur is a
+  # candidate, and the parser's own lexer reads the token there: its name, and
+  # whether anything stands between the name and the token's end. A token
+  # carrying text is then put to the parser twice, each time as the author's
+  # source with one span written over in spaces, newlines kept, so that every
+  # place after it is where it was:
+  #
+  # - the text alone. The parser reading that source exactly as it reads the
+  #   author's says the text changed nothing: it was thrown away. Text the
+  #   parser keeps - a string's characters, the body of a `raw` block, the
+  #   arguments a tag reads - changes the reading and is not refused here;
+  # - the name and the text together. The parser reading that source exactly
+  #   as it reads the author's says there was no tag there at all: the token
+  #   stands in a `comment` body, which the parser throws away whole, and its
+  #   characters are text like the rest of that body.
+  #
+  # A token both answers pick out is a tag carrying text the parser throws
+  # away, and it is refused at the place it begins. The source is never read
+  # here with a pattern of its own: where a block ends and which tokens a tag
+  # reads are the same lexer's and parser's answers that decide them at
+  # render. The parser is asked with the tags the template was read with, as
+  # the liquid check is.
+  defp trailing_text_refusals(source, tags \\ Solid.Tag.default_tags()) do
+    reading = read(source, tags)
+    starts = line_starts(source)
+
+    source
+    |> :binary.matches("{%")
+    |> Enum.flat_map(fn {offset, _length} ->
+      trailing_text(source, offset, starts, reading, tags)
+    end)
+  end
+
+  defp trailing_text(source, offset, starts, reading, tags) do
+    {line, column} = place(starts, offset)
+
+    context = %Solid.ParserContext{
+      rest: binary_part(source, offset, byte_size(source) - offset),
+      line: line,
+      column: column,
+      mode: :normal
+    }
+
+    with {:ok, name, after_name} <- Solid.Lexer.tokenize_tag_start(context),
+         {:ok, [_text, _more | _] = tokens, _after_tag} <-
+           Solid.Lexer.tokenize_tag_end(after_name),
+         {:end, token_end} <- List.last(tokens),
+         name_end = byte_size(source) - byte_size(after_name.rest),
+         text_end = offset(starts, token_end),
+         true <- read(blank(source, name_end, text_end), tags) == reading,
+         false <- read(blank(source, name_end - byte_size(name), text_end), tags) == reading do
+      [{line, column, @trailing_text_not_allowed, name, "the text after the tag"}]
+    else
+      _kept_or_not_a_tag -> []
+    end
+  end
+
+  # The parser's reading of a source, compared term for term: the tree, or
+  # the refusals with their reasons and places. A source the parser raises on
+  # rather than refusing reads as that, so two such sources read alike.
+  defp read(source, tags) do
+    Solid.Parser.parse(source, tags: tags)
+  rescue
+    raised in [ArithmeticError, CaseClauseError] -> {:raised, raised.__struct__}
+  end
+
+  # The source with the bytes from `from` up to `to` written over in spaces,
+  # each newline kept, so that the source keeps its length and its lines.
+  defp blank(source, from, to) do
+    spaces =
+      source
+      |> binary_part(from, to - from)
+      |> :binary.bin_to_list()
+      |> Enum.map(fn
+        ?\n -> ?\n
+        _byte -> ?\s
+      end)
+
+    binary_part(source, 0, from) <>
+      :binary.list_to_bin(spaces) <> binary_part(source, to, byte_size(source) - to)
+  end
+
+  # Where each line begins, as a byte offset, so that a place the lexer gives
+  # as a line and a byte column and an offset into the source convert both
+  # ways.
+  defp line_starts(source) do
+    newlines = for {offset, 1} <- :binary.matches(source, "\n"), do: offset + 1
+    List.to_tuple([0 | newlines])
+  end
+
+  defp place(starts, offset) do
+    index = Enum.count(Tuple.to_list(starts), &(&1 <= offset)) - 1
+    {index + 1, offset - elem(starts, index) + 1}
+  end
+
+  defp offset(starts, %{line: line, column: column}), do: elem(starts, line - 1) + column - 1
+
+  # A token refused as a tag - a tag outside the subset, or a branch or
+  # closing keyword written where no block it belongs to is open - is one
+  # construct, refused once: the text it carries is part of what is refused
+  # and takes no finding of its own. Every other token carrying text the
+  # parser throws away is refused beside every other refusal.
+  defp beside(refusals, trailing) do
+    refused_tags =
+      for {line, column, @tag_not_allowed, _name, _lead} <- refusals,
+          into: MapSet.new(),
+          do: {line, column}
+
+    refusals ++
+      Enum.reject(trailing, fn {line, column, _code, _name, _lead} ->
+        MapSet.member?(refused_tags, {line, column})
+      end)
+  end
+
   # -- parse errors ---------------------------------------------------------
 
   defp parse_refusal(%Solid.ParserError{reason: reason, meta: meta}) do
@@ -559,7 +700,10 @@ defmodule Riddler.Template do
   defp unparsed_refusals(reported, source) do
     with {:ok, tree, tags} <- reparse(source, unknown_names(reported)),
          [_ | _] = refusals <-
-           refusals(tree) ++ liquid_refusals(source, tags) ++ unknown_constructs(reported) do
+           beside(
+             refusals(tree) ++ liquid_refusals(source, tags) ++ unknown_constructs(reported),
+             trailing_text_refusals(source, tags)
+           ) do
       refusals
     else
       _first_reading -> drop_derivative(reported)

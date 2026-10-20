@@ -647,6 +647,158 @@ defmodule Riddler.TemplateTest do
     end
   end
 
+  # A tag token carrying text after its name that the parser reads and throws
+  # away is refused, as text after the tag, at the place the tag begins:
+  # the corpus states a refusal rather than one parser's leniency.
+  describe "compile/1 on a tag token carrying text the parser throws away" do
+    @trailing "template.trailing_text_not_allowed"
+
+    defp trailing(source) do
+      source
+      |> refusal!()
+      |> Enum.map(&{&1.code, &1.field, &1.position.line, &1.position.column})
+    end
+
+    defp engine_text(source) do
+      with {:ok, parsed} <- Solid.parse(source),
+           {:ok, text, _tolerated} <- Solid.render(parsed, @assigns) do
+        IO.iodata_to_binary(text)
+      else
+        _refused -> :refused
+      end
+    end
+
+    # Mutation: have trailing_text_refusals/2 answer [] - the endif's string
+    # is thrown away unrefused, the template compiles, and this match fails.
+    test "a string on an endif is refused as text after the tag, where the tag begins" do
+      assert [{@trailing, "endif", 1, 27}] =
+               trailing(~S({% if responses.plan %}Pro{% endif "plan" %}))
+    end
+
+    # Mutation: as above - every template below compiles.
+    test "each token that takes no text is refused for the text it carries" do
+      for {field, source} <- [
+            {"else", "{% if responses.plan %}a{% else later %}b{% endif %}"},
+            {"endunless", "{% unless responses.plan %}a{% endunless later %}"},
+            {"endfor", "{% for name in responses.invitees %}a{% endfor later %}"},
+            {"else", "{% for name in responses.invitees %}a{% else later %}b{% endfor %}"},
+            {"endcapture", "{% capture line %}a{% endcapture later %}{{ line }}"},
+            {"comment", "{% comment later %}a{% endcomment %}"},
+            {"endcomment", "{% comment %}a{% endcomment later %}"},
+            {"endraw", "{% raw %}a{% endraw later %}"}
+          ] do
+        assert [%Riddler.Finding{code: @trailing, field: ^field}] = refusal!(source)
+      end
+    end
+
+    # Mutation: have trailing_text/5 take a token holding only its end, as
+    # `[_end | _]`, for one carrying text - every closer is then refused, and
+    # this template with it.
+    test "a closing tag followed only by whitespace and a newline carries no text" do
+      assert {:ok, "Pro", []} = render!("{% if responses.plan %}Pro{% endif\n  %}")
+    end
+
+    # Mutation: delete the second question trailing_text/5 asks (the name and
+    # the text written over together) - the endif in the comment body is
+    # refused, and the template with it.
+    test "a token in a comment body is text: the parser throws the whole body away" do
+      assert {:ok, "Welcome", []} =
+               render!(~S({% comment %}{% endif "plan" %}{% endcomment %}Welcome))
+    end
+
+    # Mutation: delete the first question trailing_text/5 asks (the text
+    # written over alone) - the endif's characters in the string and in the
+    # raw body are refused as a token carrying text, and neither compiles.
+    test "text the parser keeps is not text it throws away" do
+      assert {:ok, "{% endif plan %}", []} = render!(~S({{ "{% endif plan %}" }}))
+      assert {:ok, "{% endif plan %}", []} = render!("{% raw %}{% endif plan %}{% endraw %}")
+    end
+
+    # Mutation: have beside/2 keep a token refused as a tag - the stray
+    # endif is refused twice, as itself and for its string.
+    test "a stray closer carrying text is refused once, as itself" do
+      assert [{"template.tag_not_allowed", "endif", 1, 8}] =
+               trailing(~S(Welcome{% endif "plan" %}))
+    end
+
+    # Mutation: drop trailing_text_refusals/2 from unparsed_refusals/2 - the
+    # parser refuses the include, and the endif's text goes unreported.
+    test "text after a tag is refused beside a refusal the parser reads" do
+      assert [{"template.tag_not_allowed", "include", 1, 1}, {@trailing, "endif", 1, 47}] =
+               trailing("{% include 'footer' %}{% if responses.plan %}a{% endif later %}")
+    end
+
+    # Mutation: have place/2 answer line 1 whatever line the offset is on -
+    # the endif is placed on line 1.
+    test "a token that begins on a later line is placed on its own line" do
+      assert [{@trailing, "endif", 3, 1}] =
+               trailing("Hi\n{% if responses.plan %}Pro\n{% endif\n later %}")
+    end
+
+    # Mutation: hand place/2 the number of characters before the token
+    # rather than the number of bytes - the column comes back two short.
+    test "the column counts bytes, as the parser's own places do" do
+      prefix = "Grüße "
+      assert byte_size(prefix) == 8
+      source = prefix <> "{% if responses.plan %}x{% endif later %}"
+      assert [{@trailing, "endif", 1, 33}] = trailing(source)
+    end
+
+    # The oracle is the parser and the engine underneath `Riddler.Template`,
+    # asked directly: a carrier whose tailed token the parser reads, and
+    # renders exactly as it renders the same carrier untailed, threw the
+    # tail away. Every such carrier is refused for that token's text, and
+    # nothing else; every carrier the parser refuses outright carries no
+    # finding of this kind.
+    #
+    # Sabotage: have trailing_text_refusals/2 answer [] - every carrier the
+    # parser reads is then admitted, and this test lists them.
+    test "generated agreement with the parser" do
+      carriers = [
+        {"endif", &"{% if responses.plan %}a{% endif#{&1} %}"},
+        {"else", &"{% if responses.plan %}a{% else#{&1} %}b{% endif %}"},
+        {"endunless", &"{% unless responses.plan %}a{% endunless#{&1} %}"},
+        {"else", &"{% unless responses.plan %}a{% else#{&1} %}b{% endunless %}"},
+        {"endfor", &"{% for name in responses.invitees %}{{ name }}{% endfor#{&1} %}"},
+        {"else", &"{% for name in responses.invitees %}a{% else#{&1} %}b{% endfor %}"},
+        {"endcapture", &"{% capture line %}a{% endcapture#{&1} %}{{ line }}"},
+        {"comment", &"{% comment#{&1} %}a{% endcomment %}b"},
+        {"endcomment", &"{% comment %}a{% endcomment#{&1} %}b"},
+        {"endraw", &"{% raw %}a{% endraw#{&1} %}b"},
+        {"endcase", &"{% case responses.plan %}{% when 'pro' %}a{% endcase#{&1} %}"},
+        {"else", &"{% case responses.plan %}{% when 'x' %}a{% else#{&1} %}b{% endcase %}"}
+      ]
+
+      tails = [" later", ~S| "plan"|, ~S| 'plan'|, " a.b | upcase", "\n  later", " 1", " (1..2)"]
+
+      outcomes =
+        for {field, carrier} <- carriers, tail <- tails do
+          source = carrier.(tail)
+
+          thrown_away? =
+            engine_text(source) == engine_text(carrier.("")) and engine_text(source) != :refused
+
+          case {thrown_away?, Template.compile(source)} do
+            {true, {:error, [%Riddler.Finding{code: @trailing, field: ^field}]}} ->
+              :refused
+
+            {false, {:error, findings}} ->
+              if Enum.any?(findings, &(&1.code == @trailing)),
+                do: {:invented, source},
+                else: :kept
+
+            other ->
+              {:disagreed, source, other}
+          end
+        end
+
+      assert Enum.reject(outcomes, &(&1 in [:refused, :kept])) == []
+      assert %{refused: refused, kept: kept} = Enum.frequencies(outcomes)
+      assert refused > 50
+      assert kept > 5
+    end
+  end
+
   describe "render/3 modes" do
     # Mutation: return [] instead of the missing list in lenient mode - the
     # assertion on the path fails.

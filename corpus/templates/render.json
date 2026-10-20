@@ -398,6 +398,11 @@
         "compiled": false,
         "findings": [
           {
+            "code": "template.trailing_text_not_allowed",
+            "field": "comment",
+            "node_key": null
+          },
+          {
             "code": "template.tag_not_allowed",
             "field": "liquid",
             "node_key": null
@@ -413,6 +418,11 @@
       "expected": {
         "compiled": false,
         "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "comment",
+            "node_key": null
+          },
           {
             "code": "template.tag_not_allowed",
             "field": "liquid",
@@ -430,6 +440,11 @@
         "compiled": false,
         "findings": [
           {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endcomment",
+            "node_key": null
+          },
+          {
             "code": "template.tag_not_allowed",
             "field": "liquid",
             "node_key": null
@@ -445,6 +460,11 @@
       "expected": {
         "compiled": false,
         "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endif",
+            "node_key": null
+          },
           {
             "code": "template.tag_not_allowed",
             "field": "liquid",
@@ -462,6 +482,11 @@
         "compiled": false,
         "findings": [
           {
+            "code": "template.trailing_text_not_allowed",
+            "field": "else",
+            "node_key": null
+          },
+          {
             "code": "template.tag_not_allowed",
             "field": "liquid",
             "node_key": null
@@ -477,6 +502,11 @@
       "expected": {
         "compiled": false,
         "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endfor",
+            "node_key": null
+          },
           {
             "code": "template.tag_not_allowed",
             "field": "liquid",
@@ -494,6 +524,11 @@
         "compiled": false,
         "findings": [
           {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endraw",
+            "node_key": null
+          },
+          {
             "code": "template.tag_not_allowed",
             "field": "liquid",
             "node_key": null
@@ -509,6 +544,11 @@
       "expected": {
         "compiled": false,
         "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endraw",
+            "node_key": null
+          },
           {
             "code": "template.tag_not_allowed",
             "field": "liquid",
@@ -526,6 +566,11 @@
         "compiled": false,
         "findings": [
           {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endcomment",
+            "node_key": null
+          },
+          {
             "code": "template.tag_not_allowed",
             "field": "liquid",
             "node_key": null
@@ -539,54 +584,222 @@
     },
     {
       "expected": {
-        "compiled": true,
-        "missing": [],
-        "rendered": true,
-        "text": "{% liquid assign greeting = 'Hello' %}"
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endraw",
+            "node_key": null
+          }
+        ]
       },
       "input": {
-        "assigns": {
-          "context": {},
-          "responses": {}
-        },
-        "mode": "both",
         "source": "{% raw %}{% liquid assign greeting = 'Hello' %}{% endraw note %}"
       },
-      "name": "A liquid tag's characters inside a raw block whose closer carries a trailing word are text: the block ends where the parser ends it"
+      "name": "A liquid tag's characters inside a raw block whose closer carries a trailing word are text: the closer is the one finding, for the word it carries"
     },
     {
       "expected": {
-        "compiled": true,
-        "missing": [],
-        "rendered": true,
-        "text": ""
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "comment",
+            "node_key": null
+          }
+        ]
       },
       "input": {
-        "assigns": {
-          "context": {},
-          "responses": {}
-        },
-        "mode": "both",
         "source": "{% comment note %}{% liquid assign greeting = 'Hello' %}{% endcomment %}"
       },
-      "name": "A liquid tag's characters inside a comment block whose opener carries trailing text are text and render nothing"
+      "name": "A liquid tag's characters inside a comment block whose opener carries trailing text are text: the opener is the one finding, for the text it carries"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endcomment",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% comment %}{% liquid assign greeting = 'Hello' %}{% endcomment note %}"
+      },
+      "name": "A liquid tag's characters inside a comment block whose closer carries trailing text are text: the closer is the one finding, for the text it carries"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endif",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% if responses.plan == 'business' %}Business{% endif \"plan\" %}"
+      },
+      "name": "A string on an endif is refused as text after the tag, not as a parse error: the text is the one finding"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "else",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% if responses.newsletter %}Subscribed{% else maybe %}Not subscribed{% endif %}"
+      },
+      "name": "A word on the else of an if block is refused as text after the tag: the text is the one finding"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endunless",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% unless responses.newsletter %}Sign up?{% endunless later %}"
+      },
+      "name": "A word on an endunless is refused as text after the tag: the text is the one finding"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endfor",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% for invitee in responses.invitees %}{{ invitee }}{% endfor invitees %}"
+      },
+      "name": "A word on an endfor is refused as text after the tag: the text is the one finding"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "else",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% for invitee in responses.invitees %}{{ invitee }}{% else empty %}Nobody yet{% endfor %}"
+      },
+      "name": "A word on the else of a for block is refused as text after the tag: the text is the one finding"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endcapture",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% capture greeting %}Welcome{% endcapture greeting %}{{ greeting }}"
+      },
+      "name": "A word on an endcapture is refused as text after the tag: the text is the one finding"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.filter_not_allowed",
+            "field": "escape",
+            "node_key": null
+          },
+          {
+            "code": "template.trailing_text_not_allowed",
+            "field": "endif",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% if responses.plan %}{{ responses.plan | escape }}{% endif plan %}"
+      },
+      "name": "Text after the tag is refused beside a refused filter: both are findings, in source order"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "endif",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "Welcome{% endif \"plan\" %}"
+      },
+      "name": "A closing tag with no block of its tag open is the one finding when it carries text: the text is not refused beside it"
     },
     {
       "expected": {
         "compiled": true,
         "missing": [],
         "rendered": true,
-        "text": ""
+        "text": "Business"
       },
       "input": {
         "assigns": {
           "context": {},
-          "responses": {}
+          "responses": {
+            "plan": "business"
+          }
         },
         "mode": "both",
-        "source": "{% comment %}{% liquid assign greeting = 'Hello' %}{% endcomment note %}"
+        "source": "{% if responses.plan == 'business' %}Business{% endif\n  %}"
       },
-      "name": "A liquid tag's characters inside a comment block whose closer carries trailing text are text and render nothing"
+      "name": "A closing tag whose name is followed only by whitespace and a newline carries no text and is admitted"
+    },
+    {
+      "expected": {
+        "compiled": true,
+        "missing": [],
+        "rendered": true,
+        "text": "Welcome"
+      },
+      "input": {
+        "assigns": {
+          "context": {},
+          "responses": {
+            "plan": "business"
+          }
+        },
+        "mode": "both",
+        "source": "{% comment %}{% endif \"plan\" %}{% endcomment %}Welcome"
+      },
+      "name": "A closing tag carrying text inside a comment body is text, not a tag: the template is admitted and renders"
     },
     {
       "expected": {

@@ -23,6 +23,7 @@ defmodule Riddler.TemplateLiquidTest do
   @body ~S|assign greeting = "Hello"|
   @liquid ~s({% liquid #{@body} %})
   @read_back "[{{ greeting }}]"
+  @trailing "template.trailing_text_not_allowed"
 
   defp liquid_fields(source) do
     case Template.compile(source) do
@@ -99,28 +100,28 @@ defmodule Riddler.TemplateLiquidTest do
     # Each template below was refused at 0.2.0 on a liquid tag the parser
     # reads as the text of a verbatim block: the pattern did not take the
     # opener or the closer for one, and read the characters inside as a tag.
+    # Each is refused now for the text its opener or closer carries, which
+    # the parser throws away, and for nothing else: the liquid tag's
+    # characters are still text.
     #
-    # Sabotage, run for every test in this block: liquid_refusals/1 restored
-    # to the source pattern it replaced - each template is refused on
-    # `liquid` and each test goes red.
+    # Sabotage, run for every test in this block: probe/2 made to answer a
+    # liquid tag at every candidate, as the source pattern it replaced read
+    # these templates - each template is refused on `liquid` too and each
+    # test goes red.
 
     test "inside a raw block whose closer carries a trailing word" do
-      assert {:ok, compiled} = Template.compile("{% raw %}" <> @liquid <> "{% endraw xyz %}")
-      assert {:ok, @liquid, []} = Template.render(compiled, %{}, :strict)
+      assert {:error, [%{code: @trailing, field: "endraw"}]} =
+               Template.compile("{% raw %}" <> @liquid <> "{% endraw xyz %}")
     end
 
     test "inside a comment block whose opener carries trailing text" do
-      assert {:ok, compiled} =
+      assert {:error, [%{code: @trailing, field: "comment"}]} =
                Template.compile("{% comment xyz %}" <> @liquid <> "{% endcomment %}")
-
-      assert {:ok, "", []} = Template.render(compiled, %{}, :strict)
     end
 
     test "inside a comment block whose closer carries trailing text" do
-      assert {:ok, compiled} =
+      assert {:error, [%{code: @trailing, field: "endcomment"}]} =
                Template.compile("{% comment %}" <> @liquid <> "{% endcomment xyz %}")
-
-      assert {:ok, "", []} = Template.render(compiled, %{}, :strict)
     end
   end
 
@@ -244,8 +245,25 @@ defmodule Riddler.TemplateLiquidTest do
       end
     end
 
+    # A carrier's token can carry text the parser throws away, which is
+    # refused on its own account; what is asked here is the liquid tag, so
+    # that refusal is set aside and a template refused for nothing else
+    # counts as admitted.
+    defp liquid_answer(source) do
+      case Template.compile(source) do
+        {:error, findings} ->
+          case Enum.reject(findings, &(&1.code == @trailing)) do
+            [] -> {:ok, :trailing_text_only}
+            rest -> {:error, rest}
+          end
+
+        compiled ->
+          compiled
+      end
+    end
+
     defp disagreement(source) do
-      case {parser_reads_liquid(source), Template.compile(source)} do
+      case {parser_reads_liquid(source), liquid_answer(source)} do
         {{:parsed, true}, {:error, findings}} ->
           if Enum.any?(findings, &(&1.field == "liquid")), do: nil, else: {:missed, source}
 
