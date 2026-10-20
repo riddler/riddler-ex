@@ -10,7 +10,7 @@
           "type": "object"
         },
         "input": {
-          "description": "What the capability is given. screens.admit takes document. screens.resolve takes document and root, and screen where only one screen is resolved. screens.validate_screen takes document and screen, and - rather than a root key - responses, and context where the case supplies one, at the top level: the two together are the root the screen is validated against, the same one the host resolved with, and a half the case leaves out is read as an empty map, so a path into it is undecidable like any other path the root lacks. It also takes pressed_button where a button was pressed. templates.render takes source, and assigns and mode where the case renders; mode is lenient, strict, or both, and both means the case is run in each mode and both runs have to give the stated answer.",
+          "description": "What the capability is given. screens.admit takes document. screens.resolve takes document and root, and screen where only one screen is resolved. screens.validate_screen takes document and screen, and - rather than a root key - responses, and context where the case supplies one, at the top level: the two together are the root the screen is validated against, the same one the host resolved with, and a half the case leaves out is read as an empty map, so a path into it is undecidable like any other path the root lacks. It also takes pressed_button where a button was pressed. templates.render takes source, and assigns and mode where the case renders; mode is lenient, strict, or both, and both means the case is run in each mode and both runs have to give the stated answer. journey.present takes document, root and status, and screen where the status is a screen: status is screen, waiting or done, screen names the key a screen status asks for, and any other status is a status outside the three. journey.put_context takes root and context, and context may be any JSON value, a map or not.",
           "type": "object"
         },
         "name": {
@@ -29,12 +29,14 @@
   "description": "One capability's conformance cases. A case is an input and the answer every runtime has to give for it, so a runtime in a second language is held to the same behavior as the reference one. Two conventions hold across every file. A finding in an expected answer carries code, field and node_key and no message: the code is the stable thing a host switches on and the message is prose a second runtime is not obliged to reproduce word for word. And the author writes name, capability and cases; the export task that copies these files out of this repository adds its own provenance header beside them, which is why this schema does not forbid further keys at the top level.",
   "properties": {
     "capability": {
-      "description": "The behavior every case in the file exercises. screens.admit runs the input document through admission and reports whether it is a document and every finding against it. screens.resolve resolves a document against a root, or one named screen of it. screens.validate_screen resolves the named screen against the same root the host resolved with and reports what the responses in it have to satisfy. templates.render compiles template source against the subset and, where the case names a mode, renders it.",
+      "description": "The behavior every case in the file exercises. screens.admit runs the input document through admission and reports whether it is a document and every finding against it. screens.resolve resolves a document against a root, or one named screen of it. screens.validate_screen resolves the named screen against the same root the host resolved with and reports what the responses in it have to satisfy. templates.render compiles template source against the subset and, where the case names a mode, renders it. journey.present presents the status a host passes as a screen, waiting or done; a screen is resolved against the root and carries the diagnostics of resolving it, and an error is stated as error and its reason. journey.put_context gives back the root with its context replaced whole, or an error stated the same way.",
       "enum": [
         "screens.admit",
         "screens.resolve",
         "screens.validate_screen",
-        "templates.render"
+        "templates.render",
+        "journey.present",
+        "journey.put_context"
       ],
       "type": "string"
     },

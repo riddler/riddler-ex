@@ -1,0 +1,170 @@
+{
+  "capability": "journey.put_context",
+  "cases": [
+    {
+      "expected": {
+        "context": {
+          "company": "Acme",
+          "seats": 4
+        },
+        "responses": {
+          "first_name": "Ada"
+        }
+      },
+      "input": {
+        "context": {
+          "company": "Acme",
+          "seats": 4
+        },
+        "root": {
+          "context": {
+            "company": "Acme",
+            "seats": 3,
+            "trial": true
+          },
+          "responses": {
+            "first_name": "Ada"
+          }
+        }
+      },
+      "name": "The new context replaces the old one whole, so a key the host left out is gone, and the responses are untouched"
+    },
+    {
+      "expected": {
+        "context": {
+          "billing": {
+            "company": "Acme"
+          }
+        },
+        "responses": {}
+      },
+      "input": {
+        "context": {
+          "billing": {
+            "company": "Acme"
+          }
+        },
+        "root": {
+          "context": {
+            "billing": {
+              "company": "Acme",
+              "vat": "GB1"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "Nothing is merged at depth either: a nested map is replaced with the context that holds it"
+    },
+    {
+      "expected": {
+        "context": {},
+        "responses": {
+          "first_name": "Ada"
+        }
+      },
+      "input": {
+        "context": {},
+        "root": {
+          "context": {
+            "seats": 3
+          },
+          "responses": {
+            "first_name": "Ada"
+          }
+        }
+      },
+      "name": "An empty context replaces the old one, leaving the root with an empty context"
+    },
+    {
+      "expected": {
+        "context": {
+          "seats": 1
+        },
+        "responses": {
+          "first_name": "Ada"
+        }
+      },
+      "input": {
+        "context": {
+          "seats": 1
+        },
+        "root": {
+          "responses": {
+            "first_name": "Ada"
+          }
+        }
+      },
+      "name": "A root with no context gets one, and its responses stay as they were"
+    },
+    {
+      "expected": {
+        "context": {
+          "seats": 2
+        },
+        "locale": "en",
+        "responses": {}
+      },
+      "input": {
+        "context": {
+          "seats": 2
+        },
+        "root": {
+          "context": {},
+          "locale": "en",
+          "responses": {}
+        }
+      },
+      "name": "Every other key of the root is carried as it was"
+    },
+    {
+      "expected": {
+        "error": "context_not_a_map"
+      },
+      "input": {
+        "context": [
+          "seats",
+          3
+        ],
+        "root": {
+          "context": {
+            "seats": 3
+          },
+          "responses": {}
+        }
+      },
+      "name": "A context that is a list is an error"
+    },
+    {
+      "expected": {
+        "error": "context_not_a_map"
+      },
+      "input": {
+        "context": "seats",
+        "root": {
+          "context": {
+            "seats": 3
+          },
+          "responses": {}
+        }
+      },
+      "name": "A context that is a string is an error"
+    },
+    {
+      "expected": {
+        "error": "context_not_a_map"
+      },
+      "input": {
+        "context": null,
+        "root": {
+          "context": {
+            "seats": 3
+          },
+          "responses": {}
+        }
+      },
+      "name": "A null context is an error, not an empty one"
+    }
+  ],
+  "name": "A Journey's context: the host's context replaced whole in the root, the responses untouched"
+}
