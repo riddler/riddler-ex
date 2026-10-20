@@ -259,6 +259,18 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
       assert no_label =~ "option 3 carries no label"
     end
 
+    # Sabotage: anchored the value shape with ^ and $; "personal" followed by
+    # a newline validated clean and this went red.
+    test "refuses an option value carrying a trailing newline" do
+      options = [
+        %{"value" => "personal\n", "label" => "Personal"},
+        %{"value" => "business", "label" => "Business"}
+      ]
+
+      assert tuples(document([plan_choice(%{"answer_options" => options})])) ==
+               [{"document.invalid_option", "answer_options", "plan_choice"}]
+    end
+
     # Sabotage: made `duplicate_findings/2` answer `[]`; the second
     # "personal" validated clean and this went red. Option values are not
     # keys: two questions offering the same value raise nothing.
