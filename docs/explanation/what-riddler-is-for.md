@@ -41,11 +41,12 @@ what Riddler hands back rather than deciding what to draw.
 ## Elements: the vocabulary is enumerated
 
 An element is one node of a screen: a `heading`, a `text`, a `text_question`,
-a `button`, or a `variant` that holds candidates and keeps the first one whose
-condition holds. Every element carries a `key`, unique across the whole
-document, and that key is how a finding names the element, how a visitor's
-response is addressed (`responses.reminder_email`), and how a host matches a
-resolved element to the one it was authored from.
+a `choice_question`, a `boolean_question`, a `button`, or a `variant` that
+holds candidates and keeps the first one whose condition holds. Every
+element carries a `key`, unique across the whole document, and that key is
+how a finding names the element, how a visitor's response is addressed
+(`responses.reminder_email`), and how a host matches a resolved element to
+the one it was authored from.
 
 ```json
 {"type": "text_question", "key": "guardian_name",

@@ -55,9 +55,11 @@ defmodule Riddler.MixProject do
       extras: [
         "README.md",
         "CHANGELOG.md",
+        "docs/guides/ask-a-choice-question.md",
         "docs/explanation/what-riddler-is-for.md"
       ],
       groups_for_extras: [
+        "How-to guides": ~r{docs/guides/},
         Explanation: ~r{docs/explanation/}
       ],
       # The groups follow the package's own seams so the sidebar reads as the
@@ -88,10 +90,10 @@ defmodule Riddler.MixProject do
       # in the tarball - but a later `priv/` addition should have to say that it
       # ships rather than ship by being in the right folder. `test/packaging_test.exs`
       # fails on a schema this list does not cover.
-      # The explanation page ships because the README links it by a relative
-      # path, and hex.pm resolves README links against the tarball.
+      # The explanation and how-to pages ship because the README links them by a
+      # relative path, and hex.pm resolves README links against the tarball.
       files: ~w(lib priv/schemas mix.exs .formatter.exs README.md LICENSE CHANGELOG.md
-           docs/explanation/what-riddler-is-for.md),
+           docs/guides/ask-a-choice-question.md docs/explanation/what-riddler-is-for.md),
       links: %{
         "GitHub" => @source_url,
         "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md"
