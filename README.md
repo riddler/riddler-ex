@@ -83,6 +83,7 @@ iex> {finding.code, finding.node_key}
 - Learn
   - [Basic usage](#basic-usage): one patron-registration screen admitted, checked, resolved for a returning visitor, and its responses checked.
 - Do
+  - [Ask a choice question](docs/guides/ask-a-choice-question.md): put a `choice_question` or a `boolean_question` in a screen, render its options, and check what the visitor submitted.
   - [Check a document before you save it](https://hexdocs.pm/riddler/Riddler.Screens.Document.html#validate/1): every reason a document is refused, in one pass; the function's reference until a guide page exists.
   - [Resolve the one screen you are about to render](https://hexdocs.pm/riddler/Riddler.Screens.html#resolve_screen/3): a screen and its diagnostics for one visitor; the function's reference until a guide page exists.
   - [Let a Back button skip the response check](https://hexdocs.pm/riddler/Riddler.Screens.html#validate_screen/4): honour a pressed button's `validates`; the function's reference until a guide page exists.
@@ -91,6 +92,7 @@ iex> {finding.code, finding.node_key}
   - [The API reference on HexDocs](https://hexdocs.pm/riddler): every public module and function of this version.
   - [`Riddler.Screens.Document`](https://hexdocs.pm/riddler/Riddler.Screens.Document.html): what `admit/1` takes and builds, and every finding code `validate/1` returns.
   - [`Riddler.Screens`](https://hexdocs.pm/riddler/Riddler.Screens.html): the root a condition and a template read, what resolution does to a node, and what a set of responses has to satisfy.
+  - [`Riddler.Screens.Type.ChoiceQuestion`](https://hexdocs.pm/riddler/Riddler.Screens.Type.ChoiceQuestion.html) and [`Riddler.Screens.Type.BooleanQuestion`](https://hexdocs.pm/riddler/Riddler.Screens.Type.BooleanQuestion.html): the fields of the two choice node types and the findings each raises.
   - [`Riddler.Screens.Registry`](https://hexdocs.pm/riddler/Riddler.Screens.Registry.html): the node types this version knows, by the name a document spells them with.
   - [`Riddler.Template`](https://hexdocs.pm/riddler/Riddler.Template.html): the tags and filters the template subset admits, and how a refusal is reported.
   - [`Riddler.Finding`](https://hexdocs.pm/riddler/Riddler.Finding.html): the fields of a finding, the unit every refusal reports.
