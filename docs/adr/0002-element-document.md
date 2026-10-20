@@ -2576,7 +2576,7 @@ The later notes above that read the amendment stand under the acceptance.
 
 ## Amendment, 2026-10-20: two choice node types, `choice_question` on `answer_options` and `boolean_question`
 
-Status: proposed
+Status: accepted (2026-10-20, riddler 0.4.0)
 
 Recorded 2026-10-20, bead rd-6oi. The Decision above reserves `answer_options`
 for the select question types and builds none of them, and its Consequences
@@ -2974,7 +2974,7 @@ stays open and is not touched here.
 
 ## Amendment, 2026-10-20: a `schema_version` written with no fractional part is its integer, so `1.0` is version 1
 
-Status: proposed
+Status: accepted (2026-10-20, riddler 0.4.0)
 
 Recorded 2026-10-20, bead rd-047. The amendment above of 2026-09-18, "a value
 of the wrong type in a field the schema types is not a document", left open
@@ -3092,3 +3092,77 @@ own change to the same message. Every call answers the code
 no finding is added or removed; and the corpus cases carrying this code, which
 compare a finding by its code, field and node key, are unchanged. Only the
 sentence moves.
+
+---
+
+Noted 2026-10-20. The amendments above headed "two choice node types,
+`choice_question` on `answer_options` and `boolean_question`" and "a
+`schema_version` written with no fractional part is its integer, so `1.0` is
+version 1" move from `proposed` to `accepted`, each Status line flipped in
+place and nothing else in them reworded. The flip was decided by the
+conductor under a standing consent, 2026-10-20.
+
+Both shipped in riddler 0.4.0, the commit tagged `v0.4.0` (`c4349b3`) and
+published on Hex; the 0.4.0 changelog's `Added` section states the two types,
+their codes and their checks, and its `Changed` section the reading of
+`schema_version`. Both were re-verified at the tag, every cite re-located by
+anchor there; `main` is that commit. What was read:
+
+- The choice amendment said of itself that nothing it describes "is citable
+  from `lib/` until they land". The code half is on `main`: `dc80c9e` and
+  `977f1c7` for admission, resolution, the schema step and the corpus, and
+  `14e83b1` for response validation. So its sentences on the package as it
+  stood at `2842007` - that a document naming either type answers
+  `document.unknown_type`, and that `@types` in
+  `lib/riddler/screens/registry.ex` names neither - describe the code before
+  that half; `@types` now names both, implemented by
+  `Riddler.Screens.Type.ChoiceQuestion` and
+  `Riddler.Screens.Type.BooleanQuestion`.
+- `ChoiceQuestion.fields/0` requires `label`, `select` and `answer_options`
+  and names `style`, `required`, `min_selections`, `max_selections` and
+  `format`; `BooleanQuestion.fields/0` requires `label` and names `required`
+  and `format`, so a `style` on a boolean question is dropped at admit. An
+  option's `value` is held to `\A[a-z][a-z0-9_]*\z`, the key pattern anchored
+  at the string's end.
+- Each admit code in the amendment's table is raised where it says:
+  `document.invalid_select`, `document.empty_answer_options`,
+  `document.invalid_option`, `document.duplicate_option_value`,
+  `document.invalid_selection_bounds`, `document.invalid_required` and
+  `document.invalid_style` by `ChoiceQuestion.validate/1`;
+  `document.missing_field` by the private `missing_findings/3`, and
+  `document.invalid_template` for an option label by the private
+  `option_template_findings/2`, in `lib/riddler/screens/document.ex`. Only
+  `Riddler.Screens.Type.TextQuestion` raises `document.unknown_format`, so a
+  `format` on either new type raises nothing.
+- Admission keeps each option's `value` and `label` and nothing else (the
+  private `admit_option/1`), answers `nil` for an `answer_options` that is not
+  a list of objects or an option whose `value` or `label` is not a string, and
+  reads a selection bound with no fractional part as its integer (the private
+  `integral/1`). `priv/schemas/screen-document.schema.json` types
+  `answer_options` under the conditional on `"choice_question"`, its node and
+  root descriptions name that one conditional, and it has not changed since
+  `dc80c9e`.
+- Response validation runs the five checks in the amendment's order, at most
+  one finding per question (the private `choice_findings/2` and
+  `boolean_findings/2` in `lib/riddler/screens/validation.ex`);
+  `@declaring_fields`, `checks/2` and the clause of `check/3` for an unknown
+  name stand as cited. Resolution renders each option `label` beside
+  `Riddler.Screens.Document.template_fields/0` and leaves each `value` as
+  written (the private `render_options/3` in `lib/riddler/screens.ex`).
+- The admission corpus case "A question carrying answer_options, the field
+  reserved for the select question types, is admitted with no finding" and
+  the test "does not carry answer_options, the field reserved for question
+  types this version does not build" stand.
+- The `schema_version` amendment's cites hold: `admit/1` reads the version
+  through `integral/1`, the struct's typespec reads `integer() | nil`,
+  `of_type?/2` counts `1.5` as no integer, the schema still types
+  `schema_version` as `integer`, and the admission corpus carries both cases
+  it names.
+- Every worked example of both amendments was run at `c4349b3` and answers as
+  written: the three choice questions and the boolean question, admitted,
+  validated and resolved, and a `schema_version` of `1.0`, `2.0` and `1.5`.
+
+The `document.unknown_type` message lists the types the registry knows, so
+for a type it does not know the message now names the two new ones; that is
+a finding for no existing type, and the 0.4.0 changelog states it. The notes
+above that read either amendment stand under the acceptance.
