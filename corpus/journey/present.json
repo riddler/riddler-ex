@@ -8,16 +8,16 @@
             "missing_variables": [],
             "undecidable_conditions": []
           },
-          "key": "account",
+          "key": "patron_details",
           "nodes": [
             {
-              "key": "account_heading",
+              "key": "details_heading",
               "level": 1,
-              "text": "Create your account",
+              "text": "Get your library card",
               "type": "heading"
             },
             {
-              "key": "account_greeting",
+              "key": "details_greeting",
               "text": "Nice to meet you, Ada.",
               "type": "text"
             },
@@ -28,33 +28,33 @@
               "type": "text_question"
             },
             {
-              "key": "account_continue",
+              "key": "details_next",
               "label": "Continue",
-              "outcome": "account_submitted",
+              "outcome": "details_submitted",
               "type": "button"
             }
           ],
-          "title": "Create your account"
+          "title": "Get your library card"
         },
         "state": "screen"
       },
       "input": {
         "document": {
-          "id": "edoc_signup_journey",
+          "id": "patron_registration",
           "schema_version": 1,
           "screens": [
             {
-              "key": "account",
+              "key": "patron_details",
               "nodes": [
                 {
-                  "key": "account_heading",
+                  "key": "details_heading",
                   "level": 1,
-                  "text": "Create your account",
+                  "text": "Get your library card",
                   "type": "heading"
                 },
                 {
                   "condition": "responses.first_name != ''",
-                  "key": "account_greeting",
+                  "key": "details_greeting",
                   "text": "Nice to meet you, {{ responses.first_name }}.",
                   "type": "text"
                 },
@@ -65,49 +65,55 @@
                   "type": "text_question"
                 },
                 {
-                  "key": "account_continue",
+                  "key": "details_next",
                   "label": "Continue",
-                  "outcome": "account_submitted",
+                  "outcome": "details_submitted",
                   "type": "button"
                 }
               ],
-              "title": "Create your account"
+              "title": "Get your library card"
             },
             {
-              "key": "plan",
+              "key": "card_pickup",
               "nodes": [
                 {
-                  "key": "plan_hint",
-                  "text": "Billed to {{ context.company }}.",
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
                   "type": "text"
                 },
                 {
-                  "key": "plan_offer",
+                  "key": "card_offer",
                   "nodes": [
                     {
-                      "condition": "context.seats > 1",
-                      "key": "plan_business",
-                      "label": "Business",
-                      "outcome": "plan_chosen",
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "business"
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
                       }
                     },
                     {
-                      "key": "plan_personal",
-                      "label": "Personal",
-                      "outcome": "plan_chosen",
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "personal"
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
                       }
                     }
                   ],
                   "type": "variant"
                 }
               ],
-              "title": "Pick a plan"
+              "title": "Pick up your card"
             }
           ]
         },
@@ -117,7 +123,7 @@
             "first_name": "Ada"
           }
         },
-        "screen": "account",
+        "screen": "patron_details",
         "status": "screen"
       },
       "name": "A screen status presents the resolved screen, its greeting rendered from the responses, with empty diagnostics inside it"
@@ -130,16 +136,16 @@
             "undecidable_conditions": [
               {
                 "condition": "responses.first_name != ''",
-                "key": "account_greeting"
+                "key": "details_greeting"
               }
             ]
           },
-          "key": "account",
+          "key": "patron_details",
           "nodes": [
             {
-              "key": "account_heading",
+              "key": "details_heading",
               "level": 1,
-              "text": "Create your account",
+              "text": "Get your library card",
               "type": "heading"
             },
             {
@@ -149,33 +155,33 @@
               "type": "text_question"
             },
             {
-              "key": "account_continue",
+              "key": "details_next",
               "label": "Continue",
-              "outcome": "account_submitted",
+              "outcome": "details_submitted",
               "type": "button"
             }
           ],
-          "title": "Create your account"
+          "title": "Get your library card"
         },
         "state": "screen"
       },
       "input": {
         "document": {
-          "id": "edoc_signup_journey",
+          "id": "patron_registration",
           "schema_version": 1,
           "screens": [
             {
-              "key": "account",
+              "key": "patron_details",
               "nodes": [
                 {
-                  "key": "account_heading",
+                  "key": "details_heading",
                   "level": 1,
-                  "text": "Create your account",
+                  "text": "Get your library card",
                   "type": "heading"
                 },
                 {
                   "condition": "responses.first_name != ''",
-                  "key": "account_greeting",
+                  "key": "details_greeting",
                   "text": "Nice to meet you, {{ responses.first_name }}.",
                   "type": "text"
                 },
@@ -186,49 +192,55 @@
                   "type": "text_question"
                 },
                 {
-                  "key": "account_continue",
+                  "key": "details_next",
                   "label": "Continue",
-                  "outcome": "account_submitted",
+                  "outcome": "details_submitted",
                   "type": "button"
                 }
               ],
-              "title": "Create your account"
+              "title": "Get your library card"
             },
             {
-              "key": "plan",
+              "key": "card_pickup",
               "nodes": [
                 {
-                  "key": "plan_hint",
-                  "text": "Billed to {{ context.company }}.",
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
                   "type": "text"
                 },
                 {
-                  "key": "plan_offer",
+                  "key": "card_offer",
                   "nodes": [
                     {
-                      "condition": "context.seats > 1",
-                      "key": "plan_business",
-                      "label": "Business",
-                      "outcome": "plan_chosen",
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "business"
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
                       }
                     },
                     {
-                      "key": "plan_personal",
-                      "label": "Personal",
-                      "outcome": "plan_chosen",
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "personal"
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
                       }
                     }
                   ],
                   "type": "variant"
                 }
               ],
-              "title": "Pick a plan"
+              "title": "Pick up your card"
             }
           ]
         },
@@ -236,7 +248,7 @@
           "context": {},
           "responses": {}
         },
-        "screen": "account",
+        "screen": "patron_details",
         "status": "screen"
       },
       "name": "A screen status with no responses hides the greeting and reports its condition in the diagnostics inside the screen"
@@ -247,50 +259,53 @@
           "diagnostics": {
             "missing_variables": [
               {
-                "key": "plan_hint",
-                "variable": "context.company"
+                "key": "pickup_hint",
+                "variable": "context.branch_name"
               }
             ],
             "undecidable_conditions": []
           },
-          "key": "plan",
+          "key": "card_pickup",
           "nodes": [
             {
-              "key": "plan_hint",
-              "text": "Billed to .",
+              "key": "pickup_hint",
+              "text": "Collect your card at .",
               "type": "text"
             },
             {
-              "key": "plan_business",
-              "label": "Business",
-              "outcome": "plan_chosen",
+              "key": "card_adult",
+              "label": "Adult card",
+              "outcome": "card_chosen",
               "type": "button",
               "writes": {
-                "plan": "business"
+                "responses.card_type": [
+                  "const",
+                  "adult"
+                ]
               }
             }
           ],
-          "title": "Pick a plan"
+          "title": "Pick up your card"
         },
         "state": "screen"
       },
       "input": {
         "document": {
-          "id": "edoc_signup_journey",
+          "id": "patron_registration",
           "schema_version": 1,
           "screens": [
             {
-              "key": "account",
+              "key": "patron_details",
               "nodes": [
                 {
-                  "key": "account_heading",
+                  "key": "details_heading",
                   "level": 1,
-                  "text": "Create your account",
+                  "text": "Get your library card",
                   "type": "heading"
                 },
                 {
                   "condition": "responses.first_name != ''",
-                  "key": "account_greeting",
+                  "key": "details_greeting",
                   "text": "Nice to meet you, {{ responses.first_name }}.",
                   "type": "text"
                 },
@@ -301,59 +316,65 @@
                   "type": "text_question"
                 },
                 {
-                  "key": "account_continue",
+                  "key": "details_next",
                   "label": "Continue",
-                  "outcome": "account_submitted",
+                  "outcome": "details_submitted",
                   "type": "button"
                 }
               ],
-              "title": "Create your account"
+              "title": "Get your library card"
             },
             {
-              "key": "plan",
+              "key": "card_pickup",
               "nodes": [
                 {
-                  "key": "plan_hint",
-                  "text": "Billed to {{ context.company }}.",
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
                   "type": "text"
                 },
                 {
-                  "key": "plan_offer",
+                  "key": "card_offer",
                   "nodes": [
                     {
-                      "condition": "context.seats > 1",
-                      "key": "plan_business",
-                      "label": "Business",
-                      "outcome": "plan_chosen",
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "business"
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
                       }
                     },
                     {
-                      "key": "plan_personal",
-                      "label": "Personal",
-                      "outcome": "plan_chosen",
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "personal"
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
                       }
                     }
                   ],
                   "type": "variant"
                 }
               ],
-              "title": "Pick a plan"
+              "title": "Pick up your card"
             }
           ]
         },
         "root": {
           "context": {
-            "seats": 3
+            "age": 30
           },
           "responses": {}
         },
-        "screen": "plan",
+        "screen": "card_pickup",
         "status": "screen"
       },
       "name": "A screen status collapses a container to its winner, carries the winning button's writes through, and reports a variable the context lacks"
@@ -364,50 +385,53 @@
           "diagnostics": {
             "missing_variables": [
               {
-                "key": "plan_hint",
-                "variable": "context.company"
+                "key": "pickup_hint",
+                "variable": "context.branch_name"
               }
             ],
             "undecidable_conditions": []
           },
-          "key": "plan",
+          "key": "card_pickup",
           "nodes": [
             {
-              "key": "plan_hint",
-              "text": "Billed to .",
+              "key": "pickup_hint",
+              "text": "Collect your card at .",
               "type": "text"
             },
             {
-              "key": "plan_personal",
-              "label": "Personal",
-              "outcome": "plan_chosen",
+              "key": "card_junior",
+              "label": "Junior card",
+              "outcome": "card_chosen",
               "type": "button",
               "writes": {
-                "plan": "personal"
+                "responses.card_type": [
+                  "const",
+                  "junior"
+                ]
               }
             }
           ],
-          "title": "Pick a plan"
+          "title": "Pick up your card"
         },
         "state": "screen"
       },
       "input": {
         "document": {
-          "id": "edoc_signup_journey",
+          "id": "patron_registration",
           "schema_version": 1,
           "screens": [
             {
-              "key": "account",
+              "key": "patron_details",
               "nodes": [
                 {
-                  "key": "account_heading",
+                  "key": "details_heading",
                   "level": 1,
-                  "text": "Create your account",
+                  "text": "Get your library card",
                   "type": "heading"
                 },
                 {
                   "condition": "responses.first_name != ''",
-                  "key": "account_greeting",
+                  "key": "details_greeting",
                   "text": "Nice to meet you, {{ responses.first_name }}.",
                   "type": "text"
                 },
@@ -418,59 +442,65 @@
                   "type": "text_question"
                 },
                 {
-                  "key": "account_continue",
+                  "key": "details_next",
                   "label": "Continue",
-                  "outcome": "account_submitted",
+                  "outcome": "details_submitted",
                   "type": "button"
                 }
               ],
-              "title": "Create your account"
+              "title": "Get your library card"
             },
             {
-              "key": "plan",
+              "key": "card_pickup",
               "nodes": [
                 {
-                  "key": "plan_hint",
-                  "text": "Billed to {{ context.company }}.",
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
                   "type": "text"
                 },
                 {
-                  "key": "plan_offer",
+                  "key": "card_offer",
                   "nodes": [
                     {
-                      "condition": "context.seats > 1",
-                      "key": "plan_business",
-                      "label": "Business",
-                      "outcome": "plan_chosen",
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "business"
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
                       }
                     },
                     {
-                      "key": "plan_personal",
-                      "label": "Personal",
-                      "outcome": "plan_chosen",
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "personal"
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
                       }
                     }
                   ],
                   "type": "variant"
                 }
               ],
-              "title": "Pick a plan"
+              "title": "Pick up your card"
             }
           ]
         },
         "root": {
-          "company": "Acme",
+          "branch_name": "Central",
           "context": {
-            "seats": 1
+            "age": 12
           }
         },
-        "screen": "plan",
+        "screen": "card_pickup",
         "status": "screen"
       },
       "name": "The root is read for context and responses only: a third root key renders nothing and its path is reported missing"
@@ -481,21 +511,21 @@
       },
       "input": {
         "document": {
-          "id": "edoc_signup_journey",
+          "id": "patron_registration",
           "schema_version": 1,
           "screens": [
             {
-              "key": "account",
+              "key": "patron_details",
               "nodes": [
                 {
-                  "key": "account_heading",
+                  "key": "details_heading",
                   "level": 1,
-                  "text": "Create your account",
+                  "text": "Get your library card",
                   "type": "heading"
                 },
                 {
                   "condition": "responses.first_name != ''",
-                  "key": "account_greeting",
+                  "key": "details_greeting",
                   "text": "Nice to meet you, {{ responses.first_name }}.",
                   "type": "text"
                 },
@@ -506,49 +536,55 @@
                   "type": "text_question"
                 },
                 {
-                  "key": "account_continue",
+                  "key": "details_next",
                   "label": "Continue",
-                  "outcome": "account_submitted",
+                  "outcome": "details_submitted",
                   "type": "button"
                 }
               ],
-              "title": "Create your account"
+              "title": "Get your library card"
             },
             {
-              "key": "plan",
+              "key": "card_pickup",
               "nodes": [
                 {
-                  "key": "plan_hint",
-                  "text": "Billed to {{ context.company }}.",
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
                   "type": "text"
                 },
                 {
-                  "key": "plan_offer",
+                  "key": "card_offer",
                   "nodes": [
                     {
-                      "condition": "context.seats > 1",
-                      "key": "plan_business",
-                      "label": "Business",
-                      "outcome": "plan_chosen",
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "business"
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
                       }
                     },
                     {
-                      "key": "plan_personal",
-                      "label": "Personal",
-                      "outcome": "plan_chosen",
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "personal"
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
                       }
                     }
                   ],
                   "type": "variant"
                 }
               ],
-              "title": "Pick a plan"
+              "title": "Pick up your card"
             }
           ]
         },
@@ -566,21 +602,21 @@
       },
       "input": {
         "document": {
-          "id": "edoc_signup_journey",
+          "id": "patron_registration",
           "schema_version": 1,
           "screens": [
             {
-              "key": "account",
+              "key": "patron_details",
               "nodes": [
                 {
-                  "key": "account_heading",
+                  "key": "details_heading",
                   "level": 1,
-                  "text": "Create your account",
+                  "text": "Get your library card",
                   "type": "heading"
                 },
                 {
                   "condition": "responses.first_name != ''",
-                  "key": "account_greeting",
+                  "key": "details_greeting",
                   "text": "Nice to meet you, {{ responses.first_name }}.",
                   "type": "text"
                 },
@@ -591,49 +627,55 @@
                   "type": "text_question"
                 },
                 {
-                  "key": "account_continue",
+                  "key": "details_next",
                   "label": "Continue",
-                  "outcome": "account_submitted",
+                  "outcome": "details_submitted",
                   "type": "button"
                 }
               ],
-              "title": "Create your account"
+              "title": "Get your library card"
             },
             {
-              "key": "plan",
+              "key": "card_pickup",
               "nodes": [
                 {
-                  "key": "plan_hint",
-                  "text": "Billed to {{ context.company }}.",
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
                   "type": "text"
                 },
                 {
-                  "key": "plan_offer",
+                  "key": "card_offer",
                   "nodes": [
                     {
-                      "condition": "context.seats > 1",
-                      "key": "plan_business",
-                      "label": "Business",
-                      "outcome": "plan_chosen",
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "business"
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
                       }
                     },
                     {
-                      "key": "plan_personal",
-                      "label": "Personal",
-                      "outcome": "plan_chosen",
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "personal"
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
                       }
                     }
                   ],
                   "type": "variant"
                 }
               ],
-              "title": "Pick a plan"
+              "title": "Pick up your card"
             }
           ]
         },
@@ -651,21 +693,21 @@
       },
       "input": {
         "document": {
-          "id": "edoc_signup_journey",
+          "id": "patron_registration",
           "schema_version": 1,
           "screens": [
             {
-              "key": "account",
+              "key": "patron_details",
               "nodes": [
                 {
-                  "key": "account_heading",
+                  "key": "details_heading",
                   "level": 1,
-                  "text": "Create your account",
+                  "text": "Get your library card",
                   "type": "heading"
                 },
                 {
                   "condition": "responses.first_name != ''",
-                  "key": "account_greeting",
+                  "key": "details_greeting",
                   "text": "Nice to meet you, {{ responses.first_name }}.",
                   "type": "text"
                 },
@@ -676,49 +718,55 @@
                   "type": "text_question"
                 },
                 {
-                  "key": "account_continue",
+                  "key": "details_next",
                   "label": "Continue",
-                  "outcome": "account_submitted",
+                  "outcome": "details_submitted",
                   "type": "button"
                 }
               ],
-              "title": "Create your account"
+              "title": "Get your library card"
             },
             {
-              "key": "plan",
+              "key": "card_pickup",
               "nodes": [
                 {
-                  "key": "plan_hint",
-                  "text": "Billed to {{ context.company }}.",
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
                   "type": "text"
                 },
                 {
-                  "key": "plan_offer",
+                  "key": "card_offer",
                   "nodes": [
                     {
-                      "condition": "context.seats > 1",
-                      "key": "plan_business",
-                      "label": "Business",
-                      "outcome": "plan_chosen",
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "business"
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
                       }
                     },
                     {
-                      "key": "plan_personal",
-                      "label": "Personal",
-                      "outcome": "plan_chosen",
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "personal"
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
                       }
                     }
                   ],
                   "type": "variant"
                 }
               ],
-              "title": "Pick a plan"
+              "title": "Pick up your card"
             }
           ]
         },
@@ -726,7 +774,7 @@
           "context": {},
           "responses": {}
         },
-        "screen": "confirm",
+        "screen": "card_renewal",
         "status": "screen"
       },
       "name": "A screen status naming a key the document does not declare is an error, not an empty screen"
@@ -737,21 +785,21 @@
       },
       "input": {
         "document": {
-          "id": "edoc_signup_journey",
+          "id": "patron_registration",
           "schema_version": 1,
           "screens": [
             {
-              "key": "account",
+              "key": "patron_details",
               "nodes": [
                 {
-                  "key": "account_heading",
+                  "key": "details_heading",
                   "level": 1,
-                  "text": "Create your account",
+                  "text": "Get your library card",
                   "type": "heading"
                 },
                 {
                   "condition": "responses.first_name != ''",
-                  "key": "account_greeting",
+                  "key": "details_greeting",
                   "text": "Nice to meet you, {{ responses.first_name }}.",
                   "type": "text"
                 },
@@ -762,49 +810,55 @@
                   "type": "text_question"
                 },
                 {
-                  "key": "account_continue",
+                  "key": "details_next",
                   "label": "Continue",
-                  "outcome": "account_submitted",
+                  "outcome": "details_submitted",
                   "type": "button"
                 }
               ],
-              "title": "Create your account"
+              "title": "Get your library card"
             },
             {
-              "key": "plan",
+              "key": "card_pickup",
               "nodes": [
                 {
-                  "key": "plan_hint",
-                  "text": "Billed to {{ context.company }}.",
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
                   "type": "text"
                 },
                 {
-                  "key": "plan_offer",
+                  "key": "card_offer",
                   "nodes": [
                     {
-                      "condition": "context.seats > 1",
-                      "key": "plan_business",
-                      "label": "Business",
-                      "outcome": "plan_chosen",
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "business"
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
                       }
                     },
                     {
-                      "key": "plan_personal",
-                      "label": "Personal",
-                      "outcome": "plan_chosen",
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
                       "type": "button",
                       "writes": {
-                        "plan": "personal"
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
                       }
                     }
                   ],
                   "type": "variant"
                 }
               ],
-              "title": "Pick a plan"
+              "title": "Pick up your card"
             }
           ]
         },

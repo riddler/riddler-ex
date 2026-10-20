@@ -4,8 +4,9 @@
     {
       "expected": {
         "context": {
-          "company": "Acme",
-          "seats": 4
+          "card_number": "2915 0001 2345",
+          "first_name": "Ada",
+          "returning": "yes"
         },
         "responses": {
           "first_name": "Ada"
@@ -13,14 +14,15 @@
       },
       "input": {
         "context": {
-          "company": "Acme",
-          "seats": 4
+          "card_number": "2915 0001 2345",
+          "first_name": "Ada",
+          "returning": "yes"
         },
         "root": {
           "context": {
-            "company": "Acme",
-            "seats": 3,
-            "trial": true
+            "card_pending": true,
+            "first_name": "Ada",
+            "returning": "yes"
           },
           "responses": {
             "first_name": "Ada"
@@ -32,23 +34,23 @@
     {
       "expected": {
         "context": {
-          "billing": {
-            "company": "Acme"
+          "home_branch": {
+            "name": "Central"
           }
         },
         "responses": {}
       },
       "input": {
         "context": {
-          "billing": {
-            "company": "Acme"
+          "home_branch": {
+            "name": "Central"
           }
         },
         "root": {
           "context": {
-            "billing": {
-              "company": "Acme",
-              "vat": "GB1"
+            "home_branch": {
+              "name": "Central",
+              "shelf": "A1"
             }
           },
           "responses": {}
@@ -67,7 +69,7 @@
         "context": {},
         "root": {
           "context": {
-            "seats": 3
+            "returning": "yes"
           },
           "responses": {
             "first_name": "Ada"
@@ -79,7 +81,7 @@
     {
       "expected": {
         "context": {
-          "seats": 1
+          "returning": "no"
         },
         "responses": {
           "first_name": "Ada"
@@ -87,7 +89,7 @@
       },
       "input": {
         "context": {
-          "seats": 1
+          "returning": "no"
         },
         "root": {
           "responses": {
@@ -100,14 +102,14 @@
     {
       "expected": {
         "context": {
-          "seats": 2
+          "returning": "no"
         },
         "locale": "en",
         "responses": {}
       },
       "input": {
         "context": {
-          "seats": 2
+          "returning": "no"
         },
         "root": {
           "context": {},
@@ -123,12 +125,12 @@
       },
       "input": {
         "context": [
-          "seats",
-          3
+          "returning",
+          "yes"
         ],
         "root": {
           "context": {
-            "seats": 3
+            "returning": "yes"
           },
           "responses": {}
         }
@@ -140,10 +142,10 @@
         "error": "context_not_a_map"
       },
       "input": {
-        "context": "seats",
+        "context": "returning",
         "root": {
           "context": {
-            "seats": 3
+            "returning": "yes"
           },
           "responses": {}
         }
@@ -158,7 +160,7 @@
         "context": null,
         "root": {
           "context": {
-            "seats": 3
+            "returning": "yes"
           },
           "responses": {}
         }
