@@ -3035,3 +3035,60 @@ entry says only that `1.0` is that integer. The schema is not edited. An absent
 not a number is not a document, as before. A document declaring the integer
 `1` or any other integer answers what it answered before, finding for finding
 and message for message.
+
+---
+
+Noted 2026-10-20, bead rd-yv5. One note by addition, read against `main` at
+`db77228`, with the code half that makes it true in the same request, cited by
+anchor. The split was ruled by the operator, 2026-09-19. Nothing above is
+changed; each paragraph below says what the text above means now.
+
+**The message for a condition that compiles and was left undecided now says
+what the evaluator answered, and only that.** The note above of 2026-09-18 for
+bead rd-d9n names three things that leave a condition undecided and says the
+`message` names which of them fired. The first of the three, a condition that
+compiles and that the root leaves undecided, carried one sentence whatever the
+evaluator answered, and the note above for bead rd-7ue records that sentence
+character for character. The sentence now splits on the answer the evaluation
+already gave, and no code reads the condition's references against the root
+(`lib/riddler/screens/validation.ex`, the private `undecided/1`):
+
+| What the evaluator answers | What the message says of the condition |
+|---|---|
+| an error naming a top-level name the root does not bind | it "reads a name the root this screen was validated with does not carry" |
+| a decided value that is not a boolean | it "does not answer true or false" |
+| an evaluation error, such as a division by zero or a function the evaluator does not know | it "fails to evaluate" |
+| `:undefined`, a type mismatch, or any other error | it "could not be decided" |
+
+The last row names no cause because each of its answers covers two:
+`:undefined` comes back both for a key missing from a map the root holds and
+for operands of types an operator does not compare, and a type mismatch comes
+back both for a real type error and for a missing key under an operator that
+wants a boolean. Every row keeps the rest of the sentence, ", so whether this
+question was asked of the visitor is not established", and the place the
+evaluator gave where it gave one. So the sentence the rd-7ue note quotes, for
+`context.is_business == true` under a root carrying no `context`, now reads,
+character for character:
+
+> the condition "context.is_business == true" could not be decided, so whether this question was asked of the visitor is not established
+
+and the test that note names pins the new text. Of the inputs the rd-d9n note
+drove, `"is_business"` takes the first row, `"context.n + 1"` the second,
+`"1 / 0 > 1"` and `"nosuch(1)"` the third, and `"context.is_business == true"`
+and `"context.n > 'a'"` the fourth; the place each carries is the one that
+note records. Each row is pinned in
+`test/riddler/screens/validation_test.exs`, the describe block "what the
+evaluator answered for a condition that compiles". The second and third causes
+that note names, a condition that is not valid predicator and one that is not a
+string, keep their sentences.
+
+**Why a note and not an amendment.** `docs/adr/README.md` states the test: an
+entry is an Amendment where "the rule stated above answers a call one way, and
+this entry answers the same call another". This record names codes and fields
+and never decides a sentence, which is what the rd-d9n note above says of its
+own change to the same message. Every call answers the code
+`response.undecidable`, the `field` `"condition"`, the `node_key` and the
+`position` it answered before; no document is admitted or refused differently;
+no finding is added or removed; and the corpus cases carrying this code, which
+compare a finding by its code, field and node key, are unchanged. Only the
+sentence moves.

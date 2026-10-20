@@ -550,9 +550,8 @@ defmodule Riddler.Screens.ValidationTest do
       assert hd(findings).field == "condition"
 
       assert hd(findings).message ==
-               "the condition \"context.is_business == true\" could not be decided against " <>
-                 "the root this screen was validated with, so whether this question was " <>
-                 "asked of the visitor is not established"
+               "the condition \"context.is_business == true\" could not be decided, so " <>
+                 "whether this question was asked of the visitor is not established"
 
       # Why the press names no button that is there: the button is dropped from
       # the resolved screen, and the condition that dropped it is what the
@@ -984,8 +983,9 @@ defmodule Riddler.Screens.ValidationTest do
     # move, the sentence that says which cause fired, and the place - present
     # where the compiler or the evaluator gave one, absent where neither did.
 
-    # Sabotage: made `undecided_position/2` answer `nil` for every condition;
-    # the finding lost the place the evaluator gave and this test went red.
+    # Sabotage: made the `UndefinedVariableError` clause of `undecided/1`
+    # answer `nil` for the place; the finding lost the place the evaluator gave
+    # and this test went red.
     test "a condition the root leaves undecided carries the place the evaluator gave" do
       root = %{"context" => %{}, "responses" => %{"full_name" => "Ada"}}
 
@@ -1001,12 +1001,9 @@ defmodule Riddler.Screens.ValidationTest do
 
       assert finding.position == %{line: 1, column: 1}
 
-      assert finding.message ==
-               ~s[the condition "is_business" could not be decided against the root this screen was validated with, so whether this question was asked of the visitor is not established (line 1, column 1)]
-
-      # The other half of the same cause: a condition reading a key the root's
-      # own map does not carry is undecided in exactly the same way and the
-      # evaluator names no place for it, so nothing is invented for it either.
+      # A condition reading a key the root's own map does not carry is
+      # undecided too, and the evaluator names no place for it, so nothing is
+      # invented for it either.
       assert {:error, [placeless]} =
                Screens.validate_screen(
                  checkout_condition_document("context.is_business == true"),
@@ -1016,7 +1013,6 @@ defmodule Riddler.Screens.ValidationTest do
 
       assert placeless.position == nil
       refute placeless.message =~ "line"
-      assert placeless.message =~ "could not be decided against the root"
     end
 
     # Sabotage: gave the `{:error, error}` arm of `cause/2` the same lead as the
@@ -1073,6 +1069,94 @@ defmodule Riddler.Screens.ValidationTest do
 
       assert finding.message ==
                "the condition 42 is not a string, so whether this question was asked of the visitor is not established"
+    end
+  end
+
+  describe "what the evaluator answered for a condition that compiles" do
+    # The message of a condition that compiles and was undecided is chosen by
+    # the evaluator's answer alone: an unbound name, a decided value that is not
+    # a boolean and an evaluation error each have one cause and say it, and the
+    # two answers that cover more than one cause say neither. The `code`, the
+    # `field`, the `node_key` and the `position` are what they were before the
+    # message split, and each case below pins them beside the sentence.
+
+    defp undecided_finding(condition, context) do
+      root = %{"context" => context, "responses" => %{"full_name" => "Ada"}}
+
+      assert {:error, [finding]} =
+               Screens.validate_screen(checkout_condition_document(condition), "checkout", root)
+
+      assert %Finding{code: "response.undecidable", field: "condition", node_key: "vat_id"} =
+               finding
+
+      finding
+    end
+
+    # Sabotage: gave the `UndefinedVariableError` clause of `undecided/1` the
+    # neutral lead; the finding stopped naming the root and this test went red.
+    test "an unbound name says the root does not carry what the condition reads" do
+      finding = undecided_finding("is_business", %{})
+
+      assert finding.position == %{line: 1, column: 1}
+
+      assert finding.message ==
+               ~s[the condition "is_business" reads a name the root this screen was validated with does not carry, so whether this question was asked of the visitor is not established (line 1, column 1)]
+    end
+
+    # Sabotage: gave the `{:ok, _not_a_boolean}` clause of `undecided/1` the
+    # neutral lead; a sum the evaluator decided as 3 read as undecided and
+    # this test went red.
+    test "a decided value that is not a boolean says the condition does not answer true or false" do
+      finding = undecided_finding("context.seats + 1", %{"seats" => 2})
+
+      assert finding.position == nil
+
+      assert finding.message ==
+               ~s[the condition "context.seats + 1" does not answer true or false, so whether this question was asked of the visitor is not established]
+    end
+
+    # Sabotage: removed the `EvaluationError` clause of `undecided/1`, so the
+    # error fell to the neutral clause; the division by zero read as undecided
+    # and this test went red.
+    test "an evaluation error says the condition fails to evaluate, and keeps its place" do
+      finding = undecided_finding("1 / 0 > 1", %{"is_business" => true})
+
+      assert finding.position == %{line: 1, column: 3}
+
+      assert finding.message ==
+               ~s[the condition "1 / 0 > 1" fails to evaluate, so whether this question was asked of the visitor is not established (line 1, column 3)]
+
+      unknown = undecided_finding("is_vat_registered(context)", %{"is_business" => true})
+
+      assert unknown.message ==
+               ~s[the condition "is_vat_registered(context)" fails to evaluate, so whether this question was asked of the visitor is not established (line 1, column 1)]
+    end
+
+    # `:undefined` comes back for a key the root's map does not carry and for
+    # operands of types the operator does not compare; a type mismatch comes
+    # back for a real type error and for a missing key under an operator that
+    # wants a boolean. Neither answer says which, so the message names neither.
+    #
+    # Sabotage: gave the `{:ok, :undefined}` clause and the catch-all error
+    # clause of `undecided/1` the unbound-name lead; the four findings claimed
+    # the root lacked what each condition reads and this test went red.
+    test "an answer covering more than one cause says only that the condition could not be decided" do
+      context = %{"seats" => 2, "tenant_name" => "Acme"}
+
+      for {condition, position, span} <- [
+            {"context.is_business == true", nil, ""},
+            {~s[context.seats > "a"], nil, ""},
+            {"!context.is_business", %{line: 1, column: 1}, " (line 1, column 1)"},
+            {"!context.tenant_name", %{line: 1, column: 1}, " (line 1, column 1)"}
+          ] do
+        finding = undecided_finding(condition, context)
+
+        assert finding.position == position
+
+        assert finding.message ==
+                 "the condition #{inspect(condition)} could not be decided, so whether this question was asked of the visitor is not established" <>
+                   span
+      end
     end
   end
 
