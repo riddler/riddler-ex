@@ -776,6 +776,39 @@ defmodule Riddler.TemplateTest do
       end
     end
 
+    # Mutation: have probe_name/1 answer its stem whatever the source holds -
+    # the author's own variable of that name is taken for the probe, and each
+    # template is refused for text the parser does not keep.
+    test "a variable the author names like the probe is not taken for it" do
+      for source <- [
+            "{{ riddler_kept_probe }}{% raw %}{% endif x %}{% endraw %}",
+            "{{ riddler_kept_probe }}{{ '{% endif x %}' }}",
+            "{{ riddler_kept_probe }}{% comment %}{% endif x %}{% endcomment %}",
+            "{% if riddler_kept_probe %}{% else %}{% else x %}{% endif %}",
+            "{% if a %}{% else %}{{ riddler_kept_probe }}{% else x %}{% endif %}"
+          ] do
+        assert {:ok, _compiled} = Template.compile(source)
+      end
+    end
+
+    # Text the lexer cannot read leaves the template refused as it was, as
+    # itself or as a parse failure; the rule reaches only text the parser
+    # reads and throws away. No mutation in this change reaches these: the
+    # answers are pinned as the record states them.
+    test "text the parser cannot read after the name is refused as it was" do
+      for source <- [
+            "{% if a %}x{% endif é %}",
+            "{% if a %}x{% endif 'x %}",
+            "{% if a %}x{% endif ; %}",
+            "{% capture c %}x{% endcapture ¿ %}"
+          ] do
+        assert [%Riddler.Finding{code: "template.tag_not_allowed"}] = refusal!(source)
+      end
+
+      assert [%Riddler.Finding{code: "template.parse_error"}] =
+               refusal!("{% comment é %}x{% endcomment %}")
+    end
+
     # Mutation: have unparsed_refusals/2 answer the trailing findings alone
     # where the second reading refuses nothing else, without the first
     # reading's answer - the keywords the first reading refused are lost.

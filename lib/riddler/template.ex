@@ -564,8 +564,10 @@ defmodule Riddler.Template do
     "endraw" => :after
   }
 
-  # A name no variable in an author's template is expected to carry, printed
-  # beside a token to ask whether the parser keeps that place.
+  # The stem of a variable name printed beside a token to ask whether the
+  # parser keeps that place. The name used is the stem lengthened until the
+  # author's source does not hold it (`probe_name/1`), so that a variable
+  # the author wrote is never taken for the probe.
   @kept_probe "riddler_kept_probe"
 
   # Whether such a token is a tag the template keeps is the parser's to say,
@@ -640,16 +642,26 @@ defmodule Riddler.Template do
 
   defp kept?(source, token, tags) do
     at = if @takes_no_text[token.name] == :before, do: token.offset, else: token.token_end
-    probed = splice(source, at, "{{ #{@kept_probe} }}")
+    name = probe_name(source)
+    probed = splice(source, at, "{{ #{name} }}")
 
     case read(probed, tags) do
-      {:ok, tree} -> reduce_nodes(tree, false, &probe_kept/2)
-      _refused -> false
+      {:ok, tree} ->
+        reduce_nodes(tree, false, fn
+          %Solid.Variable{original_name: ^name}, _acc -> true
+          _node, acc -> acc
+        end)
+
+      _refused ->
+        false
     end
   end
 
-  defp probe_kept(%Solid.Variable{original_name: @kept_probe}, _acc), do: true
-  defp probe_kept(_node, acc), do: acc
+  defp probe_name(source) do
+    @kept_probe
+    |> Stream.iterate(&(&1 <> "_"))
+    |> Enum.find(&(not String.contains?(source, &1)))
+  end
 
   # Where the second reading holds a tag the parser does not know, each such
   # node's place, as the same offset `carrying_text/2` measures. The first
