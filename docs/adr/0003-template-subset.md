@@ -589,7 +589,10 @@ later, closes it.
 
 **The closing tag of a block the author opened is never refused**, whatever
 the block holds: a misplaced keyword, a refused tag or filter, or a tag no
-Liquid library is obliged to know.
+Liquid library is obliged to know. Two regions the parser reads and throws
+away are outside this sentence, and both are left open below: what follows
+a second `else` in an `if` or `unless`, and what comes before a `case`'s
+first `when`.
 
 **Every refused construct is reported beside every other.** A refused
 keyword neither hides nor is hidden by any other refusal in the template - a
@@ -614,7 +617,7 @@ Worked answers, each the findings' fields in source order:
 ### Why an amendment and not a note
 
 Because it changes answers the package gave. At `9483f75` the first two
-templates above answered `include` alone and `endif` alone; the third and
+templates above answered `endif` alone and `include` alone; the third and
 fourth answered both keywords; the fifth answered `when`, `elsif` and
 `endcase`, refusing a `when` whose `case` was open; the sixth answered
 `endif` and `endfor`, without the filter; and the last answered `include`
@@ -623,6 +626,18 @@ refused keyword whenever the parser had refused something else beside it,
 and by reporting only what the parser refused when it refused the source,
 so that a refusal the allowlist walk finds in the parse tree went
 unreported (the private `drop_derivative/1`, read at `9483f75`).
+
+The same holds with no keyword in the template: a tag the parser does not
+know no longer hides the refusals the parser reads beside it.
+`{% include 'x' %}{{ a | escape }}`, `{% include 'x' %}{% # c %}` and
+`{% include 'x' %}{% tablerow x in a %}{% endtablerow %}` each answered
+`include` alone at `9483f75` and now answer the second refusal too, and
+`{% include 'x' %}{% liquid echo y %}` now answers `include`, `liquid` and
+`echo`. A liquid tag holding a tag the parser does not know answered that
+tag and a parse failure; it now answers the liquid tag and the tags inside
+it, and the parse failure is gone: `{% liquid include 'x' %}` answered
+`include` and `template.parse_error`, and now answers `liquid` and
+`include`.
 
 What changes is confined to which findings a refused template carries. No
 template the package admitted is refused, and none it refused is admitted:
@@ -686,6 +701,19 @@ tree, and is reported only where that reading finds nothing else to refuse,
 as part of the first reading's answer. Whether the subset admits
 a second `else` at all is left open, and the gap it opens in the allowlist
 is the code half's to close.
+
+**What comes before a `case`'s first `when`.** At `solid` `1.3.4` the
+parser reads what stands between a `case` tag and its first `when` and
+throws it away, as it does after a second `else`. A refused construct the
+parser knows, written there, is not in the parse tree and the template
+compiles: `{% case a %}{% render 'x' %}{% when 1 %}{% endcase %}` is
+admitted. A misplaced keyword written there is not in the second reading's
+tree either, so where nothing else is refused the answer is the first
+reading's, which refuses the open `case`'s own keywords:
+`{% case a %}{% endif %}{% when 1 %}{% endcase %}` answers `endif`, `when`
+and `endcase`. Both answers are the ones the package gave at `9483f75`.
+What the subset makes of that region is left open, and the gap it opens in
+the allowlist is the code half's to close.
 
 ### Consequences
 
