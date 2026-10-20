@@ -165,7 +165,11 @@ An agent may draft the change; it does not adopt it.
   YYYY-MM-DD", or restates the reason.
 - Examples, fixtures and doctests use the two canonical domains - a
   multi-tenant host application doing credit-card processing, and a signup
-  wizard with A/B testing - and no others.
+  wizard with A/B testing - and no others. The one exception is new teaching text (guides,
+  tutorials, moduledoc examples), which uses the example world the docs
+  manifest names, patron registration (`.claude/diataxis.md`, `example_world`).
+  Existing fixtures, corpus cases and records stay as they are; nothing is
+  migrated.
 - The vocabulary is `writes`, `outcome`, `responses` and `context`. The
   spellings `payload`, `action` and `answers` name the same things in
   older drafts and are retired. **The rule is about vocabulary, not
