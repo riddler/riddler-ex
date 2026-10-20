@@ -544,3 +544,168 @@ is not a misplaced keyword, which is what the code already answered, and it
 leaves open the answer beside another refusal and inside a block holding a
 misplaced keyword. The corpus case it adds states an answer this package
 already gave.
+
+---
+
+## Amendment, 2026-10-20: a stray or misplaced keyword is refused as itself, beside every other refusal
+
+Status: proposed
+
+Recorded 2026-10-20, bead rd-7qa, on the ruling of 2026-09-19 (ruled by the
+operator, 2026-09-19): one finding per refused construct, whatever route the
+reference parser takes to refuse the source. The Note of 2026-09-18 above
+(bead rd-d5c) leaves two shapes open - a closing tag with no block open
+beside another refusal, and a block that holds a branch or closing keyword
+it cannot hold - and records answers for both that follow the reference
+parser's route rather than a rule. This amendment decides both. Cites to the
+code it replaces are read at `9483f75`; the code it describes is added by
+this entry's own commit and is cited by name alone.
+
+### What the record now decides
+
+**A branch or closing keyword belongs to the innermost block open where it
+is written, when it is one of that block's own keywords.** A block's own
+keywords are these:
+
+| Block | Its branch keywords | Its closing tag |
+|---|---|---|
+| `if` | `elsif`, `else` | `endif` |
+| `unless` | `elsif`, `else` | `endunless` |
+| `case` | `when`, `else` | `endcase` |
+| `for` | `else`, and none after its `else` | `endfor` |
+| `capture` | none | `endcapture` |
+| `comment` | none: its body is text | `endcomment` |
+| `raw` | none: its body is text | `endraw` |
+| `tablerow`, which is refused | none | `endtablerow` |
+
+A keyword written inside a `comment` or `raw` body is text, as anything
+there is.
+
+**Written anywhere else, a branch or closing keyword is refused as itself.**
+Its finding is the one the Decision gives an excluded construct:
+`template.tag_not_allowed`, naming the keyword, at the place it is written.
+The block it is written in stays open, so that block's own closing tag,
+later, closes it.
+
+**The closing tag of a block the author opened is never refused**, whatever
+the block holds: a misplaced keyword, a refused tag or filter, or a tag no
+Liquid library is obliged to know.
+
+**Every refused construct is reported beside every other.** A refused
+keyword neither hides nor is hidden by any other refusal in the template - a
+tag outside the subset, a refused filter, a liquid tag - and a tag outside
+the subset hides no other refusal either, whether or not a Liquid library
+knows the tag. This is the Decision's "one finding per refused construct,
+not the first", held whatever route the reference parser takes to refuse
+the source.
+
+Worked answers, each the findings' fields in source order:
+
+| Source | Fields |
+|---|---|
+| `{% render 'footer' %}{% endif %}` | `render`, `endif` |
+| `{% include 'footer' %}{% endif %}` | `include`, `endif` |
+| `{% for x in responses.a %}{% endif %}{% endfor %}` | `endif` |
+| `{% if responses.a %}{% endfor %}{% endif %}` | `endfor` |
+| `{% case responses.a %}{% when 1 %}{% elsif b %}{% endcase %}` | `elsif` |
+| `{% for x in responses.a %}{% endif %}{{ responses.a \| escape }}{% endfor %}` | `endif`, `escape` |
+| `{% include 'footer' %}{% render 'header' %}` | `include`, `render` |
+
+### Why an amendment and not a note
+
+Because it changes answers the package gave. At `9483f75` the first two
+templates above answered `include` alone and `endif` alone; the third and
+fourth answered both keywords; the fifth answered `when`, `elsif` and
+`endcase`, refusing a `when` whose `case` was open; the sixth answered
+`endif` and `endfor`, without the filter; and the last answered `include`
+alone. `Riddler.Template.compile/1` reached those answers by dropping a
+refused keyword whenever the parser had refused something else beside it,
+and by reporting only what the parser refused when it refused the source,
+so that a refusal the allowlist walk finds in the parse tree went
+unreported (the private `drop_derivative/1`, read at `9483f75`).
+
+What changes is confined to which findings a refused template carries. No
+template the package admitted is refused, and none it refused is admitted:
+the answer for a source the parser reads on its first reading is untouched,
+and a source the parser refuses always answers at least one finding.
+
+### What the code does
+
+When the parser refuses a source, `Riddler.Template.compile/1` reads it a
+second time with every tag name the parser has no tag for held as a node of
+its own (`Riddler.Template.UnknownTag`), and refuses each such node as
+itself in the allowlist walk, beside whatever else the walk finds
+(`Riddler.Template`, the private `unparsed_refusals/2`). On that reading a
+block takes its own keywords and no others, so a misplaced keyword is a
+node inside the block open where it stands, and that block's closing tag
+closes it. A tag the parser has no tag for that is not a branch or closing
+keyword is also refused where the first reading met it. The liquid check
+asks the parser with the tags of the reading it checks.
+
+The reason the parser gives for a tag it does not expect is still read
+through the one pattern the Note above names, `@unexpected_tag`, which now
+also collects the names held on the second reading; a `solid` release that
+rewords it turns this package's corpus run red rather than changing an
+answer unnoticed, and that safeguard binds no other runtime.
+
+The tests named "a stray closer beside a refused tag the parser reads is
+reported with it", "a closer misplaced inside a block is refused alone: the
+block's own closer is not" and the others in the describe block "compile/1
+beside a stray or misplaced keyword" (`test/riddler/template_test.exs`) pin
+each shape with its positions.
+
+### What is unchanged
+
+The allowlist, the exclusion list, the three finding codes, a finding's
+fields and its position, refusal at compile, and the Amendment of
+2026-09-18 above. A template the parser reads on its first reading answers
+as it did. A closing tag with no block open, standing alone, is refused as
+that tag, as the Note above records; the corpus case "A closing tag written
+where no block of its tag is open is refused as that tag, not as a parse
+error" holds. So does "A refused tag inside an if block is the one finding:
+the closing tag that ends the block is not refused".
+
+### What this amendment does not decide
+
+**A source the parser cannot read even with its unknown tags held.** Where
+the source fails for another reason as well - an unterminated output tag, a
+`render` tag naming no template - the answer is the first reading's, as it
+was: the parse failure, with a branch or closing keyword the parser reported
+dropped beside any other refusal. `{% render %}{% endif %}` answers one
+`template.parse_error` with no field. Whether a stray keyword is reported
+beside a parse failure is left open.
+
+**What follows a second `else` in an `if` or `unless`, or an `elsif` after
+its `else`.** At `solid` `1.3.4` the parser accepts both, reads what follows
+and throws it away, so a refused construct the parser knows, written there,
+is not in the parse tree and the template compiles:
+`{% if a %}{% else %}{% else %}{% render 'f' %}{% endif %}` is admitted. A
+tag the parser does not know, written there, is refused where the parser
+met it; a misplaced keyword written there is not in the second reading's
+tree, and is reported only where that reading finds nothing else to refuse,
+as part of the first reading's answer. Whether the subset admits
+a second `else` at all is left open, and the gap it opens in the allowlist
+is the code half's to close.
+
+### Consequences
+
+The corpus gains a case for each new answer
+(`corpus/templates/render.json`): "A closing tag with no block of its tag
+open is refused beside a refused tag written before it: both are findings",
+"A closing tag with no block of its tag open is refused beside a refused
+include tag written before it: both are findings", "A closing tag written
+inside a block it does not close is the one finding: the closing tag of the
+block the author opened is not refused", "A branch keyword written inside a
+block it does not belong to is the one finding: the block's own branch and
+closing tags are not refused", "A closing tag misplaced inside a block and a
+refused filter in the same block are both findings, in source order", and
+"A refused include tag hides no refused tag written after it: both are
+findings". A second runtime meets the rule by knowing which blocks are open
+where a keyword is written, whatever its Liquid library reports for it.
+
+The Note of 2026-09-18 above leaves the answer beside another refusal, and
+inside a block holding a misplaced keyword, open; from this amendment's
+acceptance those two paragraphs are answered here. Its account of how the
+package reaches its second rule, `drop_derivative/1`, describes the code at
+`d24d896`; from this entry's commit the rule is reached by the second
+reading, and `drop_derivative/1` answers only where that reading has none.

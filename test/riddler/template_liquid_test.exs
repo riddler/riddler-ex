@@ -125,7 +125,7 @@ defmodule Riddler.TemplateLiquidTest do
   end
 
   describe "what the parser is asked, and how its answer is read" do
-    # Sabotage: probe/1 made to answer only for a refusal that IS the probe
+    # Sabotage: probe/2 made to answer only for a refusal that IS the probe
     # name's rather than one ending with it - the if tag words the refusal as
     # its own, the tag is not found, and this test goes red.
     test "a liquid tag inside a block tag's body is refused" do
@@ -133,13 +133,13 @@ defmodule Riddler.TemplateLiquidTest do
       assert [%{position: %{line: 1, column: 14}}] = liquid_fields(source)
     end
 
-    # Sabotage: the rescue deleted from probe/1 - compile/1 raises
+    # Sabotage: the rescue deleted from probe/2 - compile/1 raises
     # CaseClauseError out of the parser and this test goes red.
     test "the characters of a liquid tag in an inline comment body are not a tag" do
       assert {:error, [%{field: "#"}]} = Template.compile("{% # a\n # liquid\n %}")
     end
 
-    # Sabotage: probe/1 made to report where the characters `liquid` stand
+    # Sabotage: probe/2 made to report where the characters `liquid` stand
     # (line 2, column 6) rather than the place the parser located - red.
     test "the refusal is placed where the liquid tag begins" do
       source = ~s({% if true %}{% endif "{% raw %}" %}\n  #{@liquid}{% raw %}{% endraw %})
@@ -285,7 +285,7 @@ defmodule Riddler.TemplateLiquidTest do
       assert templates |> Enum.map(&disagreement/1) |> Enum.reject(&is_nil/1) == []
     end
 
-    # Sabotage: probe/1 made to answer for a probe-name refusal anywhere in
+    # Sabotage: probe/2 made to answer for a probe-name refusal anywhere in
     # the parser's list rather than only the first - this test went red,
     # every template here then refused on a liquid tag the parser read as
     # text.

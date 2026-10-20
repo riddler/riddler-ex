@@ -792,6 +792,122 @@
     },
     {
       "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "render",
+            "node_key": null
+          },
+          {
+            "code": "template.tag_not_allowed",
+            "field": "endif",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% render 'footer' %}{% endif %}"
+      },
+      "name": "A closing tag with no block of its tag open is refused beside a refused tag written before it: both are findings"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "include",
+            "node_key": null
+          },
+          {
+            "code": "template.tag_not_allowed",
+            "field": "endif",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% include 'footer' %}{% endif %}"
+      },
+      "name": "A closing tag with no block of its tag open is refused beside a refused include tag written before it: both are findings"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "endif",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% for name in responses.invitees %}{% endif %}{% endfor %}"
+      },
+      "name": "A closing tag written inside a block it does not close is the one finding: the closing tag of the block the author opened is not refused"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "elsif",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% case responses.plan %}{% when 'business' %}{% elsif responses.email %}{% endcase %}"
+      },
+      "name": "A branch keyword written inside a block it does not belong to is the one finding: the block's own branch and closing tags are not refused"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "endif",
+            "node_key": null
+          },
+          {
+            "code": "template.filter_not_allowed",
+            "field": "escape",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% for name in responses.invitees %}{% endif %}{{ name | escape }}{% endfor %}"
+      },
+      "name": "A closing tag misplaced inside a block and a refused filter in the same block are both findings, in source order"
+    },
+    {
+      "expected": {
+        "compiled": false,
+        "findings": [
+          {
+            "code": "template.tag_not_allowed",
+            "field": "include",
+            "node_key": null
+          },
+          {
+            "code": "template.tag_not_allowed",
+            "field": "render",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "source": "{% include 'footer' %}{% render 'header' %}"
+      },
+      "name": "A refused include tag hides no refused tag written after it: both are findings"
+    },
+    {
+      "expected": {
         "compiled": true,
         "missing": [
           "responses.first_name"

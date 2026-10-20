@@ -229,7 +229,7 @@ defmodule Riddler.TemplateTest do
       assert [%Riddler.Finding{field: "liquid"}] = refusal!("{% liquid\n  assign who = 1\n%}")
     end
 
-    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # Mutation: make probe/2 answer for the probe name refused anywhere in the
     # parser's list rather than only first - the parser's recovery reads it
     # as a tag, and the compile fails instead of succeeding.
     test "a liquid opener inside raw is text, not a construct" do
@@ -237,7 +237,7 @@ defmodule Riddler.TemplateTest do
                render!("{% raw %}{% liquid echo x %}{% endraw %}")
     end
 
-    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # Mutation: make probe/2 answer for the probe name refused anywhere in the
     # parser's list rather than only first - the parser's recovery reads it
     # as a tag, and the compile fails instead of rendering nothing.
     test "a liquid opener inside comment is text, not a construct" do
@@ -245,14 +245,14 @@ defmodule Riddler.TemplateTest do
                render!("{% comment %}{% liquid echo x %}{% endcomment %}")
     end
 
-    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # Mutation: make probe/2 answer for the probe name refused anywhere in the
     # parser's list rather than only first - the parser's recovery reads it
     # as a tag, and the compile fails instead of rendering the characters.
     test "a liquid opener inside an output tag's string literal is text" do
       assert {:ok, "{% liquid %}", []} = render!(~S({{ "{% liquid %}" }}))
     end
 
-    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # Mutation: make probe/2 answer for the probe name refused anywhere in the
     # parser's list rather than only first - the parser's recovery reads it
     # as a tag, and the compile fails instead of rendering.
     test "a liquid opener inside a filter argument's literal is text" do
@@ -260,7 +260,7 @@ defmodule Riddler.TemplateTest do
                render!(~S({{ responses.first_name | append: "{% liquid %}" }}))
     end
 
-    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # Mutation: make probe/2 answer for the probe name refused anywhere in the
     # parser's list rather than only first - the parser's recovery reads it
     # as a tag, and the compile fails instead of rendering.
     test "a liquid opener inside a when branch's literal is text" do
@@ -382,7 +382,7 @@ defmodule Riddler.TemplateTest do
     # The other direction: a subscript holding a forbidden tag's characters is
     # text and renders, as the same characters in a plain literal do.
     #
-    # Mutation: make probe/1 answer for the probe name refused anywhere in the
+    # Mutation: make probe/2 answer for the probe name refused anywhere in the
     # parser's list rather than only first - the parser's recovery reads it
     # as a tag, and the compile fails instead of rendering.
     test "a liquid opener inside a bracket subscript is text, not a construct" do
@@ -502,14 +502,15 @@ defmodule Riddler.TemplateTest do
       refute finding.message =~ "column"
     end
 
-    # Mutation: delete drop_derivative/1, or the uniq_by in to_findings/1 -
-    # the parser reports the same refused tag twice and the orphaned block
-    # terminator once more, and the list is then longer than the number of
+    # Mutation: have unparsed_refusals/2 answer the parser's first report
+    # undropped, or delete the uniq_by in to_findings/1 - the parser reports
+    # the orphaned block terminator beside the refused tag, or the refused
+    # tag is reported by the second reading's tree and again by the first
+    # reading's report, and the list is then longer than the number of
     # constructs the author actually reached for. The corpus case "A refused
     # tag inside an if block is the one finding: the closing tag that ends the
     # block is not refused" states this source's answer for a second runtime;
-    # having drop_derivative/1 return its argument unchanged turns that case
-    # red as well as this test.
+    # the first mutation turns that case red as well as this test.
     test "a refused construct inside a block is reported once" do
       findings = refusal!("{% if responses.plan %}{% include 'footer' %}{% endif %}")
 
@@ -517,8 +518,9 @@ defmodule Riddler.TemplateTest do
       assert Enum.count(findings, &(&1.field == "include")) == 1
     end
 
-    # Mutation: have drop_derivative/1 always drop terminators - a stray
-    # terminator standing alone then produces no finding at all.
+    # Mutation: have refuse/2 skip a Riddler.Template.UnknownTag node and
+    # drop_derivative/1 always drop terminators - a stray terminator standing
+    # alone then produces no finding at all.
     test "a block terminator standing alone is still refused" do
       assert [%Riddler.Finding{field: "endif"}] = refusal!("done {% endif %}")
     end
@@ -552,6 +554,96 @@ defmodule Riddler.TemplateTest do
 
       assert finding.message ==
                "the filter \"strip_html\" is not in the template subset (line 1, column 11)"
+    end
+  end
+
+  # One finding per refused construct, whatever route the parser takes to
+  # refuse the source: a branch or closing keyword with no block of its own
+  # open is refused as itself, beside every other refusal, and the closer of
+  # a block the author opened is never refused. Each test pins the fields and
+  # the positions, in source order.
+  describe "compile/1 beside a stray or misplaced keyword" do
+    defp located(source) do
+      source |> refusal!() |> Enum.map(&{&1.field, &1.position.line, &1.position.column})
+    end
+
+    # Mutation: have unparsed_refusals/2 answer drop_derivative(reported)
+    # alone - the render tag sits in a tree the parser throws away when it
+    # meets the endif, and only the endif is reported.
+    test "a stray closer beside a refused tag the parser reads is reported with it" do
+      assert [{"render", 1, 1}, {"endif", 1, 22}] =
+               located("{% render 'footer' %}{% endif %}")
+    end
+
+    # Mutation: as above - the endif is dropped as if a refusal had orphaned
+    # it, and only the include is reported.
+    test "a stray closer beside a refused tag the parser does not know is reported with it" do
+      assert [{"include", 1, 1}, {"endif", 1, 23}] =
+               located("{% include 'footer' %}{% endif %}")
+    end
+
+    # Mutation: as above - the endfor that closes the block the author opened
+    # is reported beside the endif misplaced inside it.
+    test "a closer misplaced inside a block is refused alone: the block's own closer is not" do
+      assert [{"endif", 1, 37}] =
+               located("{% for name in responses.invitees %}{% endif %}{% endfor %}")
+    end
+
+    # Mutation: as above - the case's own when and endcase are reported
+    # beside the elsif misplaced inside it.
+    test "a branch keyword misplaced inside a block is refused alone" do
+      assert [{"elsif", 1, 42}] =
+               located(
+                 "{% case responses.plan %}{% when 'pro' %}" <>
+                   "{% elsif responses.email %}{% endcase %}"
+               )
+    end
+
+    # Mutation: as above - the escape filter sits in the thrown-away tree,
+    # and the endif is reported with the endfor that closes its block.
+    test "a misplaced closer and a refused filter in one block are both reported" do
+      assert [{"endif", 1, 37}, {"escape", 1, 58}] =
+               located(
+                 "{% for name in responses.invitees %}{% endif %}" <>
+                   "{{ name | escape }}{% endfor %}"
+               )
+    end
+
+    # Mutation: as above - the render tag sits in the thrown-away tree, and
+    # only the include is reported.
+    test "a refused tag the parser does not know hides no refused tag it reads" do
+      assert [{"include", 1, 1}, {"render", 1, 23}] =
+               located("{% include 'footer' %}{% render 'header' %}")
+    end
+
+    # Mutation: have unparsed_refusals/2 call liquid_refusals/1 rather than
+    # liquid_refusals/2 with the tags it read with - the probe meets the
+    # include first, and the liquid tag goes unreported.
+    test "a liquid tag after a tag the parser does not know is reported" do
+      assert [{"include", 1, 1}, {"liquid", 1, 23}] =
+               located("{% include 'footer' %}{% liquid assign who = 1 %}")
+    end
+
+    # The parser reads what follows a second else in an if and throws it
+    # away, so the second reading's tree does not hold the include; it is
+    # refused where the first reading met it.
+    #
+    # Mutation: delete `++ unknown_constructs(reported)` from
+    # unparsed_refusals/2 - the include goes unreported and only the render
+    # is.
+    test "a tag the parser does not know is refused even where its block throws it away" do
+      assert [{"render", 1, 1}, {"include", 1, 67}] =
+               located(
+                 "{% render 'header' %}{% if responses.plan %}a{% else %}b{% else %}" <>
+                   "{% include 'footer' %}{% endif %}"
+               )
+    end
+
+    # Mutation: make Riddler.Template.UnknownTag consume nothing after its
+    # name - the string's characters are read as template text, and the endif
+    # inside it is reported as a stray closer.
+    test "a keyword's characters in a string a refused tag carries are not a keyword" do
+      assert [{"include", 1, 1}] = located("{% include '{% endif %}' %}")
     end
   end
 
