@@ -10,11 +10,11 @@ defmodule Riddler.Screens.Registry do
   not know is refused here, loudly, naming the type and the node - never a
   node quietly passed through as though the runtime had understood it.
 
-  The v1 types are `heading`, `text`, `text_question`, `button` and
-  `variant`.
+  The types are `heading`, `text`, `text_question`, `choice_question`,
+  `boolean_question`, `button` and `variant`.
 
       iex> Riddler.Screens.Registry.types()
-      ["button", "heading", "text", "text_question", "variant"]
+      ["boolean_question", "button", "choice_question", "heading", "text", "text_question", "variant"]
 
       iex> Riddler.Screens.Registry.fetch("heading")
       {:ok, Riddler.Screens.Type.Heading}
@@ -26,7 +26,9 @@ defmodule Riddler.Screens.Registry do
   alias Riddler.Screens.Type
 
   @types %{
+    "boolean_question" => Type.BooleanQuestion,
     "button" => Type.Button,
+    "choice_question" => Type.ChoiceQuestion,
     "heading" => Type.Heading,
     "text" => Type.Text,
     "text_question" => Type.TextQuestion,
