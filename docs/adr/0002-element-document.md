@@ -2736,7 +2736,17 @@ is not a document" decides for every field the schema types. Requiredness stays
 out of the schema, as everywhere in it: an absent or empty `answer_options`,
 and an option missing its `value` or its `label`, are findings against an
 admitted document. `select`, the bounds and the uniqueness of option values are
-findings too, not schema. Nothing else in the schema moves.
+findings too, not schema.
+
+The schema's own descriptions move with it. The node definition's
+`description` says that only the fields every node shares are described there
+and that the fields a type names are carried through untouched, and the
+root's `description` says the schema describes the envelope, the screen and
+the common node fields and nothing more. Each is reworded by the code half to
+name the one conditional: `answer_options` on a `choice_question` is the one
+field a type names that the schema types. That qualifies the Consequences
+sentence above, "It enumerates the envelope, the screen and the common node
+fields", by that one field. Nothing else in the schema moves.
 
 The conditional, rather than typing the field on every node as the schema
 types `nodes`, is what keeps an answer the package gives today. A
@@ -2771,7 +2781,7 @@ table names the codes.
 | `document.invalid_selection_bounds` | a `min_selections` or `max_selections` on a question whose `select` is not `"many"`, one that is not a non-negative integer, a `min_selections` above `max_selections`, or either above the number of options | new |
 | `document.invalid_required` | a `required` that is there and is not a boolean, on either type | reused: a question's `required` |
 | `document.invalid_style` | a choice question's `style` that is there and is not a string | reused: `Riddler.Screens.Document`'s moduledoc describes it for a button's `style`, and it now reads for any node whose type names `style` |
-| `response.required` | nothing selected on a required choice question; a required boolean question whose response is not `true` | reused |
+| `response.required` | nothing selected on a required choice question; a required boolean question whose response is absent, `null` or `false` | reused |
 | `response.invalid_shape` | a response not of the shape its type and `select` fix | new |
 | `response.not_an_option` | a value no option of the question carries | new |
 | `response.out_of_range` | under `"many"`, fewer values than `min_selections` or more than `max_selections` | reused, its `field` naming the bound |
@@ -2928,7 +2938,8 @@ Every existing type keeps its fields, its findings and its responses, finding
 for finding; no message changes. A `text_question` carrying `answer_options`
 is admitted with the field dropped and no finding, whatever the field holds.
 `type` stays an open string in the schema, and the schema types nothing new on
-any node but a choice question. Renderers own `style` and everything else
+any node but a choice question; its descriptions change only to name that
+conditional. Renderers own `style` and everything else
 about presentation. The vocabulary is the record's: `responses`, `context`,
 `outcome`, `writes`, `nodes`, and a question owns its `answer_options`.
 
