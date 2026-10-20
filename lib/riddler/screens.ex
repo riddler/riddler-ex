@@ -55,8 +55,10 @@ defmodule Riddler.Screens do
   whether what the visitor typed is enough to submit the screen. They resolve
   the screen first and check only what came back, so a question a condition hid
   cannot fail, and they consult what the node declares - `required`, `format`,
-  and `min` and `max` on the numeric formats. The arity-4 form takes the key of
-  the button the visitor pressed and honours its `validates`.
+  and `min` and `max` on the numeric formats; a choice question's
+  `answer_options`, `select` and selection bounds; and a boolean question's
+  `true` or `false`. The arity-4 form takes the key of the button the visitor
+  pressed and honours its `validates`.
 
   They take the same root `resolve/2` and `resolve_screen/3` take, and the
   responses they check are the ones inside it. The screen validated is the
@@ -244,11 +246,29 @@ defmodule Riddler.Screens do
   validating documents is not told, and every response to that question
   satisfies the pattern check.
 
+  A choice question and a boolean question are checked whatever they
+  declare, and each answers at most one finding, the first of these that
+  applies. Nothing selected - absent or `null`, or `""` under `select:
+  "one"`, `[]` under `select: "many"` - is `response.required` where the
+  question is required and nothing otherwise, whatever its selection bounds.
+  A response that is not the shape its type fixes - one string under
+  `"one"`, a list of different strings under `"many"`, `true` or `false` for
+  a boolean question - is `response.invalid_shape`. A required boolean
+  question whose response is `false` is `response.required`. A value no
+  option carries, compared as written, is `response.not_an_option`, one
+  finding naming every such value. Under `"many"`, fewer values than
+  `min_selections` or more than `max_selections` is `response.out_of_range`,
+  its `field` naming the bound. A `format` on either type is a field nothing
+  consults. A choice question whose `select` is neither value is the
+  document's defect, reported as `document.invalid_select`, and its response
+  is held to `required` and to nothing else.
+
   Every finding names the node it is about in `node_key`, the field that was
   not satisfied in `field`, and a stable `code`: `response.required`,
-  `response.format`, `response.out_of_range` or `response.undecidable`. There
-  is one finding per failing node, because an empty field is one thing wrong
-  with a screen and not three.
+  `response.format`, `response.out_of_range`, `response.invalid_shape`,
+  `response.not_an_option` or `response.undecidable`. There is one finding
+  per failing node, because an empty field is one thing wrong with a screen
+  and not three.
 
   `response.undecidable` is the one that is not about a response. A condition
   this root could not decide - a variable the root does not carry, an operand

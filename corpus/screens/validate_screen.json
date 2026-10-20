@@ -1326,6 +1326,1210 @@
         "screen": "card"
       },
       "name": "A screen carrying a button with no key declaring that it does not validate is checked in full when the call presses no button, because nothing can press a button nothing can name"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_choice": "business"
+        },
+        "screen": "plan"
+      },
+      "name": "A choice question picking one takes one option's value"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.not_an_option",
+            "field": "answer_options",
+            "node_key": "plan_choice"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_choice": "team"
+        },
+        "screen": "plan"
+      },
+      "name": "A choice question picking one refuses a value no option carries"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.not_an_option",
+            "field": "answer_options",
+            "node_key": "plan_choice"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_choice": " business "
+        },
+        "screen": "plan"
+      },
+      "name": "An option value is compared as written, so a value with spaces around it is not that option"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.invalid_shape",
+            "field": "select",
+            "node_key": "plan_choice"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_choice": [
+            "business"
+          ]
+        },
+        "screen": "plan"
+      },
+      "name": "A choice question picking one refuses a list as the wrong shape"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "plan_choice"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_choice": ""
+        },
+        "screen": "plan"
+      },
+      "name": "A required choice question picking one with an empty string selected is unanswered"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_choice": null
+        },
+        "screen": "plan"
+      },
+      "name": "A choice question picking one that is not required may be left with nothing selected"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": [
+            "advert",
+            "search"
+          ]
+        },
+        "screen": "plan"
+      },
+      "name": "A choice question picking several takes a list of different option values in any order"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.invalid_shape",
+            "field": "select",
+            "node_key": "plan_heard_from"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": "search"
+        },
+        "screen": "plan"
+      },
+      "name": "A choice question picking several refuses a string as the wrong shape"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.invalid_shape",
+            "field": "select",
+            "node_key": "plan_heard_from"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": [
+            "search",
+            "search"
+          ]
+        },
+        "screen": "plan"
+      },
+      "name": "A choice question picking several refuses a value given twice as the wrong shape"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.invalid_shape",
+            "field": "select",
+            "node_key": "plan_heard_from"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": [
+            "search",
+            1
+          ]
+        },
+        "screen": "plan"
+      },
+      "name": "A choice question picking several refuses a list holding a value that is not a string as the wrong shape"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.not_an_option",
+            "field": "answer_options",
+            "node_key": "plan_heard_from"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": [
+            "search",
+            "television",
+            "radio"
+          ]
+        },
+        "screen": "plan"
+      },
+      "name": "Every value no option carries is named by one finding on the question"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "plan_heard_from"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "required": true,
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": []
+        },
+        "screen": "plan"
+      },
+      "name": "A required choice question picking several with an empty list selected is unanswered"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "min_selections": 2,
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": []
+        },
+        "screen": "plan"
+      },
+      "name": "An empty selection on a question that is not required is accepted whatever its bounds"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.out_of_range",
+            "field": "min_selections",
+            "node_key": "plan_heard_from"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "min_selections": 2,
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": [
+            "search"
+          ]
+        },
+        "screen": "plan"
+      },
+      "name": "Fewer values than min_selections are out of range, naming the bound"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.out_of_range",
+            "field": "max_selections",
+            "node_key": "plan_heard_from"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "max_selections": 2,
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": [
+            "search",
+            "advert",
+            "referral"
+          ]
+        },
+        "screen": "plan"
+      },
+      "name": "More values than max_selections are out of range, naming the bound"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "max_selections": 2,
+                  "min_selections": 2,
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": [
+            "search",
+            "advert"
+          ]
+        },
+        "screen": "plan"
+      },
+      "name": "The selection bounds themselves are in range"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.not_an_option",
+            "field": "answer_options",
+            "node_key": "plan_heard_from"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "max_selections": 2,
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_heard_from": [
+            "search",
+            "advert",
+            "referral",
+            "radio"
+          ]
+        },
+        "screen": "plan"
+      },
+      "name": "A value no option carries is the one finding, ahead of the selection bounds"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_terms",
+                  "label": "I agree to the terms of service.",
+                  "required": true,
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_terms": true
+        },
+        "screen": "plan"
+      },
+      "name": "A required boolean question takes true"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "plan_terms"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_terms",
+                  "label": "I agree to the terms of service.",
+                  "required": true,
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_terms": false
+        },
+        "screen": "plan"
+      },
+      "name": "A required boolean question whose response is false is unanswered, because required means true"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "plan_terms"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_terms",
+                  "label": "I agree to the terms of service.",
+                  "required": true,
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "plan"
+      },
+      "name": "A required boolean question with no response is unanswered"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_terms",
+                  "label": "I agree to the terms of service.",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_terms": false
+        },
+        "screen": "plan"
+      },
+      "name": "A boolean question that is not required takes false"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.invalid_shape",
+            "field": "type",
+            "node_key": "plan_terms"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_terms",
+                  "label": "I agree to the terms of service.",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_terms": "yes"
+        },
+        "screen": "plan"
+      },
+      "name": "A boolean question refuses a response that is not true or false as the wrong shape"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "format": "email",
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "format": "email",
+                  "key": "plan_terms",
+                  "label": "I agree to the terms of service.",
+                  "required": true,
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_choice": "personal",
+          "plan_terms": true
+        },
+        "screen": "plan"
+      },
+      "name": "A format on a choice or a boolean question is consulted by nothing"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "context": {
+          "offers_plans": false
+        },
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "condition": "context.offers_plans == true",
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "condition": "context.offers_plans == true",
+                  "key": "plan_terms",
+                  "label": "I agree to the terms of service.",
+                  "required": true,
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_choice": "team",
+          "plan_terms": false
+        },
+        "screen": "plan"
+      },
+      "name": "A required choice question and a required boolean question a condition hides cannot fail"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.invalid_shape",
+            "field": "select",
+            "node_key": "plan_choice"
+          },
+          {
+            "code": "response.not_an_option",
+            "field": "answer_options",
+            "node_key": "plan_heard_from"
+          },
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "plan_terms"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "A search engine",
+                      "value": "search"
+                    },
+                    {
+                      "label": "A friend or colleague",
+                      "value": "referral"
+                    },
+                    {
+                      "label": "An advertisement",
+                      "value": "advert"
+                    }
+                  ],
+                  "key": "plan_heard_from",
+                  "label": "Where did you hear about us?",
+                  "select": "many",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "plan_terms",
+                  "label": "I agree to the terms of service.",
+                  "required": true,
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "plan_choice": [
+            "personal"
+          ],
+          "plan_heard_from": [
+            "radio"
+          ],
+          "plan_terms": false
+        },
+        "screen": "plan"
+      },
+      "name": "Each failing choice and boolean question is one finding, in the order the screen declares them"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"

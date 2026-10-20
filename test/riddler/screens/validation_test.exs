@@ -1296,4 +1296,391 @@ defmodule Riddler.Screens.ValidationTest do
       assert Enum.map(findings, &{&1.code, &1.node_key}) == [{"document.invalid_key", nil}]
     end
   end
+
+  # -- the choice types ---------------------------------------------------------
+
+  # A signup screen asking for a plan: a choice question picking one, a choice
+  # question picking several between bounds, and a boolean question agreeing to
+  # the terms, with a Continue button and a Back button declaring that it does
+  # not validate. Each question takes the fields a case merges over it.
+  defp plan_document(overrides \\ %{}) do
+    Document.admit(%{
+      "schema_version" => 1,
+      "id" => "edoc_signup_screens",
+      "screens" => [
+        %{
+          "key" => "plan",
+          "title" => "Pick a plan",
+          "nodes" => [
+            Map.merge(
+              %{
+                "type" => "choice_question",
+                "key" => "plan_choice",
+                "label" => "Which plan?",
+                "select" => "one",
+                "answer_options" => [
+                  %{"value" => "personal", "label" => "Personal"},
+                  %{"value" => "business", "label" => "Business"}
+                ]
+              },
+              Map.get(overrides, "plan_choice", %{})
+            ),
+            Map.merge(
+              %{
+                "type" => "choice_question",
+                "key" => "plan_heard_from",
+                "label" => "Where did you hear about us?",
+                "select" => "many",
+                "answer_options" => [
+                  %{"value" => "search", "label" => "A search engine"},
+                  %{"value" => "referral", "label" => "A friend or colleague"},
+                  %{"value" => "advert", "label" => "An advertisement"}
+                ]
+              },
+              Map.get(overrides, "plan_heard_from", %{})
+            ),
+            Map.merge(
+              %{
+                "type" => "boolean_question",
+                "key" => "plan_terms",
+                "label" => "I agree to the terms of service."
+              },
+              Map.get(overrides, "plan_terms", %{})
+            ),
+            %{
+              "type" => "button",
+              "key" => "plan_back",
+              "label" => "Back",
+              "outcome" => "went_back",
+              "validates" => false
+            },
+            %{
+              "type" => "button",
+              "key" => "plan_continue",
+              "label" => "Continue",
+              "outcome" => "plan_chosen"
+            }
+          ]
+        }
+      ]
+    })
+  end
+
+  defp plan(responses, overrides \\ %{}) do
+    Screens.validate_screen(plan_document(overrides), "plan", %{"responses" => responses})
+  end
+
+  defp plan_findings(responses, overrides \\ %{}) do
+    case plan(responses, overrides) do
+      :ok -> []
+      {:error, findings} -> Enum.map(findings, &{&1.code, &1.node_key, &1.field})
+    end
+  end
+
+  describe "a choice question picking one" do
+    # Sabotage: made `option_findings/3` report every value as a stray; the
+    # offered value "business" raised response.not_an_option and this test went
+    # red.
+    test "takes one option's value" do
+      assert :ok == plan(%{"plan_choice" => "business"})
+    end
+
+    # Sabotage: made `option_findings/3` answer no finding for a stray; "team"
+    # was let through and this test went red.
+    test "refuses a value no option carries, naming it" do
+      assert {:error, [finding]} = plan(%{"plan_choice" => "team"})
+
+      assert {finding.code, finding.node_key, finding.field} ==
+               {"response.not_an_option", "plan_choice", "answer_options"}
+
+      assert finding.message =~ ~s("team")
+    end
+
+    # Sabotage: made `option_findings/3` trim each value before comparing it;
+    # " business " matched an option and this test went red.
+    test "compares a value as written, neither trimmed nor folded" do
+      for value <- [" business ", "Business"] do
+        assert plan_findings(%{"plan_choice" => value}) ==
+                 [{"response.not_an_option", "plan_choice", "answer_options"}]
+      end
+    end
+
+    # Sabotage: made `choice_shape?/2` take any value under "one"; the list
+    # reached the option check, which raised response.not_an_option instead, and
+    # this test went red.
+    test "refuses a list, or anything else that is not a string, as the wrong shape" do
+      for value <- [["business"], [], 1, true, %{"value" => "business"}] do
+        assert plan_findings(%{"plan_choice" => value}) ==
+                 [{"response.invalid_shape", "plan_choice", "select"}],
+               "for #{inspect(value)}"
+      end
+    end
+
+    # Sabotage: made `nothing_selected?/2` treat only nil as nothing selected
+    # under "one"; the empty string reached the option check and this test went
+    # red.
+    test "absent, null or empty is nothing selected, which a required question refuses" do
+      required = %{"plan_choice" => %{"required" => true}}
+
+      for responses <- [%{}, %{"plan_choice" => nil}, %{"plan_choice" => ""}] do
+        assert plan_findings(responses, required) ==
+                 [{"response.required", "plan_choice", "required"}],
+               "for #{inspect(responses)}"
+      end
+    end
+
+    # Sabotage: made `unanswered/1` raise the required finding whatever the
+    # question declares; the optional question raised it and this test went
+    # red.
+    test "nothing selected on a question that is not required is not a finding" do
+      for responses <- [%{}, %{"plan_choice" => nil}, %{"plan_choice" => ""}] do
+        assert :ok == plan(responses), "for #{inspect(responses)}"
+      end
+    end
+
+    # Whitespace is not nothing selected: a text response is trimmed before it
+    # is called blank, and an option value is compared as written.
+    #
+    # Sabotage: made `nothing_selected?/2` trim the response under "one"; the
+    # space answered response.required and this test went red.
+    test "a response of whitespace is a value no option carries, not nothing" do
+      assert plan_findings(%{"plan_choice" => " "}, %{"plan_choice" => %{"required" => true}}) ==
+               [{"response.not_an_option", "plan_choice", "answer_options"}]
+    end
+  end
+
+  describe "a choice question picking several" do
+    # Sabotage: made `option_findings/3` report every value as a stray; the
+    # offered values raised response.not_an_option and this test went red.
+    test "takes a list of different option values, in any order" do
+      assert :ok == plan(%{"plan_heard_from" => ["advert", "search"]})
+      assert :ok == plan(%{"plan_heard_from" => ["search"]})
+    end
+
+    # Sabotage: made `choice_shape?/2` drop its distinctness check; the repeated
+    # value was taken and this test went red.
+    test "refuses a string, a value that is not a string, or a value given twice" do
+      for value <- ["search", "", ["search", 1], ["search", "search"], %{}, true] do
+        assert plan_findings(%{"plan_heard_from" => value}) ==
+                 [{"response.invalid_shape", "plan_heard_from", "select"}],
+               "for #{inspect(value)}"
+      end
+    end
+
+    # Sabotage: made `not_an_option_finding/2` name only the first stray; the
+    # message lost "radio" and this test went red.
+    test "refuses the values no option carries with one finding naming each" do
+      assert {:error, [finding]} =
+               plan(%{"plan_heard_from" => ["search", "television", "radio"]})
+
+      assert {finding.code, finding.node_key, finding.field} ==
+               {"response.not_an_option", "plan_heard_from", "answer_options"}
+
+      assert finding.message =~ ~s("television")
+      assert finding.message =~ ~s("radio")
+      refute finding.message =~ ~s("search")
+    end
+
+    # Sabotage: made `nothing_selected?/2` treat only nil as nothing selected
+    # under "many"; the empty list reached the bounds, which a required
+    # question with no bounds lets through, and this test went red.
+    test "absent, null or an empty list is nothing selected, which a required question refuses" do
+      required = %{"plan_heard_from" => %{"required" => true}}
+
+      for responses <- [%{}, %{"plan_heard_from" => nil}, %{"plan_heard_from" => []}] do
+        assert plan_findings(responses, required) ==
+                 [{"response.required", "plan_heard_from", "required"}],
+               "for #{inspect(responses)}"
+      end
+    end
+
+    # Sabotage: made `unanswered/1` consult `selection_findings/2` with a count
+    # of zero; the empty list fell below min_selections and this test went red.
+    test "nothing selected on a question that is not required is accepted whatever its bounds" do
+      bounded = %{"plan_heard_from" => %{"min_selections" => 2}}
+
+      for responses <- [%{}, %{"plan_heard_from" => []}] do
+        assert :ok == plan(responses, bounded), "for #{inspect(responses)}"
+      end
+    end
+
+    # Sabotage: changed the lower bound's comparison to `count <= min`; the
+    # bound itself fell out of range and this test went red.
+    test "fewer values than min_selections are out of range, and the bound itself passes" do
+      bounded = %{"plan_heard_from" => %{"min_selections" => 2}}
+
+      assert plan_findings(%{"plan_heard_from" => ["search"]}, bounded) ==
+               [{"response.out_of_range", "plan_heard_from", "min_selections"}]
+
+      assert :ok == plan(%{"plan_heard_from" => ["search", "advert"]}, bounded)
+    end
+
+    # Sabotage: changed the upper bound's comparison to `count >= max`; the
+    # bound itself fell out of range and this test went red.
+    test "more values than max_selections are out of range, and the bound itself passes" do
+      bounded = %{"plan_heard_from" => %{"max_selections" => 2}}
+
+      assert plan_findings(%{"plan_heard_from" => ["search", "advert", "referral"]}, bounded) ==
+               [{"response.out_of_range", "plan_heard_from", "max_selections"}]
+
+      assert :ok == plan(%{"plan_heard_from" => ["search", "advert"]}, bounded)
+    end
+  end
+
+  describe "a choice question answers at most one finding, the first that applies" do
+    # Sabotage: moved the option check ahead of the shape check in
+    # `choice_findings/2`; the repeated stray raised response.not_an_option and
+    # this test went red.
+    test "the shape before the options" do
+      assert plan_findings(%{"plan_heard_from" => ["radio", "radio"]}) ==
+               [{"response.invalid_shape", "plan_heard_from", "select"}]
+    end
+
+    # Sabotage: made `option_findings/3` consult the bounds before the strays;
+    # four values over a bound of two raised response.out_of_range and this test
+    # went red.
+    test "the options before the bounds" do
+      assert plan_findings(
+               %{"plan_heard_from" => ["search", "advert", "referral", "radio"]},
+               %{"plan_heard_from" => %{"max_selections" => 2}}
+             ) == [{"response.not_an_option", "plan_heard_from", "answer_options"}]
+    end
+
+    # Sabotage: removed the `choice_question` clause of `node_findings/2`; the
+    # declared email format was put to the option value and this test went red.
+    test "a format on a choice question is a field nothing consults" do
+      overrides = %{
+        "plan_choice" => %{"format" => "email", "required" => true},
+        "plan_heard_from" => %{"format" => "integer"}
+      }
+
+      assert :ok ==
+               plan(%{"plan_choice" => "personal", "plan_heard_from" => ["search"]}, overrides)
+    end
+  end
+
+  describe "a boolean question" do
+    # Sabotage: made `boolean_findings/2` raise the required finding for any
+    # boolean on a required question; true raised it and this test went red.
+    test "takes true, and takes false where it is not required" do
+      assert :ok == plan(%{"plan_terms" => true}, %{"plan_terms" => %{"required" => true}})
+      assert :ok == plan(%{"plan_terms" => false})
+      assert :ok == plan(%{"plan_terms" => true})
+    end
+
+    # Sabotage: made `boolean_findings/2` let false through on a required
+    # question; the unticked box answered :ok and this test went red.
+    test "required means the response must be true, so false is a required finding" do
+      assert {:error, [finding]} =
+               plan(%{"plan_terms" => false}, %{"plan_terms" => %{"required" => true}})
+
+      assert {finding.code, finding.node_key, finding.field} ==
+               {"response.required", "plan_terms", "required"}
+    end
+
+    # Sabotage: made the nil clause of `boolean_findings/2` answer no finding;
+    # the absent response on the required question was let through and this
+    # test went red.
+    test "absent or null on a required question is a required finding, and on any other nothing" do
+      required = %{"plan_terms" => %{"required" => true}}
+
+      for responses <- [%{}, %{"plan_terms" => nil}] do
+        assert plan_findings(responses, required) ==
+                 [{"response.required", "plan_terms", "required"}]
+
+        assert :ok == plan(responses)
+      end
+    end
+
+    # Sabotage: made the last clause of `boolean_findings/2` answer no finding;
+    # "yes" was let through and this test went red.
+    test "anything but true or false is the wrong shape, required or not" do
+      for value <- ["yes", "true", "", 1, 0, [true]],
+          overrides <- [%{}, %{"plan_terms" => %{"required" => true}}] do
+        assert plan_findings(%{"plan_terms" => value}, overrides) ==
+                 [{"response.invalid_shape", "plan_terms", "type"}],
+               "for #{inspect(value)} under #{inspect(overrides)}"
+      end
+    end
+
+    # Sabotage: removed the `boolean_question` clause of `node_findings/2`; the
+    # declared email format was put to `true` and this test went red.
+    test "a format on a boolean question is a field nothing consults" do
+      assert :ok ==
+               plan(%{"plan_terms" => true}, %{
+                 "plan_terms" => %{"format" => "email", "required" => true}
+               })
+    end
+  end
+
+  describe "the choice types on the screen" do
+    # Sabotage: made `node_findings/2` read the choice types only where they
+    # declare `required` or `format`; the undeclaring questions raised nothing
+    # and this test went red.
+    test "every failing question is reported, one finding each, in document order" do
+      assert plan_findings(
+               %{
+                 "plan_choice" => ["personal"],
+                 "plan_heard_from" => ["radio"],
+                 "plan_terms" => "yes"
+               },
+               %{"plan_terms" => %{"required" => true}}
+             ) == [
+               {"response.invalid_shape", "plan_choice", "select"},
+               {"response.not_an_option", "plan_heard_from", "answer_options"},
+               {"response.invalid_shape", "plan_terms", "type"}
+             ]
+    end
+
+    # A required choice question a condition hides is not on the resolved
+    # screen, so nothing about it is read.
+    #
+    # Sabotage: made `Riddler.Screens.validate_screen/4` validate the screen
+    # resolved under an empty context; the condition was undecidable there,
+    # response.undecidable was raised and this test went red.
+    test "a required choice question a condition hides cannot fail, whatever is submitted under its key" do
+      hidden = %{
+        "plan_choice" => %{"required" => true, "condition" => "context.offers_plans == true"},
+        "plan_terms" => %{"required" => true, "condition" => "context.offers_plans == true"}
+      }
+
+      for responses <- [%{}, %{"plan_choice" => "team", "plan_terms" => false}] do
+        root = %{"context" => %{"offers_plans" => false}, "responses" => responses}
+        assert :ok == Screens.validate_screen(plan_document(hidden), "plan", root)
+      end
+    end
+
+    # Sabotage: made `opted_out?/2` answer false for every press; the Back
+    # press ran the checks and this test went red.
+    test "a button declaring that it does not validate lets a screen of bad choices through" do
+      root = %{"responses" => %{"plan_choice" => "team", "plan_heard_from" => "search"}}
+
+      assert :ok == Screens.validate_screen(plan_document(), "plan", root, "plan_back")
+
+      assert {:error, [_, _]} =
+               Screens.validate_screen(plan_document(), "plan", root, "plan_continue")
+    end
+
+    # A select that is neither value is the document's defect, reported at
+    # admit; no shape is read from it, so the response is held to `required`
+    # and to nothing else.
+    #
+    # Sabotage: made a `select` neither value fall through to the "one" shape
+    # check; the list raised response.invalid_shape and this test went red.
+    test "a select that is neither value holds a response to required and nothing else" do
+      overrides = %{"plan_choice" => %{"select" => "several", "required" => true}}
+
+      assert {:error, [%Finding{code: "document.invalid_select", node_key: "plan_choice"}]} =
+               Document.validate(plan_document(overrides))
+
+      for value <- ["team", ["personal", "personal"], 1] do
+        assert :ok == plan(%{"plan_choice" => value}, overrides), "for #{inspect(value)}"
+      end
+
+      for responses <- [%{}, %{"plan_choice" => ""}, %{"plan_choice" => []}] do
+        assert plan_findings(responses, overrides) ==
+                 [{"response.required", "plan_choice", "required"}]
+      end
+    end
+  end
 end
