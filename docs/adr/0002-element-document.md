@@ -2571,3 +2571,374 @@ read:
   integer 1.
 
 The later notes above that read the amendment stand under the acceptance.
+
+---
+
+## Amendment, 2026-10-20: two choice node types, `choice_question` on `answer_options` and `boolean_question`
+
+Status: proposed
+
+Recorded 2026-10-20, bead rd-6oi. The Decision above reserves `answer_options`
+for the select question types and builds none of them, and its Consequences
+say "Nothing here decides the select question types: the field name is
+reserved, the behavior is not." This amendment decides them. The two types,
+their fields, the response each submits, `required`, the selection bounds and
+what becomes of a `format` on either were ruled by the operator, 2026-10-19.
+The rest - the option's shape in detail, the reach of the schema step, what
+resolution does to an option label, the order of the response checks and the
+finding codes - was decided by the conductor under a standing consent,
+2026-10-20. Every cite below of the package as it stands is read at
+`2842007b0eecc81db0b968f49d4a8ec40a19b5aa`. The code half is separate
+requests (bead rd-39p for admission, resolution, the schema step and the
+corpus; bead rd-9xt for response validation). Nothing below is citable from
+`lib/` until they land, so what they add is described here, not cited.
+
+### What the record now decides
+
+**The node types are `heading`, `text`, `text_question`, `choice_question`,
+`boolean_question`, `button` and `variant`.** The select question types the
+Decision reserved `answer_options` for - "a choice question, a multi-select" -
+are one type, `choice_question`, whose `select` says whether the visitor picks
+one option or several; a lone yes-or-no is a second type, `boolean_question`.
+A type per widget (a single select, a multi select and a checkbox, each its
+own type) is not taken: the widget is a hint a renderer reads, and the
+response shape is fixed by `select`. A document naming either type is refused
+`document.unknown_type` by the package as it stands (the private
+`node_findings/1` in `lib/riddler/screens/document.ex`, and the module
+attribute `@types` in `lib/riddler/screens/registry.ex`, which names neither);
+once the code half lands it is admitted, with the findings below.
+
+**A `choice_question` carries `label`, `select` and `answer_options`, and
+optionally `style`, `required`, `min_selections`, `max_selections` and
+`format`.**
+
+- `label` is what the visitor is asked, a template in the ADR-0003 subset, as
+  a text question's is.
+- `select` is required and is `"one"` or `"many"`. It fixes the shape of the
+  response: one string under `"one"`, a list of strings under `"many"`.
+- `answer_options` is required: a non-empty, ordered list of options, in the
+  order the visitor is shown them. An option is an object carrying `value` and
+  `label`, and neither is optional. `value` is what the response holds when
+  the visitor picks that option: a string matching the key pattern
+  `[a-z][a-z0-9_]*`, so that a condition or a template can compare a response
+  with it as written, and unique among the question's own options. It is not
+  a key: two questions may both offer `adult`, and `document.duplicate_key`
+  compares the keys of screens and nodes only, as before. `label` is what the
+  visitor reads, a template in the subset. A field an option carries beyond
+  those two is dropped at admit with no finding, as a node field its type does
+  not name is (the note above of 2026-09-17 for beads rd-gwn, rd-d8e, rd-xvv
+  and rd-xva, the one headed "A node field this version does not know is
+  dropped at admit, with no finding."). In particular an option carries no
+  `condition` in this version.
+- `style` is a widget hint, a string from an open set the renderer owns, as a
+  button's `style` is: `radio` and `dropdown` are the names offered for
+  `select: "one"`, and `checkboxes` and `list` for `select: "many"`. A
+  renderer given no hint picks a widget by the number of options. This
+  package checks that a `style` is a string and nothing more, as it does a
+  button's (the private `style_findings/1` in
+  `lib/riddler/screens/type/button.ex`): a name it does not list, or one
+  offered for the other `select`, is passed through, because presentation is
+  not this package's to enumerate.
+- `required` is a boolean defaulting to false. True means the visitor picks
+  at least one option.
+- `min_selections` and `max_selections` are read only under
+  `select: "many"`. Each is a non-negative integer, an integer being what the
+  schema's draft counts as one (a number with no fractional part); where both
+  are declared `min_selections` is not above `max_selections`, and neither is
+  above the number of options.
+- `format` is carried and never consulted, as the paragraph after next says.
+
+**A `boolean_question` carries `label`, and optionally `required` and
+`format`.** It is a lone checkbox or toggle. `label` is a template in the
+subset. Its response is `true` or `false`. `required` is a boolean defaulting
+to false, and true means the response must be `true`: the shape of "tick to
+agree to the borrowing rules", where an unticked box is the visitor declining
+rather than an empty field. It carries no `style`; one written on it is dropped
+at admit as a field its type does not name.
+
+**A `format` on either type is a field nothing consults.** It is carried onto
+the admitted node and through resolution, and nothing reads it: admission
+raises no `document.unknown_format` for it, whatever it names, and response
+validation applies no format to the response. That is what
+`Riddler.Screens.Type.TextQuestion`'s moduledoc says of a `pattern` on a
+question that does not ask for the `pattern` format, "a field nothing
+consults", and it raises no finding in this version.
+
+**The response each type submits** is addressed `responses.<key>` by the
+question's key, as every response is.
+
+| Type | `select` | The response | Nothing selected |
+|---|---|---|---|
+| `choice_question` | `"one"` | one option's `value`, a string | absent, `null` or `""` |
+| `choice_question` | `"many"` | a list of distinct option values, in any order | absent, `null` or `[]` |
+| `boolean_question` | - | `true` or `false` | absent or `null` |
+
+**Response validation checks every choice and boolean question on the
+resolved screen, and raises at most one finding for each.** Today a node that
+declares neither `required` nor `format` has nothing checked (the module
+attribute `@declaring_fields` in `lib/riddler/screens/validation.ex`); a
+choice question is checked whatever it declares, because its options are a
+declaration, and a boolean question is held to its shape. The checks run in
+this order, and the first that applies is the question's finding:
+
+1. Nothing is selected, as the table above says what that is for each type. A
+   required question of either type answers `response.required`. One that is
+   not required answers nothing, and its bounds are not consulted: an empty
+   selection is accepted whatever its `min_selections`, as a blank text
+   response on a question that is not required is accepted whatever its
+   format (the private `checks/2` in `lib/riddler/screens/validation.ex`).
+2. The response is not the shape its type and `select` fix: a list under
+   `"one"`, a string under `"many"`, a list holding a value that is not a
+   string or holding one value twice, or anything but `true` or `false` for a
+   boolean question. `response.invalid_shape`.
+3. A required boolean question whose response is `false` answers
+   `response.required`: required means the response must be `true`.
+4. A value is one no option of the question carries. `response.not_an_option`,
+   one finding naming every such value. Values are compared as written; none
+   is trimmed or folded.
+5. Under `"many"`, fewer values than `min_selections` or more than
+   `max_selections`. `response.out_of_range`, its `field` naming the bound.
+
+A question a condition hid is not on the resolved screen, so it is not checked
+and a response addressed to it is not read: the screen validated is the screen
+shown, as the amendment above headed "the screen validated is the screen
+shown" decides. A required choice question that is hidden cannot fail. A
+question whose `select` is neither value is the document's defect, reported at
+admit; response validation reads no shape from it and raises nothing for its
+response beyond `response.required`, as it raises nothing for a format name the
+package does not know (the private `check/3` clause for an unknown name in
+`lib/riddler/screens/validation.ex`). A button declaring `validates` as `false`
+opts a screen carrying choice questions out exactly as it does any other.
+
+**Resolution renders each option's `label` and leaves its `value` as
+written.** A resolved choice question is the question with no `condition`,
+its `label` rendered, and `answer_options` in the same order with each
+option's `label` rendered against the root as a text field is and its `value`
+untouched. A variable an option label wants and the root does not carry
+renders as the empty string and is reported in `missing_variables` under the
+question's key, as for any template on the node. The rule above that "`text`,
+`label` and `placeholder` are templates" now reads with an option's `label`
+beside them; an option's `value`, `select` and `style` are literal text. An
+option label is not a field of the node itself, so it is not among the fields
+`Riddler.Screens.Document.template_fields/0` returns, and the code half
+renders and refuses it beside that list.
+
+**The schema step: `priv/schemas/screen-document.schema.json` types
+`answer_options` on a node whose `type` is `choice_question`.** It types it as
+an array whose items are objects, each item's `value` and `label` a string
+where present, and it does so with the draft's conditional (`if` the node's
+`type` is `"choice_question"`, `then` the property). A wrong-typed
+`answer_options` on a choice question - not an array, `null`, an item that is
+not an object, a `value` or a `label` that is not a string - is therefore not a
+document, and `Riddler.Screens.Document.admit/1` answers `nil` for it, as the
+amendment above headed "a value of the wrong type in a field the schema types
+is not a document" decides for every field the schema types. Requiredness stays
+out of the schema, as everywhere in it: an absent or empty `answer_options`,
+and an option missing its `value` or its `label`, are findings against an
+admitted document. `select`, the bounds and the uniqueness of option values are
+findings too, not schema. Nothing else in the schema moves.
+
+The conditional, rather than typing the field on every node as the schema
+types `nodes`, is what keeps an answer the package gives today. A
+`text_question` carrying `answer_options` as a list of strings is admitted with
+the field dropped and no finding: the case in `corpus/screens/admit.json` named
+"A question carrying answer_options, the field reserved for the select question
+types, is admitted with no finding" states it, and the test named "does not
+carry answer_options, the field reserved for question types this version does
+not build" in `test/riddler/screens/document_test.exs` pins it. That does not
+change. On every node but a choice question, `answer_options` is a field the
+type does not name, untyped by the schema and dropped at admit whatever it
+holds. Typed on every node, it would make that case not a document. Naming one
+type in a conditional does not enumerate the types: a validator holding an
+older schema, without the conditional, admits every choice question, so a host
+carrying a document through it is not refused on the way, which is the reason
+the Decision gives for leaving `type` an open string.
+
+**The finding codes.** Every finding below carries the question's key as its
+`node_key`, as every node finding does, and a `field` naming what it is about.
+The messages are the code half's, in the register of the existing findings, and
+the enumeration stays the code half's tests' as the Decision delegates it; this
+table names the codes.
+
+| Code | Raised for | Reused or new |
+|---|---|---|
+| `document.missing_field` | a choice question without `label`, `select` or `answer_options`; a boolean question without `label` | reused, its meaning unchanged |
+| `document.invalid_select` | a `select` that is there and is neither `"one"` nor `"many"` | new |
+| `document.empty_answer_options` | an `answer_options` that is an empty list | new |
+| `document.invalid_option` | an option with no `value`, a `value` not matching `[a-z][a-z0-9_]*`, or an option with no `label` | new |
+| `document.duplicate_option_value` | a `value` two options of one question carry | new |
+| `document.invalid_template` | an option `label` holding a construct outside the template subset | reused: a template field holding such a construct, which an option label now is |
+| `document.invalid_selection_bounds` | a `min_selections` or `max_selections` on a question whose `select` is not `"many"`, one that is not a non-negative integer, a `min_selections` above `max_selections`, or either above the number of options | new |
+| `document.invalid_required` | a `required` that is there and is not a boolean, on either type | reused: a question's `required` |
+| `document.invalid_style` | a choice question's `style` that is there and is not a string | reused: `Riddler.Screens.Document`'s moduledoc describes it for a button's `style`, and it now reads for any node whose type names `style` |
+| `response.required` | nothing selected on a required choice question; a required boolean question whose response is not `true` | reused |
+| `response.invalid_shape` | a response not of the shape its type and `select` fix | new |
+| `response.not_an_option` | a value no option of the question carries | new |
+| `response.out_of_range` | under `"many"`, fewer values than `min_selections` or more than `max_selections` | reused, its `field` naming the bound |
+
+### Typespecs
+
+A contract for the code half, as the record's own typespecs are. An admitted
+option is atom-keyed, as an admitted node is, and a resolved question has the
+same shape with no `:condition` and its labels rendered.
+
+```elixir
+@type answer_option :: %{value: String.t(), label: String.t()}
+
+# :type is "choice_question"; :select is "one" or "many".
+@type choice_question :: %{
+        :type => String.t(),
+        :key => String.t(),
+        optional(:condition) => String.t(),
+        :label => String.t(),
+        :select => String.t(),
+        :answer_options => [answer_option()],
+        optional(:style) => String.t(),
+        optional(:required) => boolean(),
+        optional(:min_selections) => non_neg_integer(),
+        optional(:max_selections) => non_neg_integer(),
+        optional(:format) => term()
+      }
+
+# :type is "boolean_question".
+@type boolean_question :: %{
+        :type => String.t(),
+        :key => String.t(),
+        optional(:condition) => String.t(),
+        :label => String.t(),
+        optional(:required) => boolean(),
+        optional(:format) => term()
+      }
+
+# What a visitor submits under responses.<key>: one value under "one",
+# a list of distinct values under "many".
+@type choice_response :: String.t() | [String.t()]
+@type boolean_response :: boolean()
+```
+
+### Worked examples
+
+These are from patron registration, a visitor becoming a library patron
+through a few screens, the example world the repository names for new
+teaching text. The examples above keep their two domains.
+
+A library card choice, one option, required, with the hint for radio buttons:
+
+```json
+{
+  "type": "choice_question",
+  "key": "card_type",
+  "label": "Which library card would you like, {{ responses.first_name }}?",
+  "select": "one",
+  "style": "radio",
+  "required": true,
+  "answer_options": [
+    { "value": "adult", "label": "Adult card" },
+    { "value": "child", "label": "Child card (under 13)" },
+    { "value": "senior", "label": "Senior card (65 and over)" }
+  ]
+}
+```
+
+Validated against `responses.card_type`: `"senior"` is `:ok`; `"teen"` is
+`response.not_an_option`; `["adult"]` is `response.invalid_shape`, a list
+where one value is asked for; and no response at all is `response.required`.
+
+Reading interests, several options, at most three, not required, with an
+option label that is a template:
+
+```json
+{
+  "type": "choice_question",
+  "key": "reading_interests",
+  "label": "What do you like to read?",
+  "select": "many",
+  "style": "checkboxes",
+  "max_selections": 3,
+  "answer_options": [
+    { "value": "fiction", "label": "Fiction" },
+    { "value": "history", "label": "History" },
+    { "value": "science", "label": "Science" },
+    { "value": "graphic_novels", "label": "Graphic novels" },
+    { "value": "local_authors", "label": "Books by {{ context.branch_name }} authors" }
+  ]
+}
+```
+
+`["fiction", "history"]` is `:ok`, and so is `[]`, since the question is not
+required. Four values are `response.out_of_range` with `field` naming
+`max_selections`. `["fiction", "fiction"]` is `response.invalid_shape`.
+
+Resolved against a root whose `context.branch_name` is `Riverside`, the
+question loses nothing but its template source: the last option reads
+`{ "value": "local_authors", "label": "Books by Riverside authors" }`, every
+`value` is as written, and the `style` and `max_selections` are carried
+through.
+
+Agreeing to the borrowing rules, a required boolean question:
+
+```json
+{
+  "type": "boolean_question",
+  "key": "agrees_to_rules",
+  "label": "I agree to the borrowing rules of {{ context.library_name }}.",
+  "required": true
+}
+```
+
+`true` is `:ok`; `false` and no response are each `response.required`; and
+`"yes"` is `response.invalid_shape`.
+
+A choice question an author got wrong, and what admission says of it:
+
+```json
+{
+  "type": "choice_question",
+  "key": "pickup_branch",
+  "label": "Where will you collect your card?",
+  "select": "one",
+  "max_selections": 1,
+  "answer_options": [
+    { "value": "riverside", "label": "Riverside" },
+    { "value": "Hill Street", "label": "Hill Street" },
+    { "value": "riverside", "label": "Riverside (east entrance)" }
+  ]
+}
+```
+
+`max_selections` under `select: "one"` is `document.invalid_selection_bounds`;
+`Hill Street` is `document.invalid_option`, a value not matching the key
+pattern; and the second `riverside` is `document.duplicate_option_value`. Each
+names `pickup_branch` as its node.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the rule
+stated above answers a call one way, and this entry answers the same call
+another". The Decision names the v1 types and says of the select types "those
+types are not built in this version", and a document naming either type
+answers `document.unknown_type`; this entry admits it. The schema step is also
+a new refusal, the other mark the README names as sufficient: a choice question
+carrying a wrong-typed `answer_options` is admitted today, with
+`document.unknown_type`, and is not a document once the step lands.
+
+### What is unchanged
+
+Every existing type keeps its fields, its findings and its responses, finding
+for finding; no message changes. A `text_question` carrying `answer_options`
+is admitted with the field dropped and no finding, whatever the field holds.
+`type` stays an open string in the schema, and the schema types nothing new on
+any node but a choice question. Renderers own `style` and everything else
+about presentation. The vocabulary is the record's: `responses`, `context`,
+`outcome`, `writes`, `nodes`, and a question owns its `answer_options`.
+
+### What this does not decide
+
+- Display nodes beyond `heading` and `text`, and formats beyond the
+  package's `email`, `phone`, `pattern`, `integer` and `number`.
+- A `condition` on an option, or any option field beyond `value` and `label`:
+  a description, a preselected default, an option that opens a text field.
+- Presentation beyond the hint: which widget a renderer draws, a hint for a
+  boolean question, and how options are laid out.
+- Whether a field a type or an option does not name should raise a finding;
+  that stays open where the note above of 2026-09-17 left it.
