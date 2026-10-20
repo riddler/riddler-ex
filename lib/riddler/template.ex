@@ -38,6 +38,22 @@ defmodule Riddler.Template do
       iex> Enum.map(findings, & &1.field)
       ["include"]
 
+  ## A keyword with no block of its own open is refused as itself
+
+  A branch keyword - `elsif`, `else` or `when` - or a closing tag belongs to
+  the innermost block open where it is written when it is one of that
+  block's own keywords. Written anywhere else it is refused as itself,
+  beside every other refusal the template holds, and the block it was
+  written in goes on to its own closer. The closer of a block the author
+  opened is never refused.
+
+      iex> {:error, findings} = Riddler.Template.compile("{% for card in responses.library_cards %}{% endif %}{% endfor %}")
+      iex> Enum.map(findings, & &1.field)
+      ["endif"]
+      iex> {:error, findings} = Riddler.Template.compile("{% render 'patron_card' %}{% endif %}")
+      iex> Enum.map(findings, & &1.field)
+      ["render", "endif"]
+
   ## A source that does not parse is refused, and as what depends on the reason
 
   A template the parser cannot read is refused like any other template, and
@@ -139,6 +155,7 @@ defmodule Riddler.Template do
 
   alias Riddler.Finding
   alias Riddler.Template.Compiled
+  alias Riddler.Template.UnknownTag
 
   @tag_not_allowed "template.tag_not_allowed"
   @filter_not_allowed "template.filter_not_allowed"
@@ -195,13 +212,16 @@ defmodule Riddler.Template do
   # change unnoticed.
   @unexpected_tag ~r/Unexpected tag '([^']+)'/
 
-  # The branch and terminator keywords of the admitted block tags. A refused
-  # construct inside a block leaves the block unterminated, and the parser
-  # reports the orphaned terminator as a second unexpected tag - a consequence
-  # of the first refusal rather than a construct the author reached for. They
-  # are dropped whenever the template has a real refusal beside them, and kept
-  # when one stands alone, because a terminator with no opener is genuinely
-  # not a tag this package admits.
+  # The branch and terminator keywords of the admitted block tags. On the
+  # parser's first reading a refused construct inside a block leaves the block
+  # unterminated, and the parser reports the orphaned terminator as a second
+  # unexpected tag - a consequence of the first refusal rather than a
+  # construct the author reached for. Whether a keyword the parser reported is
+  # one the author misplaced or one a refusal orphaned is decided by reading
+  # the source again (`unparsed_refusals/2`); these names are what that
+  # reading cannot take from the first one, and what the first reading's own
+  # answer drops beside a real refusal where the second reading has no
+  # answer to give.
   @block_keywords ~w(
     elsif else when
     endif endunless endcase endfor endcapture endcomment endraw endtablerow
@@ -233,7 +253,8 @@ defmodule Riddler.Template do
         end
 
       {:error, %Solid.TemplateError{errors: errors}} ->
-        {:error, errors |> Enum.map(&parse_refusal/1) |> drop_derivative() |> to_findings()}
+        {:error,
+         errors |> Enum.map(&parse_refusal/1) |> unparsed_refusals(source) |> to_findings()}
 
       {:error, :placeless} ->
         {:error, to_findings([{nil, nil, @parse_error, nil, @placeless_reason}])}
@@ -317,6 +338,10 @@ defmodule Riddler.Template do
     else
       [{loc.line, loc.column, @filter_not_allowed, function, "the filter"} | acc]
     end
+  end
+
+  defp refuse(%UnknownTag{name: name, loc: loc}, acc) do
+    [{loc.line, loc.column, @tag_not_allowed, name, "the tag"} | acc]
   end
 
   defp refuse(node, acc) do
@@ -447,10 +472,15 @@ defmodule Riddler.Template do
   # this check refuses is the spelling, so that a template this runtime admits
   # is one a second runtime implementing the subset can admit without
   # implementing the liquid tag.
-  defp liquid_refusals(source) do
+  #
+  # The parser is asked with the tags the template was parsed with, so that a
+  # source read a second time with its unknown tags held as nodes (`reparse/2`
+  # below) is probed the way it was read: a tag before the candidate that the
+  # parser does not know is then a node rather than the first refusal.
+  defp liquid_refusals(source, tags \\ Solid.Tag.default_tags()) do
     source
     |> :binary.matches(@liquid)
-    |> Enum.flat_map(fn {offset, _length} -> probe(binary_part(source, 0, offset)) end)
+    |> Enum.flat_map(fn {offset, _length} -> probe(binary_part(source, 0, offset), tags) end)
   end
 
   # Only the FIRST refusal answers. The source up to the candidate is the
@@ -480,8 +510,9 @@ defmodule Riddler.Template do
   # answer is the same as for any other place that is not one. The inline
   # comment tag is outside the subset and refused by the allowlist walk in any
   # case.
-  defp probe(prefix) do
-    with {:error, [{reason, meta} | _recovered]} <- Solid.Parser.parse(prefix <> @probe_name),
+  defp probe(prefix, tags) do
+    with {:error, [{reason, meta} | _recovered]} <-
+           Solid.Parser.parse(prefix <> @probe_name, tags: tags),
          true <- String.ends_with?(reason, @probe_reason) do
       [{meta[:line], meta[:column], @tag_not_allowed, @liquid, "the tag"}]
     else
@@ -498,6 +529,80 @@ defmodule Riddler.Template do
       [_whole, tag] -> {meta[:line], meta[:column], @tag_not_allowed, tag, "the tag"}
       nil -> {meta[:line], meta[:column], @parse_error, nil, reason}
     end
+  end
+
+  # One finding per refused construct, whatever route the parser took to
+  # refuse the source. The parser refuses a whole source when it meets a tag
+  # it has no tag for, and a refusal of the whole source leaves no tree for
+  # the allowlist walk: an `include` beside a `render` would answer `include`
+  # alone, and a stray `endif` beside a refused filter would hide the filter.
+  # So the source is read a second time with every name the parser reported
+  # as unexpected held as a node of its own (`Riddler.Template.UnknownTag`),
+  # and that tree is walked like any other.
+  #
+  # Which blocks are open where a branch or closing keyword stands is the
+  # parser's answer on that second reading, as it is on the first. A block
+  # takes its own branch and closing keywords and no others, so a keyword
+  # written where no block it belongs to is open is a node inside whatever
+  # block is open there, refused as itself, and the block it stands in goes
+  # on to its own closer, which is not refused.
+  #
+  # A tag the parser does not know that is not a branch or closing keyword is
+  # refused where the first reading met it, whatever the second reading made
+  # of the block around it: a block can read what it holds and throw it away
+  # - the parser does so with whatever follows a second `else` in an `if` -
+  # and a refused construct is not admitted by being thrown away.
+  #
+  # Where the second reading does not parse either - a source that fails for
+  # a reason other than a tag the parser does not know - or finds nothing to
+  # refuse, the answer is the first reading's, as it always was.
+  defp unparsed_refusals(reported, source) do
+    with {:ok, tree, tags} <- reparse(source, unknown_names(reported)),
+         [_ | _] = refusals <-
+           refusals(tree) ++ liquid_refusals(source, tags) ++ unknown_constructs(reported) do
+      refusals
+    else
+      _first_reading -> drop_derivative(reported)
+    end
+  end
+
+  defp reparse(_source, []), do: :unread
+
+  defp reparse(source, names) do
+    tags = Map.merge(Solid.Tag.default_tags(), Map.new(names, &{&1, UnknownTag}))
+
+    case Solid.Parser.parse(source, tags: tags) do
+      {:ok, tree} ->
+        {:ok, tree, tags}
+
+      {:error, errors} ->
+        # A tag the first reading's recovery did not reach is reported now;
+        # read again with it held too, until no new name comes back.
+        case unexpected_names(Enum.map(errors, &elem(&1, 0))) -- names do
+          [] -> :unread
+          more -> reparse(source, names ++ more)
+        end
+    end
+  rescue
+    _placeless in [ArithmeticError, CaseClauseError] -> :unread
+  end
+
+  # The names the parser reported as tags it has no tag for.
+  defp unexpected_names(reasons) do
+    for reason <- reasons,
+        [_whole, name] <- [Regex.run(@unexpected_tag, reason)],
+        uniq: true,
+        do: name
+  end
+
+  defp unknown_names(reported) do
+    for {_line, _column, @tag_not_allowed, name, _lead} <- reported, uniq: true, do: name
+  end
+
+  defp unknown_constructs(reported) do
+    Enum.filter(reported, fn {_line, _column, code, field, _lead} ->
+      code == @tag_not_allowed and field not in @block_keywords
+    end)
   end
 
   defp drop_derivative(refusals) do
