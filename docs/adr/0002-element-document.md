@@ -2954,3 +2954,18 @@ about presentation. The vocabulary is the record's: `responses`, `context`,
   boolean question, and how options are laid out.
 - Whether a field a type or an option does not name should raise a finding;
   that stays open where the note above of 2026-09-17 left it.
+
+---
+
+Noted 2026-10-20, bead rd-6tc. The last bullet of the note above of 2026-09-26
+names the private `admit_metadata/1` admitting a `metadata` written as `null`
+as a thing the amendment of 2026-09-18, "a value of the wrong type in a field
+the schema types is not a document", did not reach. It reaches it now: that
+amendment's rule answers the call, and `priv/schemas/screen-document.schema.json`
+already types `metadata` as an object and refuses `null`. `admit/1` answers
+`nil` for a `metadata` that is there and is not an object, `null` included, and
+a document that leaves `metadata` out is admitted with the empty map, as before.
+The admission corpus carries the case, "Metadata written as null is not a
+screen document". The decision was taken by the conductor under a standing
+consent, 2026-10-19. The integer-1 `schema_version` comparison that note names
+stays open and is not touched here.

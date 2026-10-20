@@ -2290,6 +2290,27 @@
         }
       },
       "name": "An option value followed by a line break is not in the key shape, and is refused"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "metadata": null,
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Metadata written as null is not a screen document"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"
