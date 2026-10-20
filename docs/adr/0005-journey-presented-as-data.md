@@ -1,6 +1,6 @@
 # ADR-0005: A Journey is presented as data - a screen, waiting or done - and a host's context is replaced whole
 
-Status: proposed
+Status: accepted (2026-10-20, riddler 0.4.0)
 
 Recorded 2026-10-20, bead rd-4jb. The status a host passes as data and the
 string-keyed answer `present/3` gives were ruled by the operator,
@@ -388,3 +388,54 @@ module, `Riddler.Encoding`, called by both the runner and
 `present/3` gives cannot drift apart. A `journey.present` answer is compared
 as the function gives it, without passing through the encoder a second
 time, so a key left an atom by `present/3` is a failing case.
+
+---
+
+Noted 2026-10-20. This record moves from `proposed` to `accepted`, its
+Status line flipped in place and nothing else in it reworded; its row in
+`docs/adr/README.md` reads accepted. The flip was decided by the conductor
+under a standing consent, 2026-10-20.
+
+It shipped in riddler 0.4.0, the commit tagged `v0.4.0` (`c4349b3`) and
+published on Hex; its code half is `e17ed27`, and the 0.4.0 changelog's
+`Added` section states both functions and both corpus capabilities. The
+record says it "is written before any code it describes"; that code is now
+`lib/riddler/journey.ex`. It was re-verified at the tag, every cite
+re-located by anchor there; `main` is that commit. What was read:
+
+- Decision 1: `Riddler.Journey` defines `present/3` and `put_context/2` and
+  no other public function, and neither reads a store, starts a process or
+  reads an execution.
+- Decisions 2 and 3: `present/3` resolves `{:screen, key}` through
+  `Riddler.Screens.resolve_screen/3`, passing its `{:error, :no_such_screen}`
+  through; it answers `:waiting` and `:done` with the state alone, from
+  clauses that do not read the document; and it answers any other status
+  `{:error, :unknown_status}`. The screen is put in data form by
+  `Riddler.Encoding.to_data/1`, with its diagnostics inside it.
+- Decision 4: `put_context/2` puts the new `"context"` over the old one
+  whole and refuses a context that is not a map, or is a struct,
+  `{:error, :context_not_a_map}`; the private `submap/2` in
+  `lib/riddler/screens.ex` still reads a context that is not a plain map as
+  an empty one.
+- Decision 5: `corpus/journey/present.json` and
+  `corpus/journey/put_context.json` hold the cases, and
+  `priv/schemas/corpus-case.schema.json` lists `journey.present` and
+  `journey.put_context` among its capabilities.
+- The typespecs in `lib/riddler/journey.ex` are the record's.
+- The Context's cites stand: `resolve_screen/3`, "The root" in the
+  `Riddler.Screens` moduledoc, "Nothing here decides transport, ..." in the
+  Consequences of ADR-0001 and of ADR-0002, the explanation page "What
+  Riddler is for" under "What it leaves to the host", and the first bullet of
+  "Conventions" in `CLAUDE.md`.
+- Every worked example was run at `c4349b3` and answers as written; its
+  document is the one the README's basic usage admits.
+
+**The encoder section 3 cites.** Section 3 cites the encoding rules as
+`Riddler.Corpus`, "the one encoder", at `01c2261`. The note above of
+2026-10-20, in its paragraph led "One encoder, not two.", records that the
+rules now sit in `Riddler.Encoding`, called by the runner and by
+`Riddler.Journey` alike; `Riddler.Corpus` keeps its section "the one
+encoder", which hands each value to `Riddler.Encoding`, and its
+`screens.resolve` run still encodes a single screen without its diagnostics
+in its `{:ok, screen, _diagnostics}` clause. The rules are unchanged; this
+note decides nothing.

@@ -549,7 +549,7 @@ already gave.
 
 ## Amendment, 2026-10-20: a stray or misplaced keyword is refused as itself, beside every other refusal
 
-Status: proposed
+Status: accepted (2026-10-20, riddler 0.4.0)
 
 Recorded 2026-10-20, bead rd-7qa, on the ruling of 2026-09-19 (ruled by the
 operator, 2026-09-19): one finding per refused construct, whatever route the
@@ -742,7 +742,7 @@ reading, and `drop_derivative/1` answers only where that reading has none.
 
 ## Amendment, 2026-10-20: a tag carrying text it does not read is refused as text after the tag
 
-Status: proposed
+Status: accepted (2026-10-20, riddler 0.4.0)
 
 Recorded 2026-10-20, bead rd-9fy, on the ruling of 2026-09-19 (ruled by the
 operator, 2026-09-19): fail closed. The Amendment of 2026-09-18 above leaves
@@ -898,3 +898,49 @@ whether the subset admits a tag token carrying text the parser discards, is
 answered here. A second runtime meets the rule by knowing which tags take no
 text and which characters form a tag, whatever its Liquid library does with
 the text.
+
+---
+
+Noted 2026-10-20. The amendments above headed "a stray or misplaced keyword
+is refused as itself, beside every other refusal" and "a tag carrying text it
+does not read is refused as text after the tag" move from `proposed` to
+`accepted`, each Status line flipped in place and nothing else in them
+reworded. The amendment headed "whether a template holds a liquid tag is the
+parser's answer" stays `proposed`; this entry does not reach it. The flip was
+decided by the conductor under a standing consent, 2026-10-20.
+
+Both shipped in riddler 0.4.0, the commit tagged `v0.4.0` (`c4349b3`) and
+published on Hex; the 0.4.0 changelog's `Changed` section states both. Their
+code is `a68df68` for the first and `338576e`, `9289dbb` and `b3489ce` for
+the second. Both were re-verified at the tag, every cite re-located by anchor
+there; `main` is that commit. What was read:
+
+- The private `unparsed_refusals/2`, `trailing_text_refusals/2` and
+  `drop_derivative/1`, and the pattern `@unexpected_tag`, are in
+  `lib/riddler/template.ex`, and `Riddler.Template.UnknownTag` in
+  `lib/riddler/template/unknown_tag.ex`. `drop_derivative/1` answers only
+  where the second reading does not parse or refuses nothing, as the first
+  amendment's Consequences say, and the liquid check is handed the tags of
+  the reading it checks. `solid` is at `1.3.4` in `mix.lock`.
+- Every source in both worked-answer tables was compiled at `c4349b3` and
+  answers the codes and fields written, and so does every source the two
+  amendments give a present answer for under "Why an amendment and not a
+  note", "What this amendment does not decide" and "The rule reaches text the
+  parser reads".
+- The describe blocks "compile/1 beside a stray or misplaced keyword" and
+  "compile/1 on a tag token carrying text the parser throws away", the tests
+  the first amendment names, and "generated agreement with the parser" are in
+  `test/riddler/template_test.exs`.
+- Every corpus case the two Consequences sections name is in
+  `corpus/templates/render.json`, and each case named "liquid is refused
+  where a raw marker stands ..." or "liquid is refused after a ... block whose
+  closer carries ..." states `template.trailing_text_not_allowed` beside the
+  liquid refusal.
+
+**A sentence of the first amendment that the second qualifies.** The first
+amendment's "What is unchanged" names "the three finding codes" among what
+it leaves as it was. The amendment above headed "a tag carrying text it does
+not read is refused as text after the tag" adds a fourth,
+`template.trailing_text_not_allowed`, and says so in its own "What is
+unchanged". The two are accepted together, and the later governs where it
+says it does; this note decides nothing.
