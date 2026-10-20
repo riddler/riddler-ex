@@ -2584,10 +2584,11 @@ say "Nothing here decides the select question types: the field name is
 reserved, the behavior is not." This amendment decides them. The two types,
 their fields, the response each submits, `required`, the selection bounds and
 what becomes of a `format` on either were ruled by the operator, 2026-10-19.
-The rest - the option's shape in detail, the reach of the schema step, what
-resolution does to an option label, the order of the response checks and the
-finding codes - was decided by the conductor under a standing consent,
-2026-10-20. Every cite below of the package as it stands is read at
+The option's shape in detail, the reach of the schema step and what
+resolution does to an option label were decided by the conductor under a
+standing consent, 2026-10-20. The rest - the order of the response checks,
+the finding codes and the other details below that no ruling above names -
+was ruled by the operator, 2026-10-20. Every cite below of the package as it stands is read at
 `2842007b0eecc81db0b968f49d4a8ec40a19b5aa`. The code half is separate
 requests (bead rd-39p for admission, resolution, the schema step and the
 corpus; bead rd-9xt for response validation). Nothing below is citable from
