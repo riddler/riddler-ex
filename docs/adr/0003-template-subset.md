@@ -771,6 +771,13 @@ it reaches:
 No other tag is reached: an `elsif` or a `when` reads what follows its name,
 and a tag outside this table carrying text answers as it did.
 
+**The rule reaches text the parser reads.** Text after the name that the
+parser cannot read at all - an unterminated string, a character outside what
+a tag may hold, such as `é`, `;` or `@` - leaves the template refused as it
+was before this amendment: `{% if a %}x{% endif é %}` and
+`{% if a %}x{% endif 'x %}` answer `template.tag_not_allowed` naming `endif`,
+and `{% comment é %}x{% endcomment %}` answers `template.parse_error`.
+
 **A tag written inside a `comment` body is text**, as everything there is, and
 carries nothing to refuse; so are the characters of a tag inside a string or a
 `raw` body.
@@ -854,8 +861,9 @@ unchanged by it; this amendment adds a fourth.
 
 **A tag the reference parser refuses for its text.** An `endcase`, the `else`
 of a `case` and a `raw` opener carrying text are refused by the parser outright
-and answer a parse failure with no field, as they did. Whether they take this
-code instead is left open.
+and answer a parse failure with no field, as they did. So does text the parser
+cannot read after a tag in the first table, which answers the tag as itself or
+a parse failure, as above. Whether they take this code instead is left open.
 
 **Text after a tag beside a parse failure.** Where the source fails for a
 reason other than a tag the parser does not know, the answer is the parse
