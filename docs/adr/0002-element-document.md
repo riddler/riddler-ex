@@ -3166,3 +3166,471 @@ The `document.unknown_type` message lists the types the registry knows, so
 for a type it does not know the message now names the two new ones; that is
 a finding for no existing type, and the 0.4.0 changelog states it. The notes
 above that read either amendment stand under the acceptance.
+
+---
+
+## Amendment, 2026-11-16: a `secret_question` node type, validated on plaintext and sealed by the host before it is stored
+
+Status: proposed
+
+Recorded 2026-11-16, bead rd-9p7v. A secret question is the first response
+this package must never echo: a library card PIN a visitor chooses, which a
+host keeps only in a form its own key opens. That a host's sealer seals the
+response at submit, that a Journey keeps only the opaque sealed string, that
+a presented screen never sends it back, that no template or condition can read
+it and that it stays out of diagnostics was ruled by the operator, 2026-11-15.
+That a sealed string is an opaque handle the engine cannot open, and not a
+secret value under the statifier_blocks rule quoted below, was ruled by the
+operator, 2026-11-16. That a secret question takes neither a default nor a
+prefill was ruled by the operator, 2026-11-16. That a secret question presents
+whether a value is held and never a value was ruled by the operator,
+2026-11-16. The seal function's name, its four arguments, the sealer's shape,
+the sealed form, and that a held sealed value satisfies `required` and is
+never re-validated were decided by the conductor under a standing consent,
+2026-11-16. The rest - the fields beyond those rulings, the order of the
+checks, the finding codes, the root a condition or a template reads, which
+responses one call seals, and the refusals of the seal - is this entry's own,
+written 2026-11-16 at `proposed`. Every cite below of the package as it stands
+is read at `58225174feb322547e960e514e608ebc906dbac3`. The code half is
+separate requests (bead rd-zoj6 for admission, resolution and response
+validation; bead rd-8bst for the seal; bead rd-7rqx for the presented form).
+Nothing below is citable from `lib/` until they land, so what they add is
+described here, not cited.
+
+### What the record now decides
+
+**The node types gain `secret_question`.** A document naming it is refused
+`document.unknown_type` by the package as it stands (the private
+`node_findings/1` in `lib/riddler/screens/document.ex`, and the module
+attribute `@types` in `lib/riddler/screens/registry.ex`, which does not name
+it); once the code half lands it is admitted, with the findings below. It is a
+question whose response is a line of text the visitor types and the host
+stores only sealed. A secret question may stand wherever a question may,
+a variant's candidate included.
+
+**A `secret_question` carries `key` and `label`, and optionally `required`
+and `help`.** It may carry a `condition`, as every node may.
+
+- `label` is what the visitor is asked, a template in the ADR-0003 subset, as
+  a text question's is.
+- `required` is a boolean defaulting to false. What it asks of a response is
+  under "Validation reads the plaintext" below.
+- `help` is a line of guidance shown beside the question, a template in the
+  subset, rendered as `label` is; a variable it wants and the root does not
+  carry renders as the empty string and is reported in `missing_variables`
+  under the question's key. The rule above that "`text`, `label` and
+  `placeholder` are templates" now reads with a secret question's `help` beside
+  them. This entry names `help` on the secret question only; whether the other
+  question types carry it is not decided here.
+- **A secret question carries neither `default` nor `prefill`.** Either would
+  be a value the question starts from: a default is a literal the author writes
+  into the document, and a prefill is a value read out of the host's `context`,
+  and a secret is a value only the visitor supplies. A secret question that
+  carries either is refused at admit, `document.secret_initial_value`, its
+  `field` naming which; it is not dropped silently as another field the type
+  does not name is, because the author has written a secret into the document,
+  or asked the context for one, and is told so.
+
+Any other field written on a secret question - a `placeholder`, a `format`, a
+`pattern` - is a field the type does not name and is dropped at admit with no
+finding, as the note above of 2026-09-17 for beads rd-gwn, rd-d8e, rd-xvv and
+rd-xva decides ("A node field this version does not know is dropped at admit,
+with no finding."). In particular no format is ever put to a secret response,
+because a format check writes the response it refused into its finding's
+`message` (the private `matching/4`, `phone/2` and `numeric/3` in
+`lib/riddler/screens/validation.ex`).
+
+**What a secret question's response is.** It is addressed
+`responses.<key>` by the question's key, as every response is, and it is one
+of four things:
+
+| The response | What it is |
+|---|---|
+| absent, `null`, or a string of whitespace only | nothing answered |
+| any other string | the plaintext the visitor typed, before the host seals it |
+| an object whose one key is `"sealed"` and whose value is a string | the sealed form: a value is held |
+| anything else | the wrong shape |
+
+The sealed form is exactly `{"sealed": <string>}`: an object carrying any key
+beside `"sealed"`, or a `"sealed"` that is not a string, is not the sealed form
+and is the wrong shape. The string inside is the sealed string, and what it
+holds is the host's; nothing in this package reads it, compares it or opens it.
+
+**Validation reads the plaintext.** `Riddler.Screens.validate_screen/3` and
+`/4` check a secret question on the resolved screen as they check every other
+question there, and raise at most one finding for it, the first of these that
+applies:
+
+1. The sealed form: nothing is checked and nothing is raised. A held sealed
+   value satisfies `required`, and it is never re-validated: it was validated
+   as plaintext before it was sealed, and nothing here could open it to check
+   it again.
+2. Nothing answered: a required secret question answers `response.required`;
+   one that is not required answers nothing.
+3. A plaintext string: nothing further is checked. The question declares no
+   format, so there is nothing a non-blank string can fail.
+4. The wrong shape: `response.invalid_shape`, its `field` `"type"`.
+
+A secret question a condition hid is not on the resolved screen, so it is not
+checked and its response is not read, as the amendment above headed "the
+screen validated is the screen shown" decides for every question. A button
+declaring `validates` as `false` opts a screen carrying a secret question out
+exactly as it does any other.
+
+**The seal is a function the host calls with its sealer, between validation
+and the engine.**
+
+```elixir
+Riddler.Screens.seal_secrets(document, screen_key, responses, sealer)
+```
+
+It takes an admitted document, a screen key, the responses the host is about
+to hand its engine (a string-keyed map, the `"responses"` half of a root, not
+the root), and `sealer`, a function of one argument the host passes in this
+call. The sealer takes one plaintext string and answers `{:ok, sealed}` with
+`sealed` a string, or `{:error, reason}`. `seal_secrets/4` is pure apart from
+the sealer: it consults no store, keeps nothing between calls, and applies the
+sealer only inside the call it was passed to. The sealer is an argument, not a
+behaviour a host implements, not a callback registered anywhere, and not
+stored. ADR-0005's Decision 1 says of `Riddler.Journey` that "There is no
+behaviour for a host to implement and no callback this package calls"; that
+stays true of `Riddler.Journey`, which gains nothing here, and the seal lives
+in `Riddler.Screens` beside the functions a host already calls with a document
+and a screen key.
+
+The call site is the host's, because this package has no stepper and moves no
+Journey from one screen to the next (ADR-0005, Decision 6, "What this
+package does not own", its bullet "The stepper"). The order is the
+contract: a host that receives a submit validates the screen against a root
+holding the plaintext, and only on `:ok` calls
+`seal_secrets/4` and hands the answer to its engine. The engine, the Journey's
+stored root and everything downstream of them see the sealed form and never
+the plaintext.
+
+What one call does, in order:
+
+- **Which questions it seals.** Every secret question the named screen
+  declares, a variant's candidates included, whatever its condition: the
+  function takes no `context` and reads no condition. A secret question
+  another screen declares is not sealed by this call; a response to one that
+  is a plaintext string or the wrong shape is refused,
+  `response.unsealed_secret`, because sealing it here would make it held
+  without the validation of the screen it belongs to, and passing it on would
+  hand the engine a plaintext. A response to one that is absent, nothing
+  answered or the sealed form is left as it is.
+- **What it leaves alone.** A response that is absent stays absent. A
+  response that is nothing answered (`null`, or a string of whitespace only)
+  is left as written: it carries no secret, and sealing it would make an empty
+  answer held, which satisfies `required`. A response already in the sealed
+  form is left as it is, and the sealer is not called for it. Every response
+  that is not a secret question's is untouched, key for key.
+- **The refusals that need no sealer come first.** A response to one of the
+  screen's secret questions that is the wrong shape is refused,
+  `response.invalid_shape`, its `field` `"type"`, as validation refuses it;
+  with `response.unsealed_secret` above, these are found across the whole call
+  before the sealer is first applied, and where there is any the answer is
+  `{:error, findings}`, every one in document order, and the sealer is never
+  called.
+- **The seal.** Each remaining plaintext is passed to the sealer, one call per
+  question, in document order. An answer of `{:ok, sealed}` with `sealed` a
+  string replaces the plaintext with `{"sealed" => sealed}`. Any other answer
+  - `{:error, reason}`, or an `{:ok, _}` whose value is not a string, or
+  anything else - stops the call at that question: the answer is
+  `{:error, [finding]}` with the one finding `response.seal_failed`, its
+  `field` `"sealed"`, and no partly sealed map is answered. A sealer that
+  raises raises through this call; nothing here rescues it.
+- **The answer.** `{:ok, responses}`, the map with each plaintext replaced by
+  its sealed form; `{:error, findings}` as above; or
+  `{:error, :no_such_screen}` for a screen key the document does not declare,
+  the answer `Riddler.Screens.resolve_screen/3` gives for one.
+
+The sealer's `reason` is never carried onto a finding or into a message:
+it is the host's own term from the host's own function, it may hold the
+plaintext, and a host that wants it has it already. A refusal answers a list,
+as every other refusal in this package does (`Riddler.Finding`'s moduledoc:
+"Refusals return a list of findings rather than the first one"); the one
+refusal that stops at its first finding is the sealer's, because a sealer may
+be costly or reach a key service, and a call that has failed once has no
+reason to apply it again.
+
+**No template, condition or write reads a secret question's response.** Two
+rules, one at admit and one at resolve, and the second is what holds when the
+first is skipped.
+
+- **At admit.** A template field or a condition anywhere in the document that
+  names `responses.<key>` for a secret question's key, or a path under it, is
+  refused, `document.secret_reference`. So is a button's `writes` entry
+  addressing that response or a path under it: a constant written there would
+  put an author's plaintext where a sealed value belongs. The finding's
+  `node_key` is the key of the node carrying the reference, its `field` the
+  field that carries it (`"condition"`, `"writes"`, or the template field), and
+  its message names the secret question's key, which is not a secret. A
+  template names a path wherever it writes one: an output, a tag's operand, a
+  filter's argument. A secret question's own `label`, `help` or `condition`
+  naming its own response is refused the same way.
+- **At resolve.** The root a condition and a template read carries no response
+  for any secret question the document declares, on any screen: each such
+  response is removed from that root's `"responses"` before any condition is
+  evaluated or any template rendered, by `Riddler.Screens.resolve/2`,
+  `resolve_screen/3` and every function that resolves through them. A template
+  that reaches a secret's response by a way the admit rule does not name - a
+  `for` over `responses` whole, an index computed at render - finds nothing
+  there; a template naming one in a document no one validated renders the
+  empty string and is reported in `missing_variables` by the variable's name,
+  and a condition naming one is undecidable, hidden and reported, as for any
+  variable the root does not carry. Response validation reads the secret
+  question's own response from the root the host passed, as it reads every
+  question's; it is the root a condition or a template reads that loses it.
+
+**A presented secret question carries `held` and never a value.** A resolved
+secret question is the question with no `condition`, its `label` and `help`
+rendered, its `required` where it declares one, and one field resolution adds,
+`held`: `true` where the root's response for the question is the sealed form,
+and `false` otherwise - absent, nothing answered, a plaintext or the wrong
+shape. Whatever a later entry decides a question node presents of a held
+response, a secret question carries no `value`, never its plaintext and never
+its sealed string. `Riddler.Journey.present/3` answers a screen in the data
+form of what `Riddler.Screens.resolve_screen/3` answers (its private
+`screen_data/2` in `lib/riddler/journey.ex`), so the presented node carries
+`"held"` and nothing more of the response.
+
+**No finding, diagnostic or message carries the value.** This binds every
+function in the package: admission and document validation, which never see a
+response; resolution and presentation, whose nodes carry `held` and whose
+diagnostics carry a template variable's name or a condition's source and never
+a value the root holds; response validation, whose secret question findings
+name the question by its rendered `label` or its key and nothing of the
+response; and the seal, whose findings name the question and never the
+plaintext, the sealer's reason or the sealed string. The sealed string leaves
+this package in one place only, the `{:ok, responses}` answer of
+`seal_secrets/4`. Nothing in `lib/` logs or emits telemetry (no file under
+`lib/`, and not `mix.exs`, names `Logger` or telemetry), and the code half
+adds neither.
+
+**A sealed string is an opaque handle, not a secret value under
+statifier_blocks' rule.** statifier_blocks' ADR-0002 (`sb-ADR-0002`), in its
+amendment headed "Amendment (2026-08-29): decision 7, an optional
+`sensitive?` key, and the secrets rule behind it", states the rule that
+"credentials, API keys and other secrets never enter a chart datamodel", and
+that "The datamodel carries the identifier; it never carries the value." A
+Journey's stored root, and any datamodel a host's workflow engine builds from
+it, carries a secret question's response only in the sealed form. The sealed
+string is a handle the engine cannot open: the key that opens it is the host's
+sealer's, and it is never in the document, the root, a response or anything
+this package answers. So the sealed string is not a secret value under that
+rule, as the identifier that rule prescribes is not, and a datamodel holding
+one is not a datamodel holding a secret. The plaintext is under that rule: it
+exists between a visitor's submit and the host's call to `seal_secrets/4`, and
+a host that hands it to its engine before that call breaks the rule. This
+entry writes nothing in statifier_blocks; the rule and its compiler refusal
+are that repository's.
+
+**The finding codes.** Every finding below carries the question's key, or the
+key of the node carrying a reference, as its `node_key`, and a `field` naming
+what it is about. The messages are the code half's, in the register of the
+existing findings, and the enumeration stays the code half's tests' as the
+Decision delegates it; this table names the codes.
+
+| Code | Raised by | Raised for | Reused or new |
+|---|---|---|---|
+| `document.missing_field` | `validate/1` | a secret question without `label` | reused, its meaning unchanged |
+| `document.invalid_required` | `validate/1` | a secret question's `required` that is there and is not a boolean | reused |
+| `document.invalid_template` | `validate/1` | a `help` holding a construct outside the template subset | reused: a template field holding such a construct, which `help` now is |
+| `document.secret_initial_value` | `validate/1` | a secret question carrying `default` or `prefill`, its `field` naming which | new |
+| `document.secret_reference` | `validate/1` | a template, condition or `writes` entry naming a secret question's response or a path under it | new |
+| `response.required` | `validate_screen/3,4` | nothing answered on a required secret question | reused |
+| `response.invalid_shape` | `validate_screen/3,4`, `seal_secrets/4` | a secret question's response of the wrong shape, its `field` `"type"` | reused |
+| `response.unsealed_secret` | `seal_secrets/4` | a plaintext or wrong-shaped response to a secret question the named screen does not declare | new |
+| `response.seal_failed` | `seal_secrets/4` | a sealer answer that is not `{:ok, string}`, its `field` `"sealed"` | new |
+
+The corpus carries the seal under a capability of its own, `screens.seal_secrets`,
+by the convention every existing capability follows (`corpus/screens/` holds
+one file per function, each named for it); a case states the responses and
+what the runner's fixed test sealer answers, so a second runtime supplies the
+same sealer.
+
+### Typespecs
+
+A contract for the code half, as the record's own typespecs are. An admitted
+secret question is atom-keyed, as an admitted node is.
+
+```elixir
+# :type is "secret_question".
+@type secret_question :: %{
+        :type => String.t(),
+        :key => String.t(),
+        optional(:condition) => String.t(),
+        :label => String.t(),
+        optional(:required) => boolean(),
+        optional(:help) => String.t()
+      }
+
+# The resolved node: no :condition, :label and :help rendered, and :held.
+@type resolved_secret_question :: %{
+        :type => String.t(),
+        :key => String.t(),
+        :label => String.t(),
+        optional(:required) => boolean(),
+        optional(:help) => String.t(),
+        :held => boolean()
+      }
+
+# What responses.<key> holds: nothing answered, the plaintext before the
+# seal, or the sealed form, which is exactly %{"sealed" => handle}.
+@type sealed :: %{required(String.t()) => String.t()}
+@type secret_response :: nil | String.t() | sealed()
+
+@type sealer :: (String.t() -> {:ok, String.t()} | {:error, term()})
+
+@spec seal_secrets(Riddler.Screens.Document.t(), term(), map(), sealer()) ::
+        {:ok, map()} | {:error, [Riddler.Finding.t()]} | {:error, :no_such_screen}
+```
+
+### Worked examples
+
+These are from patron registration, a visitor becoming a library patron
+through a few screens, the example world the repository names for new
+teaching text. `EXAMPLE-PIN` and `EXAMPLE-SEALED-HANDLE` are placeholders: no
+real PIN and no real sealed string appears in this record.
+
+A screen asking for a library card PIN:
+
+```json
+{
+  "key": "card_pin",
+  "title": "Protect your card",
+  "nodes": [
+    {
+      "type": "secret_question",
+      "key": "library_pin",
+      "label": "Choose a PIN for your library card, {{ responses.first_name }}",
+      "help": "You will type it at the self-checkout at {{ context.branch_name }}.",
+      "required": true
+    },
+    {
+      "type": "button",
+      "key": "pin_next",
+      "label": "Continue",
+      "outcome": "pin_chosen"
+    }
+  ]
+}
+```
+
+Validated with `validate_screen(document, "card_pin", root)`, where the root's
+`"responses"` holds `"first_name": "Ada"` and `library_pin` holds:
+
+- `"EXAMPLE-PIN"`: `:ok`.
+- nothing, `null` or `"   "`: `response.required`, on `library_pin`, its
+  message naming the question by its rendered label and nothing else.
+- `{"sealed": "EXAMPLE-SEALED-HANDLE"}`: `:ok`, a held value.
+- `["EXAMPLE-PIN"]`, or `{"sealed": "EXAMPLE-SEALED-HANDLE", "pin": "EXAMPLE-PIN"}`:
+  `response.invalid_shape`, with `field` `"type"`.
+
+Sealed after that `:ok`, with a sealer the host writes over its own key:
+
+```elixir
+sealer = fn plaintext -> Library.Vault.seal(plaintext) end
+
+Riddler.Screens.seal_secrets(
+  document,
+  "card_pin",
+  %{"first_name" => "Ada", "library_pin" => "EXAMPLE-PIN"},
+  sealer
+)
+#=> {:ok,
+#=>  %{
+#=>    "first_name" => "Ada",
+#=>    "library_pin" => %{"sealed" => "EXAMPLE-SEALED-HANDLE"}
+#=>  }}
+```
+
+The same call with a sealer answering `{:error, :key_unavailable}` answers
+`{:error, [finding]}`, the finding `response.seal_failed` on `library_pin`
+with `field` `"sealed"`; its message names the question and carries neither
+`EXAMPLE-PIN` nor `:key_unavailable`.
+
+Presented with `Riddler.Journey.present(document, {:screen, "card_pin"}, root)`
+against a root whose `context.branch_name` is `Riverside` and whose
+`library_pin` is the sealed form above, the question node reads:
+
+```json
+{
+  "type": "secret_question",
+  "key": "library_pin",
+  "label": "Choose a PIN for your library card, Ada",
+  "help": "You will type it at the self-checkout at Riverside.",
+  "required": true,
+  "held": true
+}
+```
+
+The same root with no `library_pin` presents `"held": false`; so does a root
+holding `"EXAMPLE-PIN"` in plaintext, and the node carries that plaintext
+nowhere.
+
+Three things an author might write, and what admission says of each:
+
+```json
+[
+  {
+    "type": "text",
+    "key": "pin_echo",
+    "text": "Your PIN is {{ responses.library_pin }}."
+  },
+  {
+    "type": "text",
+    "key": "pin_thanks",
+    "condition": "responses.library_pin != ''",
+    "text": "Your card is protected."
+  },
+  {
+    "type": "secret_question",
+    "key": "library_pin",
+    "label": "Choose a PIN",
+    "default": "EXAMPLE-PIN"
+  }
+]
+```
+
+`pin_echo` is `document.secret_reference` with `field` `"text"`, and
+`pin_thanks` is the same code with `field` `"condition"`; each names
+`library_pin` in its message. The question itself is
+`document.secret_initial_value` with `field` `"default"`. A host that resolved
+this document without validating it would see `pin_echo` render
+`"Your PIN is ."` with `responses.library_pin` in `missing_variables`, and
+`pin_thanks` hidden and reported in `undecidable_conditions`.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the rule
+stated above answers a call one way, and this entry answers the same call
+another". A document naming `secret_question` answers `document.unknown_type`
+today; this entry admits it. It also adds refusals, the other mark the README
+names as sufficient: a document carrying a secret question whose response a
+template, a condition or a write names is refused, and `seal_secrets/4` refuses
+the responses it cannot seal.
+
+### What is unchanged
+
+Every existing type keeps its fields, its findings and its responses, finding
+for finding; no message changes. A document carrying no secret question is
+admitted, resolved, validated and presented exactly as before: the root a
+condition and a template read loses only the responses of secret questions, and
+there are none. `Riddler.Journey` gains no function and no argument. `type`
+stays an open string in the schema. The vocabulary is the record's:
+`responses`, `context`, `outcome`, `writes`, `nodes`, and a question owns its
+`answer_options`.
+
+### What this does not decide
+
+- How a renderer draws a secret question - a masked field, a numeric keypad -
+  and what a client that does not know the type does with it.
+- A format, a length or a pattern for a secret response, and a second field
+  that asks the visitor to type it again.
+- A condition or a template on whether a secret is held, rather than on its
+  value.
+- How a host's sealer is keyed, how a key is rotated, and when a held value is
+  overwritten once the host has used it; those are the host's.
+- Whether other question types carry `help`, and what a question node presents
+  of a held response other than `held`.
