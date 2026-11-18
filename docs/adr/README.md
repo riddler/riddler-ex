@@ -154,3 +154,12 @@ the operator, YYYY-MM-DD" or restates the reason, and a new Note opens
 carries no id, having no work of its own to account for. The id belongs in the body, not in an
 Amendment's heading, which names the decision the Amendment records - it is
 what a reader scans and what another record cites.
+
+---
+
+Noted 2026-11-18, bead rd-xikc. ADR-0005 carries an Amendment at
+`proposed`, headed "Amendment, 2026-11-18: the presented answer, the submit
+and a finding as a published wire contract". The index row above gives the
+record's own Status, which stays accepted; the Amendment's Status is on its
+own line beneath its heading, and it governs only once that line reads
+accepted, as "Which passage governs" above says.
