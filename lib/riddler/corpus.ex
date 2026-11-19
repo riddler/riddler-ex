@@ -30,7 +30,8 @@ defmodule Riddler.Corpus do
     "corpus/screens/validate_screen.json",
     "corpus/templates/render.json",
     "corpus/journey/present.json",
-    "corpus/journey/put_context.json"
+    "corpus/journey/put_context.json",
+    "corpus/journey/decode_submit.json"
   ]
 
   @schema_files [
@@ -149,6 +150,16 @@ defmodule Riddler.Corpus do
     case Journey.put_context(input["root"] || %{}, input["context"]) do
       {:ok, root} -> root
       {:error, reason} -> %{"error" => Atom.to_string(reason)}
+    end
+  end
+
+  # The submit is handed over as the case states it, any JSON value, and the
+  # answer is stated in the form the response validation cases use: `"ok"`,
+  # and beside it the submit or the findings.
+  defp run("journey.decode_submit", input) do
+    case Journey.decode_submit(input["submit"]) do
+      {:ok, submit} -> %{"ok" => true, "submit" => submit}
+      {:error, findings} -> %{"ok" => false, "findings" => encode_findings(findings)}
     end
   end
 

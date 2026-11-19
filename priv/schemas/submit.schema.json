@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "What a client sends back when the visitor presses a button: the key of the screen it was shown, the outcome of the button pressed and what the visitor entered on that screen. Riddler.Journey.decode_submit/1 gives back the submit for a value this schema validates and findings for any other value. A key beside the three is not refused here, and the decoder drops it. The schema is versioned with the package: it changes only in a release, and that release's changelog names the change.",
+  "properties": {
+    "outcome": {
+      "description": "The outcome of the button the visitor pressed.",
+      "type": "string"
+    },
+    "responses": {
+      "description": "What the visitor entered on that screen, keyed by question key; an empty object for a screen with no question. What each response has to satisfy is the screen's, checked by Riddler.Screens.validate_screen/3,4, not by this schema.",
+      "type": "object"
+    },
+    "screen": {
+      "description": "The key of the screen the client was shown.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "screen",
+    "outcome",
+    "responses"
+  ],
+  "title": "Submit",
+  "type": "object"
+}

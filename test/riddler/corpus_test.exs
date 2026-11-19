@@ -27,19 +27,24 @@ defmodule Riddler.CorpusTest do
 
   use ExUnit.Case, async: true
 
+  alias Riddler.Screens.Document
+
   @corpus_files [
     "corpus/screens/admit.json",
     "corpus/screens/resolve.json",
     "corpus/screens/validate_screen.json",
     "corpus/templates/render.json",
     "corpus/journey/present.json",
-    "corpus/journey/put_context.json"
+    "corpus/journey/put_context.json",
+    "corpus/journey/decode_submit.json"
   ]
 
   @document_schema "priv/schemas/screen-document.schema.json"
   @case_schema "priv/schemas/corpus-case.schema.json"
   @presented_schema "priv/schemas/presented-answer.schema.json"
-  @schemas [@document_schema, @case_schema, @presented_schema]
+  @submit_schema "priv/schemas/submit.schema.json"
+  @finding_schema "priv/schemas/finding.schema.json"
+  @schemas [@document_schema, @case_schema, @presented_schema, @submit_schema, @finding_schema]
   @json_files @corpus_files ++ @schemas
 
   for path <- @json_files do
@@ -55,7 +60,8 @@ defmodule Riddler.CorpusTest do
     "corpus/screens/validate_screen.json" => 71,
     "corpus/templates/render.json" => 74,
     "corpus/journey/present.json" => 14,
-    "corpus/journey/put_context.json" => 8
+    "corpus/journey/put_context.json" => 8,
+    "corpus/journey/decode_submit.json" => 14
   }
 
   @draft_7 "http://json-schema.org/draft-07/schema#"
@@ -382,6 +388,13 @@ defmodule Riddler.CorpusTest do
     test "every journey context case answers what the corpus states" do
       assert mismatches("corpus/journey/put_context.json") == []
     end
+
+    # Sabotage: made `Riddler.Journey.decode_submit/1` stop at the first
+    # failing key; the cases stating two and three findings came back with one
+    # and this test went red.
+    test "every journey submit case answers what the corpus states" do
+      assert mismatches("corpus/journey/decode_submit.json") == []
+    end
   end
 
   describe "the screen document schema" do
@@ -679,6 +692,157 @@ defmodule Riddler.CorpusTest do
       refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.delete(secret, "held")]))
       refute ExJsonSchema.Validator.valid?(schema, with_nodes([%{secret | "held" => "yes"}]))
     end
+  end
+
+  describe "the submit schema" do
+    # Both directions, as for the screen document schema: a case the decoder
+    # accepts is a submit the schema validates, and a case it refuses is a
+    # value the schema refuses. Both sides are asserted to occur, so a corpus
+    # that lost every refusal could not pass this vacuously.
+    #
+    # Sabotage: dropped "responses" from the schema's required list; the case
+    # whose submit carries no responses validated while the decoder refuses
+    # it, and this test went red.
+    test "validates exactly the submits the decoding corpus accepts" do
+      schema = resolved_schema(@submit_schema)
+      decoded = cases("corpus/journey/decode_submit.json")
+
+      assert decoded |> Enum.map(& &1["expected"]["ok"]) |> Enum.uniq() |> Enum.sort() ==
+               [false, true]
+
+      disagreements =
+        for %{"name" => name, "input" => input, "expected" => expected} <- decoded,
+            valid <- [ExJsonSchema.Validator.valid?(schema, input["submit"])],
+            valid != expected["ok"],
+            do: {name, valid, expected["ok"]}
+
+      assert disagreements == []
+    end
+
+    # Sabotage: typed "outcome" as ["string", "null"] in the schema; the submit
+    # with a null outcome validated and this test went red.
+    test "refuses each key missing or of the wrong type, and lets a further key through" do
+      schema = resolved_schema(@submit_schema)
+      submit = %{"screen" => "account", "outcome" => "account_created", "responses" => %{}}
+
+      assert ExJsonSchema.Validator.valid?(schema, submit)
+      assert ExJsonSchema.Validator.valid?(schema, Map.put(submit, "variant", "b"))
+
+      for key <- ["screen", "outcome", "responses"] do
+        refute ExJsonSchema.Validator.valid?(schema, Map.delete(submit, key)), key
+        refute ExJsonSchema.Validator.valid?(schema, Map.put(submit, key, nil)), key
+      end
+
+      refute ExJsonSchema.Validator.valid?(schema, %{submit | "responses" => []})
+    end
+  end
+
+  describe "the finding schema" do
+    # The findings are the package's own, put through the one encoder as a
+    # host puts them on the wire: submit findings with and without a field, a
+    # response finding, a document finding and a template finding with a
+    # position, so field, node_key and position are each exercised with a
+    # value and with null.
+    #
+    # Sabotage: typed "node_key" as a string only in the schema; every finding
+    # whose node_key is nil failed validation and this test went red. And
+    # again with "field" typed so; the not-an-object finding failed and it
+    # went red.
+    test "validates the data form of findings the package raises" do
+      schema = resolved_schema(@finding_schema)
+      findings = Enum.map(raised_findings(), &Riddler.Encoding.to_data/1)
+
+      for key <- ["field", "node_key", "position"] do
+        assert Enum.any?(findings, &is_nil(&1[key])), key
+        assert Enum.any?(findings, &(not is_nil(&1[key]))), key
+      end
+
+      invalid =
+        for finding <- findings,
+            {:error, errors} <- [ExJsonSchema.Validator.validate(schema, finding)],
+            do: {finding, errors}
+
+      assert invalid == []
+    end
+
+    # Sabotage: dropped "position" from the schema's required list; the
+    # finding without it validated and this test went red. And again with the
+    # type removed from "message"; the numeric message validated and it went
+    # red.
+    test "holds every key present and typed, and lets a further key through" do
+      schema = resolved_schema(@finding_schema)
+
+      finding = %{
+        "code" => "submit.missing_field",
+        "message" => ~s(the submit carries no "outcome"),
+        "field" => "outcome",
+        "node_key" => nil,
+        "position" => nil
+      }
+
+      assert ExJsonSchema.Validator.valid?(schema, finding)
+      assert ExJsonSchema.Validator.valid?(schema, Map.put(finding, "hint", "later"))
+
+      for key <- ["code", "message", "field", "node_key", "position"] do
+        refute ExJsonSchema.Validator.valid?(schema, Map.delete(finding, key)), key
+      end
+
+      refute ExJsonSchema.Validator.valid?(schema, %{finding | "code" => nil})
+      refute ExJsonSchema.Validator.valid?(schema, %{finding | "message" => 1})
+      refute ExJsonSchema.Validator.valid?(schema, %{finding | "field" => 1})
+      refute ExJsonSchema.Validator.valid?(schema, %{finding | "node_key" => 1})
+      assert ExJsonSchema.Validator.valid?(schema, %{finding | "field" => nil})
+
+      for position <- [
+            %{"line" => 0, "column" => 1},
+            %{"line" => 1, "column" => 0},
+            %{"line" => 1},
+            %{"line" => 1.5, "column" => 1},
+            [1, 1]
+          ] do
+        refute ExJsonSchema.Validator.valid?(schema, %{finding | "position" => position}),
+               inspect(position)
+      end
+
+      assert ExJsonSchema.Validator.valid?(schema, %{
+               finding
+               | "position" => %{"line" => 1, "column" => 3}
+             })
+    end
+  end
+
+  defp raised_findings do
+    {:error, submit} = Riddler.Journey.decode_submit(%{"screen" => 2})
+    {:error, not_an_object} = Riddler.Journey.decode_submit("account")
+    {:error, template} = Riddler.Template.compile("{% include 'x' %}")
+
+    document =
+      Document.admit(%{
+        "schema_version" => 1,
+        "id" => "edoc_signup_screens",
+        "screens" => [
+          %{
+            "key" => "account",
+            "title" => "Create your account",
+            "nodes" => [
+              %{
+                "type" => "text_question",
+                "key" => "email",
+                "label" => "Email",
+                "required" => true
+              },
+              %{"type" => "heading", "key" => "account_heading"}
+            ]
+          }
+        ]
+      })
+
+    {:error, response} =
+      Riddler.Screens.validate_screen(document, "account", %{"responses" => %{}})
+
+    {:error, admit} = Document.validate(document)
+
+    submit ++ not_an_object ++ template ++ response ++ admit
   end
 
   # The first screen answer the journey presentation corpus states.

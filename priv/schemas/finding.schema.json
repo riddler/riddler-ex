@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "One reason something was refused, as a host sends it to a client: the data form of a Riddler.Finding, every key present. A client switches on code, which does not change when the wording of message does. The codes are not enumerated, so a code a later release adds is a finding in the same form, and a key a later release adds is not refused. The schema is versioned with the package: it changes only in a release, and that release's changelog names the change.",
+  "properties": {
+    "code": {
+      "description": "A stable, machine-readable reason, such as submit.missing_field or response.required.",
+      "type": "string"
+    },
+    "field": {
+      "description": "What the finding is about: the refused construct, field or key; null when the refusal is about the input as a whole.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "message": {
+      "description": "The package's own sentence naming what was refused.",
+      "type": "string"
+    },
+    "node_key": {
+      "description": "The key of the document node the finding belongs to; null where there is no key a host can look a node up by.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "position": {
+      "description": "Where in some source text the refusal is, both counts one-based, or null. The unit a column counts is the one the Riddler.Finding documentation names for the finding's code.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "column": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "line": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "line",
+            "column"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "required": [
+    "code",
+    "message",
+    "field",
+    "node_key",
+    "position"
+  ],
+  "title": "Finding",
+  "type": "object"
+}
