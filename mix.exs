@@ -56,8 +56,10 @@ defmodule Riddler.MixProject do
         "README.md",
         "CHANGELOG.md",
         "docs/guides/ask-a-choice-question.md",
+        "docs/guides/post-a-submit.md",
         "docs/guides/present-a-journey.md",
         "docs/guides/seal-a-secret-answer.md",
+        "docs/guides/supply-options-at-run-time.md",
         "docs/explanation/what-riddler-is-for.md"
       ],
       groups_for_extras: [
@@ -96,8 +98,9 @@ defmodule Riddler.MixProject do
       # The explanation and how-to pages ship because the README links them by a
       # relative path, and hex.pm resolves README links against the tarball.
       files: ~w(lib priv/schemas mix.exs .formatter.exs README.md LICENSE CHANGELOG.md
-           docs/guides/ask-a-choice-question.md docs/guides/present-a-journey.md
-           docs/guides/seal-a-secret-answer.md docs/explanation/what-riddler-is-for.md),
+           docs/guides/ask-a-choice-question.md docs/guides/post-a-submit.md
+           docs/guides/present-a-journey.md docs/guides/seal-a-secret-answer.md
+           docs/guides/supply-options-at-run-time.md docs/explanation/what-riddler-is-for.md),
       links: %{
         "GitHub" => @source_url,
         "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md"
