@@ -55,11 +55,11 @@ defmodule Riddler.CorpusTest do
   # count is part of what this version pins: a case lost in a rebase is a case
   # a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
-    "corpus/screens/admit.json" => 103,
+    "corpus/screens/admit.json" => 109,
     "corpus/screens/resolve.json" => 50,
     "corpus/screens/validate_screen.json" => 74,
     "corpus/templates/render.json" => 74,
-    "corpus/journey/present.json" => 35,
+    "corpus/journey/present.json" => 46,
     "corpus/journey/put_context.json" => 8,
     "corpus/journey/decode_submit.json" => 14
   }
@@ -475,6 +475,15 @@ defmodule Riddler.CorpusTest do
       schema = resolved_schema(@presented_schema)
 
       refute ExJsonSchema.Validator.valid?(schema, Map.delete(screen_answer(), "screen"))
+    end
+
+    # Sabotage: dropped "moves" from the screen state's required list in the
+    # schema; the answer with no moves validated and this test went red.
+    test "refuses a screen state that carries no moves" do
+      schema = resolved_schema(@presented_schema)
+
+      assert ExJsonSchema.Validator.valid?(schema, screen_answer())
+      refute ExJsonSchema.Validator.valid?(schema, Map.delete(screen_answer(), "moves"))
     end
 
     # Sabotage: removed the done state's refusal of "screen"; the done answer

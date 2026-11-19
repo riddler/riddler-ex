@@ -19,8 +19,9 @@ defmodule Riddler.Journey do
 
   The host maps its execution onto one of three values and passes it:
 
-    * `{:screen, key}` - the visitor is to be shown the screen the document
-      declares under `key`;
+    * `{:screen, key}`, or `{:screen, key, opts}` - the visitor is to be
+      shown the screen the document declares under `key`, and `opts` may say
+      that the host lets the visitor go back from it;
     * `:waiting`, or `{:waiting, info}` - the execution is waiting on
       something that is not the visitor, and `info` may say why and when a
       client should ask again;
@@ -28,8 +29,8 @@ defmodule Riddler.Journey do
       `result` is what the host has to show for it.
 
   `present/3` answers a string-keyed map whose `"state"` is `"screen"`,
-  `"waiting"` or `"done"`, with `"screen"` beside it exactly when the state
-  is a screen, `"reason"` and `"retry_after_ms"` beside a waiting state
+  `"waiting"` or `"done"`, with `"screen"` and `"moves"` beside it exactly
+  when the state is a screen, `"reason"` and `"retry_after_ms"` beside a waiting state
   exactly when the host supplied them, and `"result"` beside a done state
   exactly when the host supplied one. String keys throughout, so the answer
   can be put on any wire as JSON as it stands.
@@ -99,10 +100,14 @@ defmodule Riddler.Journey do
   @typedoc "Where the host's execution is for the visitor."
   @type status ::
           {:screen, screen_key :: term()}
+          | {:screen, screen_key :: term(), screen_opts()}
           | :waiting
           | {:waiting, waiting_info()}
           | :done
           | {:done, result :: map()}
+
+  @typedoc ~s(Optionally `"back"` => `t:boolean/0`. Other keys are not read.)
+  @type screen_opts :: map()
 
   @typedoc """
   Optionally `"reason"` => `t:String.t/0` and `"retry_after_ms"` =>
@@ -119,12 +124,21 @@ defmodule Riddler.Journey do
 
   @typedoc """
   `"state"` => `"screen"` | `"waiting"` | `"done"`; only when `"state"` is
-  `"screen"`, `"screen"` => `t:screen/0`; only on a waiting answer, and
-  each only where the host supplied it, `"reason"` => `t:String.t/0` and
-  `"retry_after_ms"` => `t:non_neg_integer/0`; and only on a done answer,
-  and only where the host supplied it, `"result"` => `t:map/0`.
+  `"screen"`, `"screen"` => `t:screen/0` and `"moves"` => `t:moves/0`; only
+  on a waiting answer, and each only where the host supplied it, `"reason"`
+  => `t:String.t/0` and `"retry_after_ms"` => `t:non_neg_integer/0`; and
+  only on a done answer, and only where the host supplied it, `"result"` =>
+  `t:map/0`.
   """
-  @type answer :: %{required(String.t()) => String.t() | non_neg_integer() | screen() | map()}
+  @type answer :: %{
+          required(String.t()) => String.t() | non_neg_integer() | screen() | moves() | map()
+        }
+
+  @typedoc """
+  `"outcomes"` => `[t:String.t/0]`, the outcome of each shown button in
+  document order, and `"back"` => `t:boolean/0`.
+  """
+  @type moves :: %{required(String.t()) => [String.t()] | boolean()}
 
   @typedoc """
   `"key"`, `"title"`, `"nodes"` (the resolved nodes, string-keyed) and
@@ -150,6 +164,19 @@ defmodule Riddler.Journey do
   `"missing_variables"` and `"undecidable_conditions"` in document order. The
   diagnostics ride inside the screen, so a caller is never handed a screen
   without the report of resolving it.
+
+  Beside `"screen"` the answer carries `"moves"`, what a client may submit
+  from that screen, so that a client reads it and never derives it from the
+  nodes. `"outcomes"` is the `outcome` of each button among the screen's
+  `"nodes"`, in document order: a button a condition hid, or a candidate that
+  did not win its container, is not among them, and a screen that shows no
+  button lists `[]`. No two buttons a screen can show together raise one
+  outcome in a document `Riddler.Screens.Document.validate/1` accepts, so no
+  outcome is listed twice. `"back"` is `true` exactly when the host passed
+  `{:screen, key, opts}` with `"back"` true in `opts`, and `false`
+  otherwise. `opts` is a string-keyed map; a key it carries beside `"back"`
+  is not read and nothing of it reaches the answer, so `{:screen, key, %{}}`
+  answers exactly what `{:screen, key}` answers.
 
   A text, choice or boolean question's node carries `"value"` where a
   response the root holds, its prefill or its default yields one, as
@@ -183,7 +210,9 @@ defmodule Riddler.Journey do
   A key the document does not declare is `{:error, :no_such_screen}`, the
   answer `Riddler.Screens.resolve_screen/3` gives for it. A status outside the
   three is `{:error, :unknown_status}`, so a host that builds its status from
-  its own data is told rather than handed an exception. So is `{:waiting,
+  its own data is told rather than handed an exception. So is `{:screen,
+  key, opts}` whose `opts` is not a map (a struct included) or whose
+  `"back"` is not a boolean, whatever `key` names. So is `{:waiting,
   info}` whose `info` is not a map (a struct included), whose `"reason"` is
   not a string, or whose `"retry_after_ms"` is not an integer or is below
   zero, and so is `{:done, result}` whose `result` is not a map (a struct
@@ -228,8 +257,15 @@ defmodule Riddler.Journey do
              }
            ],
            "diagnostics" => %{"missing_variables" => [], "undecidable_conditions" => []}
-         }
+         },
+         "moves" => %{"outcomes" => ["details_submitted"], "back" => false}
        }}
+      iex> {:ok, %{"moves" => moves}} =
+      ...>   Riddler.Journey.present(document, {:screen, "patron_details", %{"back" => true}}, %{})
+      iex> moves
+      %{"outcomes" => ["details_submitted"], "back" => true}
+      iex> Riddler.Journey.present(document, {:screen, "patron_details", %{"back" => "yes"}}, %{})
+      {:error, :unknown_status}
       iex> Riddler.Journey.present(
       ...>   document,
       ...>   {:waiting, %{"reason" => "card_number_pending", "retry_after_ms" => 5000}},
@@ -251,13 +287,13 @@ defmodule Riddler.Journey do
   """
   @spec present(Document.t(), term(), root()) ::
           {:ok, answer()} | {:error, :no_such_screen} | {:error, :unknown_status}
-  def present(%Document{} = document, {:screen, key}, root) when is_map(root) do
-    case Screens.resolve_screen(document, key, root) do
-      {:ok, screen, diagnostics} ->
-        {:ok, %{"state" => "screen", "screen" => screen_data(screen, diagnostics)}}
+  def present(%Document{} = document, {:screen, key}, root) when is_map(root),
+    do: present_screen(document, key, false, root)
 
-      {:error, :no_such_screen} = no_such_screen ->
-        no_such_screen
+  def present(%Document{} = document, {:screen, key, opts}, root) when is_map(root) do
+    case back(opts) do
+      {:ok, back} -> present_screen(document, key, back, root)
+      :error -> {:error, :unknown_status}
     end
   end
 
@@ -415,6 +451,48 @@ defmodule Riddler.Journey do
 
   defp waiting_value?("reason", value), do: is_binary(value)
   defp waiting_value?("retry_after_ms", value), do: is_integer(value) and value >= 0
+
+  defp present_screen(document, key, back, root) do
+    case Screens.resolve_screen(document, key, root) do
+      {:ok, screen, diagnostics} ->
+        {:ok,
+         %{
+           "state" => "screen",
+           "screen" => screen_data(screen, diagnostics),
+           "moves" => %{"outcomes" => outcomes(screen), "back" => back}
+         }}
+
+      {:error, :no_such_screen} = no_such_screen ->
+        no_such_screen
+    end
+  end
+
+  # The screen options' one key, kept only where it is a boolean; any other
+  # key is not read. A map that carries `"back"` with another type, and
+  # anything that is not a plain map, is `:error`, which `present/3` answers
+  # as a status outside the shapes.
+  defp back(opts) when is_map(opts) and not is_struct(opts) do
+    case Map.fetch(opts, "back") do
+      {:ok, back} when is_boolean(back) -> {:ok, back}
+      {:ok, _not_a_boolean} -> :error
+      :error -> {:ok, false}
+    end
+  end
+
+  defp back(_opts), do: :error
+
+  # The outcome of each shown button, read from the resolved screen, where
+  # hidden nodes are absent and every container is already its winner. Only
+  # a document `validate/1` refuses can carry a shown button whose outcome is
+  # not a string, or two shown buttons raising one outcome; for such a
+  # document each string outcome is listed once, at its first button, so the
+  # list stays what the presented answer's schema says it is.
+  defp outcomes(screen) do
+    for %{type: "button", outcome: outcome} <- screen.nodes,
+        is_binary(outcome),
+        uniq: true,
+        do: outcome
+  end
 
   defp screen_data(screen, diagnostics) do
     screen

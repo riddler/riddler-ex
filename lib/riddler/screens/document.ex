@@ -158,6 +158,17 @@ defmodule Riddler.Screens.Document do
       response, `responses.<key>`, or a path under it. Its `node_key` is the
       node carrying the reference and its `field` the field that carries it;
       the message names the secret question's key, which is not a secret.
+    * `document.duplicate_outcome` - two buttons that a screen can show
+      together raise the same `outcome`, so a client handed that screen could
+      not tell which of them the visitor pressed. Two buttons can be shown
+      together unless they are candidates in different arms of one variant,
+      which resolves to one winner; a condition on a button does not keep it
+      from being compared, because which of two conditions holds is the
+      root's and not the document's. One finding for each button that
+      repeats an outcome a button before it on the screen raises, its `field`
+      `"outcome"` and its `node_key` the repeating button's key; the message
+      names the earlier button. Only outcomes that are strings are compared,
+      and the findings come after every other finding on the screen.
     * `document.empty_variant` - a variant with no candidates.
     * `document.unreachable_variant_candidate` - an unconditional candidate
       that is not last, which buries every candidate after it.
@@ -639,7 +650,56 @@ defmodule Riddler.Screens.Document do
 
   defp screen_findings(screen, secrets) do
     key_findings(screen.key, "the screen #{inspect(screen.title)}") ++
-      Enum.flat_map(screen.nodes, &node_findings(&1, secrets))
+      Enum.flat_map(screen.nodes, &node_findings(&1, secrets)) ++
+      outcome_findings(screen)
+  end
+
+  # -- each button a screen can show raises its own outcome -------------------
+
+  # A screen's own nodes are all shown together, conditions aside, so the
+  # buttons under one of them are compared with the buttons under every other.
+  # The buttons under one node are never compared with each other: the only
+  # node that holds others is a variant, which resolves to one winner, so at
+  # most one button under it is ever shown. Walking the screen's nodes in
+  # order, each button whose outcome a button under an earlier node already
+  # raised is one finding naming the first such button.
+  defp outcome_findings(screen) do
+    {findings, _seen} =
+      Enum.reduce(screen.nodes, {[], %{}}, fn node, {findings, seen} ->
+        buttons = buttons_under(node)
+
+        repeats =
+          for {key, outcome} <- buttons, Map.has_key?(seen, outcome) do
+            duplicate_outcome(key, outcome, Map.fetch!(seen, outcome), screen.key)
+          end
+
+        seen =
+          Enum.reduce(buttons, seen, fn {key, outcome}, acc -> Map.put_new(acc, outcome, key) end)
+
+        {findings ++ repeats, seen}
+      end)
+
+    findings
+  end
+
+  defp buttons_under(node) do
+    own =
+      case node do
+        %{type: "button", outcome: outcome} when is_binary(outcome) -> [{node[:key], outcome}]
+        _other -> []
+      end
+
+    own ++ Enum.flat_map(candidates(node), &buttons_under/1)
+  end
+
+  defp duplicate_outcome(key, outcome, first_key, screen_key) do
+    %Finding{
+      code: "document.duplicate_outcome",
+      message:
+        "the outcome #{inspect(outcome)} is raised by the button #{inspect(first_key)} too, and the screen #{inspect(screen_key)} can show both; each button a screen can show raises its own outcome",
+      field: "outcome",
+      node_key: Finding.node_key(key)
+    }
   end
 
   defp node_findings(node, secrets) do
