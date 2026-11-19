@@ -25,7 +25,8 @@
               "key": "first_name",
               "label": "First name",
               "required": true,
-              "type": "text_question"
+              "type": "text_question",
+              "value": "Ada"
             },
             {
               "key": "details_next",
@@ -1074,6 +1075,232 @@
         "status": "screen"
       },
       "name": "A secret question with no response is presented as not held"
+    },
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "patron_details",
+          "nodes": [
+            {
+              "format": "email",
+              "key": "reminder_email",
+              "label": "Email for due-date reminders",
+              "required": true,
+              "type": "text_question",
+              "value": "ada@example.com"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Adult card",
+                  "value": "adult"
+                },
+                {
+                  "label": "Child card",
+                  "value": "child"
+                }
+              ],
+              "key": "card_type",
+              "label": "Which library card would you like?",
+              "select": "one",
+              "type": "choice_question",
+              "value": "adult"
+            },
+            {
+              "key": "large_print",
+              "label": "Send me notices in large print",
+              "type": "boolean_question",
+              "value": false
+            },
+            {
+              "key": "details_next",
+              "label": "Continue",
+              "outcome": "details_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Get your library card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "prefill": "context.patron.email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Adult card",
+                      "value": "adult"
+                    },
+                    {
+                      "label": "Child card",
+                      "value": "child"
+                    }
+                  ],
+                  "default": "adult",
+                  "key": "card_type",
+                  "label": "Which library card would you like?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "default": false,
+                  "key": "large_print",
+                  "label": "Send me notices in large print",
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "patron": {
+              "email": "ada@example.com"
+            }
+          },
+          "responses": {}
+        },
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status presents each question's value from its prefill or its default, and no question carries either field"
+    },
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "patron_details",
+          "nodes": [
+            {
+              "format": "email",
+              "key": "reminder_email",
+              "label": "Email for due-date reminders",
+              "required": true,
+              "type": "text_question"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Adult card",
+                  "value": "adult"
+                },
+                {
+                  "label": "Child card",
+                  "value": "child"
+                }
+              ],
+              "key": "card_type",
+              "label": "Which library card would you like?",
+              "select": "one",
+              "type": "choice_question",
+              "value": "child"
+            },
+            {
+              "key": "large_print",
+              "label": "Send me notices in large print",
+              "type": "boolean_question",
+              "value": true
+            },
+            {
+              "key": "details_next",
+              "label": "Continue",
+              "outcome": "details_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Get your library card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "prefill": "context.patron.email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Adult card",
+                      "value": "adult"
+                    },
+                    {
+                      "label": "Child card",
+                      "value": "child"
+                    }
+                  ],
+                  "default": "adult",
+                  "key": "card_type",
+                  "label": "Which library card would you like?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "default": false,
+                  "key": "large_print",
+                  "label": "Send me notices in large print",
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "card_type": "child",
+            "large_print": true
+          }
+        },
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status presents a response the root holds as the question's value over its default, and a question nothing yields a value for carries none"
     }
   ],
   "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"

@@ -12,6 +12,13 @@ defmodule Riddler.Screens.Type.TextQuestion do
   format should be told while they are authoring rather than when a visitor
   submits.
 
+  `default` is a string the question presents when nothing else yields a
+  value, and `prefill` a path under `context` - `"context.patron.email"` -
+  whose value it presents first. A default is held to being a string and to
+  nothing else: not to the format, which it meets as a response when it is
+  submitted, so a question whose format is `integer` writes its default as
+  `"2"`.
+
   Three fields belong to a format rather than to the question, and each is
   read only by the format that owns it. `pattern` is the regular expression
   the `pattern` format holds a response to, and it has to match the whole
@@ -44,14 +51,19 @@ defmodule Riddler.Screens.Type.TextQuestion do
   alias Riddler.Finding
   alias Riddler.Screens.Compilers
   alias Riddler.Screens.Document
+  alias Riddler.Screens.Value
 
   @impl true
   def fields,
-    do: %{required: [:label], optional: [:placeholder, :required, :format, :pattern, :min, :max]}
+    do: %{
+      required: [:label],
+      optional: [:placeholder, :required, :format, :pattern, :min, :max] ++ Value.fields()
+    }
 
   @impl true
   def validate(node) do
-    required_findings(node) ++ format_findings(node) ++ pattern_findings(node)
+    required_findings(node) ++
+      format_findings(node) ++ pattern_findings(node) ++ Value.findings(node)
   end
 
   # `required` says whether an empty response is acceptable, so a value that

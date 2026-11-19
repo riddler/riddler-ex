@@ -6,7 +6,9 @@ defmodule Riddler.Screens.Type.BooleanQuestion do
   The response is `true` or `false`. `required` defaults to false, and true
   means the response must be `true` - the shape of "tick to agree to the
   borrowing rules", where an unticked box is the visitor declining rather than
-  an empty field. `format` is carried and never consulted. A boolean question
+  an empty field. `default` is `true` or `false`, presented when nothing else
+  yields a value, and `prefill` a path under `context` whose value it presents
+  first. `format` is carried and never consulted. A boolean question
   carries no `style`: one written on it is a field its type does not name, and
   admission drops it.
 
@@ -23,15 +25,18 @@ defmodule Riddler.Screens.Type.BooleanQuestion do
   @behaviour Riddler.Screens.Type
 
   alias Riddler.Finding
+  alias Riddler.Screens.Value
 
   @impl true
-  def fields, do: %{required: [:label], optional: [:required, :format]}
+  def fields, do: %{required: [:label], optional: [:required, :format] ++ Value.fields()}
+
+  @impl true
+  def validate(node), do: required_findings(node) ++ Value.findings(node)
 
   # `required` says whether the box has to be ticked, so a value that is not a
   # boolean is a question whose rule nothing can read. Checked only where the
   # question declares one; an absent `required` is false.
-  @impl true
-  def validate(node) do
+  defp required_findings(node) do
     case Map.fetch(node, :required) do
       {:ok, required} when is_boolean(required) ->
         []

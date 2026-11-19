@@ -60,6 +60,24 @@ defmodule Riddler.Screens do
   untouched: what a button sets is the host's to apply when the visitor presses
   it.
 
+  ## The value a question presents
+
+  A resolved text, choice or boolean question carries no `default` and no
+  `prefill`: resolution consumes them into `value`, which it sets from the
+  first of these that yields one. A response the root holds for the question
+  and that is not `null` is the value, as written whatever its shape, so a
+  screen shown again after validation refused a response shows what the
+  visitor sent. Else the value the `prefill` path reads from `"context"`, one
+  string key at a time, where it is a value the question's `default` could be:
+  of the question's response shape and, on a choice question, among its
+  options. Else the `default`, put to the same test. A question none of them
+  yields one for carries no `value`. A prefill path the context does not
+  carry yields nothing and is reported nowhere.
+
+  `value` is presentation only. Response validation reads the responses the
+  root holds and never a `value`, so a required question showing a default
+  that the visitor did not send back is unanswered.
+
   A resolved secret question carries no `default` or `prefill`, and one field
   resolution adds, `held`: `true` where the root the host passed holds the
   sealed form for the question, an object whose one key is `"sealed"` and
@@ -134,9 +152,14 @@ defmodule Riddler.Screens do
   alias Riddler.Screens.Resolved
   alias Riddler.Screens.Type.SecretQuestion
   alias Riddler.Screens.Validation
+  alias Riddler.Screens.Value
   alias Riddler.Template
 
   @empty_diagnostics %{missing_variables: [], undecidable_conditions: []}
+
+  # The question types that present a `value`: every question type but the
+  # secret question, which presents `held` instead.
+  @valued_types ["text_question", "choice_question", "boolean_question"]
 
   @doc """
   Resolves every screen of a document against a root.
@@ -512,7 +535,7 @@ defmodule Riddler.Screens do
   defp present(node, {root, held} = scope, diagnostics) do
     case Map.fetch(node, :nodes) do
       {:ok, candidates} when is_list(candidates) -> winner(candidates, scope, diagnostics)
-      _not_a_container -> render(presented(node, held), root, diagnostics)
+      _not_a_container -> render(presented(node, root, held), root, diagnostics)
     end
   end
 
@@ -521,13 +544,19 @@ defmodule Riddler.Screens do
   # document no one validated does not pass it on. It carries `held` instead,
   # true exactly where the host's root holds the sealed form for it, and
   # nothing else of the response: not the plaintext, not the sealed string.
-  defp presented(%{type: "secret_question"} = node, held) do
+  defp presented(%{type: "secret_question"} = node, _root, held) do
     node
     |> Map.drop([:condition | SecretQuestion.initial_values()])
     |> Map.put(:held, node[:key] in held)
   end
 
-  defp presented(node, _held), do: Map.delete(node, :condition)
+  defp presented(%{type: type} = node, root, _held) when type in @valued_types do
+    node
+    |> Map.delete(:condition)
+    |> Value.present(root)
+  end
+
+  defp presented(node, _root, _held), do: Map.delete(node, :condition)
 
   # First match wins: the candidates are considered in order and the first
   # whose condition holds replaces the container.
