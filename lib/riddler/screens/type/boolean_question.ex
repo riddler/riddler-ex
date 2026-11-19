@@ -12,8 +12,9 @@ defmodule Riddler.Screens.Type.BooleanQuestion do
   yields a value, and `prefill` a path under `context` whose value it presents
   first.
   `messages` maps a code response validation raises on this question -
-  `response.required` or `response.invalid_shape` - to the plain string its author shows for it, which a
-  finding with that code carries as `author_message`.
+  `response.required` or `response.invalid_shape` - to the plain string its
+  author shows for it, which a finding with that code carries as
+  `author_message`.
   `format` is carried and never consulted. A boolean question
   carries no `style`: one written on it is a field its type does not name, and
   admission drops it.
