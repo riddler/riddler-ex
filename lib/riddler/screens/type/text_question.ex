@@ -21,6 +21,11 @@ defmodule Riddler.Screens.Type.TextQuestion do
   submitted, so a question whose format is `integer` writes its default as
   `"2"`.
 
+  `messages` maps a code response validation raises on this question -
+  `response.required`, `response.format` or
+  `response.out_of_range` - to the plain string its author shows for it, which a
+  finding with that code carries as `author_message`.
+
   Three fields belong to a format rather than to the question, and each is
   read only by the format that owns it. `pattern` is the regular expression
   the `pattern` format holds a response to, and it has to match the whole
@@ -53,19 +58,23 @@ defmodule Riddler.Screens.Type.TextQuestion do
   alias Riddler.Finding
   alias Riddler.Screens.Compilers
   alias Riddler.Screens.Document
+  alias Riddler.Screens.Messages
   alias Riddler.Screens.Value
 
   @impl true
   def fields,
     do: %{
       required: [:label],
-      optional: [:placeholder, :help, :required, :format, :pattern, :min, :max] ++ Value.fields()
+      optional:
+        [:placeholder, :help, :required, :format, :pattern, :min, :max] ++
+          Value.fields() ++ Messages.fields()
     }
 
   @impl true
   def validate(node) do
     required_findings(node) ++
-      format_findings(node) ++ pattern_findings(node) ++ Value.findings(node)
+      format_findings(node) ++
+      pattern_findings(node) ++ Value.findings(node) ++ Messages.findings(node)
   end
 
   # `required` says whether an empty response is acceptable, so a value that

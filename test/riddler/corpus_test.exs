@@ -55,11 +55,11 @@ defmodule Riddler.CorpusTest do
   # count is part of what this version pins: a case lost in a rebase is a case
   # a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
-    "corpus/screens/admit.json" => 94,
-    "corpus/screens/resolve.json" => 47,
-    "corpus/screens/validate_screen.json" => 71,
+    "corpus/screens/admit.json" => 99,
+    "corpus/screens/resolve.json" => 48,
+    "corpus/screens/validate_screen.json" => 72,
     "corpus/templates/render.json" => 74,
-    "corpus/journey/present.json" => 14,
+    "corpus/journey/present.json" => 15,
     "corpus/journey/put_context.json" => 8,
     "corpus/journey/decode_submit.json" => 14
   }
@@ -673,6 +673,45 @@ defmodule Riddler.CorpusTest do
       end
     end
 
+    # A question's messages are carried as the document wrote them: an object
+    # whose every value is a string, optional on every question type.
+    #
+    # Sabotage: dropped "messages" from the text question's properties in the
+    # schema; the text question presenting a number as a message validated
+    # and this test went red. And again from each of the other three types.
+    test "types a question's messages as an object of strings, and keeps it optional, on every question type" do
+      schema = resolved_schema(@presented_schema)
+
+      questions = [
+        %{"type" => "text_question", "key" => "work_email", "label" => "Work email"},
+        %{
+          "type" => "choice_question",
+          "key" => "plan",
+          "label" => "Which plan?",
+          "select" => "one",
+          "answer_options" => [%{"value" => "personal", "label" => "Personal"}]
+        },
+        %{"type" => "boolean_question", "key" => "newsletter", "label" => "Send me news"},
+        %{
+          "type" => "secret_question",
+          "key" => "account_pin",
+          "label" => "Choose a PIN",
+          "held" => false
+        }
+      ]
+
+      for question <- questions do
+        keyed = Map.put(question, "messages", %{"response.required" => "Answer this one."})
+        numeric = Map.put(question, "messages", %{"response.required" => 3})
+        listed = Map.put(question, "messages", ["Answer this one."])
+
+        assert ExJsonSchema.Validator.valid?(schema, with_nodes([question])), question["type"]
+        assert ExJsonSchema.Validator.valid?(schema, with_nodes([keyed])), question["type"]
+        refute ExJsonSchema.Validator.valid?(schema, with_nodes([numeric])), question["type"]
+        refute ExJsonSchema.Validator.valid?(schema, with_nodes([listed])), question["type"]
+      end
+    end
+
     # Sabotage: removed the secret question's refusal of "value" from the
     # schema; the secret question carrying a value validated and this test
     # went red. And again with "held" dropped from its required list.
@@ -752,7 +791,7 @@ defmodule Riddler.CorpusTest do
       schema = resolved_schema(@finding_schema)
       findings = Enum.map(raised_findings(), &Riddler.Encoding.to_data/1)
 
-      for key <- ["field", "node_key", "position"] do
+      for key <- ["field", "node_key", "position", "author_message"] do
         assert Enum.any?(findings, &is_nil(&1[key])), key
         assert Enum.any?(findings, &(not is_nil(&1[key]))), key
       end
@@ -768,7 +807,8 @@ defmodule Riddler.CorpusTest do
     # Sabotage: dropped "position" from the schema's required list; the
     # finding without it validated and this test went red. And again with the
     # type removed from "message"; the numeric message validated and it went
-    # red.
+    # red. And again with "author_message" dropped from the required list, and
+    # with its type widened to any value; each went red.
     test "holds every key present and typed, and lets a further key through" do
       schema = resolved_schema(@finding_schema)
 
@@ -777,13 +817,14 @@ defmodule Riddler.CorpusTest do
         "message" => ~s(the submit carries no "outcome"),
         "field" => "outcome",
         "node_key" => nil,
-        "position" => nil
+        "position" => nil,
+        "author_message" => nil
       }
 
       assert ExJsonSchema.Validator.valid?(schema, finding)
       assert ExJsonSchema.Validator.valid?(schema, Map.put(finding, "hint", "later"))
 
-      for key <- ["code", "message", "field", "node_key", "position"] do
+      for key <- ["code", "message", "field", "node_key", "position", "author_message"] do
         refute ExJsonSchema.Validator.valid?(schema, Map.delete(finding, key)), key
       end
 
@@ -791,6 +832,8 @@ defmodule Riddler.CorpusTest do
       refute ExJsonSchema.Validator.valid?(schema, %{finding | "message" => 1})
       refute ExJsonSchema.Validator.valid?(schema, %{finding | "field" => 1})
       refute ExJsonSchema.Validator.valid?(schema, %{finding | "node_key" => 1})
+      refute ExJsonSchema.Validator.valid?(schema, %{finding | "author_message" => 1})
+      assert ExJsonSchema.Validator.valid?(schema, %{finding | "author_message" => "Try again."})
       assert ExJsonSchema.Validator.valid?(schema, %{finding | "field" => nil})
 
       for position <- [
@@ -830,6 +873,13 @@ defmodule Riddler.CorpusTest do
                 "key" => "email",
                 "label" => "Email",
                 "required" => true
+              },
+              %{
+                "type" => "boolean_question",
+                "key" => "terms",
+                "label" => "I accept the terms",
+                "required" => true,
+                "messages" => %{"response.required" => "Accept the terms to continue."}
               },
               %{"type" => "heading", "key" => "account_heading"}
             ]

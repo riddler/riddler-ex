@@ -23,6 +23,11 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   and `prefill` a path under `context` whose value it presents first, where
   that value is one the default could be.
 
+  `messages` maps a code response validation raises on this question -
+  `response.required`, `response.invalid_shape`, `response.not_an_option` or
+  `response.out_of_range` - to the plain string its author shows for it,
+  which a finding with that code carries as `author_message`.
+
   `style` is a hint a renderer reads - `radio` or `dropdown` for one,
   `checkboxes` or `list` for many - from an open set the renderer owns; what
   this type checks is that it is a string. `required` defaults to false, and
@@ -46,6 +51,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   @behaviour Riddler.Screens.Type
 
   alias Riddler.Finding
+  alias Riddler.Screens.Messages
   alias Riddler.Screens.Value
 
   @selects ["one", "many"]
@@ -63,7 +69,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
       required: [:label, :select, :answer_options],
       optional:
         [:help, :style, :required, :min_selections, :max_selections, :format] ++
-          Value.fields()
+          Value.fields() ++ Messages.fields()
     }
 
   @impl true
@@ -75,7 +81,8 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
       bounds_findings(node, key) ++
       required_findings(node, key) ++
       style_findings(node, key) ++
-      Value.findings(node)
+      Value.findings(node) ++
+      Messages.findings(node)
   end
 
   # -- select ------------------------------------------------------------------

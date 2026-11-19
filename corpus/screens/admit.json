@@ -3423,6 +3423,290 @@
         }
       },
       "name": "A help that is not a string is refused as a template on a text, choice or boolean question"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "work_email",
+                  "label": "Work email",
+                  "messages": {
+                    "response.format": "That does not look like an email address.",
+                    "response.out_of_range": "That is out of range.",
+                    "response.required": "Tell us where to send your receipts."
+                  },
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "messages": {
+                    "response.invalid_shape": "Pick one plan.",
+                    "response.not_an_option": "Pick one of the plans listed.",
+                    "response.out_of_range": "Pick fewer plans.",
+                    "response.required": "Pick a plan to continue."
+                  },
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "messages": {
+                    "response.invalid_shape": "Tick the box or leave it.",
+                    "response.required": "Tick the box to continue."
+                  },
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "messages": {
+                    "response.invalid_shape": "Type your PIN again.",
+                    "response.required": "Choose a PIN to continue."
+                  },
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A text, choice, boolean or secret question carrying messages for codes its type raises is admitted with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_messages",
+            "field": "messages",
+            "node_key": "work_email"
+          },
+          {
+            "code": "document.invalid_messages",
+            "field": "messages",
+            "node_key": "plan"
+          },
+          {
+            "code": "document.invalid_messages",
+            "field": "messages",
+            "node_key": "newsletter"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "work_email",
+                  "label": "Work email",
+                  "messages": "That does not look like an email address.",
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "messages": {
+                    "response.not_an_option": "Pick one of the plans listed.",
+                    "response.required": 3
+                  },
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "messages": null,
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A messages that is not an object, or a value in it that is not a string, is refused as invalid messages"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.unknown_message_code",
+            "field": "messages",
+            "node_key": "work_email"
+          },
+          {
+            "code": "document.unknown_message_code",
+            "field": "messages",
+            "node_key": "plan"
+          },
+          {
+            "code": "document.unknown_message_code",
+            "field": "messages",
+            "node_key": "newsletter"
+          },
+          {
+            "code": "document.unknown_message_code",
+            "field": "messages",
+            "node_key": "account_pin"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "work_email",
+                  "label": "Work email",
+                  "messages": {
+                    "response.not_an_option": "Pick one of the plans listed."
+                  },
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "messages": {
+                    "response.format": "That is not a plan."
+                  },
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "messages": {
+                    "response.undecidable": "Something went wrong."
+                  },
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "messages": {
+                    "response.format": "That is not a PIN."
+                  },
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A messages key that is not a code the question's type raises on a response is refused as an unknown message code"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "work_email",
+                  "label": "Work email",
+                  "messages": {
+                    "response.format": "That does not look like an email address."
+                  },
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A text question with no format may key the format code, the codes being its type's and not the question's"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "messages": {
+                    "response.required": "Continue."
+                  },
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Messages on a node that is not a question are dropped with no finding"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"

@@ -61,6 +61,16 @@ defmodule Riddler.Finding do
       it too and goes on naming it, so that a person reading a finding reads
       one sentence; this field is the same fact in the form an editor can act
       on without parsing that sentence.
+    * `:author_message` - what the document's author says a refused response
+      tells the visitor, or `nil`. It is set on exactly one kind of finding:
+      one `Riddler.Screens.validate_screen/3` or `/4` raises on a question's
+      response, where that question's `messages` carries the finding's code,
+      and it is then that string as written. Every other finding carries
+      `nil`: every `document.*` finding, `response.undecidable`, and a
+      response finding on a question whose `messages` does not carry its
+      code. It never replaces `:message`, which stays this package's own
+      sentence; where a finding is shown to a visitor, a renderer shows this
+      where it is a string and its own text otherwise.
 
   ## Examples
 
@@ -87,11 +97,12 @@ defmodule Riddler.Finding do
           message: String.t(),
           field: String.t() | nil,
           node_key: String.t() | nil,
-          position: position() | nil
+          position: position() | nil,
+          author_message: String.t() | nil
         }
 
   @enforce_keys [:code, :message]
-  defstruct [:code, :message, :field, :node_key, :position]
+  defstruct [:code, :message, :field, :node_key, :position, :author_message]
 
   # The `:node_key` a raw document key earns. A key is a string by the record
   # the document implements, so a key of any other form is one no host can

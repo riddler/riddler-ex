@@ -131,6 +131,17 @@ defmodule Riddler.Screens.Document do
   * `document.invalid_context_path` - a `prefill` that is not a string of
   dotted segments starting at `context`, with at least one more after it,
   each in the key shape `[a-z][a-z0-9_]*`.
+    * `document.invalid_messages` - a question's `messages` is there and is
+      not an object, or a value in it is not a string. One finding per such
+      value, its `field` `"messages"`.
+    * `document.unknown_message_code` - a key of a question's `messages` is
+      not a code its type raises on a response, the message naming the key.
+      A text question may key `response.required`, `response.format` and
+      `response.out_of_range`; a choice question `response.required`,
+      `response.invalid_shape`, `response.not_an_option` and
+      `response.out_of_range`; a boolean or a secret question
+      `response.required` and `response.invalid_shape`. Which codes a type
+      raises is per type, not per question.
     * `document.secret_initial_value` - a secret question carries a
       `default` or a `prefill`, its `field` naming which. A secret is a value
       only the visitor supplies, and the finding never repeats what the field

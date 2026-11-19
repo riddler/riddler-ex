@@ -35,6 +35,7 @@ defmodule Riddler.Screens.Validation do
   alias Predicator.Errors.UndefinedVariableError
   alias Riddler.Finding
   alias Riddler.Screens.Compilers
+  alias Riddler.Screens.Messages
   alias Riddler.Screens.Resolved
   alias Riddler.Screens.Type.SecretQuestion
 
@@ -68,7 +69,7 @@ defmodule Riddler.Screens.Validation do
       responses = root["responses"]
 
       case undecidable_findings(diagnostics, reading_root) ++
-             Enum.flat_map(screen.nodes, &node_findings(&1, responses)) do
+             Enum.flat_map(screen.nodes, &authored_findings(&1, responses)) do
         [] -> :ok
         findings -> {:error, findings}
       end
@@ -202,6 +203,12 @@ defmodule Riddler.Screens.Validation do
   defp button?(node, key), do: node[:type] == "button" and node[:key] == key
 
   # -- one node ---------------------------------------------------------------
+
+  # A question's findings, each carrying the author's message for its code
+  # where the question's `messages` keys it. Only here: the undecidable
+  # findings are about a condition, not a response, and carry none.
+  defp authored_findings(node, responses),
+    do: Messages.author(node, node_findings(node, responses))
 
   defp node_findings(%{type: @choice_type} = node, responses),
     do: choice_findings(node, Map.get(responses, node[:key]))

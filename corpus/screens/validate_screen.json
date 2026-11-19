@@ -2989,6 +2989,96 @@
         "screen": "account"
       },
       "name": "A required question whose prefill and default present a value, submitted with no response, is unanswered: a presented value is not a response"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "field": "format",
+            "node_key": "work_email"
+          },
+          {
+            "code": "response.not_an_option",
+            "field": "answer_options",
+            "node_key": "plan"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "context": {},
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "messages": {
+                    "response.format": "That does not look like an email address."
+                  },
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "messages": {
+                    "response.not_an_option": "Pick one of the plans listed."
+                  },
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "messages": {
+                    "response.required": "Tick the box to continue."
+                  },
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "messages": {
+                    "response.required": "Choose a PIN to continue."
+                  },
+                  "type": "secret_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "newsletter": true,
+          "plan": "team",
+          "work_email": "ada-at-example"
+        },
+        "screen": "account"
+      },
+      "name": "A response refused on a question whose messages key the finding's code is refused with the same finding as one carrying none"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"

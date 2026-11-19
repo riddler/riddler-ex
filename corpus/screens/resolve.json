@@ -3350,6 +3350,148 @@
         }
       },
       "name": "A text, choice or boolean question's help renders, and a variable the root lacks is reported under the question's key"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "format": "email",
+                "key": "work_email",
+                "label": "Work email",
+                "messages": {
+                  "response.format": "That does not look like an email address."
+                },
+                "required": true,
+                "type": "text_question"
+              },
+              {
+                "answer_options": [
+                  {
+                    "label": "Personal",
+                    "value": "personal"
+                  },
+                  {
+                    "label": "Business",
+                    "value": "business"
+                  }
+                ],
+                "key": "plan",
+                "label": "Which plan?",
+                "messages": {
+                  "response.not_an_option": "Pick one of the plans listed."
+                },
+                "select": "one",
+                "type": "choice_question"
+              },
+              {
+                "key": "newsletter",
+                "label": "Send me product news",
+                "messages": {
+                  "response.required": "Tick the box to continue."
+                },
+                "type": "boolean_question"
+              },
+              {
+                "held": false,
+                "key": "account_pin",
+                "label": "Choose a PIN",
+                "messages": {
+                  "response.required": "Choose a PIN to continue."
+                },
+                "type": "secret_question"
+              },
+              {
+                "key": "account_next",
+                "label": "Continue",
+                "outcome": "account_submitted",
+                "type": "button"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "messages": {
+                    "response.format": "That does not look like an email address."
+                  },
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "messages": {
+                    "response.not_an_option": "Pick one of the plans listed."
+                  },
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "messages": {
+                    "response.required": "Tick the box to continue."
+                  },
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "messages": {
+                    "response.required": "Choose a PIN to continue."
+                  },
+                  "type": "secret_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "A question's messages are carried on the resolved node as written, on every question type"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"
