@@ -56,6 +56,19 @@ defmodule Riddler.Screens do
   An option's `value` is literal and is left as written. A node that is hidden is never rendered, so it contributes no
   missing variables.
 
+  A choice question that names `answer_options_from` reads its options from
+  `"context"` at that path when it is resolved, and carries them as
+  `answer_options` and carries no `answer_options_from`. The options are the
+  value at the path where it is a list each of whose entries is an object
+  carrying a `"value"`, a string in the key shape, and a `"label"`, a
+  string, with no value carried twice; each is taken as its value and its
+  label and nothing else, in the order the list gives. Their labels are the
+  host's data and are not rendered. A path that reaches nothing, or a value
+  that is not such a list, resolves the question with no options and is
+  reported in `missing_variables` under the question's key, its `variable`
+  the path as written; an empty list is a question with no options and is not
+  reported.
+
   The output carries no `condition` anywhere, and carries `writes` through
   untouched: what a button sets is the host's to apply when the visitor presses
   it.
@@ -118,7 +131,10 @@ defmodule Riddler.Screens do
   is a question this visitor can fail. A condition that root could not decide
   is a finding rather than a pass wherever the press validates, because a node
   hidden from the validator and not from the visitor is the one case this
-  cannot guess at.
+  cannot guess at. A choice question that reads its options from context is
+  checked against the options that root's `"context"` holds, so a value the
+  context offered when the screen was shown and no longer offers is
+  `response.not_an_option`.
 
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
@@ -153,6 +169,7 @@ defmodule Riddler.Screens do
   """
 
   alias Riddler.Finding
+  alias Riddler.Screens.ContextOptions
   alias Riddler.Screens.Document
   alias Riddler.Screens.Resolved
   alias Riddler.Screens.Type.SecretQuestion
@@ -540,8 +557,20 @@ defmodule Riddler.Screens do
   defp present(node, {root, held} = scope, diagnostics) do
     case Map.fetch(node, :nodes) do
       {:ok, candidates} when is_list(candidates) -> winner(candidates, scope, diagnostics)
-      _not_a_container -> render(presented(node, root, held), root, diagnostics)
+      _not_a_container -> resolve_leaf(node, root, held, diagnostics)
     end
+  end
+
+  # The node's templates are rendered first, so that options read from the
+  # context, which are the host's data and not templates, are never rendered;
+  # then a choice question that names a context path for its options reads
+  # them; then the node is presented, its value put to the options it is
+  # shown. A path that read no list of options is reported under the
+  # question's key, after any variable its templates wanted.
+  defp resolve_leaf(node, root, held, diagnostics) do
+    {node, diagnostics} = render(node, root, diagnostics)
+    {node, unread} = ContextOptions.resolve(node, root["context"])
+    {presented(node, root, held), missing(diagnostics, node[:key], unread)}
   end
 
   # A resolved node carries no condition. A secret question carries no initial

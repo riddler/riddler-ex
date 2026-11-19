@@ -55,11 +55,11 @@ defmodule Riddler.CorpusTest do
   # count is part of what this version pins: a case lost in a rebase is a case
   # a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
-    "corpus/screens/admit.json" => 99,
-    "corpus/screens/resolve.json" => 48,
-    "corpus/screens/validate_screen.json" => 72,
+    "corpus/screens/admit.json" => 103,
+    "corpus/screens/resolve.json" => 50,
+    "corpus/screens/validate_screen.json" => 74,
     "corpus/templates/render.json" => 74,
-    "corpus/journey/present.json" => 15,
+    "corpus/journey/present.json" => 16,
     "corpus/journey/put_context.json" => 8,
     "corpus/journey/decode_submit.json" => 14
   }
@@ -730,6 +730,33 @@ defmodule Riddler.CorpusTest do
       refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.put(secret, "value", "")]))
       refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.delete(secret, "held")]))
       refute ExJsonSchema.Validator.valid?(schema, with_nodes([%{secret | "held" => "yes"}]))
+    end
+
+    # Sabotage: removed the choice question's refusal of "answer_options_from"
+    # from the schema; the node still carrying the path validated and this
+    # test went red.
+    test "holds a choice question to its options, possibly none, and refuses a path to them" do
+      schema = resolved_schema(@presented_schema)
+
+      plan = %{
+        "type" => "choice_question",
+        "key" => "plan",
+        "label" => "Which plan?",
+        "select" => "one",
+        "answer_options" => []
+      }
+
+      assert ExJsonSchema.Validator.valid?(schema, with_nodes([plan]))
+
+      refute ExJsonSchema.Validator.valid?(
+               schema,
+               with_nodes([Map.put(plan, "answer_options_from", "context.account.plans")])
+             )
+
+      refute ExJsonSchema.Validator.valid?(
+               schema,
+               with_nodes([Map.delete(plan, "answer_options")])
+             )
     end
   end
 

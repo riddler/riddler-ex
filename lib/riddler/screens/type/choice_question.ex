@@ -17,9 +17,27 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   fields of an option and drops any other, as it drops a node field a type
   does not name.
 
+  `answer_options_from` is the other way to give a question its options: a
+  path under `context`, written as a `prefill` is - `"context.branches"` -
+  naming a list the host supplies when the screen is resolved. A question
+  carries `answer_options` or `answer_options_from`, exactly one: both is
+  `document.conflicting_options`, and neither is `document.missing_field` on
+  `answer_options`. A path of another form is
+  `document.invalid_context_path`. The options are the value at the path
+  where it is a list of objects each carrying a `"value"` in the key shape
+  and a `"label"`, a string, no value twice; the resolved question carries
+  them as `answer_options`, each its value and its label as the host wrote
+  them - the labels are not templates. A path that reaches no such list
+  resolves the question with no options and is reported in
+  `missing_variables`. A response is checked against the options the context
+  holds when the screen is validated, not when it was shown. The checks of
+  authored options do not apply to such a question, and its selection bounds
+  are not compared with a number of options at admit, there being none.
+
   `default` is the option the question presents as chosen when nothing else
   yields a value - one option's value under `"one"`, a list of different
-  option values under `"many"`, each one this question's own options carry -
+  option values under `"many"`, each one this question's own options carry,
+  so a question reading its options from context takes no default -
   and `prefill` a path under `context` whose value it presents first, where
   that value is one the default could be.
 
@@ -51,6 +69,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   @behaviour Riddler.Screens.Type
 
   alias Riddler.Finding
+  alias Riddler.Screens.ContextOptions
   alias Riddler.Screens.Messages
   alias Riddler.Screens.Value
 
@@ -69,7 +88,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
       required: [:label, :select, :answer_options],
       optional:
         [:help, :style, :required, :min_selections, :max_selections, :format] ++
-          Value.fields() ++ Messages.fields()
+          ContextOptions.fields() ++ Value.fields() ++ Messages.fields()
     }
 
   @impl true
@@ -78,6 +97,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
 
     select_findings(node, key) ++
       options_findings(node, key) ++
+      ContextOptions.findings(node) ++
       bounds_findings(node, key) ++
       required_findings(node, key) ++
       style_findings(node, key) ++
@@ -116,7 +136,8 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   # Admission answers `nil` for an `answer_options` that is not a list of
   # objects, so what reaches here is a list of atom-keyed options, each
   # carrying the `value` and `label` the document wrote and nothing else. An
-  # absent list is a missing field, which the document has already reported.
+  # absent list is a missing field, which the document has already reported,
+  # or a question that reads its options from context, which has none here.
   defp options_findings(node, key) do
     case Map.fetch(node, :answer_options) do
       {:ok, []} ->
