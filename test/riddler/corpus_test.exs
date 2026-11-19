@@ -38,7 +38,9 @@ defmodule Riddler.CorpusTest do
 
   @document_schema "priv/schemas/screen-document.schema.json"
   @case_schema "priv/schemas/corpus-case.schema.json"
-  @json_files @corpus_files ++ [@document_schema, @case_schema]
+  @presented_schema "priv/schemas/presented-answer.schema.json"
+  @schemas [@document_schema, @case_schema, @presented_schema]
+  @json_files @corpus_files ++ @schemas
 
   for path <- @json_files do
     @external_resource path
@@ -102,8 +104,8 @@ defmodule Riddler.CorpusTest do
     # Sabotage: changed the $schema of the corpus case schema to the 2020-12
     # URL; resolving it raised the unsupported-version error and this test went
     # red.
-    test "both schemas name JSON Schema draft 7, the highest draft the validator knows" do
-      for path <- [@document_schema, @case_schema] do
+    test "every schema names JSON Schema draft 7, the highest draft the validator knows" do
+      for path <- @schemas do
         assert read(path)["$schema"] == @draft_7
         assert %ExJsonSchema.Schema.Root{} = resolved_schema(path)
       end
@@ -420,6 +422,182 @@ defmodule Riddler.CorpusTest do
       assert invalid == []
     end
   end
+
+  describe "the presented answer schema" do
+    # Every journey.present case is either a presented answer, which the schema
+    # has to validate, or an error, which is no presented answer at all; a case
+    # that is neither would be skipped by a filter, so the split is asserted.
+    #
+    # Sabotage: typed a screen's "title" as an integer in the schema; every
+    # screen case failed validation and this test went red.
+    test "validates every answer the journey presentation corpus states" do
+      schema = resolved_schema(@presented_schema)
+      expected = Enum.map(cases("corpus/journey/present.json"), &{&1["name"], &1["expected"]})
+
+      {answers, errors} =
+        Enum.split_with(expected, fn {_name, answer} -> Map.has_key?(answer, "state") end)
+
+      assert Enum.all?(errors, fn {_name, answer} -> Map.keys(answer) == ["error"] end)
+
+      assert Enum.map(answers, fn {_name, answer} -> answer["state"] end)
+             |> Enum.uniq()
+             |> Enum.sort() ==
+               ["done", "screen", "waiting"]
+
+      invalid =
+        for {name, answer} <- answers,
+            {:error, errors} <- [ExJsonSchema.Validator.validate(schema, answer)],
+            do: {name, errors}
+
+      assert invalid == []
+    end
+
+    # Sabotage: dropped "screen" from the screen state's required list in the
+    # schema; the answer with no screen validated and this test went red.
+    test "refuses a screen state that carries no screen" do
+      schema = resolved_schema(@presented_schema)
+
+      refute ExJsonSchema.Validator.valid?(schema, Map.delete(screen_answer(), "screen"))
+    end
+
+    # Sabotage: removed the done state's refusal of "screen"; the done answer
+    # carrying a screen validated and this test went red.
+    test "holds a key that belongs to one state to that state" do
+      schema = resolved_schema(@presented_schema)
+      screen = screen_answer()["screen"]
+
+      assert ExJsonSchema.Validator.valid?(schema, %{
+               "state" => "waiting",
+               "reason" => "card_number_pending",
+               "retry_after_ms" => 5000
+             })
+
+      assert ExJsonSchema.Validator.valid?(schema, %{
+               "state" => "done",
+               "result" => %{"card_issued" => true}
+             })
+
+      refute ExJsonSchema.Validator.valid?(schema, %{"state" => "done", "screen" => screen})
+      refute ExJsonSchema.Validator.valid?(schema, %{"state" => "waiting", "result" => %{}})
+
+      refute ExJsonSchema.Validator.valid?(
+               schema,
+               Map.put(screen_answer(), "reason", "card_number_pending")
+             )
+
+      refute ExJsonSchema.Validator.valid?(schema, %{"state" => "waiting", "retry_after_ms" => -1})
+
+      refute ExJsonSchema.Validator.valid?(schema, %{"state" => "paused"})
+    end
+
+    # Sabotage: dropped "uniqueItems" from the moves outcomes; the repeated
+    # outcome validated and this test went red.
+    test "types the moves, each outcome listed once" do
+      schema = resolved_schema(@presented_schema)
+      moves = %{"outcomes" => ["details_submitted"], "back" => false}
+
+      assert ExJsonSchema.Validator.valid?(schema, Map.put(screen_answer(), "moves", moves))
+
+      refute ExJsonSchema.Validator.valid?(
+               schema,
+               Map.put(screen_answer(), "moves", %{
+                 moves
+                 | "outcomes" => ["details_submitted", "details_submitted"]
+               })
+             )
+
+      refute ExJsonSchema.Validator.valid?(
+               schema,
+               Map.put(screen_answer(), "moves", Map.delete(moves, "back"))
+             )
+    end
+
+    # Sabotage: dropped "outcome" from the button's required list in the
+    # schema; the button with no outcome validated and this test went red. And
+    # again with "text", the boolean question's "label" and the choice
+    # question's "answer_options" each dropped from its type's required list.
+    test "holds a node of an enumerated type to its fields, and lets a node of another type through" do
+      schema = resolved_schema(@presented_schema)
+
+      button = %{
+        "type" => "button",
+        "key" => "details_next",
+        "label" => "Continue",
+        "outcome" => "details_submitted"
+      }
+
+      assert ExJsonSchema.Validator.valid?(schema, with_nodes([button]))
+      refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.delete(button, "outcome")]))
+
+      refute ExJsonSchema.Validator.valid?(
+               schema,
+               with_nodes([Map.put(button, "condition", "context.returning == 'yes'")])
+             )
+
+      refute ExJsonSchema.Validator.valid?(
+               schema,
+               with_nodes([
+                 %{
+                   "type" => "heading",
+                   "key" => "details_heading",
+                   "level" => 9,
+                   "text" => "Get your library card"
+                 }
+               ])
+             )
+
+      assert ExJsonSchema.Validator.valid?(
+               schema,
+               with_nodes([
+                 %{
+                   "type" => "text_question",
+                   "key" => "first_name",
+                   "label" => "First name",
+                   "value" => "Ada"
+                 }
+               ])
+             )
+
+      refute ExJsonSchema.Validator.valid?(
+               schema,
+               with_nodes([%{"type" => "text", "key" => "details_greeting"}])
+             )
+
+      refute ExJsonSchema.Validator.valid?(
+               schema,
+               with_nodes([%{"type" => "boolean_question", "key" => "reminders_wanted"}])
+             )
+
+      refute ExJsonSchema.Validator.valid?(
+               schema,
+               with_nodes([
+                 %{
+                   "type" => "choice_question",
+                   "key" => "card_type",
+                   "label" => "Which card?",
+                   "select" => "one"
+                 }
+               ])
+             )
+
+      assert ExJsonSchema.Validator.valid?(
+               schema,
+               with_nodes([
+                 %{"type" => "card_preview", "key" => "card_preview", "theme" => "dark"}
+               ])
+             )
+    end
+  end
+
+  # The first screen answer the journey presentation corpus states.
+  defp screen_answer do
+    "corpus/journey/present.json"
+    |> cases()
+    |> Enum.map(& &1["expected"])
+    |> Enum.find(&(&1["state"] == "screen"))
+  end
+
+  defp with_nodes(nodes), do: put_in(screen_answer(), ["screen", "nodes"], nodes)
 
   # -- running one case -------------------------------------------------------
 
