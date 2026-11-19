@@ -281,6 +281,9 @@
                   "number"
                 ]
               },
+              "help": {
+                "type": "string"
+              },
               "label": {
                 "type": "string"
               },
@@ -344,6 +347,9 @@
               "format": {
                 "description": "Carried and never consulted."
               },
+              "help": {
+                "type": "string"
+              },
               "label": {
                 "type": "string"
               },
@@ -394,6 +400,9 @@
             "properties": {
               "format": {
                 "description": "Carried and never consulted."
+              },
+              "help": {
+                "type": "string"
               },
               "label": {
                 "type": "string"

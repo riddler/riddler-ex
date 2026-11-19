@@ -50,11 +50,11 @@ defmodule Riddler.CorpusTest do
   # count is part of what this version pins: a case lost in a rebase is a case
   # a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
-    "corpus/screens/admit.json" => 91,
-    "corpus/screens/resolve.json" => 46,
+    "corpus/screens/admit.json" => 94,
+    "corpus/screens/resolve.json" => 47,
     "corpus/screens/validate_screen.json" => 71,
     "corpus/templates/render.json" => 74,
-    "corpus/journey/present.json" => 13,
+    "corpus/journey/present.json" => 14,
     "corpus/journey/put_context.json" => 8
   }
 
@@ -615,6 +615,48 @@ defmodule Riddler.CorpusTest do
 
         assert ExJsonSchema.Validator.valid?(schema, with_nodes([node])),
                "#{question["type"]} with #{inspect(value)}"
+      end
+    end
+
+    # A help is rendered at resolve, so what a question presents is the text a
+    # template rendered to: a string on every question type, and optional.
+    #
+    # Sabotage: dropped "help" from the text question's properties in the
+    # schema; the text question presenting a number as its help validated and
+    # this test went red. And again from the choice question's and from the
+    # boolean question's.
+    test "types a question's help as a string, and keeps it optional, on every question type" do
+      schema = resolved_schema(@presented_schema)
+
+      questions = [
+        %{"type" => "text_question", "key" => "work_email", "label" => "Work email"},
+        %{
+          "type" => "choice_question",
+          "key" => "plan",
+          "label" => "Which plan?",
+          "select" => "one",
+          "answer_options" => [%{"value" => "personal", "label" => "Personal"}]
+        },
+        %{"type" => "boolean_question", "key" => "newsletter", "label" => "Send me news"},
+        %{
+          "type" => "secret_question",
+          "key" => "account_pin",
+          "label" => "Choose a PIN",
+          "held" => false
+        }
+      ]
+
+      for question <- questions do
+        assert ExJsonSchema.Validator.valid?(schema, with_nodes([question])), question["type"]
+
+        assert ExJsonSchema.Validator.valid?(
+                 schema,
+                 with_nodes([Map.put(question, "help", "Billed to Acme.")])
+               ),
+               question["type"]
+
+        refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.put(question, "help", 3)])),
+               question["type"]
       end
     end
 

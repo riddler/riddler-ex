@@ -3,8 +3,10 @@ defmodule Riddler.Screens.Type.TextQuestion do
   A question a visitor answers with a line of text.
 
   `label` is what the visitor is asked, and it is a template. `placeholder`
-  is the hint shown in the empty field, and it is a template too. `required`
-  says whether an empty response is acceptable and defaults to false.
+  is the hint shown in the empty field, and it is a template too. `help` is a
+  line of guidance shown beside the question, and it is a template as well.
+  `required` says whether an empty response is acceptable and defaults to
+  false.
   `format` names a validation format this package knows - `email` is the one
   the signup wizard uses - and the format's own check belongs to response
   validation; what this type checks is that the name is one the package will
@@ -57,7 +59,7 @@ defmodule Riddler.Screens.Type.TextQuestion do
   def fields,
     do: %{
       required: [:label],
-      optional: [:placeholder, :required, :format, :pattern, :min, :max] ++ Value.fields()
+      optional: [:placeholder, :help, :required, :format, :pattern, :min, :max] ++ Value.fields()
     }
 
   @impl true

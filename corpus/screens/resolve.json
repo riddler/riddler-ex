@@ -3238,6 +3238,118 @@
         "screen": "account"
       },
       "name": "A question with no response, no prefill and no default carries no value"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "work_email",
+              "variable": "context.cost_center"
+            },
+            {
+              "key": "plan",
+              "variable": "context.cost_center"
+            },
+            {
+              "key": "newsletter",
+              "variable": "context.cost_center"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "help": "Billed to Acme.",
+                "key": "work_email",
+                "label": "Work email",
+                "type": "text_question"
+              },
+              {
+                "answer_options": [
+                  {
+                    "label": "Personal",
+                    "value": "personal"
+                  },
+                  {
+                    "label": "Business",
+                    "value": "business"
+                  }
+                ],
+                "help": "Billed to Acme.",
+                "key": "plan",
+                "label": "Which plan?",
+                "select": "one",
+                "type": "choice_question"
+              },
+              {
+                "help": "Billed to Acme.",
+                "key": "newsletter",
+                "label": "Send me product news",
+                "type": "boolean_question"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "help": "Billed to {{ context.company_name }}{{ context.cost_center }}.",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "help": "Billed to {{ context.company_name }}{{ context.cost_center }}.",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "help": "Billed to {{ context.company_name }}{{ context.cost_center }}.",
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "company_name": "Acme"
+          },
+          "responses": {}
+        }
+      },
+      "name": "A text, choice or boolean question's help renders, and a variable the root lacks is reported under the question's key"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

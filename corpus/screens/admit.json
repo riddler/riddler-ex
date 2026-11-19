@@ -3241,6 +3241,188 @@
         }
       },
       "name": "A default and a prefill on a node that is not a question are dropped with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "help": "We send receipts for {{ context.company_name }} here.",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "help": "We send receipts for {{ context.company_name }} here.",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "help": "We send receipts for {{ context.company_name }} here.",
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A text, choice or boolean question carrying a help template is admitted with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "field": "strip_html",
+            "node_key": "work_email"
+          },
+          {
+            "code": "document.invalid_template",
+            "field": "strip_html",
+            "node_key": "plan"
+          },
+          {
+            "code": "document.invalid_template",
+            "field": "strip_html",
+            "node_key": "newsletter"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "help": "{{ context.company_name | strip_html }}",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "help": "{{ context.company_name | strip_html }}",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "help": "{{ context.company_name | strip_html }}",
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A help holding a construct outside the template subset is refused as a template on a text, choice or boolean question"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "field": "help",
+            "node_key": "work_email"
+          },
+          {
+            "code": "document.invalid_template",
+            "field": "help",
+            "node_key": "plan"
+          },
+          {
+            "code": "document.invalid_template",
+            "field": "help",
+            "node_key": "newsletter"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "help": 3,
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "help": 3,
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "help": 3,
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A help that is not a string is refused as a template on a text, choice or boolean question"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"
