@@ -1301,6 +1301,115 @@
         "status": "screen"
       },
       "name": "A screen status presents a response the root holds as the question's value over its default, and a question nothing yields a value for carries none"
+    },
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "patron_details",
+          "nodes": [
+            {
+              "help": "We write to you here three days before a loan is due at Riverside.",
+              "key": "reminder_email",
+              "label": "Email for due-date reminders",
+              "type": "text_question"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Adult card",
+                  "value": "adult"
+                },
+                {
+                  "label": "Child card",
+                  "value": "child"
+                }
+              ],
+              "help": "A child card is for a reader under 13.",
+              "key": "card_type",
+              "label": "Which library card would you like?",
+              "select": "one",
+              "type": "choice_question"
+            },
+            {
+              "help": "Ask at Riverside for large-print books too.",
+              "key": "large_print",
+              "label": "Send me notices in large print",
+              "type": "boolean_question"
+            },
+            {
+              "key": "details_next",
+              "label": "Continue",
+              "outcome": "details_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Get your library card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "help": "We write to you here three days before a loan is due at {{ context.branch_name }}.",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Adult card",
+                      "value": "adult"
+                    },
+                    {
+                      "label": "Child card",
+                      "value": "child"
+                    }
+                  ],
+                  "help": "A child card is for a reader under {{ context.child_age_limit }}.",
+                  "key": "card_type",
+                  "label": "Which library card would you like?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "help": "Ask at {{ context.branch_name }} for large-print books too.",
+                  "key": "large_print",
+                  "label": "Send me notices in large print",
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "branch_name": "Riverside",
+            "child_age_limit": 13
+          },
+          "responses": {}
+        },
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status presents each question's help rendered from the context"
     }
   ],
   "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"

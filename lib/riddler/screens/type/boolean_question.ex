@@ -3,6 +3,8 @@ defmodule Riddler.Screens.Type.BooleanQuestion do
   A question a visitor answers yes or no: a lone checkbox or toggle.
 
   `label` is what the visitor is asked or agrees to, and it is a template.
+  `help` is a line of guidance shown beside the question, and it is a template
+  too.
   The response is `true` or `false`. `required` defaults to false, and true
   means the response must be `true` - the shape of "tick to agree to the
   borrowing rules", where an unticked box is the visitor declining rather than
@@ -28,7 +30,7 @@ defmodule Riddler.Screens.Type.BooleanQuestion do
   alias Riddler.Screens.Value
 
   @impl true
-  def fields, do: %{required: [:label], optional: [:required, :format] ++ Value.fields()}
+  def fields, do: %{required: [:label], optional: [:help, :required, :format] ++ Value.fields()}
 
   @impl true
   def validate(node), do: required_findings(node) ++ Value.findings(node)

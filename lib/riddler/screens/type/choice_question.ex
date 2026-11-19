@@ -2,7 +2,8 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   @moduledoc """
   A question a visitor answers by picking from a list of options.
 
-  `label` is what the visitor is asked, and it is a template. `select` is
+  `label` is what the visitor is asked, and it is a template. `help` is a line
+  of guidance shown beside the question, and it is a template too. `select` is
   `"one"` or `"many"`, and it fixes the shape of the response: one option's
   value under `"one"`, a list of option values under `"many"`.
 
@@ -60,7 +61,9 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   def fields,
     do: %{
       required: [:label, :select, :answer_options],
-      optional: [:style, :required, :min_selections, :max_selections, :format] ++ Value.fields()
+      optional:
+        [:help, :style, :required, :min_selections, :max_selections, :format] ++
+          Value.fields()
     }
 
   @impl true
