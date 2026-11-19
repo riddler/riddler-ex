@@ -539,7 +539,7 @@
       "type": "object"
     },
     "value": {
-      "description": "What the question presents as already given. Optional: a question node with nothing to present carries no value."
+      "description": "What the question presents as already given: the response the root holds for it, as written whatever its shape; else the value its prefill reads from context, else its default, each only where it is of the question's response shape. Untyped, because a response is presented as written. Optional: a question node with nothing to present carries no value. It is not a response: validation reads only the responses the root holds."
     }
   },
   "description": "The value inside {:ok, ...} that Riddler.Journey.present/3 returns: a step of a Journey as data, for a client to render. Its state is a screen, waiting or done. A screen state carries the screen, resolved: hidden nodes absent, each container replaced by its winner, every template field rendered, no condition anywhere. No part of this schema forbids a key it does not name, so what a later release presents still validates against this one. A node whose type is one this schema enumerates is held to the fields that type names, as validate/1 holds a document to them; a node whose type is any other string still validates, and a client that does not know its type does not render that node and does not let the visitor submit that screen from it.",

@@ -122,6 +122,15 @@ defmodule Riddler.Screens.Document do
       wrong and not a response. Only where the question declares that format:
       a `pattern` on a question asking for another format, or for none, is a
       field nothing consults and raises nothing.
+  * `document.invalid_default` - a text, choice or boolean question's
+  `default` is not of the question's response shape: a string for a text
+  question, `true` or `false` for a boolean question, and for a choice
+  question one of its own options' values under `select: "one"` or a list
+  of different ones under `"many"`. A choice question whose `select` is
+  neither has no shape to read, and its default is not checked.
+  * `document.invalid_context_path` - a `prefill` that is not a string of
+  dotted segments starting at `context`, with at least one more after it,
+  each in the key shape `[a-z][a-z0-9_]*`.
     * `document.secret_initial_value` - a secret question carries a
       `default` or a `prefill`, its `field` naming which. A secret is a value
       only the visitor supplies, and the finding never repeats what the field

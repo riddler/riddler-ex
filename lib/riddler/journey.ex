@@ -112,6 +112,10 @@ defmodule Riddler.Journey do
   diagnostics ride inside the screen, so a caller is never handed a screen
   without the report of resolving it.
 
+  A text, choice or boolean question's node carries `"value"` where a
+  response the root holds, its prefill or its default yields one, as
+  `Riddler.Screens` describes, and never its `"default"` or `"prefill"`.
+
   A secret question's node carries `"held"`, `true` where the root holds the
   sealed form for it and `false` otherwise, and nothing more of its response:
   the plaintext a visitor typed and the sealed string a host keeps are nowhere

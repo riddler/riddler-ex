@@ -792,7 +792,8 @@
             "label": "First name",
             "placeholder": "Ada",
             "required": true,
-            "type": "text_question"
+            "type": "text_question",
+            "value": "Ada"
           },
           {
             "format": "email",
@@ -897,7 +898,8 @@
             "label": "How many seats?",
             "placeholder": "1",
             "required": false,
-            "type": "text_question"
+            "type": "text_question",
+            "value": 1
           },
           {
             "key": "plan_personal",
@@ -1020,7 +1022,8 @@
             "label": "How many seats?",
             "placeholder": "1",
             "required": false,
-            "type": "text_question"
+            "type": "text_question",
+            "value": 2
           },
           {
             "key": "plan_business_hint",
@@ -2102,6 +2105,1139 @@
         "screen": "security"
       },
       "name": "A secret question whose response carries a key beside sealed is not the sealed form and resolves as not held"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "format": "email",
+            "key": "work_email",
+            "label": "Work email",
+            "type": "text_question",
+            "value": "grace@example.com"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": "team@example.com",
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.invited_email",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          },
+          "responses": {
+            "work_email": "grace@example.com"
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A text question presents the response the root holds as its value, over its prefill and its default"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "format": "email",
+            "key": "work_email",
+            "label": "Work email",
+            "type": "text_question",
+            "value": "ada@example.com"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": "team@example.com",
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.invited_email",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          },
+          "responses": {}
+        },
+        "screen": "account"
+      },
+      "name": "A text question with no response presents the value its prefill reads from context, over its default"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "format": "email",
+            "key": "work_email",
+            "label": "Work email",
+            "type": "text_question",
+            "value": "ada@example.com"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": "team@example.com",
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.invited_email",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          },
+          "responses": {
+            "work_email": null
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A text question whose response is null presents its prefill's value"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "format": "email",
+            "key": "work_email",
+            "label": "Work email",
+            "type": "text_question",
+            "value": "team@example.com"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": "team@example.com",
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.invited_email",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "screen": "account"
+      },
+      "name": "A text question whose prefill reaches nothing presents its default"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "format": "email",
+            "key": "work_email",
+            "label": "Work email",
+            "type": "text_question",
+            "value": "team@example.com"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": "team@example.com",
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.account.seats",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A prefill reaching a value of the wrong shape yields nothing and the default is presented"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "format": "email",
+            "key": "work_email",
+            "label": "Work email",
+            "type": "text_question"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.invited_email.domain",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A prefill passing through a value that is not an object yields nothing and the question carries no value"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "format": "email",
+                "key": "work_email",
+                "label": "Work email",
+                "type": "text_question"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.account.work_email",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          }
+        }
+      },
+      "name": "A prefill reading a path the context lacks presents no value and reports nothing"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "format": "email",
+            "key": "work_email",
+            "label": "Work email",
+            "type": "text_question",
+            "value": 42
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": "team@example.com",
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.invited_email",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          },
+          "responses": {
+            "work_email": 42
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A response the root holds is presented as written, whatever its shape"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "answer_options": [
+              {
+                "label": "Personal",
+                "value": "personal"
+              },
+              {
+                "label": "Business",
+                "value": "business"
+              }
+            ],
+            "key": "plan",
+            "label": "Which plan?",
+            "select": "one",
+            "type": "choice_question",
+            "value": "business"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "default": "personal",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "prefill": "context.account.plan",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A choice question under one presents its prefill's value where it is one of its options"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "answer_options": [
+              {
+                "label": "Personal",
+                "value": "personal"
+              },
+              {
+                "label": "Business",
+                "value": "business"
+              }
+            ],
+            "key": "plan",
+            "label": "Which plan?",
+            "select": "one",
+            "type": "choice_question",
+            "value": "personal"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "default": "personal",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "prefill": "context.account.plan",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "plan": "enterprise"
+            }
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A choice question under one whose prefill reads a value no option carries presents its default"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "answer_options": [
+              {
+                "label": "Personal",
+                "value": "personal"
+              },
+              {
+                "label": "Business",
+                "value": "business"
+              }
+            ],
+            "key": "plan",
+            "label": "Which plan?",
+            "select": "one",
+            "type": "choice_question",
+            "value": "business"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "default": "personal",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "responses": {
+            "plan": "business"
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A choice question under one presents the response the root holds over its default"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "answer_options": [
+              {
+                "label": "Invoices",
+                "value": "invoices"
+              },
+              {
+                "label": "Reports",
+                "value": "reports"
+              },
+              {
+                "label": "Audit log",
+                "value": "audit_log"
+              }
+            ],
+            "key": "addons",
+            "label": "Which add-ons?",
+            "select": "many",
+            "type": "choice_question",
+            "value": [
+              "invoices",
+              "reports"
+            ]
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Invoices",
+                      "value": "invoices"
+                    },
+                    {
+                      "label": "Reports",
+                      "value": "reports"
+                    },
+                    {
+                      "label": "Audit log",
+                      "value": "audit_log"
+                    }
+                  ],
+                  "default": [
+                    "invoices",
+                    "reports"
+                  ],
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {},
+        "screen": "account"
+      },
+      "name": "A choice question under many presents its default list"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "answer_options": [
+              {
+                "label": "Invoices",
+                "value": "invoices"
+              },
+              {
+                "label": "Reports",
+                "value": "reports"
+              },
+              {
+                "label": "Audit log",
+                "value": "audit_log"
+              }
+            ],
+            "key": "addons",
+            "label": "Which add-ons?",
+            "select": "many",
+            "type": "choice_question",
+            "value": [
+              "reports"
+            ]
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Invoices",
+                      "value": "invoices"
+                    },
+                    {
+                      "label": "Reports",
+                      "value": "reports"
+                    },
+                    {
+                      "label": "Audit log",
+                      "value": "audit_log"
+                    }
+                  ],
+                  "default": [
+                    "invoices"
+                  ],
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "prefill": "context.account.addons",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A choice question under many presents its prefill's list over its default"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "answer_options": [
+              {
+                "label": "Invoices",
+                "value": "invoices"
+              },
+              {
+                "label": "Reports",
+                "value": "reports"
+              },
+              {
+                "label": "Audit log",
+                "value": "audit_log"
+              }
+            ],
+            "key": "addons",
+            "label": "Which add-ons?",
+            "select": "many",
+            "type": "choice_question",
+            "value": [
+              "invoices"
+            ]
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Invoices",
+                      "value": "invoices"
+                    },
+                    {
+                      "label": "Reports",
+                      "value": "reports"
+                    },
+                    {
+                      "label": "Audit log",
+                      "value": "audit_log"
+                    }
+                  ],
+                  "default": [
+                    "invoices"
+                  ],
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "prefill": "context.account.plan",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A choice question under many whose prefill reads a single string presents its default"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "key": "newsletter",
+            "label": "Send me product news",
+            "type": "boolean_question",
+            "value": false
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": false,
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {},
+        "screen": "account"
+      },
+      "name": "A boolean question presents its default false"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "key": "newsletter",
+            "label": "Send me product news",
+            "type": "boolean_question",
+            "value": true
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": false,
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "prefill": "context.account.newsletter",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A boolean question presents its prefill's value over its default"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "key": "newsletter",
+            "label": "Send me product news",
+            "type": "boolean_question",
+            "value": false
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": true,
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "prefill": "context.account.newsletter",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          },
+          "responses": {
+            "newsletter": false
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A boolean question presents the response the root holds over its prefill and its default"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "key": "newsletter",
+            "label": "Send me product news",
+            "type": "boolean_question"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": "yes",
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {},
+        "screen": "account"
+      },
+      "name": "A default of the wrong shape on a document no one validated is not presented"
+    },
+    {
+      "expected": {
+        "key": "account",
+        "nodes": [
+          {
+            "format": "email",
+            "key": "work_email",
+            "label": "Work email",
+            "type": "text_question"
+          },
+          {
+            "answer_options": [
+              {
+                "label": "Personal",
+                "value": "personal"
+              },
+              {
+                "label": "Business",
+                "value": "business"
+              }
+            ],
+            "key": "plan",
+            "label": "Which plan?",
+            "select": "one",
+            "type": "choice_question"
+          },
+          {
+            "key": "newsletter",
+            "label": "Send me product news",
+            "type": "boolean_question"
+          }
+        ],
+        "title": "Create your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                "reports"
+              ],
+              "newsletter": true,
+              "plan": "business",
+              "seats": 3
+            },
+            "invited_email": "ada@example.com"
+          }
+        },
+        "screen": "account"
+      },
+      "name": "A question with no response, no prefill and no default carries no value"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

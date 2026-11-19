@@ -2936,6 +2936,59 @@
         "screen": "security"
       },
       "name": "A required secret question a condition hides cannot fail"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "work_email"
+          },
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "newsletter"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "context": {
+          "invited_email": "ada@example.com"
+        },
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": "team@example.com",
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.invited_email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "default": true,
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "required": true,
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "account"
+      },
+      "name": "A required question whose prefill and default present a value, submitted with no response, is unanswered: a presented value is not a response"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"

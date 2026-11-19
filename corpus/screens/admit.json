@@ -2737,6 +2737,510 @@
         }
       },
       "name": "A response whose key only starts with a secret question's key is not a reference"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": "",
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.invited_email",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A default and a prefill on a text question are admitted with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_default",
+            "field": "default",
+            "node_key": "work_email"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": 2,
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A text question's default that is not a string is refused, naming the field"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_default",
+            "field": "default",
+            "node_key": "plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "default": "enterprise",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A choice question's default naming no option it carries is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_default",
+            "field": "default",
+            "node_key": "plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "default": [
+                    "personal"
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A choice question's default under one that is a list is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Invoices",
+                      "value": "invoices"
+                    },
+                    {
+                      "label": "Reports",
+                      "value": "reports"
+                    },
+                    {
+                      "label": "Audit log",
+                      "value": "audit_log"
+                    }
+                  ],
+                  "default": [
+                    "invoices",
+                    "reports"
+                  ],
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A choice question's default under many, a list of different option values, is admitted with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_default",
+            "field": "default",
+            "node_key": "addons"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Invoices",
+                      "value": "invoices"
+                    },
+                    {
+                      "label": "Reports",
+                      "value": "reports"
+                    },
+                    {
+                      "label": "Audit log",
+                      "value": "audit_log"
+                    }
+                  ],
+                  "default": [
+                    "invoices",
+                    "invoices"
+                  ],
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A choice question's default under many that carries one value twice is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_select",
+            "field": "select",
+            "node_key": "plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "default": [
+                    "personal"
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "several",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A choice question's default is not checked where its select is neither one nor many"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_default",
+            "field": "default",
+            "node_key": "newsletter"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": "yes",
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A boolean question's default that is not true or false is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_context_path",
+            "field": "prefill",
+            "node_key": "work_email"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "responses.work_email",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A prefill that does not start at context is refused, naming the field"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_context_path",
+            "field": "prefill",
+            "node_key": "newsletter"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "prefill": "context",
+                  "type": "boolean_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A prefill naming context alone is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_context_path",
+            "field": "prefill",
+            "node_key": "plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "prefill": "context.Account.plan",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A prefill with a segment outside the key shape is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_context_path",
+            "field": "prefill",
+            "node_key": "work_email"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": [
+                    "context",
+                    "invited_email"
+                  ],
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A prefill that is not a string is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": 7,
+                  "key": "account_intro",
+                  "prefill": "nowhere",
+                  "text": "Welcome.",
+                  "type": "text"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A default and a prefill on a node that is not a question are dropped with no finding"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"

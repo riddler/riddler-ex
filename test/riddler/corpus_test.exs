@@ -50,11 +50,11 @@ defmodule Riddler.CorpusTest do
   # count is part of what this version pins: a case lost in a rebase is a case
   # a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
-    "corpus/screens/admit.json" => 78,
-    "corpus/screens/resolve.json" => 27,
-    "corpus/screens/validate_screen.json" => 70,
+    "corpus/screens/admit.json" => 91,
+    "corpus/screens/resolve.json" => 46,
+    "corpus/screens/validate_screen.json" => 71,
     "corpus/templates/render.json" => 74,
-    "corpus/journey/present.json" => 11,
+    "corpus/journey/present.json" => 13,
     "corpus/journey/put_context.json" => 8
   }
 
@@ -586,6 +586,36 @@ defmodule Riddler.CorpusTest do
                  %{"type" => "card_preview", "key" => "card_preview", "theme" => "dark"}
                ])
              )
+    end
+
+    # A response the root holds is presented as written whatever its shape, so
+    # the schema admits a value of any shape on each question type but the
+    # secret question, and keeps it optional.
+    #
+    # Sabotage: typed the text question's value as a string in the schema; the
+    # text question presenting a number its root held failed validation and
+    # this test went red.
+    test "admits a value of any shape, or none, on every question type but the secret question" do
+      schema = resolved_schema(@presented_schema)
+
+      questions = [
+        %{"type" => "text_question", "key" => "seats", "label" => "How many seats?"},
+        %{
+          "type" => "choice_question",
+          "key" => "plan",
+          "label" => "Which plan?",
+          "select" => "one",
+          "answer_options" => [%{"value" => "personal", "label" => "Personal"}]
+        },
+        %{"type" => "boolean_question", "key" => "newsletter", "label" => "Send me news"}
+      ]
+
+      for question <- questions, value <- [:none, "personal", ["personal"], true, 2, nil] do
+        node = if value == :none, do: question, else: Map.put(question, "value", value)
+
+        assert ExJsonSchema.Validator.valid?(schema, with_nodes([node])),
+               "#{question["type"]} with #{inspect(value)}"
+      end
     end
 
     # Sabotage: removed the secret question's refusal of "value" from the

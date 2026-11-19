@@ -16,6 +16,12 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   fields of an option and drops any other, as it drops a node field a type
   does not name.
 
+  `default` is the option the question presents as chosen when nothing else
+  yields a value - one option's value under `"one"`, a list of different
+  option values under `"many"`, each one this question's own options carry -
+  and `prefill` a path under `context` whose value it presents first, where
+  that value is one the default could be.
+
   `style` is a hint a renderer reads - `radio` or `dropdown` for one,
   `checkboxes` or `list` for many - from an open set the renderer owns; what
   this type checks is that it is a string. `required` defaults to false, and
@@ -39,6 +45,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   @behaviour Riddler.Screens.Type
 
   alias Riddler.Finding
+  alias Riddler.Screens.Value
 
   @selects ["one", "many"]
 
@@ -53,7 +60,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   def fields,
     do: %{
       required: [:label, :select, :answer_options],
-      optional: [:style, :required, :min_selections, :max_selections, :format]
+      optional: [:style, :required, :min_selections, :max_selections, :format] ++ Value.fields()
     }
 
   @impl true
@@ -64,7 +71,8 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
       options_findings(node, key) ++
       bounds_findings(node, key) ++
       required_findings(node, key) ++
-      style_findings(node, key)
+      style_findings(node, key) ++
+      Value.findings(node)
   end
 
   # -- select ------------------------------------------------------------------
