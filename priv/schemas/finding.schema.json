@@ -2,6 +2,13 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "One reason something was refused, as a host sends it to a client: the data form of a Riddler.Finding, every key present. A client switches on code, which does not change when the wording of message does. The codes are not enumerated, so a code a later release adds is a finding in the same form, and a key a later release adds is not refused. The schema is versioned with the package: it changes only in a release, and that release's changelog names the change.",
   "properties": {
+    "author_message": {
+      "description": "The text the document's author set for this finding's code on the question whose response it is about, or null. Only a finding response validation raises carries a string here; message stays the package's own sentence, and a client shows this where it is a string and its own text otherwise.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "code": {
       "description": "A stable, machine-readable reason, such as submit.missing_field or response.required.",
       "type": "string"
@@ -55,7 +62,8 @@
     "message",
     "field",
     "node_key",
-    "position"
+    "position",
+    "author_message"
   ],
   "title": "Finding",
   "type": "object"

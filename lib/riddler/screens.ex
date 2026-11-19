@@ -98,6 +98,11 @@ defmodule Riddler.Screens do
   `true` or `false`. The arity-4 form takes the key of the button the visitor
   pressed and honours its `validates`.
 
+  A question's `messages` maps a finding code to the text its author shows
+  for it. A finding raised on that question's response whose code it keys
+  carries that text as `author_message`, and its `message` is unchanged;
+  every other finding carries `author_message` `nil`.
+
   A secret question answers at most one finding, and none of its findings
   carries anything of the response. A response in the sealed form, an object
   whose one key is `"sealed"` and whose value is a string, is a held value: it

@@ -1410,6 +1410,145 @@
         "status": "screen"
       },
       "name": "A screen status presents each question's help rendered from the context"
+    },
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "account",
+          "nodes": [
+            {
+              "format": "email",
+              "key": "work_email",
+              "label": "Work email",
+              "messages": {
+                "response.format": "That does not look like an email address."
+              },
+              "required": true,
+              "type": "text_question"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Personal",
+                  "value": "personal"
+                },
+                {
+                  "label": "Business",
+                  "value": "business"
+                }
+              ],
+              "key": "plan",
+              "label": "Which plan?",
+              "messages": {
+                "response.not_an_option": "Pick one of the plans listed."
+              },
+              "select": "one",
+              "type": "choice_question"
+            },
+            {
+              "key": "newsletter",
+              "label": "Send me product news",
+              "messages": {
+                "response.required": "Tick the box to continue."
+              },
+              "type": "boolean_question"
+            },
+            {
+              "held": false,
+              "key": "account_pin",
+              "label": "Choose a PIN",
+              "messages": {
+                "response.required": "Choose a PIN to continue."
+              },
+              "type": "secret_question"
+            },
+            {
+              "key": "account_next",
+              "label": "Continue",
+              "outcome": "account_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Create your account"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "messages": {
+                    "response.format": "That does not look like an email address."
+                  },
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "messages": {
+                    "response.not_an_option": "Pick one of the plans listed."
+                  },
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "messages": {
+                    "response.required": "Tick the box to continue."
+                  },
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "messages": {
+                    "response.required": "Choose a PIN to continue."
+                  },
+                  "type": "secret_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "screen": "account",
+        "status": "screen"
+      },
+      "name": "A presented question carries its messages as written"
     }
   ],
   "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"

@@ -10,7 +10,11 @@ defmodule Riddler.Screens.Type.BooleanQuestion do
   borrowing rules", where an unticked box is the visitor declining rather than
   an empty field. `default` is `true` or `false`, presented when nothing else
   yields a value, and `prefill` a path under `context` whose value it presents
-  first. `format` is carried and never consulted. A boolean question
+  first.
+  `messages` maps a code response validation raises on this question -
+  `response.required` or `response.invalid_shape` - to the plain string its author shows for it, which a
+  finding with that code carries as `author_message`.
+  `format` is carried and never consulted. A boolean question
   carries no `style`: one written on it is a field its type does not name, and
   admission drops it.
 
@@ -27,13 +31,19 @@ defmodule Riddler.Screens.Type.BooleanQuestion do
   @behaviour Riddler.Screens.Type
 
   alias Riddler.Finding
+  alias Riddler.Screens.Messages
   alias Riddler.Screens.Value
 
   @impl true
-  def fields, do: %{required: [:label], optional: [:help, :required, :format] ++ Value.fields()}
+  def fields,
+    do: %{
+      required: [:label],
+      optional: [:help, :required, :format] ++ Value.fields() ++ Messages.fields()
+    }
 
   @impl true
-  def validate(node), do: required_findings(node) ++ Value.findings(node)
+  def validate(node),
+    do: required_findings(node) ++ Value.findings(node) ++ Messages.findings(node)
 
   # `required` says whether the box has to be ticked, so a value that is not a
   # boolean is a question whose rule nothing can read. Checked only where the

@@ -7,6 +7,10 @@ defmodule Riddler.Screens.Type.SecretQuestion do
   `label` is what the visitor is asked, and it is a template. `help` is a line
   of guidance shown beside the question, and it is a template too. `required`
   says whether a response has to be given and defaults to false.
+  `messages` maps a code response validation raises on this question -
+  `response.required` or `response.invalid_shape` - to the plain string its author shows for it, which a
+  finding with that code carries as `author_message`.
+  A message is the author's text and carries nothing of the response.
 
   A secret question carries neither `default` nor `prefill`. Either would be a
   value the question starts from - a literal the author wrote into the
@@ -40,6 +44,7 @@ defmodule Riddler.Screens.Type.SecretQuestion do
   @behaviour Riddler.Screens.Type
 
   alias Riddler.Finding
+  alias Riddler.Screens.Messages
 
   # `default` and `prefill` are named so that admission carries them to
   # `validate/1`, which refuses them; they are never part of a resolved secret
@@ -47,11 +52,15 @@ defmodule Riddler.Screens.Type.SecretQuestion do
   @initial_values [:default, :prefill]
 
   @impl true
-  def fields, do: %{required: [:label], optional: [:required, :help] ++ @initial_values}
+  def fields,
+    do: %{
+      required: [:label],
+      optional: [:required, :help] ++ Messages.fields() ++ @initial_values
+    }
 
   @impl true
   def validate(node) do
-    required_findings(node) ++ initial_value_findings(node)
+    required_findings(node) ++ initial_value_findings(node) ++ Messages.findings(node)
   end
 
   @doc false
