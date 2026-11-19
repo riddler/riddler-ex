@@ -4730,6 +4730,770 @@
         "status": "screen"
       },
       "name": "A screen status with opts naming a key the document does not declare is an error, not an empty screen"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "patron_details",
+          "nodes": [
+            {
+              "format": "email",
+              "help": "We write to you here three days before a loan is due.",
+              "key": "reminder_email",
+              "label": "Email for due-date reminders",
+              "messages": {
+                "response.format": "That does not look like an email address.",
+                "response.required": "We need an email address to send reminders."
+              },
+              "required": true,
+              "type": "text_question",
+              "value": "ada@example.com"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Adult card",
+                  "value": "adult"
+                },
+                {
+                  "label": "Child card",
+                  "value": "child"
+                }
+              ],
+              "key": "card_type",
+              "label": "Which library card would you like?",
+              "select": "one",
+              "type": "choice_question",
+              "value": "adult"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Riverside",
+                  "value": "riverside"
+                },
+                {
+                  "label": "Hillcrest",
+                  "value": "hillcrest"
+                }
+              ],
+              "key": "pickup_branch",
+              "label": "Where will you collect your card?",
+              "required": true,
+              "select": "one",
+              "type": "choice_question",
+              "value": "riverside"
+            },
+            {
+              "key": "large_print",
+              "label": "Send me notices in large print",
+              "type": "boolean_question",
+              "value": false
+            },
+            {
+              "key": "details_next",
+              "label": "Continue",
+              "outcome": "details_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Get your library card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "format": "email",
+                  "help": "We write to you here three days before a loan is due.",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "messages": {
+                    "response.format": "That does not look like an email address.",
+                    "response.required": "We need an email address to send reminders."
+                  },
+                  "prefill": "context.patron.email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Adult card",
+                      "value": "adult"
+                    },
+                    {
+                      "label": "Child card",
+                      "value": "child"
+                    }
+                  ],
+                  "default": "adult",
+                  "key": "card_type",
+                  "label": "Which library card would you like?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options_from": "context.branches",
+                  "key": "pickup_branch",
+                  "label": "Where will you collect your card?",
+                  "prefill": "context.patron.home_branch",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "default": false,
+                  "key": "large_print",
+                  "label": "Send me notices in large print",
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "branches": [
+              {
+                "label": "Riverside",
+                "value": "riverside"
+              },
+              {
+                "label": "Hillcrest",
+                "value": "hillcrest"
+              }
+            ],
+            "patron": {
+              "email": "ada@example.com",
+              "home_branch": "riverside"
+            }
+          },
+          "responses": {}
+        },
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status presents a prefill, a default, a help, messages and options read from context together, and no question carries a prefill, a default or a path"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "patron_details",
+          "nodes": [
+            {
+              "format": "email",
+              "help": "We write to you here three days before a loan is due.",
+              "key": "reminder_email",
+              "label": "Email for due-date reminders",
+              "messages": {
+                "response.format": "That does not look like an email address.",
+                "response.required": "We need an email address to send reminders."
+              },
+              "required": true,
+              "type": "text_question",
+              "value": "ada@example.com"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Adult card",
+                  "value": "adult"
+                },
+                {
+                  "label": "Child card",
+                  "value": "child"
+                }
+              ],
+              "key": "card_type",
+              "label": "Which library card would you like?",
+              "select": "one",
+              "type": "choice_question",
+              "value": "adult"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Riverside",
+                  "value": "riverside"
+                },
+                {
+                  "label": "Hillcrest",
+                  "value": "hillcrest"
+                }
+              ],
+              "key": "pickup_branch",
+              "label": "Where will you collect your card?",
+              "required": true,
+              "select": "one",
+              "type": "choice_question"
+            },
+            {
+              "key": "large_print",
+              "label": "Send me notices in large print",
+              "type": "boolean_question",
+              "value": false
+            },
+            {
+              "key": "details_next",
+              "label": "Continue",
+              "outcome": "details_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Get your library card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "format": "email",
+                  "help": "We write to you here three days before a loan is due.",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "messages": {
+                    "response.format": "That does not look like an email address.",
+                    "response.required": "We need an email address to send reminders."
+                  },
+                  "prefill": "context.patron.email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Adult card",
+                      "value": "adult"
+                    },
+                    {
+                      "label": "Child card",
+                      "value": "child"
+                    }
+                  ],
+                  "default": "adult",
+                  "key": "card_type",
+                  "label": "Which library card would you like?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options_from": "context.branches",
+                  "key": "pickup_branch",
+                  "label": "Where will you collect your card?",
+                  "prefill": "context.patron.home_branch",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "default": false,
+                  "key": "large_print",
+                  "label": "Send me notices in large print",
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "branches": [
+              {
+                "label": "Riverside",
+                "value": "riverside"
+              },
+              {
+                "label": "Hillcrest",
+                "value": "hillcrest"
+              }
+            ],
+            "patron": {
+              "email": "ada@example.com",
+              "home_branch": "eastgate"
+            }
+          },
+          "responses": {}
+        },
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A prefill that the options read from context do not carry presents no value and reports nothing"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "patron_details",
+          "nodes": [
+            {
+              "format": "email",
+              "help": "We write to you here three days before a loan is due.",
+              "key": "reminder_email",
+              "label": "Email for due-date reminders",
+              "messages": {
+                "response.format": "That does not look like an email address.",
+                "response.required": "We need an email address to send reminders."
+              },
+              "required": true,
+              "type": "text_question",
+              "value": "ada-at-example"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Adult card",
+                  "value": "adult"
+                },
+                {
+                  "label": "Child card",
+                  "value": "child"
+                }
+              ],
+              "key": "card_type",
+              "label": "Which library card would you like?",
+              "select": "one",
+              "type": "choice_question",
+              "value": "child"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Riverside",
+                  "value": "riverside"
+                },
+                {
+                  "label": "Hillcrest",
+                  "value": "hillcrest"
+                }
+              ],
+              "key": "pickup_branch",
+              "label": "Where will you collect your card?",
+              "required": true,
+              "select": "one",
+              "type": "choice_question",
+              "value": "hillcrest"
+            },
+            {
+              "key": "large_print",
+              "label": "Send me notices in large print",
+              "type": "boolean_question",
+              "value": true
+            },
+            {
+              "key": "details_next",
+              "label": "Continue",
+              "outcome": "details_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Get your library card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "format": "email",
+                  "help": "We write to you here three days before a loan is due.",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "messages": {
+                    "response.format": "That does not look like an email address.",
+                    "response.required": "We need an email address to send reminders."
+                  },
+                  "prefill": "context.patron.email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Adult card",
+                      "value": "adult"
+                    },
+                    {
+                      "label": "Child card",
+                      "value": "child"
+                    }
+                  ],
+                  "default": "adult",
+                  "key": "card_type",
+                  "label": "Which library card would you like?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options_from": "context.branches",
+                  "key": "pickup_branch",
+                  "label": "Where will you collect your card?",
+                  "prefill": "context.patron.home_branch",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "default": false,
+                  "key": "large_print",
+                  "label": "Send me notices in large print",
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "branches": [
+              {
+                "label": "Riverside",
+                "value": "riverside"
+              },
+              {
+                "label": "Hillcrest",
+                "value": "hillcrest"
+              }
+            ],
+            "patron": {
+              "email": "ada@example.com",
+              "home_branch": "riverside"
+            }
+          },
+          "responses": {
+            "card_type": "child",
+            "large_print": true,
+            "pickup_branch": "hillcrest",
+            "reminder_email": "ada-at-example"
+          }
+        },
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status shown again after a refusal presents the response the visitor sent as the value, over a prefill and a default"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "patron_details",
+          "nodes": [
+            {
+              "format": "email",
+              "help": "We write to you here three days before a loan is due.",
+              "key": "reminder_email",
+              "label": "Email for due-date reminders",
+              "messages": {
+                "response.format": "That does not look like an email address.",
+                "response.required": "We need an email address to send reminders."
+              },
+              "required": true,
+              "type": "text_question",
+              "value": "ada@example.com"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Adult card",
+                  "value": "adult"
+                },
+                {
+                  "label": "Child card",
+                  "value": "child"
+                }
+              ],
+              "key": "card_type",
+              "label": "Which library card would you like?",
+              "select": "one",
+              "type": "choice_question",
+              "value": "adult"
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Riverside",
+                  "value": "riverside"
+                },
+                {
+                  "label": "Hillcrest",
+                  "value": "hillcrest"
+                }
+              ],
+              "key": "pickup_branch",
+              "label": "Where will you collect your card?",
+              "required": true,
+              "select": "one",
+              "type": "choice_question",
+              "value": "riverside"
+            },
+            {
+              "key": "large_print",
+              "label": "Send me notices in large print",
+              "type": "boolean_question",
+              "value": false
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Email",
+                  "value": "email"
+                },
+                {
+                  "label": "Text message",
+                  "value": "text"
+                },
+                {
+                  "label": "Letter",
+                  "value": "post"
+                }
+              ],
+              "key": "alert_channels",
+              "label": "How should we reach you?",
+              "select": "many",
+              "type": "choice_question",
+              "value": [
+                "email",
+                "text"
+              ]
+            },
+            {
+              "answer_options": [
+                {
+                  "label": "Print",
+                  "value": "print"
+                },
+                {
+                  "label": "Audio",
+                  "value": "audio"
+                }
+              ],
+              "key": "reading_formats",
+              "label": "Which formats do you borrow?",
+              "select": "many",
+              "type": "choice_question",
+              "value": [
+                "print"
+              ]
+            },
+            {
+              "key": "details_next",
+              "label": "Continue",
+              "outcome": "details_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Get your library card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "format": "email",
+                  "help": "We write to you here three days before a loan is due.",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "messages": {
+                    "response.format": "That does not look like an email address.",
+                    "response.required": "We need an email address to send reminders."
+                  },
+                  "prefill": "context.patron.email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Adult card",
+                      "value": "adult"
+                    },
+                    {
+                      "label": "Child card",
+                      "value": "child"
+                    }
+                  ],
+                  "default": "adult",
+                  "key": "card_type",
+                  "label": "Which library card would you like?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options_from": "context.branches",
+                  "key": "pickup_branch",
+                  "label": "Where will you collect your card?",
+                  "prefill": "context.patron.home_branch",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "default": false,
+                  "key": "large_print",
+                  "label": "Send me notices in large print",
+                  "type": "boolean_question"
+                },
+                {
+                  "answer_options_from": "context.alert_channels",
+                  "key": "alert_channels",
+                  "label": "How should we reach you?",
+                  "prefill": "context.patron.alerts",
+                  "select": "many",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Print",
+                      "value": "print"
+                    },
+                    {
+                      "label": "Audio",
+                      "value": "audio"
+                    }
+                  ],
+                  "default": [
+                    "print"
+                  ],
+                  "key": "reading_formats",
+                  "label": "Which formats do you borrow?",
+                  "select": "many",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "alert_channels": [
+              {
+                "label": "Email",
+                "value": "email"
+              },
+              {
+                "label": "Text message",
+                "value": "text"
+              },
+              {
+                "label": "Letter",
+                "value": "post"
+              }
+            ],
+            "branches": [
+              {
+                "label": "Riverside",
+                "value": "riverside"
+              },
+              {
+                "label": "Hillcrest",
+                "value": "hillcrest"
+              }
+            ],
+            "patron": {
+              "alerts": [
+                "email",
+                "text"
+              ],
+              "email": "ada@example.com",
+              "home_branch": "riverside"
+            }
+          },
+          "responses": {}
+        },
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A choice question picking several presents its default list, or its prefill's list where the options read from context carry every value"
     }
   ],
   "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"

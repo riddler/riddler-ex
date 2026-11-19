@@ -3187,6 +3187,245 @@
         "screen": "account"
       },
       "name": "A response among the options the context holds at submit is accepted on a choice question that reads its options from context"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.not_an_option",
+            "field": "answer_options",
+            "node_key": "plan"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "context": {
+          "account": {}
+        },
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.plans",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "plan": "personal"
+        },
+        "screen": "account"
+      },
+      "name": "A response to a choice question whose path reaches no list at submit is refused, as no option carries it"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.not_an_option",
+            "field": "answer_options",
+            "node_key": "addons"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "context": {
+          "account": {
+            "addons": [
+              {
+                "label": "Invoices",
+                "value": "invoices"
+              },
+              {
+                "label": "Reports",
+                "value": "reports"
+              },
+              {
+                "label": "Audit log",
+                "value": "audit_log"
+              }
+            ]
+          }
+        },
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.addons",
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "select": "many",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "addons": [
+            "reports",
+            "audit_log",
+            "payroll"
+          ]
+        },
+        "screen": "account"
+      },
+      "name": "A choice question picking several that reads its options from context is checked value by value against them at submit"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.out_of_range",
+            "field": "min_selections",
+            "node_key": "addons"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "context": {
+          "account": {
+            "addons": [
+              {
+                "label": "Invoices",
+                "value": "invoices"
+              },
+              {
+                "label": "Reports",
+                "value": "reports"
+              },
+              {
+                "label": "Audit log",
+                "value": "audit_log"
+              }
+            ]
+          }
+        },
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.addons",
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "max_selections": 2,
+                  "min_selections": 2,
+                  "select": "many",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "addons": [
+            "reports"
+          ]
+        },
+        "screen": "account"
+      },
+      "name": "A selection bound on a choice question that reads its options from context is checked at submit"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "plan"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "context": {
+          "account": {
+            "plan": "personal",
+            "plans": [
+              {
+                "label": "Personal",
+                "value": "personal"
+              },
+              {
+                "label": "Business",
+                "value": "business"
+              }
+            ]
+          }
+        },
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.plans",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "prefill": "context.account.plan",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "account"
+      },
+      "name": "A required choice question that reads its options from context and whose prefill presents a value is unanswered with no response"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"
