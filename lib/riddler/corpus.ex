@@ -167,11 +167,13 @@ defmodule Riddler.Corpus do
   # atom: `"waiting"` and `"done"` are the two bare statuses, `"screen"` is
   # `{:screen, key}` with the key under the input's own `"screen"`, `"waiting"`
   # beside an input `"info"` is `{:waiting, info}` with the info handed over
-  # as the case states it, any JSON value, and any other value is handed over
-  # as itself, which is a status outside the three.
+  # as the case states it, any JSON value, `"done"` beside an input `"result"`
+  # is `{:done, result}` the same way, and any other value is handed over as
+  # itself, which is a status outside the three.
   defp status(%{"status" => "screen"} = input), do: {:screen, input["screen"]}
   defp status(%{"status" => "waiting", "info" => info}), do: {:waiting, info}
   defp status(%{"status" => "waiting"}), do: :waiting
+  defp status(%{"status" => "done", "result" => result}), do: {:done, result}
   defp status(%{"status" => "done"}), do: :done
   defp status(input), do: input["status"]
 
