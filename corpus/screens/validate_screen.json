@@ -3079,6 +3079,114 @@
         "screen": "account"
       },
       "name": "A response refused on a question whose messages key the finding's code is refused with the same finding as one carrying none"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.not_an_option",
+            "field": "answer_options",
+            "node_key": "plan"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "context": {
+          "account": {
+            "plans": [
+              {
+                "label": "Personal",
+                "value": "personal"
+              }
+            ]
+          }
+        },
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.plans",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "plan": "business"
+        },
+        "screen": "account"
+      },
+      "name": "A response to a choice question that reads its options from context is checked against the options the context holds at submit"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "context": {
+          "account": {
+            "plans": [
+              {
+                "label": "Personal",
+                "price": 0,
+                "value": "personal"
+              },
+              {
+                "label": "Business for {{ context.company }}",
+                "value": "business"
+              }
+            ]
+          }
+        },
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.plans",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "required": true,
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "plan": "business"
+        },
+        "screen": "account"
+      },
+      "name": "A response among the options the context holds at submit is accepted on a choice question that reads its options from context"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"

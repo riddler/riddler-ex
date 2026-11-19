@@ -3492,6 +3492,205 @@
         }
       },
       "name": "A question's messages are carried on the resolved node as written, on every question type"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "answer_options": [
+                  {
+                    "label": "Personal",
+                    "value": "personal"
+                  },
+                  {
+                    "label": "Business for {{ context.company }}",
+                    "value": "business"
+                  }
+                ],
+                "key": "plan",
+                "label": "Which plan?",
+                "select": "one",
+                "type": "choice_question",
+                "value": "business"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.plans",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "prefill": "context.account.plan",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "plan": "business",
+              "plans": [
+                {
+                  "label": "Personal",
+                  "price": 0,
+                  "value": "personal"
+                },
+                {
+                  "label": "Business for {{ context.company }}",
+                  "value": "business"
+                }
+              ]
+            },
+            "company": "Acme"
+          },
+          "responses": {}
+        }
+      },
+      "name": "A choice question reads its options from context at its path, each its value and label as the host gave them and unrendered, and carries no answer_options_from"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "plan",
+              "variable": "context.account.plans"
+            },
+            {
+              "key": "addons",
+              "variable": "context.account.addons"
+            },
+            {
+              "key": "seats",
+              "variable": "context.account.seat_options"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "answer_options": [],
+                "key": "plan",
+                "label": "Which plan?",
+                "select": "one",
+                "type": "choice_question"
+              },
+              {
+                "answer_options": [],
+                "key": "addons",
+                "label": "Which add-ons?",
+                "select": "many",
+                "type": "choice_question"
+              },
+              {
+                "answer_options": [],
+                "key": "seats",
+                "label": "How many seats?",
+                "select": "one",
+                "type": "choice_question"
+              },
+              {
+                "answer_options": [],
+                "key": "region",
+                "label": "Which region?",
+                "select": "one",
+                "type": "choice_question"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.plans",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options_from": "context.account.addons",
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "select": "many",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options_from": "context.account.seat_options",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options_from": "context.account.regions",
+                  "key": "region",
+                  "label": "Which region?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "account": {
+              "addons": [
+                {
+                  "label": "Reports",
+                  "value": "Reports"
+                }
+              ],
+              "regions": [],
+              "seat_options": "three"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "A choice question whose path reaches no list of options resolves with none and reports the path, and an empty list is no options and is not reported"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

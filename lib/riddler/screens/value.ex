@@ -51,7 +51,7 @@ defmodule Riddler.Screens.Value do
   defp default_findings(node) do
     with {:ok, default} <- Map.fetch(node, :default),
          true <- shape_readable?(node),
-         false <- fits?(node, default, authored_values(node)) do
+         false <- not options_from_context?(node) and fits?(node, default, authored_values(node)) do
       [
         %Finding{
           code: "document.invalid_default",
@@ -63,6 +63,20 @@ defmodule Riddler.Screens.Value do
     else
       _fits_or_unchecked -> []
     end
+  end
+
+  # A choice question that reads its options from the context, and carries
+  # none of its own, has no authored option for a default to be, so any
+  # default on it is refused - an empty list under `"many"` included - and
+  # the author is told why.
+  defp options_from_context?(%{type: @choice_type} = node),
+    do: Map.has_key?(node, :answer_options_from) and not Map.has_key?(node, :answer_options)
+
+  defp options_from_context?(_node), do: false
+
+  defp default_message(%{type: @choice_type} = node, default)
+       when is_map_key(node, :answer_options_from) and not is_map_key(node, :answer_options) do
+    "the default #{inspect(default)} names an option, and this question reads its options from context when the screen is resolved, so it has none for a default to name"
   end
 
   defp default_message(%{type: @choice_type, select: "many"}, default) do
@@ -160,16 +174,22 @@ defmodule Riddler.Screens.Value do
     end
   end
 
-  defp walk(found, []), do: {:ok, found}
+  # The value at the segments of a path, read one string key at a time, or
+  # `:error` where a segment is not there or the walk passes through a value
+  # that is not an object. Shared with a choice question's
+  # `answer_options_from`, which reads its options the same way.
+  @doc false
+  @spec walk(term(), [String.t()]) :: {:ok, term()} | :error
+  def walk(found, []), do: {:ok, found}
 
-  defp walk(map, [segment | rest]) when is_map(map) and not is_struct(map) do
+  def walk(map, [segment | rest]) when is_map(map) and not is_struct(map) do
     case Map.fetch(map, segment) do
       {:ok, next} -> walk(next, rest)
       :error -> :error
     end
   end
 
-  defp walk(_not_an_object, _segments), do: :error
+  def walk(_not_an_object, _segments), do: :error
 
   # Put to the same test as a prefill, so a host that resolves a document no
   # one validated never presents a default of the wrong shape.
@@ -206,7 +226,10 @@ defmodule Riddler.Screens.Value do
 
   # The values the question's own options carry, the strings only. A choice
   # question whose options are not a list carries none, so no default or
-  # prefill is one of them.
+  # prefill is one of them. At admit a question that reads its options from
+  # context has none; when the screen is resolved, these are the options read
+  # from the context, so a prefill or a default is put to the options the
+  # question is shown.
   defp authored_values(%{type: @choice_type} = node) do
     case Map.get(node, :answer_options) do
       options when is_list(options) ->

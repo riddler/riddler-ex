@@ -122,15 +122,22 @@ defmodule Riddler.Screens.Document do
       wrong and not a response. Only where the question declares that format:
       a `pattern` on a question asking for another format, or for none, is a
       field nothing consults and raises nothing.
-  * `document.invalid_default` - a text, choice or boolean question's
-  `default` is not of the question's response shape: a string for a text
-  question, `true` or `false` for a boolean question, and for a choice
-  question one of its own options' values under `select: "one"` or a list
-  of different ones under `"many"`. A choice question whose `select` is
-  neither has no shape to read, and its default is not checked.
-  * `document.invalid_context_path` - a `prefill` that is not a string of
-  dotted segments starting at `context`, with at least one more after it,
-  each in the key shape `[a-z][a-z0-9_]*`.
+    * `document.invalid_default` - a text, choice or boolean question's
+      `default` is not of the question's response shape: a string for a text
+      question, `true` or `false` for a boolean question, and for a choice
+      question one of its own options' values under `select: "one"` or a list
+      of different ones under `"many"`. A choice question whose `select` is
+      neither has no shape to read, and its default is not checked. A choice
+      question that reads its options from context has no option of its own
+      for a default to name, and any default on it is refused.
+    * `document.invalid_context_path` - a `prefill`, or a choice question's
+      `answer_options_from`, that is not a string of dotted segments starting
+      at `context`, with at least one more after it, each in the key shape
+      `[a-z][a-z0-9_]*`; its `field` names which.
+    * `document.conflicting_options` - a choice question carries both
+      `answer_options` and `answer_options_from`, its `field`
+      `"answer_options_from"`. A choice question carrying neither is
+      `document.missing_field` on `answer_options`.
     * `document.invalid_messages` - a question's `messages` is there and is
       not an object, or a value in it is not a string. One finding per such
       value, its `field` `"messages"`.
@@ -753,7 +760,7 @@ defmodule Riddler.Screens.Document do
   defp missing_findings(node, module, key) do
     %{required: required} = module.fields()
 
-    for field <- required, not Map.has_key?(node, field) do
+    for field <- required, not Map.has_key?(node, field), not supplied?(node, field) do
       %Finding{
         code: "document.missing_field",
         message: "a #{node.type} node carries #{field}, and this one does not",
@@ -762,6 +769,15 @@ defmodule Riddler.Screens.Document do
       }
     end
   end
+
+  # A choice question that names a context path for its options carries no
+  # `answer_options`, and is not missing them: carrying both is the type's
+  # `document.conflicting_options`, and carrying neither is still this
+  # finding on `answer_options`.
+  defp supplied?(%{type: @choice_type} = node, :answer_options),
+    do: Map.has_key?(node, :answer_options_from)
+
+  defp supplied?(_node, _field), do: false
 
   defp template_findings(node, key) do
     node_fields =
