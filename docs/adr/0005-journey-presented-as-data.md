@@ -1123,9 +1123,10 @@ outcomes that are strings (the `Riddler.Screens.Document` moduledoc, its
   `document.duplicate_outcome` on the screen. A button with no `outcome` is
   still `document.missing_field`, and is not this finding too.
 
-The code is named in the register of `document.invalid_style` and
-`document.invalid_validates`, the two findings a button already raises for a
-field that is there and of the wrong type. `document.duplicate_outcome`
+The code is named in the register of `document.invalid_writes`,
+`document.invalid_style` and `document.invalid_validates`, the three
+findings a button already raises for a field that is there and of the wrong
+type (`Riddler.Screens.Type.Button.validate/1` at `10fe9cd`). `document.duplicate_outcome`
 keeps comparing string outcomes only; a button carrying the new finding is
 not compared.
 
