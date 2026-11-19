@@ -24,12 +24,14 @@ defmodule Riddler.Journey do
     * `:waiting`, or `{:waiting, info}` - the execution is waiting on
       something that is not the visitor, and `info` may say why and when a
       client should ask again;
-    * `:done` - the execution has finished.
+    * `:done`, or `{:done, result}` - the execution has finished, and
+      `result` is what the host has to show for it.
 
   `present/3` answers a string-keyed map whose `"state"` is `"screen"`,
   `"waiting"` or `"done"`, with `"screen"` beside it exactly when the state
-  is a screen, and `"reason"` and `"retry_after_ms"` beside a waiting state
-  exactly when the host supplied them. String keys throughout, so the answer
+  is a screen, `"reason"` and `"retry_after_ms"` beside a waiting state
+  exactly when the host supplied them, and `"result"` beside a done state
+  exactly when the host supplied one. String keys throughout, so the answer
   can be put on any wire as JSON as it stands.
 
   ## The root
@@ -100,6 +102,7 @@ defmodule Riddler.Journey do
           | :waiting
           | {:waiting, waiting_info()}
           | :done
+          | {:done, result :: map()}
 
   @typedoc """
   Optionally `"reason"` => `t:String.t/0` and `"retry_after_ms"` =>
@@ -116,11 +119,12 @@ defmodule Riddler.Journey do
 
   @typedoc """
   `"state"` => `"screen"` | `"waiting"` | `"done"`; only when `"state"` is
-  `"screen"`, `"screen"` => `t:screen/0`; and only on a waiting answer, and
+  `"screen"`, `"screen"` => `t:screen/0`; only on a waiting answer, and
   each only where the host supplied it, `"reason"` => `t:String.t/0` and
-  `"retry_after_ms"` => `t:non_neg_integer/0`.
+  `"retry_after_ms"` => `t:non_neg_integer/0`; and only on a done answer,
+  and only where the host supplied it, `"result"` => `t:map/0`.
   """
-  @type answer :: %{required(String.t()) => String.t() | non_neg_integer() | screen()}
+  @type answer :: %{required(String.t()) => String.t() | non_neg_integer() | screen() | map()}
 
   @typedoc """
   `"key"`, `"title"`, `"nodes"` (the resolved nodes, string-keyed) and
@@ -168,13 +172,22 @@ defmodule Riddler.Journey do
   nothing of it reaches the answer, so `{:waiting, %{}}` answers exactly what
   `:waiting` answers. The document is not read here either.
 
+  For `{:done, result}` the answer is the done state with `"result"` beside
+  it: `result` is the host's map, carried whole in the answer's data form -
+  a struct inside it becomes a map, an atom key a string, and an atom value
+  other than `true`, `false` and `nil` a string - and nothing in it is read.
+  That it holds only what JSON can carry once so encoded is the host's to
+  keep, as the context's is. `{:done, %{}}` answers `"result"` as an empty
+  map. The document is not read here either.
+
   A key the document does not declare is `{:error, :no_such_screen}`, the
   answer `Riddler.Screens.resolve_screen/3` gives for it. A status outside the
   three is `{:error, :unknown_status}`, so a host that builds its status from
   its own data is told rather than handed an exception. So is `{:waiting,
   info}` whose `info` is not a map (a struct included), whose `"reason"` is
   not a string, or whose `"retry_after_ms"` is not an integer or is below
-  zero.
+  zero, and so is `{:done, result}` whose `result` is not a map (a struct
+  included).
 
   The root is read for `"context"` and `"responses"` and nothing else; an
   absent half is an empty map. No responses are checked here: whether a
@@ -227,6 +240,10 @@ defmodule Riddler.Journey do
       {:error, :unknown_status}
       iex> Riddler.Journey.present(document, :done, %{})
       {:ok, %{"state" => "done"}}
+      iex> Riddler.Journey.present(document, {:done, %{"card_number" => "EXAMPLE-CARD-0001"}}, %{})
+      {:ok, %{"state" => "done", "result" => %{"card_number" => "EXAMPLE-CARD-0001"}}}
+      iex> Riddler.Journey.present(document, {:done, ["EXAMPLE-CARD-0001"]}, %{})
+      {:error, :unknown_status}
       iex> Riddler.Journey.present(document, {:screen, "card_pickup"}, %{})
       {:error, :no_such_screen}
       iex> Riddler.Journey.present(document, :card_issued, %{})
@@ -254,6 +271,11 @@ defmodule Riddler.Journey do
   end
 
   def present(%Document{}, :done, root) when is_map(root), do: {:ok, %{"state" => "done"}}
+
+  def present(%Document{}, {:done, result}, root)
+      when is_map(root) and is_map(result) and not is_struct(result),
+      do: {:ok, %{"state" => "done", "result" => Encoding.to_data(result)}}
+
   def present(%Document{}, _status, root) when is_map(root), do: {:error, :unknown_status}
 
   @doc """

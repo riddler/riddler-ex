@@ -249,6 +249,92 @@ defmodule Riddler.JourneyTest do
     end
   end
 
+  describe "present/3 for done with a result" do
+    # Sabotage: made the done result clause answer the done state alone; the
+    # result was missing from the answer and this test went red.
+    test "answers the result whole beside the state", %{document: document} do
+      result = %{
+        "card_number" => "EXAMPLE-CARD-0001",
+        "pickup" => %{"branch_name" => "Central Library", "ready" => true},
+        "reminders" => ["email", "post"],
+        "guardian" => nil
+      }
+
+      assert Journey.present(document, {:done, result}, %{}) ==
+               {:ok, %{"state" => "done", "result" => result}}
+    end
+
+    # Sabotage: made the done result clause carry the result as the host
+    # passed it, without the data form; the atom key and the atom value came
+    # back as atoms and this test went red. And again with the struct inside
+    # left as a struct; it came back as a struct and this test went red. And
+    # again with only the top level encoded; the nested atom and struct came
+    # back as they were and this test went red.
+    test "carries the result in the answer's data form", %{document: document} do
+      result = %{
+        "status" => :issued,
+        "pickup_url" => URI.parse("https://example.com/pickup"),
+        "pickup" => %{branch: :central, links: [URI.parse("https://example.com/hours")]},
+        card_number: "EXAMPLE-CARD-0001"
+      }
+
+      assert {:ok, %{"state" => "done", "result" => carried}} =
+               Journey.present(document, {:done, result}, %{})
+
+      assert carried["card_number"] == "EXAMPLE-CARD-0001"
+      assert carried["status"] == "issued"
+      assert %{"host" => "example.com", "path" => "/pickup"} = carried["pickup_url"]
+      refute is_struct(carried["pickup_url"])
+      assert %{"branch" => "central", "links" => [link]} = carried["pickup"]
+      assert %{"host" => "example.com", "path" => "/hours"} = link
+      refute is_struct(link)
+    end
+
+    # Sabotage: made the done result clause drop an empty result to the bare
+    # done answer; the "result" key was missing and this test went red.
+    test "answers an empty result as an empty map, and the bare done form unchanged",
+         %{document: document} do
+      assert Journey.present(document, {:done, %{}}, %{}) ==
+               {:ok, %{"state" => "done", "result" => %{}}}
+
+      assert Journey.present(document, :done, %{}) == {:ok, %{"state" => "done"}}
+    end
+
+    # Sabotage: made the done result clause's guard accept any term; the
+    # string result came back as an answer and this test went red. And again
+    # with the guard dropping `not is_struct/1`; the struct came back as an
+    # answer and this test went red.
+    test "refuses a result that is not a map", %{document: document} do
+      for result <- [
+            "EXAMPLE-CARD-0001",
+            nil,
+            12,
+            ["EXAMPLE-CARD-0001"],
+            [{"card_number", "EXAMPLE-CARD-0001"}],
+            :issued,
+            URI.parse("https://example.com")
+          ] do
+        assert Journey.present(document, {:done, result}, %{}) == {:error, :unknown_status},
+               "expected #{inspect(result)} to be refused"
+      end
+    end
+
+    # Sabotage: made the done result clause match only a document declaring
+    # a screen; the document declaring none fell through to
+    # {:error, :unknown_status} and this test went red.
+    test "does not read the document" do
+      empty =
+        Document.admit(%{
+          "schema_version" => 1,
+          "id" => "patron_registration_empty",
+          "screens" => []
+        })
+
+      assert Journey.present(empty, {:done, %{"card_number" => "EXAMPLE-CARD-0001"}}, %{}) ==
+               {:ok, %{"state" => "done", "result" => %{"card_number" => "EXAMPLE-CARD-0001"}}}
+    end
+  end
+
   describe "present/3 for a status outside the three" do
     # Sabotage: made the catch-all clause answer the waiting state; the first
     # status came back {:ok, %{"state" => "waiting"}} and this test went red.

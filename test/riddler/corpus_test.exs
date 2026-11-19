@@ -59,7 +59,7 @@ defmodule Riddler.CorpusTest do
     "corpus/screens/resolve.json" => 50,
     "corpus/screens/validate_screen.json" => 74,
     "corpus/templates/render.json" => 74,
-    "corpus/journey/present.json" => 28,
+    "corpus/journey/present.json" => 35,
     "corpus/journey/put_context.json" => 8,
     "corpus/journey/decode_submit.json" => 14
   }
@@ -380,7 +380,9 @@ defmodule Riddler.CorpusTest do
     # diagnostics; the four screen cases came back short of them and this test
     # went red. And again with the runner's clause for a waiting status's info
     # removed; the waiting cases with info came back as the bare waiting state
-    # and this test went red.
+    # and this test went red. And again with the runner's clause for a done
+    # status's result removed; the done cases with a result came back as the
+    # bare done state and this test went red.
     test "every journey presentation case answers what the corpus states" do
       assert mismatches("corpus/journey/present.json") == []
     end
