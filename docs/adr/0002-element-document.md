@@ -3669,7 +3669,7 @@ may key, the finding codes, what the resolved node carries and drops, and the
 finding's wire form - is this entry's own, written 2026-11-18 at `proposed`.
 
 Every cite below of the package as it stands is read at
-`ff6947308be4730fd7e8a9d74617a635d6f0f876`. The code half is separate requests
+`afe05a8184954796e5a59a5897849941379d4db6`. The code half is separate requests
 (bead rd-yad9 for `default`, `prefill` and the presented `value`; rd-avn0 for
 `help`; rd-0vra for `messages` and `author_message`; rd-dsy3 for
 `answer_options_from`; rd-n68t for the corpus cases). Nothing below is
@@ -3680,9 +3680,13 @@ cited.
 
 **Each question type gains fields, and this table is the whole of it.** The
 question types are `text_question`, `choice_question`, `boolean_question`
-and, once its code half lands, `secret_question` (the amendment above headed
-"Amendment, 2026-11-16: a `secret_question` node type, validated on plaintext
-and sealed by the host before it is stored"). Every field below is optional.
+and `secret_question` (the amendment above headed "Amendment, 2026-11-16: a
+`secret_question` node type, validated on plaintext and sealed by the host
+before it is stored"). That amendment's admission, resolution and response
+validation are in the package at `afe05a8` (the module
+`Riddler.Screens.Type.SecretQuestion`, and the private `secret_findings/2` in
+`lib/riddler/screens/validation.ex`); its seal and its presented form are
+separate requests still to land. Every field below is optional.
 
 | Type | `default` | `prefill` | `help` | `messages` may key | `answer_options_from` |
 |---|---|---|---|---|---|
@@ -3699,11 +3703,11 @@ with no finding."). The screen document schema types none of these fields, so
 a value of the wrong JSON type in one of them is a finding against an admitted
 document, never an `admit/1` of `nil`: the schema's own description says
 "schema-valid means admitted" (`priv/schemas/screen-document.schema.json` at
-`ff69473`), and that stays true.
+`afe05a8`), and that stays true.
 
 **`default` is a literal the author writes, of the question's response
 shape.** The shape is the one response validation reads for the type
-(`Riddler.Screens.Validation`, at `ff69473`, its private `choice_findings/2`
+(`Riddler.Screens.Validation`, at `afe05a8`, its private `choice_findings/2`
 and `boolean_findings/2`, and the `Riddler.Screens.Type.TextQuestion`
 moduledoc's "A question a visitor answers with a line of text"): a string for
 a text question; one string for a choice question under `"one"` and a list of
@@ -3762,7 +3766,7 @@ default and submitted with nothing answers `response.required`. No template,
 condition or write reads a `value`; `responses.<key>` stays the only way to
 name what a visitor submitted. `Riddler.Journey.present/3` answers a screen in
 the data form of what `Riddler.Screens.resolve_screen/3` answers (its private
-`screen_data/2` in `lib/riddler/journey.ex` at `ff69473`), so the presented
+`screen_data/2` in `lib/riddler/journey.ex` at `afe05a8`), so the presented
 node carries `"value"` exactly where the resolved node carries `value`; that
 is where ADR-0005's amendment, at `proposed`, headed "Amendment, 2026-11-18:
 the presented answer, the submit and a finding as a published wire contract"
@@ -3788,7 +3792,8 @@ others open, and this entry gives it to the other three on the same terms.
 **`messages` maps a finding code the type can raise to a plain string.** It
 is a JSON object. Each key is a code `validate_screen/3,4` can raise on a
 response to a question of that type, as the table above lists them per type
-(the codes raised in `Riddler.Screens.Validation` at `ff69473`); each value is
+(the codes raised in `Riddler.Screens.Validation` at `afe05a8`, a secret
+question's in its private `secret_findings/2`); each value is
 a plain string in one language, not a template: it is rendered by nothing and
 interpolates nothing. Admission keeps the object string-keyed, as it keeps
 `metadata`. `response.undecidable` is not among the keys for any
@@ -3828,7 +3833,7 @@ a string or `null`. A client built to that entry's finding schema meets a key
 it does not name, which that entry's "No schema forbids a key it does not
 name" lets through, and the finding schema of the release that adds the field
 names it. The corpus keeps comparing a finding by `"code"`, `"field"` and
-`"node_key"` (`encode_findings/1` in `lib/riddler/corpus.ex` at `ff69473`).
+`"node_key"` (`encode_findings/1` in `lib/riddler/corpus.ex` at `afe05a8`).
 
 **`answer_options_from` names a context path for a choice question's
 options.** It is a path in the form `prefill` takes, and a malformed one is
