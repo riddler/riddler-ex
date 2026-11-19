@@ -66,9 +66,9 @@ defmodule Riddler.Finding do
       one `Riddler.Screens.validate_screen/3` or `/4` raises on a question's
       response, where that question's `messages` carries the finding's code,
       and it is then that string as written. Every other finding carries
-      `nil`: every `document.*` finding, `response.undecidable`, and a
-      response finding on a question whose `messages` does not carry its
-      code. It never replaces `:message`, which stays this package's own
+      `nil`: every `document.*` finding, `response.undecidable`, every
+      refusal of `Riddler.Screens.seal_secrets/4`, and a response finding on
+      a question whose `messages` does not carry its code. It never replaces `:message`, which stays this package's own
       sentence; where a finding is shown to a visitor, a renderer shows this
       where it is a string and its own text otherwise.
 

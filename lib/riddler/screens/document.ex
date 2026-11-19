@@ -362,18 +362,27 @@ defmodule Riddler.Screens.Document do
   @spec secret_keys(t()) :: [String.t()]
   def secret_keys(%__MODULE__{screens: screens}) do
     screens
-    |> Enum.flat_map(fn screen -> Enum.flat_map(screen.nodes, &secret_keys_under/1) end)
+    |> Enum.flat_map(&secret_questions/1)
+    |> Enum.map(& &1.key)
     |> Enum.uniq()
   end
 
-  defp secret_keys_under(node) do
+  # The secret questions one screen declares, in document order, a variant's
+  # candidates included and whatever their condition, each carrying a key
+  # that is a string. `secret_keys/1` reads every screen through it, and the
+  # seal reads the one screen it was named. No part of the package's surface.
+  @doc false
+  @spec secret_questions(%{nodes: [map()]}) :: [map()]
+  def secret_questions(%{nodes: nodes}), do: Enum.flat_map(nodes, &secret_questions_under/1)
+
+  defp secret_questions_under(node) do
     own =
       case node do
-        %{type: @secret_type, key: key} when is_binary(key) -> [key]
+        %{type: @secret_type, key: key} when is_binary(key) -> [node]
         _other -> []
       end
 
-    own ++ Enum.flat_map(candidates(node), &secret_keys_under/1)
+    own ++ Enum.flat_map(candidates(node), &secret_questions_under/1)
   end
 
   # -- admit ----------------------------------------------------------------

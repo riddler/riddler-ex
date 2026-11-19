@@ -33,6 +33,7 @@ defmodule Riddler.CorpusTest do
     "corpus/screens/admit.json",
     "corpus/screens/resolve.json",
     "corpus/screens/validate_screen.json",
+    "corpus/screens/seal_secrets.json",
     "corpus/templates/render.json",
     "corpus/journey/present.json",
     "corpus/journey/put_context.json",
@@ -58,6 +59,7 @@ defmodule Riddler.CorpusTest do
     "corpus/screens/admit.json" => 109,
     "corpus/screens/resolve.json" => 50,
     "corpus/screens/validate_screen.json" => 74,
+    "corpus/screens/seal_secrets.json" => 14,
     "corpus/templates/render.json" => 74,
     "corpus/journey/present.json" => 46,
     "corpus/journey/put_context.json" => 8,
@@ -344,6 +346,13 @@ defmodule Riddler.CorpusTest do
     # unanswered cases came back :ok and this test went red.
     test "every response validation case answers what the corpus states" do
       assert mismatches("corpus/screens/validate_screen.json") == []
+    end
+
+    # Sabotage: made the runner's test sealer answer "test-sealed" for every
+    # plaintext, without the count; the cases stating the count came back with
+    # the bare handle and this test went red.
+    test "every seal case answers what the corpus states" do
+      assert mismatches("corpus/screens/seal_secrets.json") == []
     end
 
     # The capability string this version renamed is gone, not kept alive beside
