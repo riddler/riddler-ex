@@ -1,4 +1,0 @@
-### Added
-
-- `Riddler.Screens.seal_secrets/4` takes a document, a screen key, the responses and the host's sealer, a function answering `{:ok, string}` or `{:error, reason}`, and replaces each plaintext response to the screen's secret questions with the sealed form `{"sealed": string}`, leaving every other response untouched; it refuses a wrong shape with `response.invalid_shape`, a plaintext to another screen's secret question with `response.unsealed_secret`, and a sealer answer that is not a sealed string with `response.seal_failed`, and no finding carries the plaintext or the sealer's reason.
-- The conformance corpus gains the capability `screens.seal_secrets`, with its cases in `corpus/screens/seal_secrets.json` and the fixed test sealer every runtime supplies described in the corpus case schema.
