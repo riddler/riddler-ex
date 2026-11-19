@@ -3634,3 +3634,502 @@ stays an open string in the schema. The vocabulary is the record's:
   overwritten once the host has used it; those are the host's.
 - Whether other question types carry `help`, and what a question node presents
   of a held response other than `held`.
+
+---
+
+## Amendment, 2026-11-18: a question's `default`, `prefill`, `help`, `messages` and `answer_options_from`, its presented `value`, and a finding's `author_message`
+
+Status: proposed
+
+Recorded 2026-11-18, bead rd-l0j9. Five question fields an author or a host
+needs for a real signup form, and the two things they add to what this
+package answers: a `value` on a resolved question node, and an
+`author_message` on a finding. That a question takes both a `default` and a
+`prefill`, that a default is a literal the author writes and a prefill a
+context path read when the screen is presented, that a response the root
+holds wins, then the prefill, then the default, and that a secret question
+takes neither was ruled by the operator, 2026-11-16. That a choice question
+names a context path for its options, that authored `answer_options` and a
+context path are exclusive, and that a response is validated against the set
+resolved at submit was ruled by the operator, 2026-11-16. That an author's
+messages are keyed by finding code, plain strings in one language, with the
+renderer's own text the fallback and no locale map until an i18n design was
+ruled by the operator, 2026-11-16. That a question node carries `value` when a
+response the root holds, a prefill or a default yields one, that it is set
+when the screen is resolved, and that a secret question never carries it was
+ruled by the operator, 2026-11-16. The field spellings `default`, `prefill`,
+`help`, `messages` and `answer_options_from`, that a path is dotted under
+`context` with key-shaped segments, that a message keyed by a code the
+question cannot raise is an admit finding, and that an author's message rides
+a new optional finding field `author_message` while `message` stays this
+package's own text were decided by the conductor under a standing consent,
+2026-11-16. The rest - the shape a default is held to, the written form of a
+path, what a path that reaches nothing yields, which codes each question type
+may key, the finding codes, what the resolved node carries and drops, and the
+finding's wire form - is this entry's own, written 2026-11-18 at `proposed`.
+
+Every cite below of the package as it stands is read at
+`ff6947308be4730fd7e8a9d74617a635d6f0f876`. The code half is separate requests
+(bead rd-yad9 for `default`, `prefill` and the presented `value`; rd-avn0 for
+`help`; rd-0vra for `messages` and `author_message`; rd-dsy3 for
+`answer_options_from`; rd-n68t for the corpus cases). Nothing below is
+citable from `lib/` until they land, so what they add is described here, not
+cited.
+
+### What the record now decides
+
+**Each question type gains fields, and this table is the whole of it.** The
+question types are `text_question`, `choice_question`, `boolean_question`
+and, once its code half lands, `secret_question` (the amendment above headed
+"Amendment, 2026-11-16: a `secret_question` node type, validated on plaintext
+and sealed by the host before it is stored"). Every field below is optional.
+
+| Type | `default` | `prefill` | `help` | `messages` may key | `answer_options_from` |
+|---|---|---|---|---|---|
+| `text_question` | a string | a context path | a template | `response.required`, `response.format`, `response.out_of_range` | not named |
+| `choice_question`, `select` `"one"` | a string that is one authored option's `value` | a context path | a template | `response.required`, `response.invalid_shape`, `response.not_an_option`, `response.out_of_range` | a context path |
+| `choice_question`, `select` `"many"` | a list of distinct strings, each one authored option's `value` | a context path | a template | as for `"one"` | a context path |
+| `boolean_question` | `true` or `false` | a context path | a template | `response.required`, `response.invalid_shape` | not named |
+| `secret_question` | refused, as that amendment decides | refused, as that amendment decides | a template, as that amendment decides | `response.required`, `response.invalid_shape` | not named |
+
+A field the table says a type does not name is dropped at admit with no
+finding, as the note above of 2026-09-17 for beads rd-gwn, rd-d8e, rd-xvv and
+rd-xva decides ("A node field this version does not know is dropped at admit,
+with no finding."). The screen document schema types none of these fields, so
+a value of the wrong JSON type in one of them is a finding against an admitted
+document, never an `admit/1` of `nil`: the schema's own description says
+"schema-valid means admitted" (`priv/schemas/screen-document.schema.json` at
+`ff69473`), and that stays true.
+
+**`default` is a literal the author writes, of the question's response
+shape.** The shape is the one response validation reads for the type
+(`Riddler.Screens.Validation`, at `ff69473`, its private `choice_findings/2`
+and `boolean_findings/2`, and the `Riddler.Screens.Type.TextQuestion`
+moduledoc's "A question a visitor answers with a line of text"): a string for
+a text question; one string for a choice question under `"one"` and a list of
+distinct strings under `"many"`, every value one that an option in the
+question's own `answer_options` carries; `true` or `false` for a boolean
+question. A default of another shape, or naming a value no authored option
+carries, is refused at admit, `document.invalid_default`, its `field`
+`"default"`. So a choice question that takes its options from
+`answer_options_from` has no authored option for a default to be, and a
+default on it is refused the same way. A default is held to its shape and,
+on a choice question, to the authored options, and to nothing else at admit:
+it is not put to the question's `format` or `pattern`, and a list default is
+not put to `min_selections` or `max_selections`. Like any value a visitor
+sends back, it meets those checks when it is submitted as a response. Where a
+choice question's `select` is neither `"one"` nor `"many"` no shape can be
+read, the document is already refused `document.invalid_select`, and the
+default is not checked. A number is not a text question's default: a text
+question whose format is `integer` writes its default as a string, `"2"`.
+
+**`prefill` is a path under `context`, read when the screen is resolved.**
+It is written as a string of dotted segments whose first is `context` and
+which carries at least one more, each after the first in the key shape
+`[a-z][a-z0-9_]*`: `"context.patron.email"`. A prefill that is not a string,
+does not start at `context`, names `context` alone, or carries a segment
+outside the key shape is refused at admit, `document.invalid_context_path`,
+its `field` `"prefill"`. The path is read only when the screen is resolved,
+by walking the root's `"context"` one string key at a time; it is not a
+template and not a condition, and admission reads no context.
+
+**The presented `value`: a response the root holds, then the prefill, then
+the default.** Resolution sets `value` on a resolved question node from the
+first of these that yields one, and a node none of them yields one for
+carries no `value` key at all:
+
+1. **A response the root holds.** `responses.<key>` is there and is not
+   `null`: it is the value, as written, whatever its shape. A response the
+   visitor submitted and validation refused is the one that yields here,
+   so a screen shown again after a refusal shows what the visitor typed.
+2. **The prefill.** The path reaches a value in the root's `"context"`, and
+   that value is one this question's `default` could be: of its response
+   shape, and on a choice question every value among the options the
+   question resolves to (below). A path that reaches nothing, passes through
+   a value that is not an object, or reaches a value that fails that test
+   yields nothing, and the next step applies. This is reported nowhere: the
+   diagnostics gain no entry for a prefill.
+3. **The default.** Put to the same test against the options the question
+   resolves to, so that a host that resolves a document no one validated
+   never presents a default of the wrong shape; one that fails it yields
+   nothing.
+
+`value` is presentation and nothing more. Response validation
+(`Riddler.Screens.validate_screen/3` and `/4`) reads the responses the root
+holds, as it does today, and never a `value`: a default or a prefill the
+visitor did not send back is not a response, so a required question showing a
+default and submitted with nothing answers `response.required`. No template,
+condition or write reads a `value`; `responses.<key>` stays the only way to
+name what a visitor submitted. `Riddler.Journey.present/3` answers a screen in
+the data form of what `Riddler.Screens.resolve_screen/3` answers (its private
+`screen_data/2` in `lib/riddler/journey.ex` at `ff69473`), so the presented
+node carries `"value"` exactly where the resolved node carries `value`; that
+is where ADR-0005's amendment, at `proposed`, headed "Amendment, 2026-11-18:
+the presented answer, the submit and a finding as a published wire contract"
+admits it ("A question node may carry a `"value"`."). A resolved
+`secret_question` carries `held` and never `value`, as the secret question
+amendment above decides under "A presented secret question carries `held` and
+never a value"; nothing here changes that. Its refusal of a `default` or
+`prefill` on a secret question, `document.secret_initial_value`, stands as
+written there, and a secret question carrying either raises that finding and
+none of the findings below for it.
+
+**`help` is a template field on every question type.** It is a line of
+guidance shown beside the question, a template in the ADR-0003 subset,
+rendered at resolve as `label` is; a variable it wants and the root does not
+carry renders as the empty string and is reported in `missing_variables` under
+the question's key. A `help` holding a construct outside the subset, or that is
+not a string, is `document.invalid_template`, as for any template field. The
+rule of the Decision that "`text`, `label` and `placeholder` are templates in
+the ADR-0003 subset" now reads with every question's `help` beside them; the
+secret question amendment above gave `help` to that type alone and left the
+others open, and this entry gives it to the other three on the same terms.
+
+**`messages` maps a finding code the type can raise to a plain string.** It
+is a JSON object. Each key is a code `validate_screen/3,4` can raise on a
+response to a question of that type, as the table above lists them per type
+(the codes raised in `Riddler.Screens.Validation` at `ff69473`); each value is
+a plain string in one language, not a template: it is rendered by nothing and
+interpolates nothing. Admission keeps the object string-keyed, as it keeps
+`metadata`. `response.undecidable` is not among the keys for any
+type, because it is about a node's condition, not about a response; nor are
+the codes `seal_secrets/4` raises, which are refusals of the host's call and
+not of a visitor's response. A `messages` that is not an object, or a value in
+it that is not a string, is refused at admit, `document.invalid_messages`,
+its `field` `"messages"`. A key that is not a code the type can raise is
+refused at admit, `document.unknown_message_code`, its `field` `"messages"`,
+its message naming the key. Which codes a type can raise is per type, not per
+question: a text question with no `format` may still key `response.format`.
+There is no locale map: one string per code, in the language the author
+writes the document in. The secret question amendment above names the fields
+that type carries and drops any other; `messages` is added to them here, with
+the two codes the table gives, and an author's message carries no response,
+so the rule that no finding carries a secret's value is untouched.
+
+**A finding gains `author_message`.** `Riddler.Finding` gains a sixth field,
+`author_message`, a string or `nil`, `nil` unless set. It is set on exactly
+one kind of finding: one `validate_screen/3,4` raises on a question's
+response, where that question's `messages` carries the finding's code; it
+is then that string, as written. Every other finding - every `document.*`
+finding, `response.undecidable`, the `seal_secrets/4` refusals, and a
+response finding on a question whose `messages` does not carry its code -
+carries `nil`. `message` is unchanged by this: it stays this package's own
+engineering sentence, in the register of the existing findings, and an
+author's message never replaces it. Where a finding is shown to a visitor,
+the text is `author_message` where it is a string and the renderer's own text
+otherwise, as ruled above; this package renders nothing.
+
+On the wire a finding is its struct's data form, every key present, as
+ADR-0005's amendment cited above decides under "A finding's wire form is its
+struct's data form"; that entry lists five keys and says `Riddler.Finding`
+"gains no field", which is about that entry's own work. From the release
+whose code adds the field, the form carries a sixth key, `"author_message"`,
+a string or `null`. A client built to that entry's finding schema meets a key
+it does not name, which that entry's "No schema forbids a key it does not
+name" lets through, and the finding schema of the release that adds the field
+names it. The corpus keeps comparing a finding by `"code"`, `"field"` and
+`"node_key"` (`encode_findings/1` in `lib/riddler/corpus.ex` at `ff69473`).
+
+**`answer_options_from` names a context path for a choice question's
+options.** It is a path in the form `prefill` takes, and a malformed one is
+`document.invalid_context_path`, its `field` `"answer_options_from"`. A
+choice question carries `answer_options` or `answer_options_from`, exactly
+one:
+
+- Both is refused at admit, `document.conflicting_options`, its `field`
+  `"answer_options_from"`.
+- Neither is refused as a choice question without `answer_options` is
+  refused today, `document.missing_field`, its `field` `"answer_options"`,
+  so the code and the field a 0.4.0 document met are the ones it still meets.
+- `answer_options` stays required on a choice question that does not carry
+  `answer_options_from`, with every check the amendment above headed
+  "Amendment, 2026-10-20: two choice node types, `choice_question` on
+  `answer_options` and `boolean_question`" gives it; on one that does, the
+  checks of the authored options do not apply, and `min_selections` and
+  `max_selections` are not compared with the number of options at admit,
+  there being none to count.
+
+The options are read when the screen is resolved, from the root's
+`"context"` at the path. They are the options only when the path reaches a
+list each of whose entries is an object carrying a `"value"`, a string in the
+key shape `[a-z][a-z0-9_]*`, and a `"label"`, a string, with no `"value"`
+carried twice; any other key an entry carries is not read. The resolved node
+carries them as `answer_options`, each option its `value` and `label` and
+nothing else, in the order the list gives them. Their labels are the host's
+data and are used as written: they are not templates and are not rendered. A
+path that reaches nothing, or a value that is not such a list, resolves the
+question with no options, `answer_options` an empty list, and is reported in
+`missing_variables` under the question's key, its `variable` the path as
+written; an empty list at the path is a question with no options and is not
+reported.
+
+A response to such a question is validated against the options the question
+resolves to when the host calls `validate_screen/3,4`, which resolves the
+screen against the root the host passes it at submit (the amendment above
+headed "the screen validated is the screen shown"). A value the context held
+when the screen was presented and no longer holds at submit is
+`response.not_an_option`, as for any value no option carries.
+
+**What the resolved node carries.** A resolved question node carries
+`help`, rendered, and `messages`, as written, where the question declares
+them; `value` as above; and `answer_options`, the authored options with
+their labels rendered or the options read from context. It carries no
+`default`, no `prefill` and no `answer_options_from`: resolution consumes
+them into `value` and `answer_options`, and a node that is present is a node
+that is shown, as the Decision's "A resolved screen is the same shape as the
+screen it came from" says of `condition`.
+
+**The finding codes.** Every finding below carries the question's key as its
+`node_key`. The messages are the code half's, in the register of the existing
+findings, and the enumeration stays the code half's tests' as the Decision
+delegates it; this table names the codes.
+
+| Code | Raised by | Raised for | Reused or new |
+|---|---|---|---|
+| `document.invalid_default` | `validate/1` | a `default` not of the question's response shape, or naming a value no authored option carries, its `field` `"default"` | new |
+| `document.invalid_context_path` | `validate/1` | a `prefill` or `answer_options_from` that is not a string of dotted key-shaped segments under `context`, its `field` naming which | new |
+| `document.invalid_messages` | `validate/1` | a `messages` that is not an object, or a value in it that is not a string | new |
+| `document.unknown_message_code` | `validate/1` | a `messages` key that is not a code the question's type can raise | new |
+| `document.conflicting_options` | `validate/1` | a choice question carrying both `answer_options` and `answer_options_from` | new |
+| `document.missing_field` | `validate/1` | a choice question carrying neither | reused, its meaning unchanged |
+| `document.invalid_template` | `validate/1` | a `help` holding a construct outside the template subset, or that is not a string | reused |
+| `document.secret_initial_value` | `validate/1` | a secret question carrying `default` or `prefill` | reused from the secret question amendment above, unchanged |
+
+### Typespecs
+
+A contract for the code half, as the record's own typespecs are. An admitted
+question node is atom-keyed, as an admitted node is; these are the fields this
+entry adds beside the ones its type already names.
+
+```elixir
+# On text_question, choice_question and boolean_question:
+@type question_fields :: %{
+        optional(:default) => String.t() | [String.t()] | boolean(),
+        optional(:prefill) => String.t(),
+        optional(:help) => String.t(),
+        optional(:messages) => %{optional(String.t()) => String.t()}
+      }
+
+# On choice_question only, in place of :answer_options:
+@type options_from :: %{optional(:answer_options_from) => String.t()}
+
+# Added by resolution to a resolved question node other than a secret
+# question's, where a response, a prefill or a default yields one; the
+# value is as the root or the document gives it.
+@type presented_value :: %{optional(:value) => term()}
+
+# Riddler.Finding gains one field.
+@type t :: %Riddler.Finding{
+        code: String.t(),
+        message: String.t(),
+        field: String.t() | nil,
+        node_key: String.t() | nil,
+        position: position() | nil,
+        author_message: String.t() | nil
+      }
+```
+
+### Worked examples
+
+These are from patron registration, a visitor becoming a library patron
+through a few screens, the example world the repository names for new
+teaching text. `ada@example.com` is a placeholder address.
+
+A screen asking for the details a patron's card needs:
+
+```json
+{
+  "key": "patron_details",
+  "title": "Get your library card",
+  "nodes": [
+    {
+      "type": "text_question",
+      "key": "reminder_email",
+      "label": "Email for due-date reminders",
+      "help": "We write to you here three days before a loan is due.",
+      "format": "email",
+      "required": true,
+      "prefill": "context.patron.email",
+      "messages": {
+        "response.format": "That does not look like an email address.",
+        "response.required": "We need an email address to send reminders."
+      }
+    },
+    {
+      "type": "choice_question",
+      "key": "card_type",
+      "label": "Which library card would you like?",
+      "select": "one",
+      "answer_options": [
+        {"value": "adult", "label": "Adult card"},
+        {"value": "child", "label": "Child card"}
+      ],
+      "default": "adult"
+    },
+    {
+      "type": "choice_question",
+      "key": "pickup_branch",
+      "label": "Where will you collect your card?",
+      "select": "one",
+      "required": true,
+      "answer_options_from": "context.branches",
+      "prefill": "context.patron.home_branch"
+    },
+    {
+      "type": "boolean_question",
+      "key": "large_print",
+      "label": "Send me notices in large print",
+      "default": false
+    },
+    {
+      "type": "button",
+      "key": "details_next",
+      "label": "Continue",
+      "outcome": "details_submitted"
+    }
+  ]
+}
+```
+
+Resolved with `resolve_screen(document, "patron_details", root)` against a
+root whose `"responses"` is empty and whose `"context"` is:
+
+```json
+{
+  "patron": {"email": "ada@example.com", "home_branch": "riverside"},
+  "branches": [
+    {"value": "riverside", "label": "Riverside"},
+    {"value": "hillcrest", "label": "Hillcrest"}
+  ]
+}
+```
+
+the four questions carry `value` `"ada@example.com"` (the prefill),
+`"adult"` (the default), `"riverside"` (the prefill, which is among the
+resolved options) and `false` (the default). `pickup_branch` carries
+`answer_options` `[{value: "riverside", label: "Riverside"}, {value:
+"hillcrest", label: "Hillcrest"}]` and no `answer_options_from`; no node
+carries `default`, `prefill` or `answer_options_from`. Presented with
+`Riddler.Journey.present(document, {:screen, "patron_details"}, root)`, the
+first question node reads:
+
+```json
+{
+  "type": "text_question",
+  "key": "reminder_email",
+  "label": "Email for due-date reminders",
+  "help": "We write to you here three days before a loan is due.",
+  "format": "email",
+  "required": true,
+  "messages": {
+    "response.format": "That does not look like an email address.",
+    "response.required": "We need an email address to send reminders."
+  },
+  "value": "ada@example.com"
+}
+```
+
+The same root with `"responses"` holding `"card_type": "child"` presents
+`card_type` with `value` `"child"`: the response the root holds wins over the
+default. A root whose `context.patron.home_branch` is `"eastgate"`, which the
+branches list does not carry, presents `pickup_branch` with no `value`, and
+reports nothing. A root with no `branches` resolves `pickup_branch` with
+`answer_options` `[]` and reports `%{key: "pickup_branch", variable:
+"context.branches"}` in `missing_variables`.
+
+Validated with `validate_screen(document, "patron_details", root)` where the
+root's `"responses"` holds `"reminder_email": "ada-at-example"`, `card_type`
+`"adult"` and `pickup_branch` `"riverside"`: one finding, `response.format`
+on `reminder_email`, its `message` this package's own sentence as today and
+its `author_message` `"That does not look like an email address."`. The same
+root with `pickup_branch` `"eastgate"` adds `response.not_an_option` on
+`pickup_branch`, its `author_message` `nil`, because that question's
+`messages` keys nothing. A root carrying no `reminder_email` answers
+`response.required` on it, its `author_message` that question's message for
+the code: the prefill presented a value, and the visitor did not send it
+back.
+
+Things an author might write, and what admission says of each:
+
+```json
+[
+  {
+    "type": "choice_question",
+    "key": "card_type",
+    "label": "Which library card would you like?",
+    "select": "one",
+    "answer_options": [
+      {"value": "adult", "label": "Adult card"},
+      {"value": "child", "label": "Child card"}
+    ],
+    "default": "teen"
+  },
+  {
+    "type": "text_question",
+    "key": "reminder_email",
+    "label": "Email for due-date reminders",
+    "prefill": "patron.email",
+    "messages": {"response.not_an_option": "Pick one of the listed branches."}
+  },
+  {
+    "type": "choice_question",
+    "key": "pickup_branch",
+    "label": "Where will you collect your card?",
+    "select": "one",
+    "answer_options": [{"value": "riverside", "label": "Riverside"}],
+    "answer_options_from": "context.branches"
+  }
+]
+```
+
+`card_type` is `document.invalid_default`, no option carrying `teen`.
+`reminder_email` is `document.invalid_context_path` with `field` `"prefill"`,
+the path not starting at `context`, and `document.unknown_message_code`, a
+text question raising no `response.not_an_option`. `pickup_branch` is
+`document.conflicting_options`.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the rule
+stated above answers a call one way, and this entry answers the same call
+another". A `default`, `prefill`, `help`, `messages` or `answer_options_from`
+on a question type that does not name it is dropped at admit today, and this
+entry reads each; a choice question carrying `answer_options_from` and no
+`answer_options` is refused `document.missing_field` today and is admitted
+here. It also adds refusals, the other mark the README names as sufficient:
+each new code in the table above refuses documents the package as it stands
+admits. And it changes what resolution answers: a resolved question node
+carries `value` where the root holds a response for it, which it does not
+today.
+
+### What is unchanged
+
+A document carrying none of the five fields is admitted and validated exactly
+as before, finding for finding, and resolved and presented as before but for
+one key: a question node whose response the root holds carries it as `value`.
+Every finding keeps its code, its `field`, its `node_key`, its `position` and
+its `message`, and gains `author_message`, `nil` wherever no `messages`
+sets it. The secret question amendment above stands as written, but for the
+two calls it left open and this entry answers - whether the other question
+types carry `help`, and what a question node presents of a response the root
+holds - and for `messages`, which it now carries. The choice amendment's
+checks of authored options stand for every choice question that carries
+them. `Riddler.Journey` gains no function and no argument, and
+`Riddler.Screens` gains no function. `type` stays an open string in the
+schema, and the screen document schema types none of the new fields. The
+vocabulary is the record's: `responses`, `context`, `outcome`, `writes`,
+`nodes`, and a question owns its `answer_options`.
+
+### What this does not decide
+
+- A locale map for `messages`, which waits for an i18n design.
+- Whether a `default` is put to the question's `format`, `pattern` or
+  selection bounds at admit.
+- A diagnostic for a prefill path the context does not carry, and whether
+  an option list at a context path that is only partly malformed keeps its
+  well-formed entries rather than resolving to no options.
+- A `condition` on an option read from context, and a template in its label.
+- How a renderer draws `help` or a `value`, and how a client shows a
+  finding's `author_message`.
+- A path rooted anywhere but `context`, and a path segment outside the key
+  shape.
