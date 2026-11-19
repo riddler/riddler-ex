@@ -163,3 +163,11 @@ and a finding as a published wire contract". The index row above gives the
 record's own Status, which stays accepted; the Amendment's Status is on its
 own line beneath its heading, and it governs only once that line reads
 accepted, as "Which passage governs" above says.
+
+---
+
+Noted 2026-11-19. The Amendment the note above names now reads accepted, its
+Status line flipped in place, and so do ADR-0002's two Amendments of
+2026-11-16 and 2026-11-18; each file's foot Note of this date says what was
+re-verified. The index row above still gives ADR-0005's own Status,
+accepted.

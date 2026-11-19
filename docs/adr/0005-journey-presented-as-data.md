@@ -444,7 +444,7 @@ note decides nothing.
 
 ## Amendment, 2026-11-18: the presented answer, the submit and a finding as a published wire contract
 
-Status: proposed
+Status: accepted (2026-11-19, riddler 0.5.0)
 
 Recorded 2026-11-18, bead rd-xikc. The status shapes a host passes - the
 bare `{:screen, key}`, `:waiting` and `:done` unchanged, and beside them
@@ -909,3 +909,89 @@ its `answer_options`.
 - How a client's built-in handling of an unknown node type is built, and
   what it shows the visitor.
 - The transport, identity and streaming.
+
+---
+
+Noted 2026-11-19. The amendment above headed "the presented answer, the
+submit and a finding as a published wire contract" moves from `proposed` to
+`accepted`, its Status line flipped in place and nothing else in it reworded.
+The record's own Status stays accepted, and its row in `docs/adr/README.md`
+is unchanged. The flip was decided by the conductor under a standing consent,
+2026-11-19.
+
+It shipped in riddler 0.5.0, the commit tagged `v0.5.0` (`e315ef2`) and
+published on Hex; its code half is `9cdce58`, `72f8069`, `d69e6ed`, `e5b7413`,
+`2e7c730` and `82bcc79`. It was re-verified at the tag, every cite
+re-located by anchor there; `main` is that commit. What was read:
+
+- `Riddler.Journey.present/3` has a clause for each of the six status
+  shapes. A map of the wrong type, a `"back"` that is not a boolean, a
+  `"reason"` that is not a string, a `"retry_after_ms"` that is not a
+  non-negative integer and a `result` that is a struct each answer
+  `{:error, :unknown_status}`; a key the table does not name is not read; and
+  `{:screen, key, opts}` with a key the document does not declare answers
+  `{:error, :no_such_screen}`.
+- Every screen answer carries `"moves"` beside `"screen"`: `"outcomes"` is
+  the outcome of each shown button in document order, a hidden button absent
+  and a container's winning candidate's button listed, `[]` where none is
+  shown, and `"back"` is true only when the host passed it true. `"reason"`,
+  `"retry_after_ms"` and `"result"` appear only on their states, and
+  `{:waiting, %{}}` and `{:screen, key, %{}}` answer what the bare forms
+  answer.
+- `Riddler.Journey.decode_submit/1` is the module's third public function. It
+  answers `submit.not_an_object` alone for a value that is not a map or is a
+  struct, and otherwise one finding per failing key in the order
+  `"screen"`, `"outcome"`, `"responses"`, each with `node_key` and
+  `position` nil; an accepted submit keeps exactly the three keys.
+  `corpus/journey/decode_submit.json` holds it as `journey.decode_submit`.
+- `presented-answer.schema.json`, `submit.schema.json` and
+  `finding.schema.json` are in `priv/schemas/`, each naming draft 7 and none
+  forbidding a key it does not name; `@schema_files` in
+  `lib/riddler/corpus.ex` names all five schemas, and
+  `test/packaging_test.exs` still holds the package to one document schema.
+  The presented answer's schema holds a node of `heading`, `text`,
+  `text_question`, `choice_question`, `boolean_question`, `secret_question`
+  or `button` to its resolved fields, lets a node of any other string type
+  through, admits `"value"` on every question type but `secret_question`, and
+  refuses it there.
+- `Riddler.Encoding` writes a `Riddler.Finding` with every key present, and
+  `encode_findings/1` in `lib/riddler/corpus.ex` still compares a finding by
+  `"code"`, `"field"` and `"node_key"`.
+- Every worked example was run at `e315ef2` and answers as written, and a
+  screen, a waiting and a done answer each validate against the presented
+  answer's schema.
+
+Four sentences are read, not changed:
+
+- **The finding's five keys.** The table under "A finding's wire form is its
+  struct's data form" lists five keys, and "What is unchanged" says
+  `Riddler.Finding` "gains no field". ADR-0002's amendment of 2026-11-18,
+  accepted in the same request, adds `author_message`, says that sentence is
+  about this entry's own work, and says the form carries a sixth key from the
+  release whose code adds the field; `finding.schema.json` at the tag
+  requires all six.
+- **What else this entry calls unchanged.** "What `"screen"` holds is
+  unchanged by this entry", every screen answer of riddler 0.4.0 "unchanged
+  but for `"moves"`", and "`Riddler.Screens` and `Riddler.Template` gain
+  nothing here" are about this entry's own work. In 0.5.0 a question node
+  gains `"held"` or `"value"`, `help` and `messages` under ADR-0002's two
+  amendments of 2026-11-16 and 2026-11-18, and `Riddler.Screens` gains
+  `seal_secrets/4` and `Riddler.Template` an internal `paths/1` under the
+  first of them.
+- **The corpus case schema.** "What is unchanged" says the corpus case schema
+  is unchanged except that it lists `journey.decode_submit` among its
+  capabilities. At the tag its capability enumeration also lists
+  `screens.seal_secrets`, from ADR-0002's amendment of 2026-11-16
+  (`be85db1`), and the descriptions of its `input` and its `capability`
+  gained sentences naming the inputs and answers of the capabilities this
+  entry and that amendment add: `opts`, `info` and `result` for
+  `journey.present` (`2e7c730`, `d69e6ed`, `e5b7413`), the moves beside a
+  screen (`2e7c730`) and `journey.decode_submit` (`72f8069`). A description
+  constrains nothing, so the schema accepts what it accepted at `v0.4.0` but
+  for the two capabilities.
+- **The cross-cite.** The section headed by "A question node may carry a
+  `"value"`" cites ADR-0002's amendment of 2026-11-16 "at `proposed`". That
+  amendment moves to accepted in the same request, by the note of this date
+  at the foot of ADR-0002.
+
+This note decides nothing.
