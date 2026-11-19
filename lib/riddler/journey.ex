@@ -6,10 +6,11 @@ defmodule Riddler.Journey do
   execution is the host's: its workflow engine waits for the visitor, waits
   on a back office, and moves from one screen to the next. This module gives
   the host one answer to carry to a client at each step, whatever the host
-  is, and one rule for the context it sends as the Journey goes on.
+  is, one rule for the context it sends as the Journey goes on, and one check
+  of the shape of what a client sends back.
 
-  Both functions are pure. They consult no store, start no process, keep no
-  state between calls and read no execution; there is no behaviour to
+  Every function here is pure. They consult no store, start no process, keep
+  no state between calls and read no execution; there is no behaviour to
   implement and nothing here calls the host back. Which step comes next,
   where a root is kept, how an answer reaches a client and which visitor a
   Journey belongs to are the host's.
@@ -35,6 +36,17 @@ defmodule Riddler.Journey do
   what the host knows, and `"responses"`, what the visitor has submitted so
   far. `put_context/2` replaces its `"context"` whole each time the host
   sends a new one, and leaves the responses as they were.
+
+  ## The submit
+
+  What a client sends back when the visitor presses a button is a submit: a
+  JSON object of three keys, `"screen"`, the key of the screen it was shown,
+  `"outcome"`, the outcome of the button pressed, and `"responses"`, what the
+  visitor entered on that screen, keyed by question key. `decode_submit/1`
+  checks that shape and nothing else; that the screen is the one the host's
+  execution is at and that the outcome is among the moves it presented are
+  the host's checks, before it validates the responses with
+  `Riddler.Screens.validate_screen/3,4`.
 
   ## Example
 
@@ -74,8 +86,11 @@ defmodule Riddler.Journey do
   """
 
   alias Riddler.Encoding
+  alias Riddler.Finding
   alias Riddler.Screens
   alias Riddler.Screens.Document
+
+  @submit_keys ["screen", "outcome", "responses"]
 
   @typedoc "Where the host's execution is for the visitor."
   @type status :: {:screen, screen_key :: term()} | :waiting | :done
@@ -99,6 +114,12 @@ defmodule Riddler.Journey do
   "undecidable_conditions" => [...]}`.
   """
   @type screen :: %{required(String.t()) => term()}
+
+  @typedoc """
+  `"screen"` => `t:String.t/0`, `"outcome"` => `t:String.t/0` and
+  `"responses"` => `t:map/0`, and no other key.
+  """
+  @type submit :: %{required(String.t()) => String.t() | map()}
 
   @doc """
   The answer for the status the host passes.
@@ -224,6 +245,95 @@ defmodule Riddler.Journey do
     do: {:ok, Map.put(root, "context", context)}
 
   def put_context(root, _context) when is_map(root), do: {:error, :context_not_a_map}
+
+  @doc """
+  The submit a client sent, checked for its shape.
+
+  `submit` is the submit as decoded data: a host decodes the bytes it
+  received into a term, and how they arrive is the transport's. The answer is
+  `{:ok, submit}`, the string-keyed map of exactly `"screen"`, `"outcome"` and
+  `"responses"`, each value as the client sent it - a key the client sent
+  beside them is dropped - or `{:error, findings}`.
+
+  A value that is not a map, a struct included, is the one finding
+  `submit.not_an_object`, its `:field` `nil`. Otherwise each of the three keys
+  is checked, in the order `"screen"`, `"outcome"`, `"responses"`, and each
+  that fails raises one finding, so a client learns every defect in one pass:
+  `submit.missing_field` for a key the map does not carry, and
+  `submit.invalid_field` for a `"screen"` or `"outcome"` that is not a string
+  or a `"responses"` that is not a map (a struct included). The `:field` of
+  either names the key; `:node_key` and `:position` are `nil`.
+
+  No document and no execution is read, so the screen is not compared with
+  the screen the host's execution is at and the outcome is not checked
+  against the moves the host presented: both are the host's checks. The
+  responses are not looked into: what they have to satisfy is
+  `Riddler.Screens.validate_screen/3,4`'s. Nothing a client can send makes
+  this raise.
+
+  Patron registration: the visitor gives an email for due-date reminders and
+  presses Continue.
+
+      iex> Riddler.Journey.decode_submit(%{
+      ...>   "screen" => "patron_details",
+      ...>   "outcome" => "details_submitted",
+      ...>   "responses" => %{"reminder_email" => "ada@example.com"},
+      ...>   "sent_at" => "2026-11-18T10:00:00Z"
+      ...> })
+      {:ok,
+       %{
+         "screen" => "patron_details",
+         "outcome" => "details_submitted",
+         "responses" => %{"reminder_email" => "ada@example.com"}
+       }}
+      iex> {:error, findings} =
+      ...>   Riddler.Journey.decode_submit(%{
+      ...>     "screen" => "patron_details",
+      ...>     "responses" => ["ada@example.com"]
+      ...>   })
+      iex> Enum.map(findings, &{&1.code, &1.field})
+      [{"submit.missing_field", "outcome"}, {"submit.invalid_field", "responses"}]
+      iex> {:error, [finding]} = Riddler.Journey.decode_submit("patron_details")
+      iex> {finding.code, finding.field}
+      {"submit.not_an_object", nil}
+  """
+  @spec decode_submit(term()) :: {:ok, submit()} | {:error, [Finding.t()]}
+  def decode_submit(submit) when is_map(submit) and not is_struct(submit) do
+    case Enum.flat_map(@submit_keys, &submit_findings(submit, &1)) do
+      [] -> {:ok, Map.take(submit, @submit_keys)}
+      findings -> {:error, findings}
+    end
+  end
+
+  def decode_submit(_submit) do
+    {:error, [%Finding{code: "submit.not_an_object", message: "the submit is not a JSON object"}]}
+  end
+
+  defp submit_findings(submit, key) do
+    case Map.fetch(submit, key) do
+      :error ->
+        [submit_finding("submit.missing_field", key, "the submit carries no #{inspect(key)}")]
+
+      {:ok, value} ->
+        if submit_value?(key, value),
+          do: [],
+          else: [
+            submit_finding(
+              "submit.invalid_field",
+              key,
+              "the submit's #{inspect(key)} is not #{submit_kind(key)}"
+            )
+          ]
+    end
+  end
+
+  defp submit_value?("responses", value), do: is_map(value) and not is_struct(value)
+  defp submit_value?(_key, value), do: is_binary(value)
+
+  defp submit_kind("responses"), do: "an object"
+  defp submit_kind(_key), do: "a string"
+
+  defp submit_finding(code, key, message), do: %Finding{code: code, field: key, message: message}
 
   defp screen_data(screen, diagnostics) do
     screen

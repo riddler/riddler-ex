@@ -1,0 +1,317 @@
+{
+  "capability": "journey.decode_submit",
+  "cases": [
+    {
+      "expected": {
+        "ok": true,
+        "submit": {
+          "outcome": "account_created",
+          "responses": {
+            "email": "sam@example.com",
+            "plan": "trial"
+          },
+          "screen": "account"
+        }
+      },
+      "input": {
+        "submit": {
+          "outcome": "account_created",
+          "responses": {
+            "email": "sam@example.com",
+            "plan": "trial"
+          },
+          "screen": "account"
+        }
+      },
+      "name": "A submit of the three keys is decoded as it was sent"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "submit": {
+          "outcome": "account_created",
+          "responses": {
+            "email": "sam@example.com",
+            "plan": "trial"
+          },
+          "screen": "account"
+        }
+      },
+      "input": {
+        "submit": {
+          "outcome": "account_created",
+          "responses": {
+            "email": "sam@example.com",
+            "plan": "trial"
+          },
+          "screen": "account",
+          "sent_at": "2026-11-18T10:00:00Z",
+          "variant": "b"
+        }
+      },
+      "name": "A key sent beside the three is dropped, not carried"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "submit": {
+          "outcome": "started",
+          "responses": {},
+          "screen": "welcome"
+        }
+      },
+      "input": {
+        "submit": {
+          "outcome": "started",
+          "responses": {},
+          "screen": "welcome"
+        }
+      },
+      "name": "A screen with no question sends empty responses, which decode"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "submit": {
+          "outcome": "account_created",
+          "responses": {
+            "email": 7,
+            "newsletter": [
+              "weekly"
+            ],
+            "plan": null
+          },
+          "screen": "account"
+        }
+      },
+      "input": {
+        "submit": {
+          "outcome": "account_created",
+          "responses": {
+            "email": 7,
+            "newsletter": [
+              "weekly"
+            ],
+            "plan": null
+          },
+          "screen": "account"
+        }
+      },
+      "name": "The responses are not looked into: a response of any shape is carried as sent"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "submit": {
+          "outcome": "",
+          "responses": {},
+          "screen": ""
+        }
+      },
+      "input": {
+        "submit": {
+          "outcome": "",
+          "responses": {},
+          "screen": ""
+        }
+      },
+      "name": "The screen and the outcome are not checked against any document: an empty string is a string"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.not_an_object",
+            "field": null,
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": "account"
+      },
+      "name": "A string is not an object and raises the one finding"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.not_an_object",
+            "field": null,
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": [
+          "account",
+          "account_created",
+          {}
+        ]
+      },
+      "name": "A list is not an object, whatever it holds"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.not_an_object",
+            "field": null,
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": null
+      },
+      "name": "Null is not an object"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.missing_field",
+            "field": "responses",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {
+          "outcome": "started",
+          "screen": "welcome"
+        }
+      },
+      "name": "A submit with no responses is refused even from a screen with no question, which sends an empty object"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.missing_field",
+            "field": "screen",
+            "node_key": null
+          },
+          {
+            "code": "submit.missing_field",
+            "field": "outcome",
+            "node_key": null
+          },
+          {
+            "code": "submit.missing_field",
+            "field": "responses",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {}
+      },
+      "name": "An empty object raises one missing-field finding per key, in the order screen, outcome, responses"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.invalid_field",
+            "field": "screen",
+            "node_key": null
+          },
+          {
+            "code": "submit.invalid_field",
+            "field": "outcome",
+            "node_key": null
+          },
+          {
+            "code": "submit.invalid_field",
+            "field": "responses",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {
+          "outcome": null,
+          "responses": [
+            "sam@example.com"
+          ],
+          "screen": 2
+        }
+      },
+      "name": "A screen that is a number, an outcome that is null and responses that are a list each raise an invalid-field finding"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.missing_field",
+            "field": "outcome",
+            "node_key": null
+          },
+          {
+            "code": "submit.invalid_field",
+            "field": "responses",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {
+          "responses": "sam@example.com",
+          "screen": "account"
+        }
+      },
+      "name": "A missing outcome and responses that are a string are both reported in one pass"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.invalid_field",
+            "field": "responses",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {
+          "outcome": "started",
+          "responses": null,
+          "screen": "welcome"
+        }
+      },
+      "name": "Responses that are null are an invalid field, not an empty object"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.invalid_field",
+            "field": "screen",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {
+          "outcome": "account_created",
+          "responses": {},
+          "screen": {
+            "key": "account"
+          }
+        }
+      },
+      "name": "A screen sent as an object is an invalid field even when the other two are well formed"
+    }
+  ],
+  "name": "Decoding a submit a client sends back: the three keys checked for their shape, a key beside them dropped, and every defect reported in one pass"
+}

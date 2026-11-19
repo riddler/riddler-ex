@@ -189,6 +189,71 @@ defmodule Riddler.JourneyTest do
     end
   end
 
+  describe "decode_submit/1" do
+    @submit %{
+      "screen" => "account",
+      "outcome" => "account_created",
+      "responses" => %{"email" => "sam@example.com"}
+    }
+
+    # Sabotage: answered {:ok, submit} with the map as sent rather than
+    # taking the three keys; the further key was carried and this test went
+    # red.
+    test "answers the three keys as sent and drops a key beside them" do
+      assert Journey.decode_submit(Map.put(@submit, "variant", "b")) == {:ok, @submit}
+
+      assert Journey.decode_submit(%{@submit | "responses" => %{}}) ==
+               {:ok, %{@submit | "responses" => %{}}}
+    end
+
+    # Sabotage: dropped the is_struct guard from the map clause; the URI was
+    # checked key by key and came back with three missing-field findings, and
+    # this test went red.
+    test "refuses a value that is not a map, a struct included, with one finding" do
+      for submit <- [nil, "account", 1, ["account"], {:account}, URI.parse("https://example.com")] do
+        assert {:error, [finding]} = Journey.decode_submit(submit)
+
+        assert %Riddler.Finding{code: "submit.not_an_object", field: nil, node_key: nil} =
+                 finding
+
+        assert is_binary(finding.message)
+      end
+    end
+
+    # Sabotage: checked the keys in the order responses, outcome, screen; the
+    # findings came back reversed and this test went red.
+    test "reports every missing key, in the order screen, outcome, responses" do
+      assert {:error, findings} = Journey.decode_submit(%{"variant" => "b"})
+
+      assert Enum.map(findings, &{&1.code, &1.field, &1.node_key, &1.position}) == [
+               {"submit.missing_field", "screen", nil, nil},
+               {"submit.missing_field", "outcome", nil, nil},
+               {"submit.missing_field", "responses", nil, nil}
+             ]
+    end
+
+    # Sabotage: made the responses check is_map/1 alone; the struct passed as
+    # responses was accepted and this test went red. And again with the check
+    # letting nil through; the null responses were accepted and it went red.
+    test "reports a screen or outcome that is not a string and responses that are not a map" do
+      for {key, value} <- [
+            {"screen", nil},
+            {"screen", :account},
+            {"outcome", 3},
+            {"outcome", ["account_created"]},
+            {"responses", ["sam@example.com"]},
+            {"responses", nil},
+            {"responses", "sam@example.com"},
+            {"responses", URI.parse("https://example.com")}
+          ] do
+        assert {:error, [finding]} = Journey.decode_submit(Map.put(@submit, key, value))
+
+        assert {finding.code, finding.field} == {"submit.invalid_field", key}
+        assert finding.message =~ key
+      end
+    end
+  end
+
   describe "put_context/2" do
     # Sabotage: merged the new context into the old with Map.merge/2; the
     # withdrawn key survived and this test went red.
