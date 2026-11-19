@@ -3171,7 +3171,7 @@ above that read either amendment stand under the acceptance.
 
 ## Amendment, 2026-11-16: a `secret_question` node type, validated on plaintext and sealed by the host before it is stored
 
-Status: proposed
+Status: accepted (2026-11-19, riddler 0.5.0)
 
 Recorded 2026-11-16, bead rd-9p7v. A secret question is the first response
 this package must never echo: a library card PIN a visitor chooses, which a
@@ -3639,7 +3639,7 @@ stays an open string in the schema. The vocabulary is the record's:
 
 ## Amendment, 2026-11-18: a question's `default`, `prefill`, `help`, `messages` and `answer_options_from`, its presented `value`, and a finding's `author_message`
 
-Status: proposed
+Status: accepted (2026-11-19, riddler 0.5.0)
 
 Recorded 2026-11-18, bead rd-l0j9. Five question fields an author or a host
 needs for a real signup form, and the two things they add to what this
@@ -4138,3 +4138,98 @@ vocabulary is the record's: `responses`, `context`, `outcome`, `writes`,
   finding's `author_message`.
 - A path rooted anywhere but `context`, and a path segment outside the key
   shape.
+
+---
+
+Noted 2026-11-19. The amendments above headed "a `secret_question` node
+type, validated on plaintext and sealed by the host before it is stored" and
+"a question's `default`, `prefill`, `help`, `messages` and
+`answer_options_from`, its presented `value`, and a finding's
+`author_message`" move from `proposed` to `accepted`, each Status line flipped
+in place and nothing else in them reworded. The flip was decided by the
+conductor under a standing consent, 2026-11-19.
+
+Both shipped in riddler 0.5.0, the commit tagged `v0.5.0` (`e315ef2`) and
+published on Hex. Both were re-verified at the tag, every cite re-located by
+anchor there; `main` is that commit. What was read:
+
+- Each amendment said that nothing it describes "is citable from `lib/` until
+  they land". The code half is on `main`: `afe05a8` for the secret question's
+  admission, resolution and response validation, `be85db1` for the seal and
+  `3e9562b` for its presented form; `78acd87`, `2aaa7ce`, `3ccc5d0` and
+  `c631174` for `default` and `prefill` with the presented `value`, for
+  `help`, for `messages` with `author_message`, and for
+  `answer_options_from`; `5806fcf` for the corpus cases. So their sentences on
+  the package as it stood at `5822517` and at `afe05a8` - that a document
+  naming `secret_question` answers `document.unknown_type`, that `@types` in
+  `lib/riddler/screens/registry.ex` does not name it, and that the seal and
+  the presented form are still to land - describe the code before that half.
+  `@types` now names `secret_question`, implemented by
+  `Riddler.Screens.Type.SecretQuestion`, and the private `node_findings` in
+  `lib/riddler/screens/document.ex` now takes the document's secret keys as
+  a second argument.
+- `SecretQuestion.fields/0` requires `label` and names `required`, `help`,
+  `messages`, `default` and `prefill`, the last two only so that its
+  `validate/1` refuses them, `document.secret_initial_value`, one finding per
+  field with its `field` naming which and its message naming nothing they
+  hold; a `placeholder`, `format` or `pattern` is dropped at admit.
+  `SecretQuestion.sealed?/1` holds the sealed form to one key, `"sealed"`,
+  holding a string. The private `secret_findings/2` in
+  `lib/riddler/screens/validation.ex` runs the four checks in the order the
+  secret question amendment gives.
+- `Riddler.Screens.seal_secrets/4` and its `sealer` type are that
+  amendment's typespecs. The internal module `Riddler.Screens.Seal` finds
+  `response.invalid_shape` and `response.unsealed_secret` across every secret
+  question the document declares, in document order, before the sealer is
+  first applied; leaves an absent, blank or sealed response as written;
+  applies the sealer once per plaintext, a variant's candidates included and
+  no condition read; stops at the first answer that is not `{:ok, string}`
+  with `response.seal_failed`; and rescues nothing. A screen key the document
+  does not declare answers `{:error, :no_such_screen}`. The corpus holds the
+  seal as `screens.seal_secrets` in `corpus/screens/seal_secrets.json`, and
+  `priv/schemas/corpus-case.schema.json` states the fixed test sealer.
+- The private `secret_reference_findings/3` in
+  `lib/riddler/screens/document.ex` raises `document.secret_reference` for a
+  condition, every template field, an option label and a `writes` entry that
+  names `responses.<key>` or a path under it, a template's paths read
+  through the internal `Riddler.Template.paths/1`, so an output, a tag's
+  operand and a filter's argument are each caught. The private `reading/2` in
+  `lib/riddler/screens.ex` removes every secret question's response from the
+  root a condition and a template read, and the private `held/2` sets
+  `held` from the root the host passed.
+- Nothing under `lib/` names `Logger` or telemetry. `mix.exs` names the
+  `:logger` application in `extra_applications`, as it did at `5822517`.
+- The internal module `Riddler.Screens.Messages` gives each type exactly the
+  codes the question fields amendment's table gives it, and keeps `messages`
+  string-keyed; `Riddler.Finding` carries `author_message` as its sixth field,
+  `nil` unless a question's `messages` keys the finding's code, and
+  `priv/schemas/finding.schema.json` names it. The screen document schema is
+  unchanged since `v0.4.0`, so it types none of the new fields and still says
+  "schema-valid means admitted". `encode_findings/1` in
+  `lib/riddler/corpus.ex` still compares a finding by `"code"`, `"field"` and
+  `"node_key"`.
+- Every worked example of both amendments was run at `e315ef2` and answers as
+  written: the PIN screen validated against each response listed, sealed
+  with a sealer that seals and with one answering `{:error, :key_unavailable}`
+  (whose finding's message carries neither placeholder), and presented with
+  `held` true and false; the three authored nodes and the unvalidated
+  resolve; the patron details screen resolved, presented and validated
+  against each root given; and the three authored nodes.
+
+Three sentences are read, not changed:
+
+- The secret question amendment's "What is unchanged" says that every
+  existing type keeps its fields and that no message changes. The question
+  fields amendment above answers that: it gives the other question types
+  their fields, every finding `author_message`, and the secret question
+  `messages`, and names the two calls the secret question amendment left
+  open.
+- Both amendments say `Riddler.Journey` "gains no function and no argument".
+  That is about each amendment's own work, as ADR-0005's amendment of
+  2026-11-18 says under "What is unchanged"; that amendment adds
+  `Riddler.Journey.decode_submit/1`.
+- The question fields amendment cites ADR-0005's amendment of 2026-11-18 "at
+  `proposed`". That amendment moves to accepted in the same request, by the
+  note of this date at the foot of ADR-0005.
+
+The notes above that read either amendment stand under the acceptance.
