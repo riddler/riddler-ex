@@ -278,7 +278,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
       assert resolved.diagnostics == diagnostics
     end
 
-    # Sabotage: made presented/1 delete only :condition; the default reached
+    # Sabotage: made presented/2 delete only :condition; the default reached
     # the resolved node and this test went red.
     test "a resolved secret question carries no condition, default or prefill" do
       node =
@@ -294,8 +294,144 @@ defmodule Riddler.Screens.SecretQuestionTest do
         })
 
       assert [resolved] = screen.nodes
-      assert Map.keys(resolved) |> Enum.sort() == [:key, :label, :required, :type]
+      assert Map.keys(resolved) |> Enum.sort() == [:held, :key, :label, :required, :type]
     end
+  end
+
+  describe "presentation" do
+    @sealed_sentinel "SEALED-SENTINEL"
+
+    defp patron_document do
+      Document.admit(%{
+        "schema_version" => 1,
+        "id" => "patron_registration",
+        "screens" => [
+          %{
+            "key" => "card_pin",
+            "title" => "Protect your card",
+            "nodes" => [
+              %{
+                "type" => "secret_question",
+                "key" => "library_pin",
+                "label" => "Choose a PIN for your library card",
+                "help" => "You will type it at the self-checkout.",
+                "required" => true
+              },
+              %{
+                "type" => "button",
+                "key" => "pin_next",
+                "label" => "Continue",
+                "outcome" => "pin_chosen"
+              }
+            ]
+          }
+        ]
+      })
+    end
+
+    defp pin_root(response), do: %{"responses" => %{"library_pin" => response}}
+
+    defp presented_pin(response) do
+      {:ok, answer} =
+        Journey.present(patron_document(), {:screen, "card_pin"}, pin_root(response))
+
+      answer
+    end
+
+    # Mutation: in `lib/riddler/screens.ex`, made `held/2` answer
+    # `Map.take(root["responses"], Document.secret_keys(document))` and made the
+    # secret clause of `presented/2` put `Map.get(held, node[:key])` under
+    # `:held`, carrying the held response onto the node; the plaintext and the
+    # sealed sentinel were each in the encoded answer and this test went red.
+    test "neither the plaintext nor the sealed string is anywhere in the encoded presented answer" do
+      for {response, held} <- [{@sentinel, false}, {%{"sealed" => @sealed_sentinel}, true}] do
+        answer = presented_pin(response)
+        encoded = JSON.encode!(answer)
+
+        refute encoded =~ @sentinel, inspect(response)
+        refute encoded =~ @sealed_sentinel, inspect(response)
+
+        {:ok, screen, _diagnostics} =
+          Screens.resolve_screen(patron_document(), "card_pin", pin_root(response))
+
+        resolved = inspect(screen, limit: :infinity, printable_limit: :infinity)
+        refute resolved =~ @sentinel
+        refute resolved =~ @sealed_sentinel
+
+        assert [
+                 %{
+                   "type" => "secret_question",
+                   "key" => "library_pin",
+                   "label" => "Choose a PIN for your library card",
+                   "help" => "You will type it at the self-checkout.",
+                   "required" => true,
+                   "held" => ^held
+                 } = node,
+                 _button
+               ] = answer["screen"]["nodes"]
+
+        refute Map.has_key?(node, "value")
+      end
+    end
+
+    # Sabotage: made resolve_screen/3 read held from the root a condition and a
+    # template read (`held(document, reading(document, root))`), which carries
+    # no secret response; the sealed form presented held false and this test
+    # went red.
+    test "held is true exactly where the host's root holds the sealed form" do
+      not_held = [
+        :absent,
+        nil,
+        "",
+        @sentinel,
+        [@sentinel],
+        %{},
+        %{"sealed" => 7},
+        %{"sealed" => @sealed_sentinel, "pin" => @sentinel}
+      ]
+
+      assert presented_held(%{"sealed" => @sealed_sentinel}) == true
+
+      for response <- not_held do
+        assert presented_held(response) == false, inspect(response)
+      end
+    end
+
+    # Sabotage: made resolve/2 read held from the root a condition and a
+    # template read, after `reading/2`; the whole document's resolution
+    # presented held false and this test went red.
+    test "held is set in a variant's winner and by resolve/2 as by resolve_screen/3" do
+      document =
+        Document.admit(
+          document([
+            screen("security", [
+              %{
+                "type" => "variant",
+                "key" => "pin_variant",
+                "nodes" => [pin(%{"condition" => "context.signed_in"})]
+              }
+            ])
+          ])
+        )
+
+      root = %{
+        "context" => %{"signed_in" => true},
+        "responses" => %{"account_pin" => %{"sealed" => @sealed_sentinel}}
+      }
+
+      {:ok, screen, _diagnostics} = Screens.resolve_screen(document, "security", root)
+      assert [%{key: "account_pin", held: true}] = screen.nodes
+
+      {:ok, resolved} = Screens.resolve(document, root)
+      assert [%{key: "account_pin", held: true}] = hd(resolved.screens).nodes
+    end
+
+    defp presented_held(:absent) do
+      {:ok, answer} = Journey.present(patron_document(), {:screen, "card_pin"}, %{})
+      hd(answer["screen"]["nodes"])["held"]
+    end
+
+    defp presented_held(response), do: hd(presented_pin(response)["screen"]["nodes"])["held"]
   end
 
   describe "response validation" do

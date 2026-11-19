@@ -869,6 +869,211 @@
         "status": "paused"
       },
       "name": "A status outside screen, waiting and done is an error"
+    },
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "card_pin",
+          "nodes": [
+            {
+              "held": true,
+              "help": "You will type it at the self-checkout at Riverside.",
+              "key": "library_pin",
+              "label": "Choose a PIN for your library card, Ada",
+              "required": true,
+              "type": "secret_question"
+            },
+            {
+              "key": "pin_next",
+              "label": "Continue",
+              "outcome": "pin_chosen",
+              "type": "button"
+            }
+          ],
+          "title": "Protect your card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card_pin",
+              "nodes": [
+                {
+                  "help": "You will type it at the self-checkout at {{ context.branch_name }}.",
+                  "key": "library_pin",
+                  "label": "Choose a PIN for your library card, {{ responses.first_name }}",
+                  "required": true,
+                  "type": "secret_question"
+                },
+                {
+                  "key": "pin_next",
+                  "label": "Continue",
+                  "outcome": "pin_chosen",
+                  "type": "button"
+                }
+              ],
+              "title": "Protect your card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "branch_name": "Riverside"
+          },
+          "responses": {
+            "first_name": "Ada",
+            "library_pin": {
+              "sealed": "SEALED-SENTINEL"
+            }
+          }
+        },
+        "screen": "card_pin",
+        "status": "screen"
+      },
+      "name": "A secret question whose response is the sealed form is presented as held, and the sealed string is nowhere in the answer"
+    },
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "card_pin",
+          "nodes": [
+            {
+              "held": false,
+              "help": "You will type it at the self-checkout at Riverside.",
+              "key": "library_pin",
+              "label": "Choose a PIN for your library card, Ada",
+              "required": true,
+              "type": "secret_question"
+            },
+            {
+              "key": "pin_next",
+              "label": "Continue",
+              "outcome": "pin_chosen",
+              "type": "button"
+            }
+          ],
+          "title": "Protect your card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card_pin",
+              "nodes": [
+                {
+                  "help": "You will type it at the self-checkout at {{ context.branch_name }}.",
+                  "key": "library_pin",
+                  "label": "Choose a PIN for your library card, {{ responses.first_name }}",
+                  "required": true,
+                  "type": "secret_question"
+                },
+                {
+                  "key": "pin_next",
+                  "label": "Continue",
+                  "outcome": "pin_chosen",
+                  "type": "button"
+                }
+              ],
+              "title": "Protect your card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "branch_name": "Riverside"
+          },
+          "responses": {
+            "first_name": "Ada",
+            "library_pin": "PIN-4921-SENTINEL"
+          }
+        },
+        "screen": "card_pin",
+        "status": "screen"
+      },
+      "name": "A secret question whose response is the plaintext the visitor typed is presented as not held, and the plaintext is nowhere in the answer"
+    },
+    {
+      "expected": {
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "card_pin",
+          "nodes": [
+            {
+              "held": false,
+              "help": "You will type it at the self-checkout at Riverside.",
+              "key": "library_pin",
+              "label": "Choose a PIN for your library card, Ada",
+              "required": true,
+              "type": "secret_question"
+            },
+            {
+              "key": "pin_next",
+              "label": "Continue",
+              "outcome": "pin_chosen",
+              "type": "button"
+            }
+          ],
+          "title": "Protect your card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card_pin",
+              "nodes": [
+                {
+                  "help": "You will type it at the self-checkout at {{ context.branch_name }}.",
+                  "key": "library_pin",
+                  "label": "Choose a PIN for your library card, {{ responses.first_name }}",
+                  "required": true,
+                  "type": "secret_question"
+                },
+                {
+                  "key": "pin_next",
+                  "label": "Continue",
+                  "outcome": "pin_chosen",
+                  "type": "button"
+                }
+              ],
+              "title": "Protect your card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "branch_name": "Riverside"
+          },
+          "responses": {
+            "first_name": "Ada"
+          }
+        },
+        "screen": "card_pin",
+        "status": "screen"
+      },
+      "name": "A secret question with no response is presented as not held"
     }
   ],
   "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"

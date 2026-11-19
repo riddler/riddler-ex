@@ -1929,6 +1929,7 @@
             "key": "security",
             "nodes": [
               {
+                "held": false,
                 "help": "Hi Ada",
                 "key": "account_pin",
                 "label": "Choose a PIN for your account",
@@ -1986,6 +1987,121 @@
         }
       },
       "name": "A secret question's response is not in the root a template or a condition reads, and its help renders"
+    },
+    {
+      "expected": {
+        "key": "security",
+        "nodes": [
+          {
+            "held": true,
+            "key": "account_pin",
+            "label": "Choose a PIN for your account",
+            "required": true,
+            "type": "secret_question"
+          },
+          {
+            "key": "pin_next",
+            "label": "Continue",
+            "outcome": "pin_chosen",
+            "type": "button"
+          }
+        ],
+        "title": "Secure your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                },
+                {
+                  "key": "pin_next",
+                  "label": "Continue",
+                  "outcome": "pin_chosen",
+                  "type": "button"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "account_pin": {
+              "sealed": "SEALED-SENTINEL"
+            }
+          }
+        },
+        "screen": "security"
+      },
+      "name": "A secret question whose response is the sealed form resolves as held, carrying no sealed string"
+    },
+    {
+      "expected": {
+        "key": "security",
+        "nodes": [
+          {
+            "held": false,
+            "key": "account_pin",
+            "label": "Choose a PIN for your account",
+            "required": true,
+            "type": "secret_question"
+          },
+          {
+            "key": "pin_next",
+            "label": "Continue",
+            "outcome": "pin_chosen",
+            "type": "button"
+          }
+        ],
+        "title": "Secure your account"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                },
+                {
+                  "key": "pin_next",
+                  "label": "Continue",
+                  "outcome": "pin_chosen",
+                  "type": "button"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "account_pin": {
+              "pin": "PIN-4921-SENTINEL",
+              "sealed": "SEALED-SENTINEL"
+            }
+          }
+        },
+        "screen": "security"
+      },
+      "name": "A secret question whose response carries a key beside sealed is not the sealed form and resolves as not held"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

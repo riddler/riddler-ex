@@ -415,6 +415,45 @@
           "if": {
             "properties": {
               "type": {
+                "const": "secret_question"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "value"
+              ]
+            },
+            "properties": {
+              "held": {
+                "description": "Whether the root the host passed holds the sealed form for this question. It is all a secret question carries of its response: never the text the visitor typed and never the sealed string, so it carries no value.",
+                "type": "boolean"
+              },
+              "help": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "key",
+              "label",
+              "held"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
                 "const": "button"
               }
             },
@@ -448,7 +487,7 @@
           }
         }
       ],
-      "description": "A resolved node. No node carries a condition. The types this schema enumerates are heading, text, text_question, choice_question, boolean_question and button; a node of one of them carries a key and is held to its type's fields below. A node of any other type needs only its type, and is not refused here.",
+      "description": "A resolved node. No node carries a condition. The types this schema enumerates are heading, text, text_question, choice_question, boolean_question, secret_question and button; a node of one of them carries a key and is held to its type's fields below. A node of any other type needs only its type, and is not refused here.",
       "not": {
         "required": [
           "condition"

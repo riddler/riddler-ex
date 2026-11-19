@@ -36,6 +36,7 @@ defmodule Riddler.Screens.Validation do
   alias Riddler.Finding
   alias Riddler.Screens.Compilers
   alias Riddler.Screens.Resolved
+  alias Riddler.Screens.Type.SecretQuestion
 
   # A node a response answers is a node that declares something about the
   # response: whether it is required, or the format it has to be in. A node
@@ -409,17 +410,12 @@ defmodule Riddler.Screens.Validation do
   # format path every text response takes.
   defp secret_findings(node, response) do
     cond do
-      sealed?(response) -> []
+      SecretQuestion.sealed?(response) -> []
       blank?(response) -> unanswered(node)
       is_binary(response) -> []
       true -> [secret_shape_finding(node)]
     end
   end
-
-  defp sealed?(%{"sealed" => handle} = response) when is_binary(handle),
-    do: map_size(response) == 1
-
-  defp sealed?(_response), do: false
 
   defp secret_shape_finding(node) do
     finding(

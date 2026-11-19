@@ -112,6 +112,11 @@ defmodule Riddler.Journey do
   diagnostics ride inside the screen, so a caller is never handed a screen
   without the report of resolving it.
 
+  A secret question's node carries `"held"`, `true` where the root holds the
+  sealed form for it and `false` otherwise, and nothing more of its response:
+  the plaintext a visitor typed and the sealed string a host keeps are nowhere
+  in the answer.
+
   For `:waiting` and `:done` the answer is the state alone, and the document
   is not read.
 
