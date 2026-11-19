@@ -51,10 +51,10 @@ defmodule Riddler.CorpusTest do
   # a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
     "corpus/screens/admit.json" => 78,
-    "corpus/screens/resolve.json" => 25,
+    "corpus/screens/resolve.json" => 27,
     "corpus/screens/validate_screen.json" => 70,
     "corpus/templates/render.json" => 74,
-    "corpus/journey/present.json" => 8,
+    "corpus/journey/present.json" => 11,
     "corpus/journey/put_context.json" => 8
   }
 
@@ -586,6 +586,26 @@ defmodule Riddler.CorpusTest do
                  %{"type" => "card_preview", "key" => "card_preview", "theme" => "dark"}
                ])
              )
+    end
+
+    # Sabotage: removed the secret question's refusal of "value" from the
+    # schema; the secret question carrying a value validated and this test
+    # went red. And again with "held" dropped from its required list.
+    test "holds a secret question to held and refuses a value on it" do
+      schema = resolved_schema(@presented_schema)
+
+      secret = %{
+        "type" => "secret_question",
+        "key" => "library_pin",
+        "label" => "Choose a PIN for your library card",
+        "required" => true,
+        "held" => true
+      }
+
+      assert ExJsonSchema.Validator.valid?(schema, with_nodes([secret]))
+      refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.put(secret, "value", "")]))
+      refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.delete(secret, "held")]))
+      refute ExJsonSchema.Validator.valid?(schema, with_nodes([%{secret | "held" => "yes"}]))
     end
   end
 

@@ -58,6 +58,17 @@ defmodule Riddler.Screens.Type.SecretQuestion do
   @spec initial_values() :: [atom()]
   def initial_values, do: @initial_values
 
+  # The sealed form: an object whose one key is `"sealed"` and whose value is
+  # a string. It is the one response a secret question holds as a value: what
+  # response validation accepts without checking it again, and what a resolved
+  # secret question reports as `held`.
+  @doc false
+  @spec sealed?(term()) :: boolean()
+  def sealed?(%{"sealed" => handle} = response) when is_binary(handle),
+    do: map_size(response) == 1
+
+  def sealed?(_response), do: false
+
   # `required` says whether a response has to be given, so a value that is not
   # a boolean is a question whose rule nothing can read. Checked only where the
   # question declares one; an absent `required` is false.

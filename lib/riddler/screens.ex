@@ -60,6 +60,15 @@ defmodule Riddler.Screens do
   untouched: what a button sets is the host's to apply when the visitor presses
   it.
 
+  A resolved secret question carries no `default` or `prefill`, and one field
+  resolution adds, `held`: `true` where the root the host passed holds the
+  sealed form for the question, an object whose one key is `"sealed"` and
+  whose value is a string, and `false` otherwise - nothing answered, the
+  plaintext the visitor typed, or any other shape. It is read before the secret
+  responses are removed from the root a condition and a template read, and it
+  is all the node carries of the response: never the plaintext, never the
+  sealed string.
+
   ## What a set of responses has to satisfy
 
   `validate_screen/3` and `validate_screen/4` answer the last question:
@@ -164,10 +173,12 @@ defmodule Riddler.Screens do
   """
   @spec resolve(Document.t(), map()) :: {:ok, Resolved.t()}
   def resolve(%Document{} = document, root) when is_map(root) do
-    root = reading(document, normalize(root))
+    root = normalize(root)
+    held = held(document, root)
+    root = reading(document, root)
 
     {screens, diagnostics} =
-      Enum.map_reduce(document.screens, @empty_diagnostics, &resolve_one(&1, root, &2))
+      Enum.map_reduce(document.screens, @empty_diagnostics, &resolve_one(&1, {root, held}, &2))
 
     {:ok,
      %Resolved{
@@ -235,8 +246,14 @@ defmodule Riddler.Screens do
         {:error, :no_such_screen}
 
       screen ->
+        root = normalize(root)
+
         {resolved, diagnostics} =
-          resolve_one(screen, reading(document, normalize(root)), @empty_diagnostics)
+          resolve_one(
+            screen,
+            {reading(document, root), held(document, root)},
+            @empty_diagnostics
+          )
 
         {:ok, resolved, order(diagnostics)}
     end
@@ -448,17 +465,31 @@ defmodule Riddler.Screens do
     end
   end
 
-  defp resolve_one(screen, root, diagnostics) do
-    {nodes, diagnostics} = resolve_nodes(screen.nodes, root, diagnostics)
+  # The keys of the secret questions whose response in the host's root is the
+  # sealed form. It is read from the root the host passed, before `reading/2`
+  # removes those responses, and it is all a resolved secret question carries of
+  # one: whether a value is held, never the value.
+  defp held(document, root) do
+    responses = root["responses"]
+
+    for key <- Document.secret_keys(document),
+        SecretQuestion.sealed?(Map.get(responses, key)),
+        do: key
+  end
+
+  # `scope` is `{root, held}`: the root a condition and a template read, and
+  # the keys of the secret questions that hold a sealed value.
+  defp resolve_one(screen, scope, diagnostics) do
+    {nodes, diagnostics} = resolve_nodes(screen.nodes, scope, diagnostics)
     {%{key: screen.key, title: screen.title, nodes: nodes}, diagnostics}
   end
 
   # -- nodes -----------------------------------------------------------------
 
-  defp resolve_nodes(nodes, root, diagnostics) do
+  defp resolve_nodes(nodes, scope, diagnostics) do
     {resolved, diagnostics} =
       Enum.reduce(nodes, {[], diagnostics}, fn node, {acc, diagnostics} ->
-        case shown(node, root, diagnostics) do
+        case shown(node, scope, diagnostics) do
           {nil, diagnostics} -> {acc, diagnostics}
           {resolved, diagnostics} -> {[resolved | acc], diagnostics}
         end
@@ -471,36 +502,41 @@ defmodule Riddler.Screens do
   # are different things: a false condition is silent, an undecidable one is
   # reported, and a container that no candidate won is neither - the container
   # asked a question and every answer was no.
-  defp shown(node, root, diagnostics) do
+  defp shown(node, {root, _held} = scope, diagnostics) do
     case decide(node, root, diagnostics) do
-      {true, diagnostics} -> present(node, root, diagnostics)
+      {true, diagnostics} -> present(node, scope, diagnostics)
       {false, diagnostics} -> {nil, diagnostics}
     end
   end
 
-  defp present(node, root, diagnostics) do
+  defp present(node, {root, held} = scope, diagnostics) do
     case Map.fetch(node, :nodes) do
-      {:ok, candidates} when is_list(candidates) -> winner(candidates, root, diagnostics)
-      _not_a_container -> render(presented(node), root, diagnostics)
+      {:ok, candidates} when is_list(candidates) -> winner(candidates, scope, diagnostics)
+      _not_a_container -> render(presented(node, held), root, diagnostics)
     end
   end
 
   # A resolved node carries no condition. A secret question carries no initial
   # value either: one written on it is `document.secret_initial_value`, and a
-  # document no one validated does not pass it on.
-  defp presented(%{type: "secret_question"} = node),
-    do: Map.drop(node, [:condition | SecretQuestion.initial_values()])
+  # document no one validated does not pass it on. It carries `held` instead,
+  # true exactly where the host's root holds the sealed form for it, and
+  # nothing else of the response: not the plaintext, not the sealed string.
+  defp presented(%{type: "secret_question"} = node, held) do
+    node
+    |> Map.drop([:condition | SecretQuestion.initial_values()])
+    |> Map.put(:held, node[:key] in held)
+  end
 
-  defp presented(node), do: Map.delete(node, :condition)
+  defp presented(node, _held), do: Map.delete(node, :condition)
 
   # First match wins: the candidates are considered in order and the first
   # whose condition holds replaces the container.
-  defp winner([], _root, diagnostics), do: {nil, diagnostics}
+  defp winner([], _scope, diagnostics), do: {nil, diagnostics}
 
-  defp winner([candidate | rest], root, diagnostics) do
+  defp winner([candidate | rest], {root, _held} = scope, diagnostics) do
     case decide(candidate, root, diagnostics) do
-      {true, diagnostics} -> present(candidate, root, diagnostics)
-      {false, diagnostics} -> winner(rest, root, diagnostics)
+      {true, diagnostics} -> present(candidate, scope, diagnostics)
+      {false, diagnostics} -> winner(rest, scope, diagnostics)
     end
   end
 
