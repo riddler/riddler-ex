@@ -102,6 +102,9 @@ iex> {finding.code, finding.node_key}
   - [`Riddler.Template`](https://hexdocs.pm/riddler/Riddler.Template.html): the tags and filters the template subset admits, and how a refusal is reported.
   - [`Riddler.Finding`](https://hexdocs.pm/riddler/Riddler.Finding.html): the fields of a finding, the unit every refusal reports.
   - [The screen document schema](https://github.com/riddler/riddler-ex/blob/v0.4.0/priv/schemas/screen-document.schema.json): the JSON schema of a screen document, shipped in the package under `priv/schemas`.
+  - [The presented answer schema](https://github.com/riddler/riddler-ex/blob/v0.5.0/priv/schemas/presented-answer.schema.json): the JSON schema of what `Riddler.Journey.present/3` returns inside `{:ok, ...}`, a step of a Journey as data for a client to render, shipped in the package under `priv/schemas`.
+  - [The submit schema](https://github.com/riddler/riddler-ex/blob/v0.5.0/priv/schemas/submit.schema.json): the JSON schema of what a client sends back when the visitor presses a button, which `Riddler.Journey.decode_submit/1` checks, shipped in the package under `priv/schemas`.
+  - [The finding schema](https://github.com/riddler/riddler-ex/blob/v0.5.0/priv/schemas/finding.schema.json): the JSON schema of a finding as a host sends it to a client, every key present, shipped in the package under `priv/schemas`.
   - [The conformance corpus](https://github.com/riddler/riddler-ex/tree/v0.4.0/corpus): the cases that hold a Riddler runtime to this contract, which a runtime in another language vendors from a tag of this repository.
   - [The changelog](https://hexdocs.pm/riddler/changelog.html): what changed in each version.
 - Understand
