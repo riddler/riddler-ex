@@ -165,11 +165,16 @@ defmodule Riddler.Corpus do
 
   # A case states the status a host passes as JSON, which has no tuple and no
   # atom: `"waiting"` and `"done"` are the two bare statuses, `"screen"` is
-  # `{:screen, key}` with the key under the input's own `"screen"`, `"waiting"`
+  # `{:screen, key}` with the key under the input's own `"screen"`, and
+  # `{:screen, key, opts}` beside an input `"opts"` with the opts handed over
+  # as the case states them, any JSON value, `"waiting"`
   # beside an input `"info"` is `{:waiting, info}` with the info handed over
   # as the case states it, any JSON value, `"done"` beside an input `"result"`
   # is `{:done, result}` the same way, and any other value is handed over as
   # itself, which is a status outside the three.
+  defp status(%{"status" => "screen", "opts" => opts} = input),
+    do: {:screen, input["screen"], opts}
+
   defp status(%{"status" => "screen"} = input), do: {:screen, input["screen"]}
   defp status(%{"status" => "waiting", "info" => info}), do: {:waiting, info}
   defp status(%{"status" => "waiting"}), do: :waiting

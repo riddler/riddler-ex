@@ -1251,6 +1251,162 @@ defmodule Riddler.Screens.DocumentTest do
     end
   end
 
+  # Each button a screen can show raises its own outcome, so a client handed
+  # the screen can tell which one the visitor pressed from the outcome alone.
+  describe "validate/1 and two buttons raising one outcome" do
+    defp button(key, outcome, overrides \\ %{}) do
+      Map.merge(
+        %{"type" => "button", "key" => key, "label" => "Go", "outcome" => outcome},
+        overrides
+      )
+    end
+
+    defp variant(key, candidates, overrides \\ %{}) do
+      Map.merge(%{"type" => "variant", "key" => key, "nodes" => candidates}, overrides)
+    end
+
+    # Sabotage: made outcome_findings/1 answer [] always; the two buttons were
+    # admitted and this test went red.
+    test "refuses two buttons a screen shows together, on the later button" do
+      [finding] =
+        findings(
+          document([
+            button("account_create", "account_submitted"),
+            button("account_create_again", "account_submitted")
+          ])
+        )
+
+      assert finding.code == "document.duplicate_outcome"
+      assert finding.field == "outcome"
+      assert finding.node_key == "account_create_again"
+      assert finding.message =~ ~s("account_submitted")
+      assert finding.message =~ ~s("account_create")
+      assert finding.message =~ ~s("account")
+    end
+
+    # Sabotage: skipped a button that carries a condition in buttons_under/1;
+    # the two conditioned buttons were admitted and this test went red.
+    test "still compares two buttons each behind its own condition" do
+      assert ["document.duplicate_outcome"] =
+               codes(
+                 document([
+                   button("plan_business", "plan_chosen", %{
+                     "condition" => "context.variant == 'a'"
+                   }),
+                   button("plan_personal", "plan_chosen", %{
+                     "condition" => "context.variant == 'b'"
+                   })
+                 ])
+               )
+    end
+
+    # Sabotage: compared the buttons under one node with each other as well
+    # as with the buttons under other nodes; the two candidates were refused
+    # and this test went red.
+    test "admits two buttons in different candidates of one variant, nested or not" do
+      flat =
+        document([
+          variant("plan_offer", [
+            button("plan_business", "plan_chosen", %{"condition" => "context.variant == 'a'"}),
+            button("plan_personal", "plan_chosen")
+          ])
+        ])
+
+      nested =
+        document([
+          variant("plan_offer", [
+            variant(
+              "plan_offer_test",
+              [
+                button("plan_business", "plan_chosen", %{"condition" => "context.variant == 'a'"}),
+                button("plan_team", "plan_chosen")
+              ],
+              %{"condition" => "context.in_test == true"}
+            ),
+            button("plan_personal", "plan_chosen")
+          ])
+        ])
+
+      assert {:ok, _document} = flat |> Document.admit() |> Document.validate()
+      assert {:ok, _document} = nested |> Document.admit() |> Document.validate()
+    end
+
+    # Sabotage: read only a screen's own buttons in buttons_under/1, not a
+    # variant's candidates; the button beside the variant was admitted and
+    # this test went red.
+    test "refuses a button beside a variant raising the outcome of one of its candidates" do
+      [finding] =
+        findings(
+          document([
+            variant("plan_offer", [
+              button("plan_business", "plan_chosen", %{"condition" => "context.variant == 'a'"}),
+              button("plan_personal", "plan_skipped")
+            ]),
+            button("plan_default", "plan_chosen")
+          ])
+        )
+
+      assert {finding.code, finding.node_key} == {"document.duplicate_outcome", "plan_default"}
+      assert finding.message =~ ~s("plan_business")
+    end
+
+    # Sabotage: kept the outcomes seen across every screen of the document
+    # rather than per screen; the second screen's button was refused and this
+    # test went red.
+    test "compares the buttons of one screen only" do
+      raw = %{
+        "schema_version" => 1,
+        "id" => "edoc_signup_screens",
+        "screens" => [
+          screen([button("account_next", "went_on")]),
+          screen([button("plan_next", "went_on")], %{"key" => "plan"})
+        ]
+      }
+
+      assert {:ok, _document} = raw |> Document.admit() |> Document.validate()
+    end
+
+    # Sabotage: named the latest earlier button rather than the first in the
+    # message (Map.put for Map.put_new); the third button's message named the
+    # second and this test went red.
+    test "raises one finding per repeating button, each naming the first button" do
+      [second, third] =
+        findings(
+          document([
+            button("plan_business", "plan_chosen"),
+            button("plan_personal", "plan_chosen"),
+            button("plan_team", "plan_chosen")
+          ])
+        )
+
+      assert {second.node_key, third.node_key} == {"plan_personal", "plan_team"}
+      assert third.message =~ ~s("plan_business")
+      refute third.message =~ ~s("plan_personal")
+    end
+
+    # Sabotage: dropped the is_binary guard in buttons_under/1; the two
+    # buttons whose outcome is a number were compared and refused, and this
+    # test went red.
+    test "compares only outcomes that are strings, after the screen's other findings" do
+      numbered =
+        document([
+          button("plan_business", "plan_chosen", %{"outcome" => 5}),
+          button("plan_personal", "plan_chosen", %{"outcome" => 5})
+        ])
+
+      assert {:ok, _document} = numbered |> Document.admit() |> Document.validate()
+
+      assert ["document.missing_field", "document.duplicate_outcome"] =
+               codes(
+                 document([
+                   button("plan_business", "plan_chosen"),
+                   button("plan_personal", "plan_chosen"),
+                   %{"type" => "heading", "key" => "plan_heading", "text" => "Plans"}
+                 ])
+               )
+    end
+  end
+
   # JSON does not tell `1.0` from `1`, so a version written with no fractional
   # part is read as its integer at admission, and validation and resolution
   # both see the integer. A version with a fractional part is not an integer

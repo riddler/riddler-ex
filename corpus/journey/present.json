@@ -3,6 +3,12 @@
   "cases": [
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [],
@@ -131,6 +137,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [],
@@ -256,6 +268,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "card_chosen"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [
@@ -382,6 +400,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "card_chosen"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [
@@ -2688,6 +2712,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "pin_chosen"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [],
@@ -2758,6 +2788,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "pin_chosen"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [],
@@ -2826,6 +2862,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "pin_chosen"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [],
@@ -2893,6 +2935,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [],
@@ -3007,6 +3055,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [],
@@ -3119,6 +3173,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [],
@@ -3228,6 +3288,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "account_submitted"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [],
@@ -3367,6 +3433,12 @@
     },
     {
       "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "account_submitted"
+          ]
+        },
         "screen": {
           "diagnostics": {
             "missing_variables": [
@@ -3468,6 +3540,1196 @@
         "status": "screen"
       },
       "name": "A presented choice question carries the options read from context as answer_options, and a path reaching none is in the diagnostics"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "adult_card_chosen",
+            "pickup_confirmed"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "card_pickup",
+          "nodes": [
+            {
+              "key": "pickup_hint",
+              "text": "Collect your card at the front desk.",
+              "type": "text"
+            },
+            {
+              "key": "card_adult",
+              "label": "Adult card",
+              "outcome": "adult_card_chosen",
+              "type": "button"
+            },
+            {
+              "key": "pickup_confirm",
+              "label": "I will pick it up now",
+              "outcome": "pickup_confirmed",
+              "type": "button"
+            }
+          ],
+          "title": "Pick up your card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at the front desk.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "adult_card_chosen",
+                      "type": "button"
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "junior_card_chosen",
+                      "type": "button"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "condition": "context.desk_open == false",
+                  "key": "pickup_later",
+                  "label": "Pick it up later",
+                  "outcome": "pickup_deferred",
+                  "type": "button"
+                },
+                {
+                  "key": "pickup_confirm",
+                  "label": "I will pick it up now",
+                  "outcome": "pickup_confirmed",
+                  "type": "button"
+                }
+              ],
+              "title": "Pick up your card"
+            },
+            {
+              "key": "card_ready",
+              "nodes": [
+                {
+                  "key": "ready_note",
+                  "text": "Your card is waiting at the front desk.",
+                  "type": "text"
+                }
+              ],
+              "title": "Your card is ready"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "age": 30,
+            "desk_open": true
+          },
+          "responses": {}
+        },
+        "screen": "card_pickup",
+        "status": "screen"
+      },
+      "name": "A screen status lists in its moves the outcome of each shown button in document order, and neither a button a condition hid nor a candidate that lost its container"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "junior_card_chosen",
+            "pickup_deferred",
+            "pickup_confirmed"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "card_pickup",
+          "nodes": [
+            {
+              "key": "pickup_hint",
+              "text": "Collect your card at the front desk.",
+              "type": "text"
+            },
+            {
+              "key": "card_junior",
+              "label": "Junior card",
+              "outcome": "junior_card_chosen",
+              "type": "button"
+            },
+            {
+              "key": "pickup_later",
+              "label": "Pick it up later",
+              "outcome": "pickup_deferred",
+              "type": "button"
+            },
+            {
+              "key": "pickup_confirm",
+              "label": "I will pick it up now",
+              "outcome": "pickup_confirmed",
+              "type": "button"
+            }
+          ],
+          "title": "Pick up your card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at the front desk.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "adult_card_chosen",
+                      "type": "button"
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "junior_card_chosen",
+                      "type": "button"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "condition": "context.desk_open == false",
+                  "key": "pickup_later",
+                  "label": "Pick it up later",
+                  "outcome": "pickup_deferred",
+                  "type": "button"
+                },
+                {
+                  "key": "pickup_confirm",
+                  "label": "I will pick it up now",
+                  "outcome": "pickup_confirmed",
+                  "type": "button"
+                }
+              ],
+              "title": "Pick up your card"
+            },
+            {
+              "key": "card_ready",
+              "nodes": [
+                {
+                  "key": "ready_note",
+                  "text": "Your card is waiting at the front desk.",
+                  "type": "text"
+                }
+              ],
+              "title": "Your card is ready"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "age": 12,
+            "desk_open": false
+          },
+          "responses": {}
+        },
+        "screen": "card_pickup",
+        "status": "screen"
+      },
+      "name": "A screen status lists the outcome of the candidate that won its container, and of a button whose condition holds"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": []
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "card_ready",
+          "nodes": [
+            {
+              "key": "ready_note",
+              "text": "Your card is waiting at the front desk.",
+              "type": "text"
+            }
+          ],
+          "title": "Your card is ready"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at the front desk.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "adult_card_chosen",
+                      "type": "button"
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "junior_card_chosen",
+                      "type": "button"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "condition": "context.desk_open == false",
+                  "key": "pickup_later",
+                  "label": "Pick it up later",
+                  "outcome": "pickup_deferred",
+                  "type": "button"
+                },
+                {
+                  "key": "pickup_confirm",
+                  "label": "I will pick it up now",
+                  "outcome": "pickup_confirmed",
+                  "type": "button"
+                }
+              ],
+              "title": "Pick up your card"
+            },
+            {
+              "key": "card_ready",
+              "nodes": [
+                {
+                  "key": "ready_note",
+                  "text": "Your card is waiting at the front desk.",
+                  "type": "text"
+                }
+              ],
+              "title": "Your card is ready"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "screen": "card_ready",
+        "status": "screen"
+      },
+      "name": "A screen status whose screen shows no button lists no outcomes in its moves"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": true,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "patron_details",
+          "nodes": [
+            {
+              "key": "details_heading",
+              "level": 1,
+              "text": "Get your library card",
+              "type": "heading"
+            },
+            {
+              "key": "details_greeting",
+              "text": "Nice to meet you, Ada.",
+              "type": "text"
+            },
+            {
+              "key": "first_name",
+              "label": "First name",
+              "required": true,
+              "type": "text_question",
+              "value": "Ada"
+            },
+            {
+              "key": "details_next",
+              "label": "Continue",
+              "outcome": "details_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Get your library card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "details_heading",
+                  "level": 1,
+                  "text": "Get your library card",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "details_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            },
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
+                      }
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick up your card"
+            }
+          ]
+        },
+        "opts": {
+          "back": true
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "Ada"
+          }
+        },
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts carry back true presents back true in its moves"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "patron_details",
+          "nodes": [
+            {
+              "key": "details_heading",
+              "level": 1,
+              "text": "Get your library card",
+              "type": "heading"
+            },
+            {
+              "key": "details_greeting",
+              "text": "Nice to meet you, Ada.",
+              "type": "text"
+            },
+            {
+              "key": "first_name",
+              "label": "First name",
+              "required": true,
+              "type": "text_question",
+              "value": "Ada"
+            },
+            {
+              "key": "details_next",
+              "label": "Continue",
+              "outcome": "details_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Get your library card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "details_heading",
+                  "level": 1,
+                  "text": "Get your library card",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "details_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            },
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
+                      }
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick up your card"
+            }
+          ]
+        },
+        "opts": {
+          "back": false,
+          "trail": [
+            "patron_details"
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "Ada"
+          }
+        },
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts carry back false presents back false, and a key beside back is not read"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "details_submitted"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "patron_details",
+          "nodes": [
+            {
+              "key": "details_heading",
+              "level": 1,
+              "text": "Get your library card",
+              "type": "heading"
+            },
+            {
+              "key": "details_greeting",
+              "text": "Nice to meet you, Ada.",
+              "type": "text"
+            },
+            {
+              "key": "first_name",
+              "label": "First name",
+              "required": true,
+              "type": "text_question",
+              "value": "Ada"
+            },
+            {
+              "key": "details_next",
+              "label": "Continue",
+              "outcome": "details_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Get your library card"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "details_heading",
+                  "level": 1,
+                  "text": "Get your library card",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "details_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            },
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
+                      }
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick up your card"
+            }
+          ]
+        },
+        "opts": {},
+        "root": {
+          "context": {},
+          "responses": {
+            "first_name": "Ada"
+          }
+        },
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts are an empty object is presented exactly as the bare screen status, back false"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "details_heading",
+                  "level": 1,
+                  "text": "Get your library card",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "details_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            },
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
+                      }
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick up your card"
+            }
+          ]
+        },
+        "opts": {
+          "back": "yes"
+        },
+        "root": {},
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts carry a back that is not a boolean is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "details_heading",
+                  "level": 1,
+                  "text": "Get your library card",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "details_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            },
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
+                      }
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick up your card"
+            }
+          ]
+        },
+        "opts": {
+          "back": null
+        },
+        "root": {},
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts carry a back of null is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "details_heading",
+                  "level": 1,
+                  "text": "Get your library card",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "details_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            },
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
+                      }
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick up your card"
+            }
+          ]
+        },
+        "opts": true,
+        "root": {},
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts are not an object is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "details_heading",
+                  "level": 1,
+                  "text": "Get your library card",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "details_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            },
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
+                      }
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick up your card"
+            }
+          ]
+        },
+        "opts": null,
+        "root": {},
+        "screen": "patron_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts are null is an error"
+    },
+    {
+      "expected": {
+        "error": "no_such_screen"
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "details_heading",
+                  "level": 1,
+                  "text": "Get your library card",
+                  "type": "heading"
+                },
+                {
+                  "condition": "responses.first_name != ''",
+                  "key": "details_greeting",
+                  "text": "Nice to meet you, {{ responses.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "label": "First name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            },
+            {
+              "key": "card_pickup",
+              "nodes": [
+                {
+                  "key": "pickup_hint",
+                  "text": "Collect your card at {{ context.branch_name }}.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.age >= 18",
+                      "key": "card_adult",
+                      "label": "Adult card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "adult"
+                        ]
+                      }
+                    },
+                    {
+                      "key": "card_junior",
+                      "label": "Junior card",
+                      "outcome": "card_chosen",
+                      "type": "button",
+                      "writes": {
+                        "responses.card_type": [
+                          "const",
+                          "junior"
+                        ]
+                      }
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Pick up your card"
+            }
+          ]
+        },
+        "opts": {
+          "back": true
+        },
+        "root": {},
+        "screen": "card_collected",
+        "status": "screen"
+      },
+      "name": "A screen status with opts naming a key the document does not declare is an error, not an empty screen"
     }
   ],
   "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"

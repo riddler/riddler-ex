@@ -146,6 +146,144 @@ defmodule Riddler.JourneyTest do
     end
   end
 
+  describe "present/3 and a screen's moves" do
+    # Patron registration's pickup screen: a container offering one of two
+    # cards, a button only some visitors see, and one every visitor sees.
+    @pickup %{
+      "schema_version" => 1,
+      "id" => "patron_registration",
+      "screens" => [
+        %{
+          "key" => "card_pickup",
+          "title" => "Pick up your card",
+          "nodes" => [
+            %{
+              "type" => "variant",
+              "key" => "card_offer",
+              "nodes" => [
+                %{
+                  "type" => "button",
+                  "key" => "card_adult",
+                  "label" => "Adult card",
+                  "condition" => "context.age >= 18",
+                  "outcome" => "adult_card_chosen"
+                },
+                %{
+                  "type" => "button",
+                  "key" => "card_junior",
+                  "label" => "Junior card",
+                  "outcome" => "junior_card_chosen"
+                }
+              ]
+            },
+            %{
+              "type" => "button",
+              "key" => "pickup_later",
+              "label" => "Pick it up later",
+              "condition" => "context.desk_open == false",
+              "outcome" => "pickup_deferred"
+            },
+            %{
+              "type" => "button",
+              "key" => "pickup_confirm",
+              "label" => "I will pick it up now",
+              "outcome" => "pickup_confirmed"
+            }
+          ]
+        }
+      ]
+    }
+
+    defp moves(document, status, root) do
+      {:ok, %{"moves" => moves}} = Journey.present(document, status, root)
+      moves
+    end
+
+    # Sabotage: read the outcomes off the document's screen rather than the
+    # resolved one; the hidden button and the losing candidate were listed and
+    # this test went red.
+    test "lists the outcome of each shown button in document order, and no other" do
+      document = Document.admit(@pickup)
+      status = {:screen, "card_pickup"}
+
+      assert moves(document, status, %{"context" => %{"age" => 30, "desk_open" => true}}) ==
+               %{"outcomes" => ["adult_card_chosen", "pickup_confirmed"], "back" => false}
+
+      assert moves(document, status, %{"context" => %{"age" => 12, "desk_open" => false}}) ==
+               %{
+                 "outcomes" => ["junior_card_chosen", "pickup_deferred", "pickup_confirmed"],
+                 "back" => false
+               }
+    end
+
+    # Sabotage: answered the moves inside the screen rather than beside it;
+    # the answer's "moves" key was absent and this test went red.
+    test "sits beside the screen, and a screen with no button lists no outcomes",
+         %{document: document} do
+      assert {:ok, %{"screen" => screen, "moves" => moves}} =
+               Journey.present(document, {:screen, "patron_details"}, %{})
+
+      refute Map.has_key?(screen, "moves")
+      assert moves == %{"outcomes" => [], "back" => false}
+    end
+
+    # Sabotage: answered back false whatever the opts carried; the back true
+    # opts answered false and this test went red.
+    test "answers back from the screen opts, false where they carry none",
+         %{document: document} do
+      status = fn opts -> {:screen, "card_pickup", opts} end
+
+      assert moves(document, status.(%{"back" => true}), %{})["back"] == true
+      assert moves(document, status.(%{"back" => false}), %{})["back"] == false
+
+      assert Journey.present(document, status.(%{}), %{}) ==
+               Journey.present(document, {:screen, "card_pickup"}, %{})
+
+      assert Journey.present(document, status.(%{"trail" => ["patron_details"]}), %{}) ==
+               Journey.present(document, {:screen, "card_pickup"}, %{})
+    end
+
+    # Sabotage: answered a "back" of any type as given rather than refusing
+    # one that is not a boolean; the string back was answered as a screen and
+    # this test went red.
+    test "refuses opts that are not a map or carry a back that is not a boolean",
+         %{document: document} do
+      for opts <- [%{"back" => "yes"}, %{"back" => nil}, true, nil, ["back"], URI.parse("/")] do
+        assert Journey.present(document, {:screen, "card_pickup", opts}, %{}) ==
+                 {:error, :unknown_status},
+               "opts #{inspect(opts)} was not refused"
+      end
+
+      assert Journey.present(document, {:screen, "card_renewal", %{"back" => true}}, %{}) ==
+               {:error, :no_such_screen}
+    end
+
+    # Sabotage: dropped `uniq: true` from outcomes/1; the outcome two shown
+    # buttons of an unvalidated document raise was listed twice and this test
+    # went red.
+    test "lists an outcome once for a document validate/1 refuses" do
+      raw =
+        update_in(@pickup, ["screens", Access.at(0), "nodes"], fn nodes ->
+          nodes ++
+            [
+              %{
+                "type" => "button",
+                "key" => "pickup_confirm_again",
+                "label" => "Yes, now",
+                "outcome" => "pickup_confirmed"
+              },
+              %{"type" => "button", "key" => "pickup_numbered", "label" => "Now", "outcome" => 5}
+            ]
+        end)
+
+      document = Document.admit(raw)
+      assert {:error, _findings} = Document.validate(document)
+
+      assert moves(document, {:screen, "card_pickup"}, %{"context" => %{"age" => 30}}) ==
+               %{"outcomes" => ["adult_card_chosen", "pickup_confirmed"], "back" => false}
+    end
+  end
+
   describe "present/3 for waiting and done" do
     # Sabotage: made the waiting clause answer "done"; the state no longer
     # matched and this test went red.

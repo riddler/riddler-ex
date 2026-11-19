@@ -3846,6 +3846,270 @@
         }
       },
       "name": "A default on a choice question that reads its options from context is refused, there being no option of its own to name"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.duplicate_outcome",
+            "field": "outcome",
+            "node_key": "account_create_again"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_create",
+                  "label": "Create account",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                },
+                {
+                  "key": "account_create_again",
+                  "label": "Create it",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Two buttons a screen shows together raising the same outcome are refused as a duplicate outcome, on the later button"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.duplicate_outcome",
+            "field": "outcome",
+            "node_key": "plan_personal"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "condition": "context.variant == 'a'",
+                  "key": "plan_business",
+                  "label": "Business plan",
+                  "outcome": "plan_chosen",
+                  "type": "button"
+                },
+                {
+                  "condition": "context.variant == 'b'",
+                  "key": "plan_personal",
+                  "label": "Personal plan",
+                  "outcome": "plan_chosen",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Two buttons each behind its own condition raising the same outcome are still refused, because which condition holds is the root's"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.variant == 'a'",
+                      "key": "plan_business",
+                      "label": "Business plan",
+                      "outcome": "plan_chosen",
+                      "type": "button"
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal plan",
+                      "outcome": "plan_chosen",
+                      "type": "button"
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Two buttons in different candidates of one variant raising the same outcome are admitted, because a variant shows one winner"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.in_test == true",
+                      "key": "plan_offer_test",
+                      "nodes": [
+                        {
+                          "condition": "context.variant == 'a'",
+                          "key": "plan_business",
+                          "label": "Business plan",
+                          "outcome": "plan_chosen",
+                          "type": "button"
+                        },
+                        {
+                          "key": "plan_team",
+                          "label": "Team plan",
+                          "outcome": "plan_chosen",
+                          "type": "button"
+                        }
+                      ],
+                      "type": "variant"
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal plan",
+                      "outcome": "plan_chosen",
+                      "type": "button"
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Two buttons in different candidates of a variant nested in a candidate raise the same outcome and are admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.duplicate_outcome",
+            "field": "outcome",
+            "node_key": "plan_default"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "plan_offer",
+                  "nodes": [
+                    {
+                      "condition": "context.variant == 'a'",
+                      "key": "plan_business",
+                      "label": "Business plan",
+                      "outcome": "plan_chosen",
+                      "type": "button"
+                    },
+                    {
+                      "key": "plan_personal",
+                      "label": "Personal plan",
+                      "outcome": "plan_skipped",
+                      "type": "button"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "plan_default",
+                  "label": "Use the default plan",
+                  "outcome": "plan_chosen",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A button in a variant's candidate and a button beside the variant raising the same outcome are refused, because both can be shown"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "account_next",
+                  "label": "Next",
+                  "outcome": "went_on",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            },
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_next",
+                  "label": "Next",
+                  "outcome": "went_on",
+                  "type": "button"
+                }
+              ],
+              "title": "Choose a plan"
+            }
+          ]
+        }
+      },
+      "name": "Two buttons on different screens raising the same outcome are admitted, because a screen is shown alone"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"
