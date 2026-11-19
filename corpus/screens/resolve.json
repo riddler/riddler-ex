@@ -1903,6 +1903,89 @@
         }
       },
       "name": "A selection bound written with no fractional part resolves as its integer"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "pin_echo",
+              "variable": "responses.account_pin"
+            }
+          ],
+          "undecidable_conditions": [
+            {
+              "condition": "responses.account_pin != ''",
+              "key": "pin_thanks"
+            }
+          ]
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "security",
+            "nodes": [
+              {
+                "help": "Hi Ada",
+                "key": "account_pin",
+                "label": "Choose a PIN for your account",
+                "required": true,
+                "type": "secret_question"
+              },
+              {
+                "key": "pin_echo",
+                "text": "Your PIN is .",
+                "type": "text"
+              }
+            ],
+            "title": "Secure your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "help": "Hi {{ context.first_name }}",
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                },
+                {
+                  "key": "pin_echo",
+                  "text": "Your PIN is {{ responses.account_pin }}.",
+                  "type": "text"
+                },
+                {
+                  "condition": "responses.account_pin != ''",
+                  "key": "pin_thanks",
+                  "text": "Your account is protected.",
+                  "type": "text"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "first_name": "Ada"
+          },
+          "responses": {
+            "account_pin": "PIN-4921-SENTINEL"
+          }
+        }
+      },
+      "name": "A secret question's response is not in the root a template or a condition reads, and its help renders"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

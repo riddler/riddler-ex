@@ -11,10 +11,10 @@ defmodule Riddler.Screens.Registry do
   node quietly passed through as though the runtime had understood it.
 
   The types are `heading`, `text`, `text_question`, `choice_question`,
-  `boolean_question`, `button` and `variant`.
+  `boolean_question`, `secret_question`, `button` and `variant`.
 
       iex> Riddler.Screens.Registry.types()
-      ["boolean_question", "button", "choice_question", "heading", "text", "text_question", "variant"]
+      ["boolean_question", "button", "choice_question", "heading", "secret_question", "text", "text_question", "variant"]
 
       iex> Riddler.Screens.Registry.fetch("heading")
       {:ok, Riddler.Screens.Type.Heading}
@@ -30,6 +30,7 @@ defmodule Riddler.Screens.Registry do
     "button" => Type.Button,
     "choice_question" => Type.ChoiceQuestion,
     "heading" => Type.Heading,
+    "secret_question" => Type.SecretQuestion,
     "text" => Type.Text,
     "text_question" => Type.TextQuestion,
     "variant" => Type.Variant

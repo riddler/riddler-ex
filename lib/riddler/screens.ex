@@ -24,6 +24,17 @@ defmodule Riddler.Screens do
   JSON, and a response is addressed `responses.<key>` where the key is the key
   of the question node it belongs to.
 
+  A secret question's response is the one a condition and a template never
+  read. Before any condition is evaluated or any template rendered, the
+  response of every secret question the document declares, on any screen, is
+  removed from the root they read: a template naming one renders the empty
+  string and reports it in `missing_variables`, and a condition naming one is
+  undecidable, hidden and reported, as for any variable the root does not
+  carry. `Riddler.Screens.Document.validate/1` refuses a document that names
+  one; this is what holds for a document no one validated. Response
+  validation still reads the secret question's own response from the root the
+  host passed.
+
   ## What resolution does to a node
 
   A node with no condition is shown. A node whose condition evaluates false is
@@ -38,7 +49,7 @@ defmodule Riddler.Screens do
   and the winner replaces the container, so nothing downstream needs to know a
   container was ever there. A container no candidate wins resolves to nothing.
 
-  Every template field - `text`, `label` and `placeholder`, and the `label` of
+  Every template field - `text`, `label`, `placeholder` and `help`, and the `label` of
   each of a choice question's `answer_options` - is rendered leniently: a
   variable the root does not carry renders as the empty string and is reported
   in `missing_variables`, so a visitor sees a screen rather than an error page.
@@ -59,6 +70,15 @@ defmodule Riddler.Screens do
   `answer_options`, `select` and selection bounds; and a boolean question's
   `true` or `false`. The arity-4 form takes the key of the button the visitor
   pressed and honours its `validates`.
+
+  A secret question answers at most one finding, and none of its findings
+  carries anything of the response. A response in the sealed form, an object
+  whose one key is `"sealed"` and whose value is a string, is a held value: it
+  satisfies `required` and is never checked again. Nothing answered - absent,
+  `null` or a string of whitespace - is `response.required` where the
+  question is required. Any other string is the plaintext the visitor typed,
+  and nothing further is checked: the question declares no format. Any other
+  value is `response.invalid_shape`, its `field` `"type"`.
 
   They take the same root `resolve/2` and `resolve_screen/3` take, and the
   responses they check are the ones inside it. The screen validated is the
@@ -103,6 +123,7 @@ defmodule Riddler.Screens do
   alias Riddler.Finding
   alias Riddler.Screens.Document
   alias Riddler.Screens.Resolved
+  alias Riddler.Screens.Type.SecretQuestion
   alias Riddler.Screens.Validation
   alias Riddler.Template
 
@@ -143,7 +164,7 @@ defmodule Riddler.Screens do
   """
   @spec resolve(Document.t(), map()) :: {:ok, Resolved.t()}
   def resolve(%Document{} = document, root) when is_map(root) do
-    root = normalize(root)
+    root = reading(document, normalize(root))
 
     {screens, diagnostics} =
       Enum.map_reduce(document.screens, @empty_diagnostics, &resolve_one(&1, root, &2))
@@ -214,7 +235,9 @@ defmodule Riddler.Screens do
         {:error, :no_such_screen}
 
       screen ->
-        {resolved, diagnostics} = resolve_one(screen, normalize(root), @empty_diagnostics)
+        {resolved, diagnostics} =
+          resolve_one(screen, reading(document, normalize(root)), @empty_diagnostics)
+
         {:ok, resolved, order(diagnostics)}
     end
   end
@@ -386,7 +409,13 @@ defmodule Riddler.Screens do
 
     case resolve_screen(document, screen_key, root) do
       {:ok, screen, diagnostics} ->
-        Validation.validate(screen, diagnostics, root, pressed_button_key)
+        Validation.validate(
+          screen,
+          diagnostics,
+          root,
+          reading(document, root),
+          pressed_button_key
+        )
 
       {:error, :no_such_screen} = no_such_screen ->
         no_such_screen
@@ -406,6 +435,16 @@ defmodule Riddler.Screens do
     case Map.get(root, key) do
       map when is_map(map) and not is_struct(map) -> map
       _absent -> %{}
+    end
+  end
+
+  # The root a condition and a template read: the host's root without the
+  # response of any secret question the document declares. A document with no
+  # secret question reads the root it was handed, unchanged.
+  defp reading(document, root) do
+    case Document.secret_keys(document) do
+      [] -> root
+      secrets -> Map.update!(root, "responses", &Map.drop(&1, secrets))
     end
   end
 
@@ -442,9 +481,17 @@ defmodule Riddler.Screens do
   defp present(node, root, diagnostics) do
     case Map.fetch(node, :nodes) do
       {:ok, candidates} when is_list(candidates) -> winner(candidates, root, diagnostics)
-      _not_a_container -> render(Map.delete(node, :condition), root, diagnostics)
+      _not_a_container -> render(presented(node), root, diagnostics)
     end
   end
+
+  # A resolved node carries no condition. A secret question carries no initial
+  # value either: one written on it is `document.secret_initial_value`, and a
+  # document no one validated does not pass it on.
+  defp presented(%{type: "secret_question"} = node),
+    do: Map.drop(node, [:condition | SecretQuestion.initial_values()])
+
+  defp presented(node), do: Map.delete(node, :condition)
 
   # First match wins: the candidates are considered in order and the first
   # whose condition holds replaces the container.

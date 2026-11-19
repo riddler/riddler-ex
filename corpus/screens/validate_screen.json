@@ -2630,6 +2630,312 @@
         "screen": "plan"
       },
       "name": "Each failing choice and boolean question is one finding, in the order the screen declares them"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "responses": {
+          "account_pin": "PIN-4921-SENTINEL"
+        },
+        "screen": "security"
+      },
+      "name": "A secret question answered with the text the visitor typed is accepted"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "account_pin"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "security"
+      },
+      "name": "A required secret question with nothing answered is a finding"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.required",
+            "field": "required",
+            "node_key": "account_pin"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "responses": {
+          "account_pin": "   "
+        },
+        "screen": "security"
+      },
+      "name": "A required secret question answered with whitespace only is a finding"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": false,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "responses": {
+          "account_pin": null
+        },
+        "screen": "security"
+      },
+      "name": "A secret question that is not required may be left unanswered"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "responses": {
+          "account_pin": {
+            "sealed": "PIN-4921-SENTINEL"
+          }
+        },
+        "screen": "security"
+      },
+      "name": "A secret question holding the sealed form is accepted and not checked again"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.invalid_shape",
+            "field": "type",
+            "node_key": "account_pin"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "responses": {
+          "account_pin": [
+            "PIN-4921-SENTINEL"
+          ]
+        },
+        "screen": "security"
+      },
+      "name": "A secret question answered with a list is the wrong shape"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.invalid_shape",
+            "field": "type",
+            "node_key": "account_pin"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "responses": {
+          "account_pin": {
+            "pin": "PIN-4921-SENTINEL",
+            "sealed": "PIN-4921-SENTINEL"
+          }
+        },
+        "screen": "security"
+      },
+      "name": "A sealed form carrying a second key is the wrong shape"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "format": "email",
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "responses": {
+          "account_pin": "PIN-4921-SENTINEL"
+        },
+        "screen": "security"
+      },
+      "name": "No format is put to a secret question's response"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "context": {
+          "signed_in": false
+        },
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "condition": "context.signed_in",
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        },
+        "responses": {},
+        "screen": "security"
+      },
+      "name": "A required secret question a condition hides cannot fail"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"
