@@ -2365,6 +2365,378 @@
         }
       },
       "name": "Metadata written as null is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "help": "You will type it each time you sign in, {{ context.first_name }}.",
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        }
+      },
+      "name": "A secret question carrying a key, a label, required and a help template is admitted with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "format": "pattern",
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "pattern": "[0-9]{4}",
+                  "placeholder": "Four digits",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        }
+      },
+      "name": "A placeholder, a format or a pattern on a secret question is dropped with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.secret_initial_value",
+            "field": "default",
+            "node_key": "account_pin"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "default": "PIN-4921-SENTINEL",
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        }
+      },
+      "name": "A default on a secret question is refused, naming the field"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.secret_initial_value",
+            "field": "prefill",
+            "node_key": "account_pin"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "prefill": "context.account_pin",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        }
+      },
+      "name": "A prefill on a secret question is refused, naming the field"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.missing_field",
+            "field": "label",
+            "node_key": "account_pin"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        }
+      },
+      "name": "A secret question with no label is refused for the missing field"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_required",
+            "field": "required",
+            "node_key": "account_pin"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": "yes",
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        }
+      },
+      "name": "A secret question whose required is not a boolean is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.secret_reference",
+            "field": "text",
+            "node_key": "pin_echo"
+          },
+          {
+            "code": "document.secret_reference",
+            "field": "condition",
+            "node_key": "pin_thanks"
+          },
+          {
+            "code": "document.secret_reference",
+            "field": "writes",
+            "node_key": "pin_skip"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                },
+                {
+                  "key": "pin_echo",
+                  "text": "Your PIN is {{ responses.account_pin }}.",
+                  "type": "text"
+                },
+                {
+                  "condition": "responses.account_pin != ''",
+                  "key": "pin_thanks",
+                  "text": "Your account is protected.",
+                  "type": "text"
+                },
+                {
+                  "key": "pin_skip",
+                  "label": "Skip",
+                  "outcome": "skipped",
+                  "type": "button",
+                  "writes": {
+                    "responses.account_pin": [
+                      "const",
+                      "PIN-4921-SENTINEL"
+                    ]
+                  }
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        }
+      },
+      "name": "A template, a condition and a write reading a secret question's response are each refused on the node carrying it"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.secret_reference",
+            "field": "label",
+            "node_key": "account_pin"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Confirm {{ responses.account_pin }}",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        }
+      },
+      "name": "A secret question's own label reading its response is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.secret_reference",
+            "field": "text",
+            "node_key": "welcome_pin"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Secure your account"
+            },
+            {
+              "key": "welcome",
+              "nodes": [
+                {
+                  "key": "welcome_variant",
+                  "nodes": [
+                    {
+                      "key": "welcome_pin",
+                      "text": "Your PIN: {{ responses[\"account_pin\"] }}",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                }
+              ],
+              "title": "Welcome"
+            }
+          ]
+        }
+      },
+      "name": "A reference to a secret question's response on another screen, inside a variant, is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "security",
+              "nodes": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN for your account",
+                  "required": true,
+                  "type": "secret_question"
+                },
+                {
+                  "key": "pin_hint",
+                  "text": "Hint: {{ responses.account_pin_hint }}",
+                  "type": "text"
+                }
+              ],
+              "title": "Secure your account"
+            }
+          ]
+        }
+      },
+      "name": "A response whose key only starts with a secret question's key is not a reference"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"

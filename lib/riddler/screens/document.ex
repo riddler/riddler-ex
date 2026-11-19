@@ -122,6 +122,15 @@ defmodule Riddler.Screens.Document do
       wrong and not a response. Only where the question declares that format:
       a `pattern` on a question asking for another format, or for none, is a
       field nothing consults and raises nothing.
+    * `document.secret_initial_value` - a secret question carries a
+      `default` or a `prefill`, its `field` naming which. A secret is a value
+      only the visitor supplies, and the finding never repeats what the field
+      holds.
+    * `document.secret_reference` - a template, a condition or a button's
+      `writes` entry, anywhere in the document, names a secret question's
+      response, `responses.<key>`, or a path under it. Its `node_key` is the
+      node carrying the reference and its `field` the field that carries it;
+      the message names the secret question's key, which is not a secret.
     * `document.empty_variant` - a variant with no candidates.
     * `document.unreachable_variant_candidate` - an unconditional candidate
       that is not last, which buries every candidate after it.
@@ -195,7 +204,10 @@ defmodule Riddler.Screens.Document do
   # document is literal text. This is the one declaration of the list: the
   # admit-time refusal below and `Riddler.Screens`' resolve-time render are two
   # passes over the same fields, and both read it through `template_fields/0`.
-  @template_fields [:text, :label, :placeholder]
+  @template_fields [:text, :label, :placeholder, :help]
+
+  # The node type whose response no template, condition or write may read.
+  @secret_type "secret_question"
 
   # A choice question's options. An option's `label` is a template too, but it
   # is not a field of the node, so it is not on the list above: the refusal
@@ -275,10 +287,13 @@ defmodule Riddler.Screens.Document do
   """
   @spec validate(t()) :: {:ok, t()} | {:error, [Finding.t()]}
   def validate(%__MODULE__{} = document) do
+    secrets = secret_keys(document)
+
     findings =
       kind_findings(document) ++
         envelope_findings(document) ++
-        duplicate_findings(document) ++ Enum.flat_map(document.screens, &screen_findings/1)
+        duplicate_findings(document) ++
+        Enum.flat_map(document.screens, &screen_findings(&1, secrets))
 
     case findings do
       [] -> {:ok, document}
@@ -298,6 +313,30 @@ defmodule Riddler.Screens.Document do
   @doc false
   @spec formats() :: [String.t()]
   def formats, do: @formats
+
+  # The keys of every secret question the document declares, on any screen and
+  # among any variant's candidates, whatever its condition. Only a key that is
+  # a string names a response. Admission refuses a reference to one of these
+  # responses, and resolution removes each of them from the root a condition
+  # and a template read, so both read this one list. No part of the package's
+  # surface.
+  @doc false
+  @spec secret_keys(t()) :: [String.t()]
+  def secret_keys(%__MODULE__{screens: screens}) do
+    screens
+    |> Enum.flat_map(fn screen -> Enum.flat_map(screen.nodes, &secret_keys_under/1) end)
+    |> Enum.uniq()
+  end
+
+  defp secret_keys_under(node) do
+    own =
+      case node do
+        %{type: @secret_type, key: key} when is_binary(key) -> [key]
+        _other -> []
+      end
+
+    own ++ Enum.flat_map(candidates(node), &secret_keys_under/1)
+  end
 
   # -- admit ----------------------------------------------------------------
 
@@ -571,12 +610,12 @@ defmodule Riddler.Screens.Document do
     end
   end
 
-  defp screen_findings(screen) do
+  defp screen_findings(screen, secrets) do
     key_findings(screen.key, "the screen #{inspect(screen.title)}") ++
-      Enum.flat_map(screen.nodes, &node_findings/1)
+      Enum.flat_map(screen.nodes, &node_findings(&1, secrets))
   end
 
-  defp node_findings(node) do
+  defp node_findings(node, secrets) do
     case Registry.fetch(node.type) do
       :error ->
         [
@@ -596,8 +635,9 @@ defmodule Riddler.Screens.Document do
           condition_findings(node, key) ++
           missing_findings(node, module, key) ++
           template_findings(node, key) ++
+          secret_reference_findings(node, key, secrets) ++
           module.validate(node) ++
-          Enum.flat_map(candidates(node), &node_findings/1)
+          Enum.flat_map(candidates(node), &node_findings(&1, secrets))
     end
   end
 
@@ -728,6 +768,120 @@ defmodule Riddler.Screens.Document do
   end
 
   defp option_template_findings(_node, _key), do: []
+
+  # -- a secret question's response is read by nothing -----------------------
+
+  # A condition, a template field, an option's label and a button's `writes`,
+  # in that order, each naming `responses.<key>` for a secret question's key
+  # or a path under it. One finding per field and per secret question named,
+  # however many times the field names it. A template or a condition that does
+  # not compile names no path here: it is already its own finding, and
+  # resolution reads nothing out of it either.
+  defp secret_reference_findings(_node, _key, []), do: []
+
+  defp secret_reference_findings(node, key, secrets) do
+    condition =
+      case Map.fetch(node, :condition) do
+        {:ok, source} when is_binary(source) -> [{"condition", condition_paths(source)}]
+        _absent_or_refused -> []
+      end
+
+    templates =
+      for field <- @template_fields,
+          {:ok, source} <- [Map.fetch(node, field)],
+          do: {Atom.to_string(field), template_paths(source)}
+
+    named = condition ++ templates ++ option_paths(node) ++ writes_paths(node)
+
+    for {field, paths} <- named,
+        secret <- Enum.filter(secrets, &names_response?(paths, &1)) do
+      %Finding{
+        code: "document.secret_reference",
+        message:
+          "the #{field} reads responses.#{secret}, the response to the secret question #{inspect(secret)}, and no template, condition or write reads a secret question's response",
+        field: field,
+        node_key: key
+      }
+    end
+  end
+
+  defp names_response?(paths, secret) do
+    Enum.any?(paths, &match?(["responses", ^secret | _under], &1))
+  end
+
+  defp template_paths(source) when is_binary(source) do
+    case Template.compile(source) do
+      {:ok, compiled} -> Template.paths(compiled)
+      {:error, _findings} -> []
+    end
+  end
+
+  defp template_paths(_not_source), do: []
+
+  defp option_paths(%{type: @choice_type, answer_options: options}) when is_list(options) do
+    for option <- options,
+        is_map(option),
+        {:ok, source} <- [Map.fetch(option, :label)],
+        do: {"label", template_paths(source)}
+  end
+
+  defp option_paths(_node), do: []
+
+  # A write's address is `responses.<path>`, read as segments split on `.`
+  # with a bracketed index starting a segment of its own, so a write to a
+  # path under a secret question's response names that response.
+  defp writes_paths(%{writes: writes}) when is_map(writes) do
+    paths =
+      for {path, _value} <- writes, is_binary(path) do
+        path
+        |> String.split(["."])
+        |> Enum.flat_map(&String.split(&1, "[", parts: 2))
+        |> Enum.take(2)
+      end
+
+    [{"writes", paths}]
+  end
+
+  defp writes_paths(_node), do: []
+
+  # Every path a condition names, as segments: a name, then each property and
+  # each literal key in brackets after it, up to the first key computed at
+  # evaluation. Each access along a chain is a path of its own, so
+  # `responses.library_pin.length` names `["responses", "library_pin"]` as
+  # well.
+  defp condition_paths(source) do
+    case Predicator.parse(source) do
+      {:ok, ast} -> ast |> collect_paths([]) |> Enum.reverse()
+      _refused -> []
+    end
+  end
+
+  defp collect_paths(term, acc) when is_tuple(term) do
+    acc =
+      case chain(term) do
+        {:ok, path} -> [path | acc]
+        :error -> acc
+      end
+
+    term |> Tuple.to_list() |> Enum.reduce(acc, &collect_paths/2)
+  end
+
+  defp collect_paths(list, acc) when is_list(list), do: Enum.reduce(list, acc, &collect_paths/2)
+  defp collect_paths(_other, acc), do: acc
+
+  defp chain({:identifier, name, _position}) when is_binary(name),
+    do: {:ok, String.split(name, ".")}
+
+  defp chain({:property_access, object, property, _position}) when is_binary(property) do
+    with {:ok, path} <- chain(object), do: {:ok, path ++ [property]}
+  end
+
+  defp chain({:bracket_access, object, {:string_literal, key, _quote, _position}, _at})
+       when is_binary(key) do
+    with {:ok, path} <- chain(object), do: {:ok, path ++ [key]}
+  end
+
+  defp chain(_not_a_path), do: :error
 
   defp refusals(source, what, _field, key) when is_binary(source) do
     case Template.compile(source) do

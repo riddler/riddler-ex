@@ -24,6 +24,12 @@ defmodule Riddler.Screens.Validation do
   # diagnostics could have carried that instead, and do not: their shape is
   # part of what `resolve_screen/3` answers, and a second key on it would be a
   # new public field for something only this module reads.
+  #
+  # So it takes two roots. The responses it checks come from the root the host
+  # passed, a secret question's own response among them. A condition is read
+  # again against the root resolution read it against, which carries no secret
+  # question's response, so that a condition is never decided here against a
+  # value resolution could not see.
 
   alias Predicator.Errors.EvaluationError
   alias Predicator.Errors.UndefinedVariableError
@@ -40,6 +46,7 @@ defmodule Riddler.Screens.Validation do
 
   @choice_type "choice_question"
   @boolean_type "boolean_question"
+  @secret_type "secret_question"
 
   # A response to a question carrying a format is one line of text a visitor
   # typed, so every format below reads it as text or as the number a decoder
@@ -51,15 +58,15 @@ defmodule Riddler.Screens.Validation do
   # be resolved at all, which precedes anything about a response, and the nodes
   # they name are not on the resolved screen, so there is no document order to
   # interleave them into.
-  @spec validate(Resolved.screen(), Resolved.diagnostics(), map(), term()) ::
+  @spec validate(Resolved.screen(), Resolved.diagnostics(), map(), map(), term()) ::
           :ok | {:error, [Finding.t()]}
-  def validate(screen, diagnostics, root, pressed_button_key) do
+  def validate(screen, diagnostics, root, reading_root, pressed_button_key) do
     if opted_out?(screen, pressed_button_key) do
       :ok
     else
       responses = root["responses"]
 
-      case undecidable_findings(diagnostics, root) ++
+      case undecidable_findings(diagnostics, reading_root) ++
              Enum.flat_map(screen.nodes, &node_findings(&1, responses)) do
         [] -> :ok
         findings -> {:error, findings}
@@ -200,6 +207,9 @@ defmodule Riddler.Screens.Validation do
 
   defp node_findings(%{type: @boolean_type} = node, responses),
     do: boolean_findings(node, Map.get(responses, node[:key]))
+
+  defp node_findings(%{type: @secret_type} = node, responses),
+    do: secret_findings(node, Map.get(responses, node[:key]))
 
   defp node_findings(node, responses) do
     if Enum.any?(@declaring_fields, &Map.has_key?(node, &1)) do
@@ -386,6 +396,38 @@ defmodule Riddler.Screens.Validation do
         "#{inspect(label(node))} is answered true or false, and the response is neither"
       )
     ]
+  end
+
+  # -- the secret question ----------------------------------------------------
+
+  # At most one finding, the first of the checks the amendment to
+  # `docs/adr/0002-element-document.md` headed "a `secret_question` node type"
+  # orders: the sealed form is a held value and is never checked again; nothing
+  # answered is `required`'s; a plaintext string has no format to fail; any
+  # other value is the wrong shape. No message here carries anything of the
+  # response, which is the whole of why this is its own clause rather than the
+  # format path every text response takes.
+  defp secret_findings(node, response) do
+    cond do
+      sealed?(response) -> []
+      blank?(response) -> unanswered(node)
+      is_binary(response) -> []
+      true -> [secret_shape_finding(node)]
+    end
+  end
+
+  defp sealed?(%{"sealed" => handle} = response) when is_binary(handle),
+    do: map_size(response) == 1
+
+  defp sealed?(_response), do: false
+
+  defp secret_shape_finding(node) do
+    finding(
+      node,
+      "response.invalid_shape",
+      "type",
+      "#{inspect(label(node))} is answered with the text the visitor typed, or with the sealed form a host keeps, and the response is neither"
+    )
   end
 
   # -- the formats ------------------------------------------------------------

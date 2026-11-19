@@ -345,6 +345,35 @@ defmodule Riddler.Template do
     end
   end
 
+  # Every path a compiled template names, wherever it writes one - an output, a
+  # tag's operand, a filter's argument, an index - as the list of its segments:
+  # the variable's name, then each literal access after it up to the first one
+  # computed at render. `{{ responses.first_name }}` and
+  # `{{ responses["first_name"] }}` both name `["responses", "first_name"]`.
+  # A path is read, never resolved: what a computed index reaches is not known
+  # until render, so the path stops before it. No part of the package's
+  # surface; the document check reads it to refuse a template naming a secret
+  # question's response.
+  @doc false
+  @spec paths(Compiled.t()) :: [[String.t()]]
+  def paths(%Compiled{parsed: parsed}) do
+    parsed.parsed_template
+    |> reduce_nodes([], &named_path/2)
+    |> Enum.reverse()
+  end
+
+  defp named_path(%Solid.Variable{identifier: identifier, accesses: accesses}, acc)
+       when is_binary(identifier) do
+    [[identifier | literal_segments(accesses)] | acc]
+  end
+
+  defp named_path(_node, acc), do: acc
+
+  defp literal_segments([%Solid.AccessLiteral{value: value} | rest]) when is_binary(value),
+    do: [value | literal_segments(rest)]
+
+  defp literal_segments(_computed_or_none), do: []
+
   # -- the allowlist walk ---------------------------------------------------
 
   defp refusals(tree), do: tree |> reduce_nodes([], &refuse/2) |> Enum.reverse()
