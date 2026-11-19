@@ -8,8 +8,9 @@ defmodule Riddler.Screens.Type.SecretQuestion do
   of guidance shown beside the question, and it is a template too. `required`
   says whether a response has to be given and defaults to false.
   `messages` maps a code response validation raises on this question -
-  `response.required` or `response.invalid_shape` - to the plain string its author shows for it, which a
-  finding with that code carries as `author_message`.
+  `response.required` or `response.invalid_shape` - to the plain string its
+  author shows for it, which a finding with that code carries as
+  `author_message`.
   A message is the author's text and carries nothing of the response.
 
   A secret question carries neither `default` nor `prefill`. Either would be a
