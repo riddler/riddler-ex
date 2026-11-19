@@ -4110,6 +4110,562 @@
         }
       },
       "name": "Two buttons on different screens raising the same outcome are admitted, because a screen is shown alone"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": true,
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "type": "boolean_question"
+                },
+                {
+                  "default": false,
+                  "key": "large_print",
+                  "label": "Send notices in large print",
+                  "prefill": "context.account.large_print",
+                  "type": "boolean_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Invoices",
+                      "value": "invoices"
+                    },
+                    {
+                      "label": "Reports",
+                      "value": "reports"
+                    },
+                    {
+                      "label": "Audit log",
+                      "value": "audit_log"
+                    }
+                  ],
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "prefill": "context.account.addons",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A boolean question's default true or false, and a prefill on a boolean question or on a choice question picking several, are admitted with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "work_email",
+                  "label": "Work email",
+                  "prefill": "context.invited_email",
+                  "type": "text_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "prefill": "context.account_2.plan_code",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A prefill whose segments carry digits and underscores, or that is one segment under context, is admitted with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_default",
+            "field": "default",
+            "node_key": "addons"
+          },
+          {
+            "code": "document.invalid_default",
+            "field": "default",
+            "node_key": "addons_listed"
+          },
+          {
+            "code": "document.invalid_default",
+            "field": "default",
+            "node_key": "addons_numbered"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Invoices",
+                      "value": "invoices"
+                    },
+                    {
+                      "label": "Reports",
+                      "value": "reports"
+                    },
+                    {
+                      "label": "Audit log",
+                      "value": "audit_log"
+                    }
+                  ],
+                  "default": "invoices",
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "select": "many",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Invoices",
+                      "value": "invoices"
+                    },
+                    {
+                      "label": "Reports",
+                      "value": "reports"
+                    },
+                    {
+                      "label": "Audit log",
+                      "value": "audit_log"
+                    }
+                  ],
+                  "default": [
+                    "invoices",
+                    "enterprise"
+                  ],
+                  "key": "addons_listed",
+                  "label": "Which add-ons?",
+                  "select": "many",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "label": "Invoices",
+                      "value": "invoices"
+                    },
+                    {
+                      "label": "Reports",
+                      "value": "reports"
+                    },
+                    {
+                      "label": "Audit log",
+                      "value": "audit_log"
+                    }
+                  ],
+                  "default": [
+                    "invoices",
+                    7
+                  ],
+                  "key": "addons_numbered",
+                  "label": "Which add-ons?",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A choice question's default under many that is a string, that names no option, or that holds a value that is not a string is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options": [
+                    {
+                      "label": "Invoices",
+                      "value": "invoices"
+                    },
+                    {
+                      "label": "Reports",
+                      "value": "reports"
+                    },
+                    {
+                      "label": "Audit log",
+                      "value": "audit_log"
+                    }
+                  ],
+                  "default": [
+                    "invoices",
+                    "reports",
+                    "audit_log"
+                  ],
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "max_selections": 2,
+                  "select": "many",
+                  "type": "choice_question"
+                },
+                {
+                  "default": "not an email",
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                },
+                {
+                  "default": "abc",
+                  "format": "pattern",
+                  "key": "account_code",
+                  "label": "Account code",
+                  "pattern": "[0-9]+",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A default is not put to the question's selection bounds or its pattern at admit"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.plans",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                },
+                {
+                  "answer_options_from": "account.plans",
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "type": "boolean_question"
+                },
+                {
+                  "answer_options_from": 3,
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A text, boolean or secret question carrying answer_options_from has it dropped with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.missing_field",
+            "field": "answer_options",
+            "node_key": "addons"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.plans",
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A choice question naming neither answer_options nor answer_options_from is refused, beside one that names a path"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": "context.account.addons",
+                  "key": "addons",
+                  "label": "Which add-ons?",
+                  "max_selections": 6,
+                  "min_selections": 1,
+                  "select": "many",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A choice question that names a path is not held to the number of options in its selection bounds"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_context_path",
+            "field": "answer_options_from",
+            "node_key": "plan"
+          },
+          {
+            "code": "document.invalid_context_path",
+            "field": "answer_options_from",
+            "node_key": "plan_bare"
+          },
+          {
+            "code": "document.invalid_context_path",
+            "field": "answer_options_from",
+            "node_key": "plan_cased"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "answer_options_from": [
+                    "context",
+                    "account",
+                    "plans"
+                  ],
+                  "key": "plan",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options_from": "context",
+                  "key": "plan_bare",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "answer_options_from": "context.account.Plans",
+                  "key": "plan_cased",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "An answer_options_from that is not a string, names context alone or has a segment outside the key shape is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.secret_initial_value",
+            "field": "default",
+            "node_key": "account_pin"
+          },
+          {
+            "code": "document.secret_initial_value",
+            "field": "prefill",
+            "node_key": "account_pin"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "default": 7,
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "prefill": "nowhere",
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A secret question carrying a default or a prefill raises only the secret finding, whatever the field holds"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.unknown_message_code",
+            "field": "messages",
+            "node_key": "work_email"
+          },
+          {
+            "code": "document.unknown_message_code",
+            "field": "messages",
+            "node_key": "newsletter"
+          },
+          {
+            "code": "document.unknown_message_code",
+            "field": "messages",
+            "node_key": "newsletter"
+          },
+          {
+            "code": "document.unknown_message_code",
+            "field": "messages",
+            "node_key": "newsletter"
+          },
+          {
+            "code": "document.unknown_message_code",
+            "field": "messages",
+            "node_key": "account_pin"
+          },
+          {
+            "code": "document.unknown_message_code",
+            "field": "messages",
+            "node_key": "account_pin"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "key": "work_email",
+                  "label": "Work email",
+                  "messages": {
+                    "response.invalid_shape": "Type it again."
+                  },
+                  "type": "text_question"
+                },
+                {
+                  "key": "newsletter",
+                  "label": "Send me product news",
+                  "messages": {
+                    "response.format": "Not valid.",
+                    "response.not_an_option": "Pick one.",
+                    "response.out_of_range": "Out of range."
+                  },
+                  "type": "boolean_question"
+                },
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "messages": {
+                    "response.not_an_option": "Pick one.",
+                    "response.out_of_range": "Too long."
+                  },
+                  "type": "secret_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A message keyed by a code outside its question's type is refused, for each type the table limits"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"
