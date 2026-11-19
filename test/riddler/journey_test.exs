@@ -170,6 +170,85 @@ defmodule Riddler.JourneyTest do
     end
   end
 
+  describe "present/3 for waiting with info" do
+    # Sabotage: made the waiting info clause drop "retry_after_ms" from the
+    # answer; the first answer came back with the reason alone and this test
+    # went red.
+    test "answers the reason and the retry hint beside the state, each only where supplied",
+         %{document: document} do
+      assert Journey.present(
+               document,
+               {:waiting, %{"reason" => "card_number_pending", "retry_after_ms" => 5000}},
+               %{}
+             ) ==
+               {:ok,
+                %{
+                  "state" => "waiting",
+                  "reason" => "card_number_pending",
+                  "retry_after_ms" => 5000
+                }}
+
+      assert Journey.present(document, {:waiting, %{"reason" => "card_number_pending"}}, %{}) ==
+               {:ok, %{"state" => "waiting", "reason" => "card_number_pending"}}
+
+      assert Journey.present(document, {:waiting, %{"retry_after_ms" => 0}}, %{}) ==
+               {:ok, %{"state" => "waiting", "retry_after_ms" => 0}}
+    end
+
+    # Sabotage: made the waiting info clause carry every key of the info onto
+    # the answer; the unread key reached it and this test went red.
+    test "answers an info carrying neither key exactly as the bare waiting status",
+         %{document: document} do
+      bare = Journey.present(document, :waiting, %{})
+
+      assert Journey.present(document, {:waiting, %{}}, %{}) == bare
+      assert Journey.present(document, {:waiting, %{"queue_position" => 3}}, %{}) == bare
+
+      assert Journey.present(document, {:waiting, %{reason: "card_number_pending"}}, %{}) == bare
+    end
+
+    # Sabotage: made `retry_after_ms` accept any integer, below zero included;
+    # the -1 hint came back as an answer and this test went red. And again
+    # with the reason check accepting any value; the integer reason came back
+    # as an answer and this test went red. And again with the map guard
+    # dropping `not is_struct/1`; the struct came back as an answer and this
+    # test went red.
+    test "refuses an info that is not a map or carries a named key of the wrong type",
+         %{document: document} do
+      for info <- [
+            "card_number_pending",
+            nil,
+            [{"reason", "card_number_pending"}],
+            %{"reason" => 42},
+            %{"reason" => nil},
+            %{"reason" => :card_number_pending},
+            %{"retry_after_ms" => -1},
+            %{"retry_after_ms" => 1.5},
+            %{"retry_after_ms" => "5000"},
+            %{"reason" => "card_number_pending", "retry_after_ms" => -1},
+            URI.parse("https://example.com")
+          ] do
+        assert Journey.present(document, {:waiting, info}, %{}) == {:error, :unknown_status},
+               "expected #{inspect(info)} to be refused"
+      end
+    end
+
+    # Sabotage: made the waiting info clause match only a document declaring
+    # a screen; the document declaring none fell through to
+    # {:error, :unknown_status} and this test went red.
+    test "does not read the document" do
+      empty =
+        Document.admit(%{
+          "schema_version" => 1,
+          "id" => "patron_registration_empty",
+          "screens" => []
+        })
+
+      assert Journey.present(empty, {:waiting, %{"reason" => "card_number_pending"}}, %{}) ==
+               {:ok, %{"state" => "waiting", "reason" => "card_number_pending"}}
+    end
+  end
+
   describe "present/3 for a status outside the three" do
     # Sabotage: made the catch-all clause answer the waiting state; the first
     # status came back {:ok, %{"state" => "waiting"}} and this test went red.

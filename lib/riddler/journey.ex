@@ -21,14 +21,16 @@ defmodule Riddler.Journey do
 
     * `{:screen, key}` - the visitor is to be shown the screen the document
       declares under `key`;
-    * `:waiting` - the execution is waiting on something that is not the
-      visitor;
+    * `:waiting`, or `{:waiting, info}` - the execution is waiting on
+      something that is not the visitor, and `info` may say why and when a
+      client should ask again;
     * `:done` - the execution has finished.
 
   `present/3` answers a string-keyed map whose `"state"` is `"screen"`,
   `"waiting"` or `"done"`, with `"screen"` beside it exactly when the state
-  is a screen. String keys throughout, so the answer can be put on any wire
-  as JSON as it stands.
+  is a screen, and `"reason"` and `"retry_after_ms"` beside a waiting state
+  exactly when the host supplied them. String keys throughout, so the answer
+  can be put on any wire as JSON as it stands.
 
   ## The root
 
@@ -93,7 +95,17 @@ defmodule Riddler.Journey do
   @submit_keys ["screen", "outcome", "responses"]
 
   @typedoc "Where the host's execution is for the visitor."
-  @type status :: {:screen, screen_key :: term()} | :waiting | :done
+  @type status ::
+          {:screen, screen_key :: term()}
+          | :waiting
+          | {:waiting, waiting_info()}
+          | :done
+
+  @typedoc """
+  Optionally `"reason"` => `t:String.t/0` and `"retry_after_ms"` =>
+  `t:non_neg_integer/0`. Other keys are not read.
+  """
+  @type waiting_info :: map()
 
   @typedoc """
   The root every `Riddler.Screens` function takes: `"context"` and
@@ -103,10 +115,12 @@ defmodule Riddler.Journey do
   @type root :: map()
 
   @typedoc """
-  `"state"` => `"screen"` | `"waiting"` | `"done"`, and, only when `"state"`
-  is `"screen"`, `"screen"` => `t:screen/0`.
+  `"state"` => `"screen"` | `"waiting"` | `"done"`; only when `"state"` is
+  `"screen"`, `"screen"` => `t:screen/0`; and only on a waiting answer, and
+  each only where the host supplied it, `"reason"` => `t:String.t/0` and
+  `"retry_after_ms"` => `t:non_neg_integer/0`.
   """
-  @type answer :: %{required(String.t()) => String.t() | screen()}
+  @type answer :: %{required(String.t()) => String.t() | non_neg_integer() | screen()}
 
   @typedoc """
   `"key"`, `"title"`, `"nodes"` (the resolved nodes, string-keyed) and
@@ -145,10 +159,22 @@ defmodule Riddler.Journey do
   For `:waiting` and `:done` the answer is the state alone, and the document
   is not read.
 
+  For `{:waiting, info}` the answer is the waiting state with `"reason"` and
+  `"retry_after_ms"` beside it, each only where `info` carries it: `info` is a
+  string-keyed map whose `"reason"`, where present, is a string saying why the
+  execution waits, and whose `"retry_after_ms"`, where present, is a
+  non-negative integer, the milliseconds the host suggests a client waits
+  before it asks again. A key `info` carries beside those two is not read and
+  nothing of it reaches the answer, so `{:waiting, %{}}` answers exactly what
+  `:waiting` answers. The document is not read here either.
+
   A key the document does not declare is `{:error, :no_such_screen}`, the
   answer `Riddler.Screens.resolve_screen/3` gives for it. A status outside the
   three is `{:error, :unknown_status}`, so a host that builds its status from
-  its own data is told rather than handed an exception.
+  its own data is told rather than handed an exception. So is `{:waiting,
+  info}` whose `info` is not a map (a struct included), whose `"reason"` is
+  not a string, or whose `"retry_after_ms"` is not an integer or is below
+  zero.
 
   The root is read for `"context"` and `"responses"` and nothing else; an
   absent half is an empty map. No responses are checked here: whether a
@@ -191,6 +217,14 @@ defmodule Riddler.Journey do
            "diagnostics" => %{"missing_variables" => [], "undecidable_conditions" => []}
          }
        }}
+      iex> Riddler.Journey.present(
+      ...>   document,
+      ...>   {:waiting, %{"reason" => "card_number_pending", "retry_after_ms" => 5000}},
+      ...>   %{}
+      ...> )
+      {:ok, %{"state" => "waiting", "reason" => "card_number_pending", "retry_after_ms" => 5000}}
+      iex> Riddler.Journey.present(document, {:waiting, %{"retry_after_ms" => -1}}, %{})
+      {:error, :unknown_status}
       iex> Riddler.Journey.present(document, :done, %{})
       {:ok, %{"state" => "done"}}
       iex> Riddler.Journey.present(document, {:screen, "card_pickup"}, %{})
@@ -211,6 +245,14 @@ defmodule Riddler.Journey do
   end
 
   def present(%Document{}, :waiting, root) when is_map(root), do: {:ok, %{"state" => "waiting"}}
+
+  def present(%Document{}, {:waiting, info}, root) when is_map(root) do
+    case waiting_data(info) do
+      {:ok, data} -> {:ok, Map.put(data, "state", "waiting")}
+      :error -> {:error, :unknown_status}
+    end
+  end
+
   def present(%Document{}, :done, root) when is_map(root), do: {:ok, %{"state" => "done"}}
   def present(%Document{}, _status, root) when is_map(root), do: {:error, :unknown_status}
 
@@ -334,6 +376,23 @@ defmodule Riddler.Journey do
   defp submit_kind(_key), do: "a string"
 
   defp submit_finding(code, key, message), do: %Finding{code: code, field: key, message: message}
+
+  # The waiting info's two keys, each kept only where the host supplied it
+  # and each of its type; any other key is not read. A map that carries
+  # either of the two with the wrong type, and anything that is not a plain
+  # map, is `:error`, which `present/3` answers as a status outside the shapes.
+  defp waiting_data(info) when is_map(info) and not is_struct(info) do
+    data = Map.take(info, ["reason", "retry_after_ms"])
+
+    if Enum.all?(data, fn {key, value} -> waiting_value?(key, value) end),
+      do: {:ok, data},
+      else: :error
+  end
+
+  defp waiting_data(_info), do: :error
+
+  defp waiting_value?("reason", value), do: is_binary(value)
+  defp waiting_value?("retry_after_ms", value), do: is_integer(value) and value >= 0
 
   defp screen_data(screen, diagnostics) do
     screen
