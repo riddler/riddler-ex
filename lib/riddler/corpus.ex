@@ -28,6 +28,7 @@ defmodule Riddler.Corpus do
     "corpus/screens/admit.json",
     "corpus/screens/resolve.json",
     "corpus/screens/validate_screen.json",
+    "corpus/screens/seal_secrets.json",
     "corpus/templates/render.json",
     "corpus/journey/present.json",
     "corpus/journey/put_context.json",
@@ -133,6 +134,19 @@ defmodule Riddler.Corpus do
     |> encode_validation()
   end
 
+  # The responses are sealed with the one test sealer every runtime supplies,
+  # `test_sealer/0`, and the answer is stated in the form the response
+  # validation cases use: `"ok"`, and beside it the responses or the findings.
+  defp run("screens.seal_secrets", input) do
+    document = admitted(input["document"])
+
+    case Screens.seal_secrets(document, input["screen"], input["responses"], test_sealer()) do
+      {:ok, responses} -> %{"ok" => true, "responses" => responses}
+      {:error, :no_such_screen} -> %{"error" => "no_such_screen"}
+      {:error, findings} -> %{"ok" => false, "findings" => encode_findings(findings)}
+    end
+  end
+
   defp run("templates.render", input) do
     case Template.compile(input["source"]) do
       {:error, findings} -> %{"compiled" => false, "findings" => encode_findings(findings)}
@@ -184,6 +198,28 @@ defmodule Riddler.Corpus do
   defp status(%{"status" => "done", "result" => result}), do: {:done, result}
   defp status(%{"status" => "done"}), do: :done
   defp status(input), do: input["status"]
+
+  # The fixed test sealer, the same in every runtime so that a case can state
+  # what it answers. It counts the plaintexts it is handed within one call,
+  # from 1, and for the n-th answers: an error, for a plaintext beginning
+  # `SEALER-REFUSES`; the number n rather than a string, for one beginning
+  # `SEALER-GIVES-NUMBER`; and otherwise the string `test-sealed-<n>`, which
+  # holds nothing of the plaintext. The count is what lets a case pin how many
+  # times, and in what order, a runtime applies its sealer.
+  defp test_sealer do
+    counter = :counters.new(1, [])
+
+    fn plaintext ->
+      :counters.add(counter, 1, 1)
+      n = :counters.get(counter, 1)
+
+      cond do
+        String.starts_with?(plaintext, "SEALER-REFUSES") -> {:error, :refused}
+        String.starts_with?(plaintext, "SEALER-GIVES-NUMBER") -> {:ok, n}
+        true -> {:ok, "test-sealed-#{n}"}
+      end
+    end
+  end
 
   defp admit_findings(document) do
     case Document.validate(document) do

@@ -172,6 +172,7 @@ defmodule Riddler.Screens do
   alias Riddler.Screens.ContextOptions
   alias Riddler.Screens.Document
   alias Riddler.Screens.Resolved
+  alias Riddler.Screens.Seal
   alias Riddler.Screens.Type.SecretQuestion
   alias Riddler.Screens.Validation
   alias Riddler.Screens.Value
@@ -395,6 +396,10 @@ defmodule Riddler.Screens do
   host asking about a screen the document does not declare is told so rather
   than told its responses are fine.
 
+  A secret question's response that validation accepted as plaintext is
+  sealed by the host, through `seal_secrets/4`, before the responses reach its
+  engine.
+
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
       ...>     "schema_version" => 1,
@@ -481,6 +486,104 @@ defmodule Riddler.Screens do
 
       {:error, :no_such_screen} = no_such_screen ->
         no_such_screen
+    end
+  end
+
+  @typedoc """
+  The host's sealer: a function of one plaintext string answering
+  `{:ok, sealed}`, `sealed` a string only the host's own key opens, or
+  `{:error, reason}`.
+  """
+  @type sealer :: (String.t() -> {:ok, String.t()} | {:error, term()})
+
+  @doc """
+  Seals the responses to a screen's secret questions with the host's sealer.
+
+  A host calls it between validation and its engine: once
+  `validate_screen/3` or `/4` has answered `:ok` against a root holding what
+  the visitor typed, this replaces each secret question's plaintext with the
+  sealed form, `%{"sealed" => sealed}`, so the engine, the Journey's stored
+  root and everything downstream of them hold the sealed form and never the
+  plaintext. `responses` is the string-keyed map of responses the host is
+  about to hand its engine, the `"responses"` half of a root and not the
+  root.
+
+  `sealer` is the host's own function, passed in this call and kept nowhere:
+  it takes one plaintext and answers `{:ok, sealed}` with `sealed` a string,
+  or `{:error, reason}`. This function is pure apart from it: it consults no
+  store and keeps nothing between calls. A sealed string is an opaque handle;
+  nothing in this package reads it, compares it or opens it.
+
+  What one call does:
+
+    * It seals every secret question the named screen declares, a variant's
+      candidates included, whatever its condition: it takes no `context` and
+      reads no condition. Each plaintext is passed to the sealer once, in
+      document order.
+    * A response that is absent stays absent; one that is nothing answered,
+      `nil` or a string of whitespace, is left as written; one already in the
+      sealed form is left as it is and the sealer is not called for it. Every
+      response that is not a secret question's is untouched.
+    * Before the sealer is first applied, it refuses what it cannot seal,
+      every finding in document order: a response to one of the screen's
+      secret questions that is neither text nor the sealed form is
+      `response.invalid_shape`, its `field` `"type"`; and a response that is
+      not absent, nothing answered or the sealed form to a secret question
+      only another screen declares is `response.unsealed_secret`, its `field`
+      `"sealed"`, because that question was not validated with this screen.
+      Where there is any, the answer is `{:error, findings}` and the sealer is
+      never called.
+    * A sealer answer other than `{:ok, sealed}` with `sealed` a string stops
+      the call at that question: the answer is `{:error, [finding]}`, the one
+      finding `response.seal_failed`, its `field` `"sealed"`, and no partly
+      sealed map is answered. A sealer that raises raises through this call;
+      nothing here rescues the host's own function.
+
+  No finding carries the plaintext, the sealer's `reason` or a sealed string:
+  each names the secret question by its key. Every finding here carries
+  `author_message` `nil`, because these refuse the host's call and not a
+  visitor's response.
+
+  `{:error, :no_such_screen}` for a screen key the document does not declare,
+  as `resolve_screen/3` answers it.
+
+      iex> document =
+      ...>   Riddler.Screens.Document.admit(%{
+      ...>     "schema_version" => 1,
+      ...>     "id" => "edoc_patron_registration",
+      ...>     "screens" => [
+      ...>       %{
+      ...>         "key" => "card_pin",
+      ...>         "title" => "Protect your card",
+      ...>         "nodes" => [
+      ...>           %{
+      ...>             "type" => "secret_question",
+      ...>             "key" => "library_pin",
+      ...>             "label" => "Choose a PIN for your library card",
+      ...>             "required" => true
+      ...>           }
+      ...>         ]
+      ...>       }
+      ...>     ]
+      ...>   })
+      iex> sealer = fn _plaintext -> {:ok, "EXAMPLE-SEALED-HANDLE"} end
+      iex> responses = %{"first_name" => "Ada", "library_pin" => "EXAMPLE-PIN"}
+      iex> Riddler.Screens.seal_secrets(document, "card_pin", responses, sealer)
+      {:ok, %{"first_name" => "Ada", "library_pin" => %{"sealed" => "EXAMPLE-SEALED-HANDLE"}}}
+      iex> failing = fn _plaintext -> {:error, :key_unavailable} end
+      iex> {:error, [finding]} = Riddler.Screens.seal_secrets(document, "card_pin", responses, failing)
+      iex> {finding.code, finding.node_key, finding.field}
+      {"response.seal_failed", "library_pin", "sealed"}
+      iex> Riddler.Screens.seal_secrets(document, "branch", responses, sealer)
+      {:error, :no_such_screen}
+  """
+  @spec seal_secrets(Document.t(), term(), map(), sealer()) ::
+          {:ok, map()} | {:error, [Finding.t()]} | {:error, :no_such_screen}
+  def seal_secrets(%Document{} = document, screen_key, responses, sealer)
+      when is_map(responses) and is_function(sealer, 1) do
+    case Enum.find(document.screens, &(&1.key == screen_key)) do
+      nil -> {:error, :no_such_screen}
+      screen -> Seal.seal(document, screen, screen_key, responses, sealer)
     end
   end
 
