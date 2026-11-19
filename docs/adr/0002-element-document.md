@@ -4233,3 +4233,114 @@ Three sentences are read, not changed:
   note of this date at the foot of ADR-0005.
 
 The notes above that read either amendment stand under the acceptance.
+
+---
+
+Noted 2026-11-19, bead rd-lvoj, four items carried out of the review of the
+amendment above headed "a `secret_question` node type, validated on plaintext
+and sealed by the host before it is stored". Four notes by addition, each read
+against `main` at `10fe9cd`. Nothing above is changed; each paragraph below
+says what the text above means now.
+
+**The secret question amendment and ADR-0001's rules on a kind's surface.**
+ADR-0001's Decision says that each kind exposes admit, validate and resolve
+"as pure functions, plus at most one kind-specific check", that "A kind that
+wants a second check is a record", and, of the screens kind's public runtime,
+that "Surface beyond those functions is added by a record, not by a commit";
+it says a capability name "is part of the contract and changes only by a
+record". The amendment above cites none of these sentences, and it is the
+record each of them asks for: it adds `Riddler.Screens.seal_secrets/4` and the
+corpus capability `screens.seal_secrets`, named `<kind>.<function>` as that
+record's capability rule requires. At `10fe9cd` the function is public in
+`lib/riddler/screens.ex`, and the capability is in the `capability` enum of
+`priv/schemas/corpus-case.schema.json`. ADR-0001's "They are pure: same
+inputs, same outputs, no process state, no I/O." is said of the functions its
+paragraph names, and `seal_secrets/4` is not among them; the amendment states
+the function's own terms, that it "is pure apart from the sealer", and the
+function's `@doc` says the same ("This function is pure apart from it").
+Whether `seal_secrets/4` is a second kind-specific check, or a step that is
+not a check, this note does not decide: on either reading the sentence after
+the rule is met, because the surface came by a record. The capabilities
+ADR-0001's paragraph headed "A corpus capability is named
+`<kind>.<function>`." lists are what that version emitted; at `10fe9cd` the
+enum also names `screens.seal_secrets`. That list is ADR-0001's
+to restate, as the note above of 2026-09-18 for bead rd-d9n says of a count in
+that record ("ADR-0001 is where its own count is stated and where it is
+restated"), and nothing is written there.
+
+**The root `held` reads is the root the host passed.** The amendment above
+says a presented secret question's `held` is `true` "where the root's response
+for the question is the sealed form", and, under the same heading's resolve
+rule, that each secret question's response "is removed from that root's
+`"responses"`" for the root a condition and a template read. The root `held`
+reads is the host's, before that removal: the amendment's own sentence "it is
+the root a condition or a template reads that loses it" says which root loses
+the response, and the note above of this date says that the private `held/2`
+"sets `held` from the root the host passed". At `10fe9cd` both
+`Riddler.Screens.resolve/2` and `Riddler.Screens.resolve_screen/3` compute
+`held` from the root they are handed, and the root a condition and a template
+read by passing that same root to the private `reading/2`; the module's
+documentation says `held` "is read before the secret responses are
+removed from the root a condition and a template read".
+`Riddler.Journey.present/3` presents the screen `resolve_screen/3` answers, so
+a presented node carries the same `held`. Read "the root's response" above as
+the response in the root the host passed.
+
+**What the reason given for `response.unsealed_secret` covers.** The amendment
+above refuses a plaintext or wrong-shaped response to a secret question
+another screen declares "because sealing it here would make it held without
+the validation of the screen it belongs to, and passing it on would hand the
+engine a plaintext". The same call seals every secret question the named
+screen declares "whatever its condition", and a question a condition hid is
+not checked by `validate_screen/3` or `/4`. So the first half of that reason
+holds of a hidden secret question on the named screen as well, and does not
+distinguish the two; what the call distinguishes on is declaration, since it
+takes no `context` and reads no condition. What a hidden question on the named
+screen goes without, read at `10fe9cd`, is nothing the seal does not hold its
+response to itself: the private `secret_findings/2` in
+`lib/riddler/screens/validation.ex` raises nothing for a string that is not
+blank, `response.required` only for nothing answered, and
+`response.invalid_shape` for any other shape; the internal
+`Riddler.Screens.Seal` refuses that same wrong shape on the named screen's own
+secret questions (its private `own_refusal/2`) and leaves nothing answered
+unsealed (its private `left_alone?/1`), so a plaintext it seals is one the
+validation of a shown question would have passed. The same is true of another
+screen's question, so the refusal rests on the reason's second half and on the
+call sealing one named screen. This note adds no reason and changes no answer:
+the refusal, and the seal of a hidden question on the named screen, stand as
+the amendment decides them.
+
+**What a sealed value is, and the typespec beside it.** The amendment above
+decides that "The sealed form is exactly `{"sealed": <string>}`", and that an
+object carrying any other key, or a `"sealed"` that is not a string, is the
+wrong shape. Its Typespecs section writes
+`@type sealed :: %{required(String.t()) => String.t()}`, which admits any
+string-keyed map of strings, under a comment saying the sealed form "is
+exactly %{"sealed" => handle}". Where the two differ the decided text governs
+(`docs/adr/README.md`, "Which passage governs"), and this record calls its
+typespecs "a contract for the code half rather than a second source of
+truth". An Elixir typespec cannot name a string literal as a map key, so the
+one-key rule is stated by the decided text and that comment, not by the type:
+read the type as narrowed to the one key `"sealed"`. At `10fe9cd` `lib/`
+declares no `sealed` type; the form is checked by `SecretQuestion.sealed?/1`,
+which answers `true` only for a map whose `"sealed"` is a string and which
+holds no other key, and response validation, `held` and the seal each read
+it. The tests "held is true exactly where the host's root holds the sealed
+form" and "a plaintext and the sealed form pass; anything else is
+response.invalid_shape" in `test/riddler/screens/secret_question_test.exs`
+each hold an object with a key beside `"sealed"` off the sealed form, as does
+the corpus case "A secret question whose response carries a key beside sealed
+is not the sealed form and resolves as not held" in
+`corpus/screens/resolve.json`. The record and the code agree that a sealed
+value is exactly the one-key form.
+
+**Why a note and not an amendment.** The test `docs/adr/README.md` states
+under "Note or Amendment" is whether the entry changes an "answer the record
+gave". None of the four does. The first places a decided function and
+capability beside the rules of ADR-0001 they were added under and leaves open
+the one reading it does not need; the second says which root a phrase above
+already meant, as the code and the amendment's own sentence have it; the third
+says what a reason given above reaches and leaves the refusal and the seal as
+decided; the fourth reads a typespec under the decided text that governs it.
+No document, response or call is answered differently, and no refusal is
+added.
