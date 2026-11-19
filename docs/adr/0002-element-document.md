@@ -4344,3 +4344,74 @@ says what a reason given above reaches and leaves the refusal and the seal as
 decided; the fourth reads a typespec under the decided text that governs it.
 No document, response or call is answered differently, and no refusal is
 added.
+
+---
+
+Noted 2026-11-19, bead rd-hih6, five items carried out of the reviews of the
+amendment above headed "a question's `default`, `prefill`, `help`, `messages`
+and `answer_options_from`, its presented `value`, and a finding's
+`author_message`" and of the note of this date that flipped it. Each read
+against `main` at `2c0e89c`. Nothing above is changed; each paragraph below
+says what the text above means now.
+
+**`seal_secrets/4` is the function the amendment named.** The amendment says
+"the codes `seal_secrets/4` raises" and "the `seal_secrets/4` refusals" while
+the secret question amendment it names was at `proposed` and no file under
+`lib/` defined the function. `Riddler.Screens.seal_secrets/4` is public in
+`lib/riddler/screens.ex`, shipped in riddler 0.5.0, and both amendments read
+`accepted`. The sentence describes a function that now exists.
+
+**What `missing_variables` names for an `answer_options_from` path.** The
+documentation of `Riddler.Screens.Resolved` says `missing_variables` names
+"each template variable that was absent". The amendment above reports a path
+that reaches no list of options there too, under the question's key, its
+`variable` the path as written, and the code does: the private `reported/1` in
+`lib/riddler/screens/context_options.ex` returns the path, and `resolve/2`
+there answers it beside the node. A path is not a template variable, so that
+sentence of the moduledoc is the narrower of the two, and the diagnostic is
+what the amendment says it is: an entry names a template variable the root did
+not carry, or an options path it did not hold a list at. A host reading an
+entry reads `variable` as the name the author wrote, in either case. The
+moduledoc is not edited by this note; the amendment is the record of the wider
+reading, and `lib/` is unchanged.
+
+**Whose the written form of a path is.** The amendment's opening paragraph
+gives "that a path is dotted under `context` with key-shaped segments" to the
+decision of the conductor under a standing consent, 2026-11-16, and "the
+written form of a path" to this entry's own. Both stand and say different
+things. The first decided the shape in one clause: dotted, under `context`,
+key-shaped segments. The second is the exact spelling the entry then writes
+under `prefill`: the first segment `context`, at least one segment more, each
+after the first matching `[a-z][a-z0-9_]*`, and the finding
+`document.invalid_context_path` with its `field`. That spelling is
+`Riddler.Screens.Value.context_path/1`'s, which `prefill` and
+`answer_options_from` both read.
+
+**"Presented" and "resolved" are one moment.** The ruling of 2026-11-16 says a
+prefill is read when the screen is "presented"; the amendment decides it is
+read "when the screen is resolved". `Riddler.Journey.present/3` answers the
+screen `Riddler.Screens.resolve_screen/3` answers, in its data form, as the
+amendment says under "The presented `value`", so the root is read once, at
+resolve, and that read is what a host presents. Read the ruling's "presented"
+as that read.
+
+**Two sentences about the other records' own work.** The note of this date
+that flipped the amendments says that both amendments' "gains no function and
+no argument" on `Riddler.Journey` is about each one's own work, "as ADR-0005's
+amendment of 2026-11-18 says under 'What is unchanged'". ADR-0005's amendment
+says that only of the secret question amendment of
+2026-11-16 ("is about that amendment's own work"); it adds
+`Riddler.Journey.decode_submit/1` itself. The question fields amendment's own
+"What is unchanged" says `Riddler.Journey` gains no function and no argument,
+and `Riddler.Screens` gains no function: each is said of that entry's own
+work, as the same sentence on `Riddler.Finding` is, and `seal_secrets/4` is
+the secret question amendment's. Read the flip note's attribution as the
+sentence of the 2026-11-16 amendment alone, and the two "gains no function"
+sentences as each entry's own.
+
+**Why a note and not an amendment.** None of the five changes an answer the
+record gave. The first states that a function described ahead of the code now
+exists; the second says what a diagnostic holds and leaves the code and the
+amendment as they are; the third and fourth say which text above governs which
+point and decide nothing new; the fifth narrows the wording of a note under
+the record it cites. No document, response or call is answered differently.
