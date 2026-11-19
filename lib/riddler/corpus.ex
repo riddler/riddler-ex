@@ -36,7 +36,10 @@ defmodule Riddler.Corpus do
 
   @schema_files [
     "priv/schemas/screen-document.schema.json",
-    "priv/schemas/corpus-case.schema.json"
+    "priv/schemas/corpus-case.schema.json",
+    "priv/schemas/presented-answer.schema.json",
+    "priv/schemas/submit.schema.json",
+    "priv/schemas/finding.schema.json"
   ]
 
   for path <- @case_files ++ @schema_files do

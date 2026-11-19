@@ -44,14 +44,17 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
                "corpus/screens/validate_screen.json",
                "corpus/templates/render.json",
                "schemas/corpus-case.schema.json",
-               "schemas/screen-document.schema.json"
+               "schemas/finding.schema.json",
+               "schemas/presented-answer.schema.json",
+               "schemas/screen-document.schema.json",
+               "schemas/submit.schema.json"
              ]
 
       for relative <- written do
         assert File.read!(Path.join(first, relative)) == File.read!(Path.join(second, relative))
       end
 
-      assert_received {:mix_shell, :info, ["9 file(s) written."]}
+      assert_received {:mix_shell, :info, ["12 file(s) written."]}
     end
 
     # Sabotage: dropped the generated_by key from the emitted case file; the
@@ -88,6 +91,23 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
         emitted = target |> Path.join(Corpus.target_path(source)) |> Corpus.read()
 
         assert emitted == Corpus.read(source)
+      end
+    end
+
+    # Sabotage: removed the submit schema from the list of schema files; the
+    # export no longer held a file for every schema in priv/schemas and this
+    # test went red.
+    test "exports every schema in priv/schemas byte for byte" do
+      target = tmp_dir!("schemas")
+
+      Task.run(["--to", target])
+
+      on_disk = "priv/schemas/*.json" |> Path.wildcard() |> Enum.sort()
+
+      assert Enum.sort(Corpus.schema_files()) == on_disk
+
+      for source <- on_disk do
+        assert File.read!(Path.join(target, Corpus.target_path(source))) == File.read!(source)
       end
     end
 
