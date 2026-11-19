@@ -995,3 +995,312 @@ Four sentences are read, not changed:
   at the foot of ADR-0002.
 
 This note decides nothing.
+
+---
+
+## Amendment, 2026-11-19: the back request, and a button's outcome is a string
+
+Status: proposed
+
+Recorded 2026-11-19, bead rd-h206. A second submit shape, `"screen"` with
+`"back"` true and no outcome, in which unsubmitted input on the screen left
+is dropped and earlier held responses are kept, shipping in riddler 0.6.0,
+was ruled by the operator, 2026-11-19. That `validate/1` refuses a shown
+button whose `outcome` is not a string with a new document finding in
+riddler 0.6.0, so that a 0.x minor refuses what 0.5.0 admitted, was ruled by
+the operator, 2026-11-19. That the back request is a shape this package
+decodes and the host raises its own engine's event, with no store, stepper,
+trail, process, transport, renderer or identity surface added here, was
+ruled by the operator, 2026-11-19. The rest - how the decoder tells the two
+shapes apart, what it answers for each, the finding codes, the new finding's
+name and fields, and what the schemas and the corpus gain - is this entry's
+own, written 2026-11-19 at `proposed`.
+
+Every cite below of the package as it stands is read at `10fe9cd`. The code
+half is separate requests (bead rd-9yqn for the decoder, its schema and its
+corpus cases; bead rd-ms7n for the new document finding). Nothing below is
+citable from `lib/`, `priv/` or `corpus/` until they land, so what they add
+is described here, not cited.
+
+### What the record now decides
+
+**A client asks to go back with a second submit shape.** When the presented
+answer's `"moves"` carries `"back"` true and the visitor asks to go back,
+what the client sends is:
+
+```json
+{"screen": "card_delivery", "back": true}
+```
+
+`"screen"` is the key of the screen the client was shown, a string, as it is
+in a submit; `"back"` is `true`. There is no `"outcome"`: going back presses
+no button. There is no `"responses"` either: what the visitor entered on the
+screen being left was never submitted, and it is dropped.
+
+**`decode_submit/1` tells the two shapes apart by two keys.** A map that
+carries no `"outcome"` and whose `"back"` is `true` is a back request. Every
+other value is decoded exactly as riddler 0.5.0 decodes it, against the
+three-key submit of the Amendment of 2026-11-18 above, whose table and
+order of findings are unchanged. So:
+
+| The input | Answer |
+|---|---|
+| a map with no `"outcome"`, `"back"` true, `"screen"` a string | `{:ok, %{"screen" => key, "back" => true}}` |
+| a map with no `"outcome"`, `"back"` true, `"screen"` absent | `{:error, findings}`, the one finding `submit.missing_field`, its `field` `"screen"` |
+| a map with no `"outcome"`, `"back"` true, `"screen"` not a string | `{:error, findings}`, the one finding `submit.invalid_field`, its `field` `"screen"` |
+| any other value | the answer riddler 0.5.0 gives it |
+
+`{:ok, back_request}` carries the string-keyed map of exactly `"screen"` and
+`"back"`. A key the client sent beside them is dropped, not carried, as it
+is for a submit, and that includes a `"responses"`: a client that sends what
+the visitor had typed beside `"back"` true has it dropped by the decoder, so
+none of it reaches the root. The finding codes are the three the submit
+already has, in the same register; no code is added for the back request.
+`node_key` and `position` are nil on every one, as they are on a submit's.
+
+The two malformed shapes a client can send near a back request answer as
+they do in riddler 0.5.0, because neither is a back request by the rule
+above:
+
+- **An outcome beside `"back"`.** A map carrying `"outcome"` is a submit,
+  whatever its `"back"` holds, and is decoded as one: with `"screen"`,
+  `"outcome"` and `"responses"` well formed it is `{:ok, submit}` with
+  `"back"` dropped as a key beside the three, and otherwise it raises the
+  submit's findings. A client that means to go back sends no outcome.
+- **A `"back"` that is not `true`.** A map with no `"outcome"` whose
+  `"back"` is absent, `false` or any value other than `true` is a submit with
+  no outcome, and raises `submit.missing_field` on `"outcome"`, with the
+  submit's other findings, as it does today.
+
+Only a map that carries no `"outcome"` and `"back"` true answers otherwise
+than in riddler 0.5.0, which answered it `submit.missing_field` on
+`"outcome"`, with a finding for each of its other keys that failed
+(`decode_submit/1` in `lib/riddler/journey.ex` at `10fe9cd`).
+
+The decoder reads no document and no execution, as Decision 1 and the
+Amendment of 2026-11-18 say of it. It does not check that the host presented
+`"back"` true for that screen, as it does not check that an outcome is among
+the presented `"outcomes"`, and it does not compare `"screen"` with the
+screen the host's execution is at.
+
+**The host raises its engine's back event, and this package holds no
+trail.** Which screen going back reaches, whether it is allowed from where
+the execution is, and how the engine records where the visitor has been are
+the host's workflow engine's, under Decision 6's stepper. This package keeps
+no trail of screens, no history and no count of steps, and gains no function
+that moves a Journey. A host that decodes a back request raises its engine's
+event, and then passes `present/3` the status its engine answers, as for any
+step.
+
+**The responses already held are kept.** A back request changes nothing in
+the root. The root's `"responses"` - what the visitor submitted on earlier
+screens, the screen gone back to included - stay as they are, and nothing in
+this package removes one; `put_context/2` leaves them untouched (Decision 4).
+What a question node presents of a response the root holds stays the open
+item it was (below).
+
+**A shown button's `outcome` is a string, and `validate/1` refuses one that
+is not.** The presented answer's schema already types a button's
+`"outcome"` a string, and each item of `"outcomes"` too
+(`priv/schemas/presented-answer.schema.json` at `10fe9cd`, the button's
+conditional and the `"moves"` object). The screen document schema does not:
+a field a type names other than a choice question's `answer_options` is
+"the type's own and is carried through untouched" (its node description,
+`priv/schemas/screen-document.schema.json` at `10fe9cd`), so `admit/1`
+carries a button's `outcome` as written. And `validate/1` does not check its
+type: a
+button needs the field (`Riddler.Screens.Type.Button.fields/0` at
+`10fe9cd`, which names `outcome` required, raising `document.missing_field`
+when it is absent), and `document.duplicate_outcome` compares only the
+outcomes that are strings (the `Riddler.Screens.Document` moduledoc, its
+`document.duplicate_outcome` bullet, at `10fe9cd`). From riddler 0.6.0
+`validate/1` raises a new finding:
+
+- `document.invalid_outcome` - a button's `outcome` is there and is not a
+  string, `null` included. One finding per such button, its `field`
+  `"outcome"` and its `node_key` the button's key; it is raised with the
+  button's other field findings, so it comes before any
+  `document.duplicate_outcome` on the screen. A button with no `outcome` is
+  still `document.missing_field`, and is not this finding too.
+
+The code is named in the register of `document.invalid_style` and
+`document.invalid_validates`, the two findings a button already raises for a
+field that is there and of the wrong type. `document.duplicate_outcome`
+keeps comparing string outcomes only; a button carrying the new finding is
+not compared.
+
+**So `"moves"` never meets a button without a string outcome.** For a
+document `validate/1` accepts, every shown button's outcome is a string, and
+`"outcomes"` lists it. `present/3` does not validate the document it is
+handed; for a document `validate/1` refuses, it lists only the outcomes that
+are strings, as it does at `10fe9cd` (the private `outcomes/1` in
+`lib/riddler/journey.ex`), and nothing here changes that.
+
+**The schemas and the corpus.** `submit.schema.json` describes the back
+request beside the submit, in the release whose code decodes it, as a shape
+of the two keys required, `"screen"` a string and `"back"` the constant
+`true`; it forbids no key it does not name, as no schema here does. The
+corpus holds the back request to its answers in the existing
+`journey.decode_submit` capability and its one case file,
+`corpus/journey/decode_submit.json`, and holds `document.invalid_outcome` in
+the cases `validate/1` is already held to. No capability is added. The
+presented answer's schema is unchanged: `"moves"` already carries `"back"`.
+The screen document schema is unchanged too: a button whose `outcome` is
+not a string is still a document, admitted and then refused by `validate/1`,
+as its description says of everything a document can be wrong about.
+
+### Typespecs
+
+A contract for the code half, as the record's own typespecs are.
+
+```elixir
+@typedoc ~s("screen" => String.t(), "outcome" => String.t(), "responses" => map().)
+@type submit :: %{required(String.t()) => String.t() | map()}
+
+@typedoc ~s("screen" => String.t(), "back" => true.)
+@type back_request :: %{required(String.t()) => String.t() | true}
+
+@spec decode_submit(term()) ::
+        {:ok, submit() | back_request()} | {:error, [Riddler.Finding.t()]}
+```
+
+`present/3`, `put_context/2` and the status shapes are as the Amendment of
+2026-11-18 gives them.
+
+### Worked examples
+
+Patron registration, the document of the record's own worked examples with a
+second screen after `patron_details`: `card_delivery`, where the visitor
+chooses how the library card reaches them, a choice question
+`delivery_method` and a Continue button raising `delivery_chosen`. The
+visitor has submitted `patron_details`, so the root holds
+`%{"reminder_email" => "ada@example.com"}` under `"responses"`, and the host
+presents `card_delivery` with `"back"` true:
+
+```elixir
+Riddler.Journey.present(document, {:screen, "card_delivery", %{"back" => true}}, root)
+#=> {:ok, %{"state" => "screen", "screen" => ..., "moves" =>
+#      %{"outcomes" => ["delivery_chosen"], "back" => true}}}
+```
+
+**A back request decoded.** The visitor picks a delivery method, then
+presses Back before Continue. The client sends what the visitor had picked
+beside the request, and the decoder drops it:
+
+```elixir
+Riddler.Journey.decode_submit(%{
+  "screen" => "card_delivery",
+  "back" => true,
+  "responses" => %{"delivery_method" => "mail"}
+})
+#=> {:ok, %{"screen" => "card_delivery", "back" => true}}
+```
+
+The host raises its engine's back event; its engine answers that the
+execution is at `patron_details` again, and the host presents that screen.
+The root's responses still hold `"reminder_email"`, and `"delivery_method"`
+never reached them.
+
+**Near a back request.** An outcome beside `"back"` is a submit, and a
+`"back"` that is not `true` is a submit with no outcome:
+
+```elixir
+Riddler.Journey.decode_submit(%{
+  "screen" => "card_delivery",
+  "back" => true,
+  "outcome" => "delivery_chosen",
+  "responses" => %{"delivery_method" => "mail"}
+})
+#=> {:ok,
+#    %{
+#      "screen" => "card_delivery",
+#      "outcome" => "delivery_chosen",
+#      "responses" => %{"delivery_method" => "mail"}
+#    }}
+
+Riddler.Journey.decode_submit(%{"screen" => "card_delivery", "back" => "yes"})
+#=> {:error,
+#    [
+#      %Riddler.Finding{code: "submit.missing_field", field: "outcome", message: ...},
+#      %Riddler.Finding{code: "submit.missing_field", field: "responses", message: ...}
+#    ]}
+
+Riddler.Journey.decode_submit(%{"back" => true})
+#=> {:error,
+#    [%Riddler.Finding{code: "submit.missing_field", field: "screen", message: ...}]}
+```
+
+**A button whose outcome is not a string.** The details screen's Continue
+button written with a number where its outcome belongs:
+
+```elixir
+%{"type" => "button", "key" => "details_next",
+  "label" => "Continue", "outcome" => 1}
+```
+
+The document is admitted, and `validate/1` refuses it:
+
+```elixir
+Riddler.Screens.Document.validate(document)
+#=> {:error,
+#    [
+#      %Riddler.Finding{code: "document.invalid_outcome", field: "outcome",
+#        node_key: "details_next", message: ...}
+#    ]}
+```
+
+The messages are the code half's, in the register of the existing findings.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the
+rule stated above answers a call one way, and this entry answers the same
+call another". The Amendment of 2026-11-18 answers a map with no
+`"outcome"` and `"back"` true with `submit.missing_field` findings, and
+this entry answers it `{:ok, back_request}`. `validate/1` accepts a document
+whose button carries an `outcome` that is not a string, and this entry
+refuses it; a new refusal is, in the README's words, a sufficient reason for
+an amendment.
+
+### What is unchanged
+
+Every value riddler 0.5.0's `decode_submit/1` decodes, other than a map
+with no `"outcome"` and `"back"` true, answers as it does there: the
+three-key submit, its findings and their order, and the dropping of a key
+beside the three. `present/3`, the status shapes, the answer and its
+`"moves"` are unchanged, and so is `put_context/2`. A document that declares
+a button its host's engine treats as going back - a button raising an
+outcome, with `validates` false so that pressing it does not validate the
+screen (the `Riddler.Screens.Type.Button` moduledoc at `10fe9cd`) - is
+unchanged, and pressing it sends a submit, not a back request.
+`Riddler.Finding` gains no field. Every document finding `validate/1` raises
+in 0.5.0 keeps its code and its meaning. Decision 6 stands: storage, the
+stepper, the transport and identity are the host's, and nothing here stores,
+steps, transports or identifies. No dependency is added. The vocabulary is
+the record's: `responses`, `context`, `outcome`, `writes`, `nodes`, and a
+question owns its `answer_options`.
+
+### What this decides of the open items
+
+Of the items the Amendment of 2026-11-18 lists under "What this does not
+decide", two are decided here and the bullets there are not reworded:
+
+- "What a client sends to go back, when `"back"` is true" is the back
+  request above.
+- "What `"moves"` lists for a shown button that carries no string
+  `outcome`" is answered by the refusal above: no document `validate/1`
+  accepts holds one, and for one it refuses `"outcomes"` lists only the
+  string outcomes.
+
+### What this does not decide
+
+- Whether an outcome that two shown buttons raise is listed in `"outcomes"`
+  once or once for each button.
+- Which button a host passes to `validate_screen/4` for a submit.
+- What a question node's `"value"` holds and in what order a response, a
+  prefill and a default yield it, and so what the screen gone back to shows
+  of the responses held for it.
+- How a client's built-in handling of an unknown node type is built, and
+  what it shows the visitor.
+- Going back across a boundary the host's engine draws inside a Journey.
+- The transport, identity and streaming.
