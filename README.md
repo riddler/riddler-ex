@@ -85,6 +85,7 @@ iex> {finding.code, finding.node_key}
 - Do
   - [Ask a choice question](docs/guides/ask-a-choice-question.md): put a `choice_question` or a `boolean_question` in a screen, render its options, and check what the visitor submitted.
   - [Present a Journey: a screen, waiting or done](docs/guides/present-a-journey.md): ask what a visitor sees at one step with `Riddler.Journey.present/3`, send the host's context with `put_context/2`, and see what stays the host's.
+  - [Seal and unseal a secret answer](docs/guides/seal-a-secret-answer.md): ask for a PIN with a `secret_question`, seal it with your own sealer before it reaches your execution, and see what Riddler never sees.
   - [Check a document before you save it](https://hexdocs.pm/riddler/Riddler.Screens.Document.html#validate/1): every reason a document is refused, in one pass; the function's reference until a guide page exists.
   - [Resolve the one screen you are about to render](https://hexdocs.pm/riddler/Riddler.Screens.html#resolve_screen/3): a screen and its diagnostics for one visitor; the function's reference until a guide page exists.
   - [Let a Back button skip the response check](https://hexdocs.pm/riddler/Riddler.Screens.html#validate_screen/4): honour a pressed button's `validates`; the function's reference until a guide page exists.

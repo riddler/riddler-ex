@@ -57,6 +57,7 @@ defmodule Riddler.MixProject do
         "CHANGELOG.md",
         "docs/guides/ask-a-choice-question.md",
         "docs/guides/present-a-journey.md",
+        "docs/guides/seal-a-secret-answer.md",
         "docs/explanation/what-riddler-is-for.md"
       ],
       groups_for_extras: [
@@ -96,7 +97,7 @@ defmodule Riddler.MixProject do
       # relative path, and hex.pm resolves README links against the tarball.
       files: ~w(lib priv/schemas mix.exs .formatter.exs README.md LICENSE CHANGELOG.md
            docs/guides/ask-a-choice-question.md docs/guides/present-a-journey.md
-           docs/explanation/what-riddler-is-for.md),
+           docs/guides/seal-a-secret-answer.md docs/explanation/what-riddler-is-for.md),
       links: %{
         "GitHub" => @source_url,
         "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md"
