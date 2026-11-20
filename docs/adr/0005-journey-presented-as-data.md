@@ -1305,3 +1305,94 @@ decide", two are decided here and the bullets there are not reworded:
   what it shows the visitor.
 - Going back across a boundary the host's engine draws inside a Journey.
 - The transport, identity and streaming.
+
+---
+
+Noted 2026-11-20, bead rd-qulg, and two items carried out of the reviews
+of the two amendments above. Five notes by addition, each read against `main`
+at `f745baa`. Nothing above is changed; each paragraph below says what the
+text above means now. Where a note speaks of `validate/1` refusing a button
+whose `outcome` is not a string, that is `document.invalid_outcome`, which is
+on `main` and ships in riddler 0.6.0: `@version` in `mix.exs` at `f745baa` is
+still 0.5.0.
+
+- **An outcome two shown buttons raise is listed once.** The Amendments of
+  2026-11-18 and 2026-11-19 each list, under "What this does not decide",
+  whether such an outcome is listed in `"outcomes"` once or once for each
+  button; the bullets are not reworded. The code answers it, and has since
+  riddler 0.5.0 (`2e7c730`, in `v0.5.0`): the private `outcomes/1` in
+  `lib/riddler/journey.ex` lists each string outcome once, at its first
+  button in the screen's order (`uniq: true`), and the `Riddler.Journey`
+  `@doc` for the answer says no outcome is listed twice. For a document
+  `validate/1` accepts the two readings give one list, because
+  `document.duplicate_outcome` refuses two buttons a screen can show together
+  that raise one outcome (the `Riddler.Screens.Document` moduledoc at
+  `f745baa`), so there is one entry per shown button. For a document
+  `validate/1` refuses, the list is the code's once-each reading, and the
+  presented answer's schema agrees with it: `"outcomes"` there is
+  `uniqueItems` (`priv/schemas/presented-answer.schema.json` at `f745baa`).
+  The moves paragraph's "the outcome of each button among the presented
+  screen's `"nodes"`, in document order" is read so: each outcome once, at
+  its first button. `test/riddler/journey_test.exs` holds it in "lists an
+  outcome once for a document validate/1 refuses". This note decides
+  nothing the code did not already do.
+- **The presented answer's per-type holds are met by the answer for a
+  document `validate/1` accepts.** `present/3` takes an admitted document and
+  does not validate it, and `admit/1` carries a button's `outcome` as
+  written. Run at `f745baa`, a document with one button whose `outcome` is
+  `5` and another whose `outcome` is a string is refused by `validate/1`; its
+  `present/3` answer carries the button with `"outcome"` as `5` among the
+  screen's `"nodes"`, and that answer does not satisfy the presented answer's
+  schema, whose button branch types `"outcome"` a string. Its `"moves"` still
+  does: `outcomes/1` lists the string outcomes only (the Amendment of
+  2026-11-19, "So `"moves"` never meets a button without a string outcome").
+  The same document with only its string-outcome button answers a screen that
+  satisfies the schema. So the schema's holds on a node of a known type
+  describe what a validated document presents, and for a button's `outcome`
+  an admitted document `validate/1` refuses is outside them. From 0.6.0 that
+  document is one `validate/1` refuses with `document.invalid_outcome`, so a
+  host that validates before it presents never meets the difference.
+- **"A struct is not a map here" holds for the screen form's `opts` and the
+  waiting form's `info` as it does for the done form's `result`.** The
+  sentence stands in the paragraph on the `{:done, result}` form only, and
+  the code applies it to all three: `back/1` and `waiting_data/1` in
+  `lib/riddler/journey.ex` each carry `not is_struct/1` on the map clause, so
+  `{:screen, key, opts}` with a struct `opts` and `{:waiting, info}` with a
+  struct `info` answer `{:error, :unknown_status}`, as `{:done, result}` with
+  a struct does, and the `Riddler.Journey` `@doc` says "a struct included" of
+  each. `test/riddler/journey_test.exs` holds the three: "refuses opts that
+  are not a map or carry a back that is not a boolean" and "refuses an info
+  that is not a map or carries a named key of the wrong type" each name a
+  `URI` struct, and so does the done form's test, "refuses a result that is not a map". The refusal is the
+  `{:error, :unknown_status}` of Decision 3's row "anything else".
+- **The corpus case schema.** The Note of 2026-11-19 cites `be85db1` for the
+  `screens.seal_secrets` enum entry only. That commit also added a sentence
+  naming the capability's inputs and the fixed test sealer to the
+  description of `input`, and a sentence naming its answer to the description
+  of `capability`, in `priv/schemas/corpus-case.schema.json`. So those two
+  descriptions' sentences for `screens.seal_secrets` are `be85db1`'s, beside
+  the four commits that note names for the sentences about
+  `journey.present` and `journey.decode_submit`. It was a gap in what the
+  note cites and not in what it says: a description constrains nothing, and
+  the schema accepts what it accepted at `v0.4.0` but for the two
+  capabilities.
+- **The submit schema's back request shape names `outcome` only to keep it
+  out.** In `priv/schemas/submit.schema.json` at `f745baa` the shape for the
+  back request names `outcome` once, under `not` with `required`, so a map
+  that carries an `"outcome"` key, `null` included, does not satisfy it; it
+  does not list `outcome` among its properties and does not require it. The
+  submit shape requires `"outcome"` as a string, so no value satisfies both
+  shapes and the two stay disjoint under `oneOf`. That is what lets the
+  schema accept exactly what `decode_submit/1` answers `{:ok, _}` for: a map
+  with no `"outcome"`, `"back"` true and a string `"screen"` is a back
+  request, and a map with a string `"screen"`, a string `"outcome"` and a
+  `"responses"` map is a submit, whatever else either carries. This was run
+  at `f745baa` over every combination of a `"screen"` that is a string, an
+  integer or absent, an `"outcome"` that is a string, `null`, an integer or
+  absent, a `"back"` that is `true`, `false`, a string or absent, and a
+  `"responses"` that is an object, an array or absent: the schema accepts a
+  value exactly when `decode_submit/1` does. The Amendment of 2026-11-19 says
+  the back request's shape "forbids no key it does not name"; it names
+  `outcome`, so that holds.
+
+This note decides nothing.
