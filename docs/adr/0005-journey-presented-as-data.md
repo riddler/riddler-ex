@@ -1440,8 +1440,11 @@ read:
   lists the new finding and its `document.duplicate_outcome` bullet says a
   button raising it is not compared.
 - `present/3` and `put_context/2` are as they were at `10fe9cd`: every change
-  to `lib/riddler/journey.ex` since sits in `decode_submit/1`, its docs and the
-  `back_request` type, and the private `outcomes/1` still lists only the
+  to `lib/riddler/journey.ex` since then serves the back request -
+  `decode_submit/1` and its private helpers (the new `back_request?/1`, and a
+  `shape` argument on `submit_findings`), the `back_request` type, and the
+  moduledoc's back-request paragraph - and the private `outcomes/1` still
+  lists only the
   outcomes that are strings. `Riddler.Finding` is unchanged, and the only
   change to `mix.exs` is `@version`.
 - `priv/schemas/submit.schema.json` is a `oneOf` of the submit and the back
