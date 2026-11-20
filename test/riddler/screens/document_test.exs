@@ -609,6 +609,7 @@ defmodule Riddler.Screens.DocumentTest do
                   %{"type" => "text", "key" => 18, "text" => "Two"}
                 ]
               },
+              %{"type" => "button", "key" => 19, "label" => "Go", "outcome" => 6},
               %{"type" => "text", "key" => "BadKey", "text" => "Hi"},
               %{"type" => "text", "key" => "BadKey", "text" => "Hi"}
             ]
@@ -621,21 +622,22 @@ defmodule Riddler.Screens.DocumentTest do
       # Every site that puts a node's key on a finding is exercised here, and
       # the codes are enumerated rather than counted so that a site dropped
       # from the fixture stops this test rather than passing a lower bound.
-      # Read off lib/ rather than remembered: sixteen sites carry a key, and
+      # Read off lib/ rather than remembered: seventeen sites carry a key, and
       # these are all of them - the unknown type, the invalid
       # key with a usable key and the duplicate of it, a condition that does
       # not parse, a missing field, a template refused as source and one
-      # refused because it is not source, a heading level, a button's style,
-      # validates and writes, a question's required, format and pattern, an
+      # refused because it is not source, a heading level, a button's
+      # outcome, style, validates and writes, a question's required, format and pattern, an
       # empty variant, and a variant candidate that buries what follows it.
       assert Enum.frequencies(Enum.map(raised, & &1.code)) == %{
                "document.unknown_type" => 1,
-               "document.invalid_key" => 14,
+               "document.invalid_key" => 15,
                "document.duplicate_key" => 1,
                "document.invalid_condition" => 1,
                "document.missing_field" => 1,
                "document.invalid_template" => 2,
                "document.level_out_of_range" => 1,
+               "document.invalid_outcome" => 1,
                "document.invalid_style" => 1,
                "document.invalid_validates" => 1,
                "document.invalid_writes" => 1,
@@ -1054,6 +1056,63 @@ defmodule Riddler.Screens.DocumentTest do
       assert finding.message =~ "always"
     end
 
+    # Sabotage: dropped `outcome_findings/1` from `Type.Button.validate/1` and
+    # a button whose outcome is the number 1 validated clean, so this went red.
+    test "a button's outcome that is not a string" do
+      raw =
+        document([
+          %{"type" => "button", "key" => "account_continue", "label" => "Go", "outcome" => 1}
+        ])
+
+      [finding] = findings(raw)
+
+      assert finding.code == "document.invalid_outcome"
+      assert finding.field == "outcome"
+      assert finding.node_key == "account_continue"
+      assert finding.message =~ "not 1"
+    end
+
+    # Sabotage: widened the string clause of `outcome_findings/1` in
+    # `Type.Button` to `is_binary(outcome) or is_boolean(outcome)`; the
+    # boolean outcome validated clean and this went red.
+    test "a button's outcome that is a boolean, a list or an object" do
+      for outcome <- [true, ["account_submitted"], %{"name" => "account_submitted"}] do
+        raw =
+          document([
+            %{
+              "type" => "button",
+              "key" => "account_continue",
+              "label" => "Go",
+              "outcome" => outcome
+            }
+          ])
+
+        assert [%{code: "document.invalid_outcome", node_key: "account_continue"}] =
+                 findings(raw),
+               "#{inspect(outcome)} validated without the finding"
+      end
+    end
+
+    # Sabotage: added a `{:ok, nil} -> []` clause to `outcome_findings/1` in
+    # `Type.Button`; the null outcome validated clean and this went red.
+    test "a button's outcome that is null, and only that finding" do
+      raw =
+        document([
+          %{"type" => "button", "key" => "account_continue", "label" => "Go", "outcome" => nil}
+        ])
+
+      assert [%{code: "document.invalid_outcome", field: "outcome"}] = findings(raw)
+    end
+
+    # Sabotage: made the `:error` clause of `outcome_findings/1` in
+    # `Type.Button` raise the finding too; the button with no outcome carried
+    # it beside its missing_field and this went red.
+    test "a button with no outcome is a missing field and not a wrong one" do
+      raw = document([%{"type" => "button", "key" => "account_continue", "label" => "Go"}])
+
+      assert ["document.missing_field"] = codes(raw)
+    end
+
     # Sabotage: dropped `style_findings/1` from `Type.Button.validate/1` and a
     # button styled `1` validated clean, so this went red.
     test "a button's style that is not a string" do
@@ -1385,8 +1444,8 @@ defmodule Riddler.Screens.DocumentTest do
     end
 
     # Sabotage: dropped the is_binary guard in buttons_under/1; the two
-    # buttons whose outcome is a number were compared and refused, and this
-    # test went red.
+    # buttons whose outcome is a number were compared and a duplicate_outcome
+    # joined their two invalid_outcome findings, and this test went red.
     test "compares only outcomes that are strings, after the screen's other findings" do
       numbered =
         document([
@@ -1394,7 +1453,10 @@ defmodule Riddler.Screens.DocumentTest do
           button("plan_personal", "plan_chosen", %{"outcome" => 5})
         ])
 
-      assert {:ok, _document} = numbered |> Document.admit() |> Document.validate()
+      assert [
+               %{code: "document.invalid_outcome", node_key: "plan_business"},
+               %{code: "document.invalid_outcome", node_key: "plan_personal"}
+             ] = findings(numbered)
 
       assert ["document.missing_field", "document.duplicate_outcome"] =
                codes(
@@ -1402,6 +1464,23 @@ defmodule Riddler.Screens.DocumentTest do
                    button("plan_business", "plan_chosen"),
                    button("plan_personal", "plan_chosen"),
                    %{"type" => "heading", "key" => "plan_heading", "text" => "Plans"}
+                 ])
+               )
+    end
+
+    # Sabotage: in Document.screen_findings/2, moved the screen's duplicate
+    # pass (Document's own private outcome_findings/1) ahead of the node
+    # findings; the duplicate_outcome came first and this went red.
+    test "an outcome that is not a string is refused before the screen's duplicates" do
+      assert [
+               "document.invalid_outcome",
+               "document.duplicate_outcome"
+             ] =
+               codes(
+                 document([
+                   button("plan_business", "plan_chosen"),
+                   button("plan_personal", "plan_chosen"),
+                   button("plan_team", "plan_chosen", %{"outcome" => 3})
                  ])
                )
     end

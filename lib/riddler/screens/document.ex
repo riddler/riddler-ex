@@ -99,6 +99,11 @@ defmodule Riddler.Screens.Document do
       package's.
     * `document.invalid_validates` - a button's `validates` is there and is
       not a boolean.
+    * `document.invalid_outcome` - a button's `outcome` is there and is not
+      a string, `nil` included. One finding per such button, its `field`
+      `"outcome"`, raised with the button's other field findings. A button
+      with no `outcome` is `document.missing_field`, and is not this finding
+      too.
     * `document.invalid_required` - a question's `required` is there and is
       not a boolean.
     * `document.invalid_select` - a choice question's `select` is there and
@@ -168,7 +173,8 @@ defmodule Riddler.Screens.Document do
       repeats an outcome a button before it on the screen raises, its `field`
       `"outcome"` and its `node_key` the repeating button's key; the message
       names the earlier button. Only outcomes that are strings are compared,
-      and the findings come after every other finding on the screen.
+      so a button raising `document.invalid_outcome` is not compared, and
+      the findings come after every other finding on the screen.
     * `document.empty_variant` - a variant with no candidates.
     * `document.unreachable_variant_candidate` - an unconditional candidate
       that is not last, which buries every candidate after it.

@@ -1323,6 +1323,133 @@
         "admitted": true,
         "findings": [
           {
+            "code": "document.invalid_outcome",
+            "field": "outcome",
+            "node_key": "plan_personal"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_personal",
+                  "label": "Take the personal plan",
+                  "outcome": 1,
+                  "type": "button"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "An outcome that is not a string is refused, there being no name a client could send back for the press"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_outcome",
+            "field": "outcome",
+            "node_key": "plan_personal"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_personal",
+                  "label": "Take the personal plan",
+                  "outcome": null,
+                  "type": "button"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "An outcome that is null is refused as one that is not a string, and is not a missing field"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_outcome",
+            "field": "outcome",
+            "node_key": "plan_team"
+          },
+          {
+            "code": "document.invalid_outcome",
+            "field": "outcome",
+            "node_key": "plan_family"
+          },
+          {
+            "code": "document.duplicate_outcome",
+            "field": "outcome",
+            "node_key": "plan_business"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "plan",
+              "nodes": [
+                {
+                  "key": "plan_personal",
+                  "label": "Take the personal plan",
+                  "outcome": "plan_chosen",
+                  "type": "button"
+                },
+                {
+                  "key": "plan_business",
+                  "label": "Take the business plan",
+                  "outcome": "plan_chosen",
+                  "type": "button"
+                },
+                {
+                  "key": "plan_team",
+                  "label": "Take the team plan",
+                  "outcome": 3,
+                  "type": "button"
+                },
+                {
+                  "key": "plan_family",
+                  "label": "Take the family plan",
+                  "outcome": 3,
+                  "type": "button"
+                }
+              ],
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "An outcome that is not a string is refused before the screen's repeated outcomes, and is not compared with them"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
             "code": "document.invalid_template",
             "field": "include",
             "node_key": "email"
