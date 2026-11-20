@@ -3,10 +3,11 @@ defmodule Riddler.Screens.Type.Button do
   A control a visitor presses, and what pressing it means.
 
   `outcome` is required and is the name of what the press raises - the whole
-  reason a button is worth declaring rather than drawing. `writes` is what
-  the press sets, a map whose keys address a response and whose values are
-  the two-element constant form, and the host applies it; this package
-  carries it through resolution unchanged. `style` is a name a renderer
+  reason a button is worth declaring rather than drawing. It is a string, the
+  name a client sends back for the press, and one that is not a string, `nil`
+  included, is refused. `writes` is what the press sets, a map whose keys
+  address a response and whose values are the two-element constant form, and
+  the host applies it; this package carries it through resolution unchanged. `style` is a name a renderer
   owns, and a style this package does not recognize is passed through rather
   than refused, because presentation is not this package's to enumerate.
   `validates` defaults to true, and the opt-out is what lets a Back button
@@ -33,7 +34,33 @@ defmodule Riddler.Screens.Type.Button do
 
   @impl true
   def validate(node) do
-    writes_findings(node) ++ style_findings(node) ++ validates_findings(node)
+    outcome_findings(node) ++
+      writes_findings(node) ++ style_findings(node) ++ validates_findings(node)
+  end
+
+  # The outcome is the name a client sends back for the press, so a value that
+  # is not a string - `nil` included - is a button no submit can name. Checked
+  # only where the button declares one: an absent outcome is the document's
+  # `document.missing_field`, and is not this finding too.
+  defp outcome_findings(node) do
+    case Map.fetch(node, :outcome) do
+      {:ok, outcome} when is_binary(outcome) ->
+        []
+
+      {:ok, outcome} ->
+        [
+          %Finding{
+            code: "document.invalid_outcome",
+            message:
+              "an outcome is the name a client sends back for the press, a string, not #{inspect(outcome)}",
+            field: "outcome",
+            node_key: Finding.node_key(node[:key])
+          }
+        ]
+
+      :error ->
+        []
+    end
   end
 
   defp writes_findings(node) do
