@@ -311,6 +311,171 @@
         }
       },
       "name": "A screen sent as an object is an invalid field even when the other two are well formed"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "submit": {
+          "back": true,
+          "screen": "plan"
+        }
+      },
+      "input": {
+        "submit": {
+          "back": true,
+          "screen": "plan"
+        }
+      },
+      "name": "A back request is decoded as its screen and back true"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "submit": {
+          "back": true,
+          "screen": "plan"
+        }
+      },
+      "input": {
+        "submit": {
+          "back": true,
+          "responses": {
+            "plan": "trial"
+          },
+          "screen": "plan",
+          "variant": "b"
+        }
+      },
+      "name": "What a back request carries beside its screen and back is dropped, its responses included"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.missing_field",
+            "field": "screen",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {
+          "back": true
+        }
+      },
+      "name": "A back request with no screen raises the one missing-field finding"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.invalid_field",
+            "field": "screen",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {
+          "back": true,
+          "screen": 2
+        }
+      },
+      "name": "A back request whose screen is a number raises the one invalid-field finding"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "submit": {
+          "outcome": "plan_chosen",
+          "responses": {
+            "plan": "trial"
+          },
+          "screen": "plan"
+        }
+      },
+      "input": {
+        "submit": {
+          "back": true,
+          "outcome": "plan_chosen",
+          "responses": {
+            "plan": "trial"
+          },
+          "screen": "plan"
+        }
+      },
+      "name": "An outcome beside back true is a submit, decoded with back dropped"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.invalid_field",
+            "field": "outcome",
+            "node_key": null
+          },
+          {
+            "code": "submit.missing_field",
+            "field": "responses",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {
+          "back": true,
+          "outcome": null,
+          "screen": "plan"
+        }
+      },
+      "name": "An outcome beside back true is a submit, refused as one when it is malformed"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.missing_field",
+            "field": "outcome",
+            "node_key": null
+          },
+          {
+            "code": "submit.missing_field",
+            "field": "responses",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {
+          "back": "yes",
+          "screen": "plan"
+        }
+      },
+      "name": "A back that is a string is not a back request but a submit with no outcome"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "submit.missing_field",
+            "field": "outcome",
+            "node_key": null
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "submit": {
+          "back": false,
+          "responses": {},
+          "screen": "plan"
+        }
+      },
+      "name": "A back that is false is a submit with no outcome"
     }
   ],
   "name": "Decoding a submit a client sends back: the three keys checked for their shape, a key beside them dropped, and every defect reported in one pass"

@@ -555,6 +555,73 @@ defmodule Riddler.JourneyTest do
         assert finding.message =~ key
       end
     end
+
+    # Sabotage: answered the back request with the map as sent; the responses
+    # and the further key were carried and this test went red.
+    test "answers a back request as the screen and back true, dropping every other key" do
+      assert Journey.decode_submit(%{"screen" => "plan", "back" => true}) ==
+               {:ok, %{"screen" => "plan", "back" => true}}
+
+      assert Journey.decode_submit(%{
+               "screen" => "plan",
+               "back" => true,
+               "responses" => %{"plan" => "trial"},
+               "variant" => "b"
+             }) == {:ok, %{"screen" => "plan", "back" => true}}
+    end
+
+    # Sabotage: checked a back request's screen against the three submit keys;
+    # the missing screen came back beside missing outcome and responses, and
+    # this test went red.
+    test "reports a back request's missing or non-string screen, and nothing else" do
+      assert {:error, [finding]} = Journey.decode_submit(%{"back" => true})
+
+      assert {finding.code, finding.field, finding.node_key, finding.position} ==
+               {"submit.missing_field", "screen", nil, nil}
+
+      for screen <- [nil, 2, %{"key" => "plan"}, :plan] do
+        assert {:error, [finding]} = Journey.decode_submit(%{"back" => true, "screen" => screen})
+        assert {finding.code, finding.field} == {"submit.invalid_field", "screen"}
+        assert finding.message =~ "screen"
+      end
+    end
+
+    # Sabotage: made a map with "back" true a back request whether or not it
+    # carried an outcome; the submit beside back true came back as a back
+    # request and this test went red.
+    test "decodes a map carrying an outcome as a submit whatever its back holds" do
+      assert Journey.decode_submit(Map.put(@submit, "back", true)) == {:ok, @submit}
+
+      assert {:error, findings} =
+               Journey.decode_submit(%{"screen" => "plan", "back" => true, "outcome" => nil})
+
+      assert Enum.map(findings, &{&1.code, &1.field}) == [
+               {"submit.invalid_field", "outcome"},
+               {"submit.missing_field", "responses"}
+             ]
+    end
+
+    # Sabotage: made any truthy "back" a back request; the "yes" and 1 values
+    # came back {:ok, back_request} and this test went red.
+    test "decodes a back that is not true as a submit with no outcome" do
+      for back <- [false, nil, "yes", "true", 1, %{}] do
+        assert {back, Journey.decode_submit(%{"screen" => "plan", "back" => back})} ==
+                 {back,
+                  {:error,
+                   [
+                     %Riddler.Finding{
+                       code: "submit.missing_field",
+                       field: "outcome",
+                       message: ~s(the submit carries no "outcome")
+                     },
+                     %Riddler.Finding{
+                       code: "submit.missing_field",
+                       field: "responses",
+                       message: ~s(the submit carries no "responses")
+                     }
+                   ]}}
+      end
+    end
   end
 
   describe "put_context/2" do

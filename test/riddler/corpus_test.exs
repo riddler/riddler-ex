@@ -63,7 +63,7 @@ defmodule Riddler.CorpusTest do
     "corpus/templates/render.json" => 74,
     "corpus/journey/present.json" => 50,
     "corpus/journey/put_context.json" => 8,
-    "corpus/journey/decode_submit.json" => 14
+    "corpus/journey/decode_submit.json" => 22
   }
 
   @draft_7 "http://json-schema.org/draft-07/schema#"
@@ -822,6 +822,29 @@ defmodule Riddler.CorpusTest do
       end
 
       refute ExJsonSchema.Validator.valid?(schema, %{submit | "responses" => []})
+    end
+
+    # Sabotage: dropped the back request's "not" of a required outcome; the
+    # back true beside a null outcome validated while the decoder refuses it,
+    # and this test went red.
+    test "validates a back request of screen and back true, and nothing near it" do
+      schema = resolved_schema(@submit_schema)
+      back = %{"screen" => "plan", "back" => true}
+
+      assert ExJsonSchema.Validator.valid?(schema, back)
+      assert ExJsonSchema.Validator.valid?(schema, Map.put(back, "responses", %{"plan" => "x"}))
+      refute ExJsonSchema.Validator.valid?(schema, Map.delete(back, "screen"))
+      refute ExJsonSchema.Validator.valid?(schema, %{back | "screen" => 2})
+      refute ExJsonSchema.Validator.valid?(schema, Map.put(back, "outcome", nil))
+
+      for value <- [false, "true", 1, nil] do
+        refute ExJsonSchema.Validator.valid?(schema, %{back | "back" => value}), inspect(value)
+      end
+
+      assert ExJsonSchema.Validator.valid?(
+               schema,
+               Map.merge(back, %{"outcome" => "plan_chosen", "responses" => %{}})
+             )
     end
   end
 
