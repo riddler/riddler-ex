@@ -171,3 +171,15 @@ Status line flipped in place, and so do ADR-0002's two Amendments of
 2026-11-16 and 2026-11-18; each file's foot Note of this date says what was
 re-verified. The index row above still gives ADR-0005's own Status,
 accepted.
+
+---
+
+Noted 2026-11-20, bead rd-ca7b. "How a record grows" above says of
+Amendments "Five have landed: one on ADR-0001 and four on ADR-0002", and
+that four of them carry a `### What is unchanged`. Both counts were true
+when written and are not kept: every Amendment since appends at its
+record's foot without moving them, and the rule they illustrate stands
+as stated. Read the records themselves for the number. At `main` at
+`f6d82f4`, nineteen `## Amendment` headings sit in the records, at
+proposed or accepted: five on ADR-0001, nine on ADR-0002, three on
+ADR-0003, none on ADR-0004 and two on ADR-0005.
