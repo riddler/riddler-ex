@@ -10,6 +10,22 @@ fragment in [`changelog.d/`](https://github.com/riddler/riddler-ex/blob/v0.3.0/c
 into a version section at release. See that README for the format and for when a
 change warrants an entry at all.
 
+## [0.6.0] 2026-11-20
+
+A minor release for the back request and for a button's outcome.
+`Riddler.Journey.decode_submit/1` decodes what a client sends when the
+visitor goes back, `{"screen" => key, "back" => true}`, as its own shape,
+where 0.5.0 answered it a finding, and the submit schema and the corpus
+describe it. A document whose button carries an `outcome` that is not a
+string, which 0.5.0 accepted, is now refused with
+`document.invalid_outcome`.
+
+### Changed
+
+- `Riddler.Journey.decode_submit/1` decodes a back request, a map with no `"outcome"` whose `"back"` is `true`, to `{:ok, %{"screen" => key, "back" => true}}`, dropping every other key it carries, `"responses"` included, where 0.5.0 answered it a `submit.missing_field` finding on `"outcome"`; a missing or non-string `"screen"` beside it is the one `submit.missing_field` or `submit.invalid_field` finding. A map carrying `"outcome"` is a submit whatever its `"back"` holds, and a `"back"` that is not `true` leaves the map a submit, both decoded as in 0.5.0.
+- `priv/schemas/submit.schema.json` describes the back request beside the submit as a second shape, `"screen"` a string and `"back"` the constant `true` with no `"outcome"`, and the conformance corpus's `journey.decode_submit` cases state what the back request and the shapes near it decode to.
+- `Riddler.Screens.Document.validate/1` refuses a button whose `outcome` is there and is not a string, `null` included, with a new `document.invalid_outcome` finding (its `field` `"outcome"`, its `node_key` the button's key), where 0.5.0 accepted the document; write each button's `outcome` as a string. A button with no `outcome` is still `document.missing_field` only, and the conformance corpus's `screens.admit` cases state the refusal.
+
 ## [0.5.0] 2026-11-18
 
 A minor release for the answer a client renders and posts back, for a secret
