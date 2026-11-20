@@ -1000,7 +1000,7 @@ This note decides nothing.
 
 ## Amendment, 2026-11-19: the back request, and a button's outcome is a string
 
-Status: proposed
+Status: accepted (2026-11-20, riddler 0.6.0)
 
 Recorded 2026-11-19, bead rd-h206. A second submit shape, `"screen"` with
 `"back"` true and no outcome, in which unsubmitted input on the screen left
@@ -1394,5 +1394,78 @@ still 0.5.0.
   value exactly when `decode_submit/1` does. The Amendment of 2026-11-19 says
   the back request's shape "forbids no key it does not name"; it names
   `outcome`, so that holds.
+
+This note decides nothing.
+
+---
+
+Noted 2026-11-20. The amendment above headed "the back request, and a
+button's outcome is a string" moves from `proposed` to `accepted`, its Status
+line flipped in place and nothing else in it reworded. The record's own
+Status stays accepted, and its row in `docs/adr/README.md` is unchanged. The
+flip was decided by the conductor under a standing consent, 2026-11-20.
+
+It shipped in riddler 0.6.0, the commit tagged `v0.6.0` (`ebe975b`) and
+published on Hex; its code half is `88648b0` (the decoder, its schema and its
+corpus cases) and `f745baa` (the document finding). It was re-verified at the
+tag, every cite re-located by anchor there; `main` is that commit. What was
+read:
+
+- `Riddler.Journey.decode_submit/1` answers each row of the amendment's
+  table as written: a map with no `"outcome"`, `"back"` true and a string
+  `"screen"` is `{:ok, %{"screen" => key, "back" => true}}`, every other key
+  dropped, a `"responses"` included; with `"screen"` absent it is the one
+  `submit.missing_field` on `"screen"`, and with `"screen"` not a string the
+  one `submit.invalid_field` on `"screen"`, each with `node_key` and
+  `position` nil. The private `back_request?/1` is the two-key rule, `"back"`
+  exactly `true` and no `"outcome"` key.
+- The two malformed shapes answer as in riddler 0.5.0: a map carrying
+  `"outcome"` beside `"back"` true is decoded as a submit, `"back"` dropped
+  (with `"outcome"` `null` it raises `submit.invalid_field` on `"outcome"`),
+  and a `"back"` that is `false`, a string or absent leaves a map with no
+  `"outcome"` a submit raising `submit.missing_field` on `"outcome"` with its
+  other findings. A value that is not a map, or is a struct, still answers
+  `submit.not_an_object` alone.
+- `Riddler.Screens.Type.Button.validate/1` raises `document.invalid_outcome`
+  for an `outcome` that is there and is not a string, `null` included (an
+  admitted button keeps `outcome: nil`), its `field` `"outcome"` and its
+  `node_key` the button's key, one per such button, beside
+  `document.invalid_writes`, `document.invalid_style` and
+  `document.invalid_validates`. A button with no `outcome` raises
+  `document.missing_field` alone. Run at `ebe975b`, a screen with two
+  buttons sharing a string outcome and a third whose `outcome` is `7` gives
+  `document.invalid_outcome` before `document.duplicate_outcome`, and two
+  buttons whose `outcome` is `7` give one `document.invalid_outcome` each and
+  no `document.duplicate_outcome`. The `Riddler.Screens.Document` moduledoc
+  lists the new finding and its `document.duplicate_outcome` bullet says a
+  button raising it is not compared.
+- `present/3` and `put_context/2` are as they were at `10fe9cd`: every change
+  to `lib/riddler/journey.ex` since sits in `decode_submit/1`, its docs and the
+  `back_request` type, and the private `outcomes/1` still lists only the
+  outcomes that are strings. `Riddler.Finding` is unchanged, and the only
+  change to `mix.exs` is `@version`.
+- `priv/schemas/submit.schema.json` is a `oneOf` of the submit and the back
+  request, the back request requiring `"screen"` a string and `"back"` the
+  constant `true`; the dated Note above of this date, in its bullet on the
+  back request shape, reads how it names `outcome`. The presented answer's
+  schema and the screen document schema are unchanged since `10fe9cd`; the
+  corpus case schema's capability enumeration is unchanged and only the
+  description of `capability` gained the back request.
+- `corpus/journey/decode_submit.json` holds the back request in the existing
+  `journey.decode_submit` capability, and `corpus/screens/admit.json` holds
+  `document.invalid_outcome`; no capability is added.
+- The `back_request` and `submit` types and the `@spec` of `decode_submit/1`
+  in `lib/riddler/journey.ex` are the record's; their `@typedoc` text is the
+  code's own wording and constrains nothing.
+- Every worked example was run at `ebe975b` and answers as written.
+
+Two sentences are read, not changed:
+
+- **What is described and not cited.** The amendment says nothing it adds is
+  "citable from `lib/`, `priv/` or `corpus/` until they land". Both have
+  landed, at the commits above, and the cites in this note are to them.
+- **Its own status.** The amendment's opening paragraph calls its own part
+  "written 2026-11-19 at `proposed`". It was written so; it now reads
+  accepted, by this note.
 
 This note decides nothing.
