@@ -53,6 +53,14 @@ defmodule Riddler.Journey do
   the host's checks, before it validates the responses with
   `Riddler.Screens.validate_screen/3,4`.
 
+  What a client sends when the visitor goes back from a screen presented
+  with `"back"` true is a back request: `"screen"`, the key of the screen it
+  was shown, and `"back"`, `true`, with no `"outcome"`, since going back
+  presses no button. `decode_submit/1` tells the two apart and checks the
+  back request's shape too. Which screen going back reaches is the host's
+  engine's: the host raises its engine's back event, and the responses the
+  root already holds stay as they are.
+
   ## Example
 
   Patron registration: a visitor gets a library card.
@@ -152,6 +160,11 @@ defmodule Riddler.Journey do
   `"responses"` => `t:map/0`, and no other key.
   """
   @type submit :: %{required(String.t()) => String.t() | map()}
+
+  @typedoc """
+  `"screen"` => `t:String.t/0` and `"back"` => `true`, and no other key.
+  """
+  @type back_request :: %{required(String.t()) => String.t() | true}
 
   @doc """
   The answer for the status the host passes.
@@ -347,13 +360,24 @@ defmodule Riddler.Journey do
   def put_context(root, _context) when is_map(root), do: {:error, :context_not_a_map}
 
   @doc """
-  The submit a client sent, checked for its shape.
+  The submit or the back request a client sent, checked for its shape.
 
   `submit` is the submit as decoded data: a host decodes the bytes it
   received into a term, and how they arrive is the transport's. The answer is
   `{:ok, submit}`, the string-keyed map of exactly `"screen"`, `"outcome"` and
   `"responses"`, each value as the client sent it - a key the client sent
-  beside them is dropped - or `{:error, findings}`.
+  beside them is dropped - or `{:ok, back_request}` for a back request, or
+  `{:error, findings}`.
+
+  A map that carries no `"outcome"` and whose `"back"` is `true` is a back
+  request. Its `"screen"` is checked as a submit's is, raising
+  `submit.missing_field` when it is absent and `submit.invalid_field` when it
+  is not a string, and the answer is `{:ok, %{"screen" => key, "back" =>
+  true}}`: every other key the client sent beside them, a `"responses"`
+  included, is dropped. Every other value is a submit, decoded as below: a
+  map carrying `"outcome"` is a submit whatever its `"back"` holds, and
+  `"back"` is dropped as a key beside the three; a map with no `"outcome"`
+  whose `"back"` is anything but `true` is a submit with no outcome.
 
   A value that is not a map, a struct included, is the one finding
   `submit.not_an_object`, its `:field` `nil`. Otherwise each of the three keys
@@ -396,12 +420,53 @@ defmodule Riddler.Journey do
       iex> {:error, [finding]} = Riddler.Journey.decode_submit("patron_details")
       iex> {finding.code, finding.field}
       {"submit.not_an_object", nil}
+
+  The visitor picks how the library card reaches them on `card_delivery`,
+  then goes back before pressing Continue. What they picked is dropped:
+
+      iex> Riddler.Journey.decode_submit(%{
+      ...>   "screen" => "card_delivery",
+      ...>   "back" => true,
+      ...>   "responses" => %{"delivery_method" => "mail"}
+      ...> })
+      {:ok, %{"screen" => "card_delivery", "back" => true}}
+      iex> {:error, [finding]} = Riddler.Journey.decode_submit(%{"back" => true})
+      iex> {finding.code, finding.field}
+      {"submit.missing_field", "screen"}
+
+  An outcome beside `"back"` is a submit, and a `"back"` that is not `true`
+  is a submit with no outcome:
+
+      iex> Riddler.Journey.decode_submit(%{
+      ...>   "screen" => "card_delivery",
+      ...>   "back" => true,
+      ...>   "outcome" => "delivery_chosen",
+      ...>   "responses" => %{"delivery_method" => "mail"}
+      ...> })
+      {:ok,
+       %{
+         "screen" => "card_delivery",
+         "outcome" => "delivery_chosen",
+         "responses" => %{"delivery_method" => "mail"}
+       }}
+      iex> {:error, findings} =
+      ...>   Riddler.Journey.decode_submit(%{"screen" => "card_delivery", "back" => "yes"})
+      iex> Enum.map(findings, &{&1.code, &1.field})
+      [{"submit.missing_field", "outcome"}, {"submit.missing_field", "responses"}]
   """
-  @spec decode_submit(term()) :: {:ok, submit()} | {:error, [Finding.t()]}
+  @spec decode_submit(term()) ::
+          {:ok, submit() | back_request()} | {:error, [Finding.t()]}
   def decode_submit(submit) when is_map(submit) and not is_struct(submit) do
-    case Enum.flat_map(@submit_keys, &submit_findings(submit, &1)) do
-      [] -> {:ok, Map.take(submit, @submit_keys)}
-      findings -> {:error, findings}
+    if back_request?(submit) do
+      case submit_findings(submit, "screen", "back request") do
+        [] -> {:ok, %{"screen" => Map.fetch!(submit, "screen"), "back" => true}}
+        findings -> {:error, findings}
+      end
+    else
+      case Enum.flat_map(@submit_keys, &submit_findings(submit, &1, "submit")) do
+        [] -> {:ok, Map.take(submit, @submit_keys)}
+        findings -> {:error, findings}
+      end
     end
   end
 
@@ -409,10 +474,15 @@ defmodule Riddler.Journey do
     {:error, [%Finding{code: "submit.not_an_object", message: "the submit is not a JSON object"}]}
   end
 
-  defp submit_findings(submit, key) do
+  # A back request is a map with no "outcome" whose "back" is exactly true;
+  # any other "back" leaves the map a submit.
+  defp back_request?(submit),
+    do: Map.get(submit, "back") === true and not Map.has_key?(submit, "outcome")
+
+  defp submit_findings(submit, key, shape) do
     case Map.fetch(submit, key) do
       :error ->
-        [submit_finding("submit.missing_field", key, "the submit carries no #{inspect(key)}")]
+        [submit_finding("submit.missing_field", key, "the #{shape} carries no #{inspect(key)}")]
 
       {:ok, value} ->
         if submit_value?(key, value),
@@ -421,7 +491,7 @@ defmodule Riddler.Journey do
             submit_finding(
               "submit.invalid_field",
               key,
-              "the submit's #{inspect(key)} is not #{submit_kind(key)}"
+              "the #{shape}'s #{inspect(key)} is not #{submit_kind(key)}"
             )
           ]
     end

@@ -1,0 +1,4 @@
+### Changed
+
+- `Riddler.Journey.decode_submit/1` decodes a back request, a map with no `"outcome"` whose `"back"` is `true`, to `{:ok, %{"screen" => key, "back" => true}}`, dropping every other key it carries, `"responses"` included, where 0.5.0 answered it a `submit.missing_field` finding on `"outcome"`; a missing or non-string `"screen"` beside it is the one `submit.missing_field` or `submit.invalid_field` finding. A map carrying `"outcome"` is a submit whatever its `"back"` holds, and a `"back"` that is not `true` leaves the map a submit, both decoded as in 0.5.0.
+- `priv/schemas/submit.schema.json` describes the back request beside the submit as a second shape, `"screen"` a string and `"back"` the constant `true` with no `"outcome"`, and the conformance corpus's `journey.decode_submit` cases state what the back request and the shapes near it decode to.
