@@ -1,7 +1,8 @@
 # Post a submit
 
 This page shows how to take what a client sends when a visitor presses a
-button, check it, and hand your execution only what it should keep. It uses
+button, check it, and hand your execution only what it should keep, and
+what a client sends when the visitor goes back. It uses
 patron registration: a visitor fills in the first screen of a library card
 application and presses Continue.
 
@@ -159,6 +160,70 @@ The `with` stops at the first step that does not answer as written, and
 returns what that step returned. Each `{:error, ...}` is yours to turn into an
 answer for the client.
 
+## Take a client going back
+
+When you present a screen with `"back"` true in its options, the answer's
+`"moves"` carries `"back"` true, and the visitor may ask to go back. Say
+the visitor is on `card_delivery`, the screen after `patron_details` where
+they choose how the library card reaches them:
+
+```elixir
+Riddler.Journey.present(document, {:screen, "card_delivery", %{"back" => true}}, root)
+#=> {:ok, %{"state" => "screen", "screen" => ..., "moves" =>
+#      %{"outcomes" => ["delivery_chosen"], "back" => true}}}
+```
+
+To go back, the client sends a second shape, the back request:
+
+```json
+{"screen": "card_delivery", "back": true}
+```
+
+- `"screen"` is the key of the screen the client was shown, a string, as in
+  a submit.
+- `"back"` is `true`.
+- There is no `"outcome"`: going back presses no button. There is no
+  `"responses"` either: what the visitor entered on the screen being left
+  was never submitted, and it is dropped.
+
+Hand it to the same decoder. `decode_submit/1` answers a map with no
+`"outcome"` and `"back"` true as a back request, and drops every other key,
+`"responses"` included:
+
+```elixir
+Riddler.Journey.decode_submit(%{
+  "screen" => "card_delivery",
+  "back" => true,
+  "responses" => %{"delivery_method" => "mail"}
+})
+#=> {:ok, %{"screen" => "card_delivery", "back" => true}}
+```
+
+A back request with no `"screen"` is refused with `submit.missing_field`,
+and one whose `"screen"` is not a string with `submit.invalid_field`, each
+the one finding, its `field` `"screen"`. Two shapes near a back request are
+not one:
+
+- A map that carries `"outcome"` is a submit, whatever its `"back"` holds,
+  and is decoded as one. A client that means to go back sends no outcome.
+- A map with no `"outcome"` whose `"back"` is anything other than `true` is
+  a submit with no outcome, refused with `submit.missing_field` on
+  `"outcome"` and the submit's other findings.
+
+Tell the two apart by `"back"` in the decoded map, then take the host's
+step. The decoder reads no document and no execution: it does not check
+that you presented `"back"` true for that screen, and it does not compare
+`"screen"` with the screen your execution is at. Which screen going back
+reaches, and whether it is allowed from where the execution is, are your
+workflow engine's. Raise its back event, then pass `present/3` the status
+it answers, as for any step: here, that the execution is at
+`patron_details` again.
+
+The responses your root already holds stay as they are. A back request
+changes nothing in the root: `"reminder_email"`, submitted on
+`patron_details`, is still there, and `"delivery_method"` never reached
+it.
+
 ## Tell the client what was wrong
 
 `decode_submit/1` and `validate_screen/3,4` both refuse with a list of
@@ -180,3 +245,5 @@ answer, is yours.
   opt-out.
 - [Seal and unseal a secret answer](seal-a-secret-answer.md) for the step
   before your engine.
+- `Riddler.Journey.Host` for the four callbacks a renderer drives your loop
+  through, `back/2` the one that takes a back request.
