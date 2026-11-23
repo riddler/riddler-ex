@@ -24,8 +24,11 @@ defmodule Riddler.Screens.Resolved do
 
   ## The diagnostics
 
-  `missing_variables` names each template variable that was absent, together
-  with the key of the node whose template wanted it. `undecidable_conditions`
+  `missing_variables` carries two kinds of entry, each with the key of the
+  node it was found on: a template variable that was absent (its `variable`
+  the name the template wanted, once per field that wanted it), and an
+  `answer_options_from` path that held no list of options (its `variable` the
+  path as written). `undecidable_conditions`
   names each node whose condition could not be evaluated, together with the
   condition that could not be evaluated. Both are in document order, and both
   are lists of entries rather than bare keys: one node can want two variables,
