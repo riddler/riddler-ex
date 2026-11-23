@@ -10,6 +10,24 @@ fragment in [`changelog.d/`](https://github.com/riddler/riddler-ex/blob/v0.3.0/c
 into a version section at release. See that README for the format and for when a
 change warrants an entry at all.
 
+## [0.7.0] 2026-11-23
+
+A minor release for the contract between a host and the Journeys it runs.
+`Riddler.Journey.Scope` is the scope a Journey runs under,
+`Riddler.Journey.Access` the behaviour a host implements to say who may see
+and step a Journey with the one pure check a renderer asks, and
+`Riddler.Journey.Host` the behaviour for a host's own loop.
+`Riddler.Journey.present/3` carries a progress the host supplies on a
+screen answer. Every change is an addition: a host that implements neither
+behaviour and passes no progress sees every 0.6.0 answer unchanged.
+
+### Added
+
+- `Riddler.Journey.Host`, the behaviour for a host's own loop, so that a renderer drives any host through the same four callbacks: `start/2` answers `{:ok, journey, answer}`, `present/1` answers `{:ok, scope, answer}`, and `submit/2` and `back/2` answer `{:ok, answer}` or `{:error, findings}`, each answer being what `Riddler.Journey.present/3` answers, and every one of the four may answer `{:error, :no_such_journey}`, the refusal `Riddler.Journey.Access.check/4` gives; this package calls none of them and steps nothing, and a host that does not implement it sees every existing answer unchanged.
+- `Riddler.Journey.Access`, the behaviour a host implements to say who may see and step a Journey - `member?/2`, `scopes/1` and an optional `allowed?/3` per operation (`:present`, `:submit`, `:back`) - with `check/4`, the one pure check a renderer asks, answering `:ok` or `{:error, :no_such_journey}`, the same refusal for a Journey that is not the actor's as for one that does not exist, and `check_kind/2`, answering `:ok` when a scope's kind is the kind the host's Path record names, byte for byte, and `{:error, :wrong_scope_kind}` otherwise; a host that does not implement it sees every existing answer unchanged, and the conformance corpus's new `journey.check` and `journey.check_kind` capabilities state what both checks answer.
+- `Riddler.Journey.Scope`, the scope a Journey runs under: `new/2` answers `{:ok, %Scope{kind: kind, id: id}}` for two strings of at least one byte and `{:error, :invalid_scope}` otherwise, `to_data/1` gives the data form a host keeps, `%{"kind" => kind, "id" => id}`, and `from_data/1` reads that form back, refusing anything else, a struct included; neither string is read for what it means, and the conformance corpus's new `journey.from_data` capability states what the data form and the values near it read back to.
+- `Riddler.Journey.present/3` reads a `"progress"` screen option, a map of `"step"` and `"of"`, each an integer of at least 1 with `"step"` not above `"of"`, and carries it beside `"moves"` on the screen answer as `%{"step" => n, "of" => m}`; a malformed one answers `{:error, :unknown_status}`, and a host that passes no `"progress"` sees every answer unchanged. The presented answer schema admits the optional `progress` object, and the conformance corpus's `journey.present` cases state both.
+
 ## [0.6.0] 2026-11-20
 
 A minor release for the back request and for a button's outcome.
