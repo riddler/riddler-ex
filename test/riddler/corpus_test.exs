@@ -37,7 +37,8 @@ defmodule Riddler.CorpusTest do
     "corpus/templates/render.json",
     "corpus/journey/present.json",
     "corpus/journey/put_context.json",
-    "corpus/journey/decode_submit.json"
+    "corpus/journey/decode_submit.json",
+    "corpus/journey/from_data.json"
   ]
 
   @document_schema "priv/schemas/screen-document.schema.json"
@@ -63,7 +64,8 @@ defmodule Riddler.CorpusTest do
     "corpus/templates/render.json" => 74,
     "corpus/journey/present.json" => 50,
     "corpus/journey/put_context.json" => 8,
-    "corpus/journey/decode_submit.json" => 22
+    "corpus/journey/decode_submit.json" => 22,
+    "corpus/journey/from_data.json" => 18
   }
 
   @draft_7 "http://json-schema.org/draft-07/schema#"
@@ -407,6 +409,15 @@ defmodule Riddler.CorpusTest do
     # and this test went red.
     test "every journey submit case answers what the corpus states" do
       assert mismatches("corpus/journey/decode_submit.json") == []
+    end
+
+    # Sabotage: dropped the byte_size check from
+    # `Riddler.Journey.Scope.new/2`; the empty kind and empty id cases came
+    # back as scopes and this test went red. And again with the runner's
+    # "ok" key dropped from a scope it reads back; every case stating a scope
+    # differed and this test went red.
+    test "every journey scope case answers what the corpus states" do
+      assert mismatches("corpus/journey/from_data.json") == []
     end
   end
 

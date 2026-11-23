@@ -37,6 +37,7 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
 
       assert written == [
                "corpus/journey/decode_submit.json",
+               "corpus/journey/from_data.json",
                "corpus/journey/present.json",
                "corpus/journey/put_context.json",
                "corpus/screens/admit.json",
@@ -55,7 +56,7 @@ defmodule Mix.Tasks.Riddler.CorpusTest do
         assert File.read!(Path.join(first, relative)) == File.read!(Path.join(second, relative))
       end
 
-      assert_received {:mix_shell, :info, ["13 file(s) written."]}
+      assert_received {:mix_shell, :info, ["14 file(s) written."]}
     end
 
     # Sabotage: dropped the generated_by key from the emitted case file; the

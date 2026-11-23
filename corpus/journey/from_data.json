@@ -1,0 +1,236 @@
+{
+  "capability": "journey.from_data",
+  "cases": [
+    {
+      "expected": {
+        "ok": true,
+        "scope": {
+          "id": "P-1001",
+          "kind": "patron"
+        }
+      },
+      "input": {
+        "data": {
+          "id": "P-1001",
+          "kind": "patron"
+        }
+      },
+      "name": "A patron's scope is read back as itself"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "scope": {
+          "id": "B-12",
+          "kind": "branch"
+        }
+      },
+      "input": {
+        "data": {
+          "id": "B-12",
+          "kind": "branch"
+        }
+      },
+      "name": "A branch library's scope is read back as itself"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "scope": {
+          "id": "RG-7",
+          "kind": "reading_group"
+        }
+      },
+      "input": {
+        "data": {
+          "id": "RG-7",
+          "kind": "reading_group"
+        }
+      },
+      "name": "A kind this package has never heard of is a kind like any other"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "scope": {
+          "id": "P-1001",
+          "kind": "patron"
+        }
+      },
+      "input": {
+        "data": {
+          "id": "P-1001",
+          "kind": "patron",
+          "name": "Ada",
+          "started": "2026-11-23"
+        }
+      },
+      "name": "A key beside kind and id is not read and not carried"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "scope": {
+          "id": " P-1001 ",
+          "kind": " Patron "
+        }
+      },
+      "input": {
+        "data": {
+          "id": " P-1001 ",
+          "kind": " Patron "
+        }
+      },
+      "name": "Neither string is trimmed or case-folded"
+    },
+    {
+      "expected": {
+        "ok": true,
+        "scope": {
+          "id": " ",
+          "kind": "branch"
+        }
+      },
+      "input": {
+        "data": {
+          "id": " ",
+          "kind": "branch"
+        }
+      },
+      "name": "A single space is a string of one byte, and so an id"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": {
+          "id": "P-1001",
+          "kind": ""
+        }
+      },
+      "name": "An empty kind is refused"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": {
+          "id": "",
+          "kind": "patron"
+        }
+      },
+      "name": "An empty id is refused"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": {
+          "id": "P-1001"
+        }
+      },
+      "name": "A missing kind is refused"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": {
+          "kind": "patron"
+        }
+      },
+      "name": "A missing id is refused"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": {}
+      },
+      "name": "An empty object is refused"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": {
+          "id": 1001,
+          "kind": "patron"
+        }
+      },
+      "name": "An id that is a number is refused rather than turned into a string"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": {
+          "id": "P-1001",
+          "kind": null
+        }
+      },
+      "name": "A kind that is null is refused"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": {
+          "id": "P-1001",
+          "kind": {
+            "name": "patron"
+          }
+        }
+      },
+      "name": "A kind that is an object is refused"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": "patron:P-1001"
+      },
+      "name": "A string is refused rather than parsed"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": [
+          "patron",
+          "P-1001"
+        ]
+      },
+      "name": "An array is refused, even one holding a kind and an id"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": null
+      },
+      "name": "Null is refused"
+    },
+    {
+      "expected": {
+        "error": "invalid_scope"
+      },
+      "input": {
+        "data": true
+      },
+      "name": "A boolean is refused"
+    }
+  ],
+  "name": "Reading the data form a host keeps for a Journey's scope back into a scope: a kind and an id, each a string of at least one byte, neither read for what it means."
+}

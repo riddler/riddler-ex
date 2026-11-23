@@ -18,6 +18,7 @@ defmodule Riddler.Corpus do
 
   alias Riddler.Encoding
   alias Riddler.Journey
+  alias Riddler.Journey.Scope
   alias Riddler.Screens
   alias Riddler.Screens.Document
   alias Riddler.Template
@@ -32,7 +33,8 @@ defmodule Riddler.Corpus do
     "corpus/templates/render.json",
     "corpus/journey/present.json",
     "corpus/journey/put_context.json",
-    "corpus/journey/decode_submit.json"
+    "corpus/journey/decode_submit.json",
+    "corpus/journey/from_data.json"
   ]
 
   @schema_files [
@@ -177,6 +179,17 @@ defmodule Riddler.Corpus do
     case Journey.decode_submit(input["submit"]) do
       {:ok, submit} -> %{"ok" => true, "submit" => submit}
       {:error, findings} -> %{"ok" => false, "findings" => encode_findings(findings)}
+    end
+  end
+
+  # The data is handed over as the case states it, any JSON value. A scope
+  # read back is stated as `"ok"`, and beside it, under `"scope"`, the scope's
+  # data form as `to_data/1` gives it; a refusal is stated as error and its
+  # reason, as the presentation and context cases state theirs.
+  defp run("journey.from_data", input) do
+    case Scope.from_data(input["data"]) do
+      {:ok, scope} -> %{"ok" => true, "scope" => Scope.to_data(scope)}
+      {:error, reason} -> %{"error" => Atom.to_string(reason)}
     end
   end
 
