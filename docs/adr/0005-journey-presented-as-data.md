@@ -1472,3 +1472,420 @@ Two sentences are read, not changed:
   accepted, by this note.
 
 This note decides nothing.
+
+---
+
+## Amendment, 2026-11-23: who may see and step a Journey, its scope, and the progress a host supplies
+
+Status: proposed
+
+Recorded 2026-11-23, bead rd-xea9. That the host contract for who may see
+and step a Journey lives in this package as three modules,
+`Riddler.Journey.Scope`, `Riddler.Journey.Access` and
+`Riddler.Journey.Host`, shipping in riddler 0.7.0, and that a transport
+built later consumes `Access` and `Host` as they are, was ruled by the
+operator, 2026-11-23. So were: that a scope is one pair of strings, a kind
+and an id, the kinds open, fixed when the Journey starts and never
+interpreted here; that the host stores it on its own execution record and
+this package stores nothing; that the scope kind a Path expects is
+declared on the host's own Path record and checked by a pure function
+here, with no change to the document format; that a renderer asks on
+mount, on every submit and on every back, and that a Journey that does not
+exist and a Journey that is not the asker's get one and the same refusal;
+that progress is a screen option the host supplies, drawn only when it is
+there, and that skip stays an authored button with no generic skip; and
+that a renderer is a separate package and this one ships none. The rest -
+the callbacks' names and what each answers, the refusals' spellings, what
+the pure check does with an answer that is not `true`, the progress
+option's shape and where it sits in the answer, and the corpus
+capabilities - is this entry's own, written 2026-11-23 at `proposed`.
+
+Every cite below of the package as it stands is read at `fea9e05`. The code
+half is separate requests (bead rd-u3qf for the scope; rd-4bn8 for the
+access behaviour, its check and the kind check; rd-1l4y for the host
+behaviour; rd-w87s for progress). Nothing below is citable from `lib/`,
+`priv/` or `corpus/` until they land, so what they add is described here,
+not cited.
+
+### What the record now decides
+
+**A Journey has a scope: one kind and one id, both strings.**
+`Riddler.Journey.Scope` is a struct of two fields, `kind` and `id`, each a
+string of at least one byte. The kinds are open: `"patron"`, `"branch"` and
+any other string a host names are all kinds, and this package lists none.
+Neither string is read for what it means - not trimmed, not case-folded,
+not parsed, not looked up - and two scopes are the same scope exactly when
+both strings are equal byte for byte.
+
+| Function | Answer |
+|---|---|
+| `Scope.new(kind, id)`, both strings of at least one byte | `{:ok, %Scope{kind: kind, id: id}}` |
+| `Scope.new(kind, id)`, anything else | `{:error, :invalid_scope}` |
+| `Scope.to_data(scope)` | `%{"kind" => kind, "id" => id}` |
+| `Scope.from_data(data)`, a map whose `"kind"` and `"id"` are strings of at least one byte | `{:ok, %Scope{}}`, every other key of the map not read |
+| `Scope.from_data(data)`, anything else, a struct included | `{:error, :invalid_scope}` |
+
+`:invalid_scope` is spelled in the register of `:context_not_a_map`
+(Decision 4). The data form is what a host keeps; how and where is the
+host's, as Decision 6 says of storage.
+
+**The scope is fixed when the Journey starts.** The host chooses it when it
+starts the execution and keeps it on its own execution record beside
+whatever else it keeps there. `Scope` has no function that changes a
+scope, and no function here reads an execution to find one: the host
+supplies the scope on every call that needs it. How a host's storage keeps
+the scope for an execution it starts from another is the storage's, and
+not this record's.
+
+**`Riddler.Journey.Access` is the behaviour a host implements to say who
+belongs to a scope.** Who is asking is the host's to represent, and is
+called the actor below; this package passes it through and never reads it.
+
+| Callback | What the host answers |
+|---|---|
+| `member?(actor, scope)` | `true` when the actor belongs to the scope, `false` otherwise |
+| `scopes(actor)` | the scopes the actor belongs to, a list of `Scope` structs, for a host or a renderer that lists the Journeys an actor may resume |
+| `allowed?(actor, scope, operation)`, optional | `true` when the actor may take that operation in that scope, `false` otherwise |
+
+A host keeps `member?/2` and `scopes/1` in agreement: a scope is in
+`scopes(actor)` exactly when `member?(actor, scope)` is `true`. This package
+cannot check that, and does not call `scopes/1` itself.
+
+**`Access.check/4` is the one question a renderer asks.**
+`Riddler.Journey.Access.check(access, actor, scope, operation)` takes the
+host's module implementing `Access`, the actor, the Journey's scope as the
+host holds it, and the operation, one of `:present`, `:submit` and `:back`. It
+answers `:ok` or `{:error, :no_such_journey}`, and nothing else:
+
+| The call | Answer |
+|---|---|
+| `member?(actor, scope)` answers `true`, and `access` does not export `allowed?/3` | `:ok` |
+| `member?(actor, scope)` answers `true`, and `allowed?(actor, scope, operation)` answers `true` | `:ok` |
+| `member?/2` or `allowed?/3` answers anything other than `true`, `false` included | `{:error, :no_such_journey}` |
+| `scope` not a `Scope` struct, `operation` outside the three, or `access` not a module exporting `member?/2` | `{:error, :no_such_journey}` |
+
+`allowed?/3` is called only after `member?/2` has answered `true`. The
+refusal is spelled in the register of `:no_such_screen` (Decision 3), and it
+does not say why: a renderer that asks for a Journey that is not the
+actor's is answered exactly as it would be for a Journey that does not
+exist, so a refusal tells the asker nothing about which Journeys exist. Every
+doubt is a refusal: an answer that is not exactly `true` refuses.
+
+`check/4` is pure in this package's sense: it keeps no state, starts no
+process and reads no store or execution. It calls the host's two callbacks
+and nothing else, and what they read to answer is the host's. It does not
+rescue a callback that raises: a callback that raises is the host's
+defect, and this package does not rescue to a default (`CLAUDE.md`,
+"Conventions", the first bullet).
+
+**The scope kind a Path expects is the host's to declare and this
+package's to check.** A host's Path record - its own, wherever it keeps
+its Paths - names the one scope kind a Journey of that Path takes. The
+document format does not change: no screen document carries a scope kind,
+and `Riddler.Screens.Document.admit/1` and `validate/1` read none.
+`Riddler.Journey.Access.check_kind(scope, expected_kind)` answers `:ok` when
+`scope` is a `Scope` whose `kind` equals `expected_kind` byte for byte, and
+`{:error, :wrong_scope_kind}` otherwise, an `expected_kind` that is not a
+string of at least one byte included. It is pure and calls nothing. A host
+calls it before it starts an execution, with the kind from its Path record;
+what it tells the visitor when the answer is a refusal is its own.
+
+**`Riddler.Journey.Host` is the behaviour for the host's own loop.** A
+renderer drives any host through the same four callbacks, and this package
+calls none of them: it steps nothing, keeps nothing and moves no Journey,
+as Decision 6 says of the stepper. The Journey is named by a string the
+host chooses, which this package never reads.
+
+| Callback | What the host answers |
+|---|---|
+| `start(path, scope)` | `{:ok, journey, answer}` for the Journey it started, or `{:error, :no_such_journey}` |
+| `present(journey)` | `{:ok, scope, answer}`, the Journey's scope beside where it is, or `{:error, :no_such_journey}` |
+| `submit(journey, submit)` | `{:ok, answer}`, `{:error, findings}`, or `{:error, :no_such_journey}` |
+| `back(journey, back_request)` | `{:ok, answer}`, `{:error, findings}`, or `{:error, :no_such_journey}` |
+
+`answer` is what `Riddler.Journey.present/3` answers inside `{:ok, ...}`
+for the status the host's engine gives; `submit` and `back_request` are
+what `Riddler.Journey.decode_submit/1` answers inside `{:ok, ...}`; the
+findings are `Riddler.Finding` structs, a submit's refused by
+`decode_submit/1` or a screen's refused by
+`Riddler.Screens.validate_screen/3,4`. `start/2` answers the refusal for a
+Path the host does not have and for a scope whose kind is not the Path's;
+the three others answer it for a Journey the host does not have. The
+refusal is the one `check/4` gives, so a renderer shows one thing for
+both. `present/1` answers the scope so that a renderer has it for its
+check on mount, and holds it for the checks after, since a scope does not
+change once the Journey starts.
+
+**What a renderer asks, and when.** A renderer asks `check/4` with the
+Journey's scope:
+
+- on mount, with `:present`, after `present/1` and before anything of the
+  answer is shown;
+- on every submit, with `:submit`, before `submit/2` is called;
+- on every back, with `:back`, before `back/2` is called.
+
+On `{:error, :no_such_journey}` it shows the one refusal, shows nothing of
+the Journey, and calls no callback that would step it. It asks again on
+every submit and every back rather than once, because whether an actor
+belongs to a scope is the host's, and can change while a Journey is open.
+This package renders nothing and sees no renderer, so it cannot enforce
+the order; it is stated here as the contract a renderer is built to, as
+the fallback for an unknown node type is in the Amendment of 2026-11-18
+above.
+
+**Progress is a screen option the host supplies.** The screen status's map
+(`{:screen, key, opts}`, the Amendment of 2026-11-18 above) gains a second
+key beside `"back"`:
+
+| Key | Value |
+|---|---|
+| `"progress"` | a map of `"step"` and `"of"`, each an integer of at least 1, with `"step"` not above `"of"` |
+
+Where the host passes it, the screen answer carries it at the answer root,
+beside `"screen"` and `"moves"`, as `%{"step" => n, "of" => m}`, and a key
+the progress map carries beside those two is not read and not carried.
+Where the host does not pass it, the answer has no `"progress"` key. A
+`"progress"` that is not a map, or a struct, or lacks `"step"` or `"of"`, or
+carries one that is not an integer, below 1, or a `"step"` above `"of"`,
+makes the status one outside the shapes, and Decision 3's table answers it
+on its row "anything else", `{:error, :unknown_status}`, as a `"back"` that
+is not a boolean is answered (the private `back/1` in
+`lib/riddler/journey.ex` at `fea9e05`). This package does not count steps
+and does not compute progress: how far through a Path a visitor is, is the
+host's engine's to know. A renderer draws progress only when the answer
+carries it.
+
+**Skip stays an authored button.** A screen a visitor may leave without
+filling it carries a button raising its own outcome with `validates` false,
+as a Back button does (the `Riddler.Screens.Type.Button` moduledoc at
+`fea9e05`, "the opt-out is what lets a Back button leave a half-filled
+screen without an error"). There is no generic skip: `"moves"` gains no key
+for one, and no submit shape is added for one.
+
+**The schemas and the corpus.** The presented answer's schema admits an
+optional `"progress"` object on a screen answer, its `"step"` and `"of"`
+integers of at least 1, in the release whose code presents it. The scope,
+the access check and the kind check are held to the corpus by three new
+capabilities, by Decision 5's convention, each with one case file:
+`journey.scope` (`corpus/journey/scope.json`, `Scope.from_data/1`),
+`journey.check_access` (`corpus/journey/check_access.json`, `check/4`) and
+`journey.check_kind` (`corpus/journey/check_kind.json`, `check_kind/2`).
+Their input and answer are not `present/3`'s, so they are capabilities of
+their own; the corpus case schema's capability enumeration gains the three
+(`priv/schemas/corpus-case.schema.json` at `fea9e05`, the enumeration under
+`capability`). A `journey.check_access` case runs against fixed test access
+modules the runner supplies, as a `screens.seal_secrets` case runs against
+the one test sealer, and a case states its answer as `{"ok": true}` or as
+`{"error": "no_such_journey"}`. A refusal in the other two is stated as
+`{"error": reason}`, as Decision 5 states one. Progress is held in the
+existing `journey.present` capability and its one case file,
+`corpus/journey/present.json`, because it is a screen option `present/3`
+reads.
+
+### Typespecs
+
+A contract for the code half, as the record's own typespecs are.
+
+```elixir
+# Riddler.Journey.Scope
+@type t :: %Riddler.Journey.Scope{kind: String.t(), id: String.t()}
+
+@spec new(term(), term()) :: {:ok, t()} | {:error, :invalid_scope}
+@spec to_data(t()) :: %{required(String.t()) => String.t()}
+@spec from_data(term()) :: {:ok, t()} | {:error, :invalid_scope}
+
+# Riddler.Journey.Access
+@type actor :: term()
+@type operation :: :present | :submit | :back
+
+@callback member?(actor(), Riddler.Journey.Scope.t()) :: boolean()
+@callback scopes(actor()) :: [Riddler.Journey.Scope.t()]
+@callback allowed?(actor(), Riddler.Journey.Scope.t(), operation()) :: boolean()
+@optional_callbacks allowed?: 3
+
+@spec check(module(), actor(), term(), term()) :: :ok | {:error, :no_such_journey}
+@spec check_kind(term(), term()) :: :ok | {:error, :wrong_scope_kind}
+
+# Riddler.Journey.Host
+@type journey :: String.t()
+
+@callback start(path :: String.t(), Riddler.Journey.Scope.t()) ::
+            {:ok, journey(), Riddler.Journey.answer()} | {:error, :no_such_journey}
+@callback present(journey()) ::
+            {:ok, Riddler.Journey.Scope.t(), Riddler.Journey.answer()}
+            | {:error, :no_such_journey}
+@callback submit(journey(), Riddler.Journey.submit()) ::
+            {:ok, Riddler.Journey.answer()}
+            | {:error, [Riddler.Finding.t()]}
+            | {:error, :no_such_journey}
+@callback back(journey(), Riddler.Journey.back_request()) ::
+            {:ok, Riddler.Journey.answer()}
+            | {:error, [Riddler.Finding.t()]}
+            | {:error, :no_such_journey}
+
+# Riddler.Journey
+@typedoc """
+Optionally "back" => boolean() and "progress" => %{"step" => pos_integer(),
+"of" => pos_integer()}. Other keys are not read.
+"""
+@type screen_opts :: map()
+```
+
+`check/4`'s scope and operation, and `check_kind/2`'s two arguments, are typed
+`term()` because a value outside the types is answered with the refusal
+rather than left outside the function. `present/3`, `put_context/2`,
+`decode_submit/1` and their specs are as the record and its Amendments give
+them.
+
+### Worked examples
+
+**Patron registration, a returning patron.** The library's host scopes each
+registration Journey to the patron it is for. A patron signed in as
+`P-1001` resumes their own Journey; the host's access module,
+`Library.PatronAccess`, answers `member?/2` from the patron's own id.
+`ada` and `grace` below are the host's own values for two signed-in
+patrons, `ada` being `P-1001`:
+
+```elixir
+{:ok, scope} = Riddler.Journey.Scope.new("patron", "P-1001")
+
+Riddler.Journey.Scope.to_data(scope)
+#=> %{"kind" => "patron", "id" => "P-1001"}
+
+Riddler.Journey.Access.check(Library.PatronAccess, ada, scope, :present)
+#=> :ok
+```
+
+Another patron opens the same Journey's link and is answered as if there
+were no Journey there:
+
+```elixir
+Riddler.Journey.Access.check(Library.PatronAccess, grace, scope, :present)
+#=> {:error, :no_such_journey}
+```
+
+The registration Path's record on the host says it takes the kind
+`"patron"`, so the host checks the scope before it starts a Journey:
+
+```elixir
+Riddler.Journey.Access.check_kind(scope, "patron")
+#=> :ok
+
+{:ok, branch} = Riddler.Journey.Scope.new("branch", "B-12")
+Riddler.Journey.Access.check_kind(branch, "patron")
+#=> {:error, :wrong_scope_kind}
+
+Riddler.Journey.Scope.new("patron", "")
+#=> {:error, :invalid_scope}
+```
+
+**Patron registration, with progress.** The host's engine knows the
+details screen is the first of three, and says so:
+
+```elixir
+Riddler.Journey.present(
+  document,
+  {:screen, "patron_details", %{"progress" => %{"step" => 1, "of" => 3}}},
+  root
+)
+#=> {:ok,
+#    %{
+#      "state" => "screen",
+#      "screen" => ...,
+#      "moves" => %{"outcomes" => ["details_submitted"], "back" => false},
+#      "progress" => %{"step" => 1, "of" => 3}
+#    }}
+
+Riddler.Journey.present(
+  document,
+  {:screen, "patron_details", %{"progress" => %{"step" => 4, "of" => 3}}},
+  root
+)
+#=> {:error, :unknown_status}
+```
+
+The same call with no `"progress"` answers what riddler 0.6.0 answers for
+it.
+
+**The branch-library onboarding.** A branch library joins the network
+through one Path: a screen asks which integrations the branch needs, and
+the setup of each one it picked - a card reader, a catalogue sync, a
+reading-list import - runs as a Path of its own. A librarian at branch
+`B-12` works through it under the scope `{"branch", "B-12"}`, and the
+host's access module answers `member?/2` from where the librarian works.
+The setups' screens are under the same scope: the host supplies
+`{"branch", "B-12"}` on every call for each of them, as it does for the
+onboarding's own screens.
+
+```elixir
+{:ok, scope} = Riddler.Journey.Scope.new("branch", "B-12")
+
+Riddler.Journey.Access.check(Library.StaffAccess, librarian, scope, :submit)
+#=> :ok
+```
+
+The host's access module also implements `allowed?/3`, so that a volunteer
+who belongs to the branch may look at the card reader setup but not
+submit it:
+
+```elixir
+Riddler.Journey.Access.check(Library.StaffAccess, volunteer, scope, :present)
+#=> :ok
+
+Riddler.Journey.Access.check(Library.StaffAccess, volunteer, scope, :submit)
+#=> {:error, :no_such_journey}
+```
+
+A setup step the branch may leave for later carries an authored button
+raising `setup_deferred` with `validates` false; the host's engine decides
+what that outcome does.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the
+rule stated above answers a call one way, and this entry answers the same
+call another". Decision 1 says "There is no behaviour for a host to
+implement and no callback this package calls"; this entry adds two
+behaviours, and `check/4` calls the host's `member?/2` and `allowed?/3`.
+The Amendment of 2026-11-18 says a key the screen status's map carries
+that its table does not name "is not read, and nothing of it reaches the
+answer"; this entry reads `"progress"`, carries it onto the answer, and
+refuses a malformed one. Decision 6 leaves identity undecided; this entry
+decides it for an actor the host knows.
+
+### What is unchanged
+
+A host that implements neither behaviour and passes no `"progress"` key
+sees every answer of riddler 0.6.0 unchanged, byte for byte: `present/3`
+for every status, `put_context/2` and `decode_submit/1`, with their
+refusals and findings. The screen document, its schema, `admit/1` and
+`validate/1` are unchanged: no document carries a scope or a scope kind.
+`Riddler.Finding` gains no field. `"moves"` is unchanged. Decision 6
+stands for storage, the stepper and the transport: nothing here stores a
+scope, steps a Journey, starts a process, keeps a session, renders or
+transports. The runtime dependencies stay `predicator` and `solid`. The
+vocabulary is the record's: `responses`, `context`, `outcome`, `writes`,
+`nodes`, and a question owns its `answer_options`.
+
+### What this decides of the open items
+
+The Amendment of 2026-11-18 above leaves identity open under "What stays
+open", as "which visitor, which execution, how a client names the Journey
+it resumes"; that paragraph is not reworded. For an actor the host knows,
+it is decided here: the host's access module says which actor belongs to
+which scope, the Journey is named by the host's own string, and a renderer
+resumes it through `Host.present/1`. Identity stays open only for the
+anonymous visitor: one the host does not know, with no actor to pass.
+
+### What this does not decide
+
+- The anonymous visitor: how a Journey started by someone the host does not
+  know is resumed, and by whom.
+- Streaming.
+- The transport: how a renderer reaches a host that is not in the same
+  application, and how a refusal or a finding crosses it.
+- A scope that changes after the Journey starts, and a Journey under more
+  than one scope.
+- How a storage package keeps the scope, for an execution and for one it
+  starts from another.
+- What a renderer shows for the refusal, and how it draws progress.
