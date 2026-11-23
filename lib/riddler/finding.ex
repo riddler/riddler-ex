@@ -68,9 +68,10 @@ defmodule Riddler.Finding do
       and it is then that string as written. Every other finding carries
       `nil`: every `document.*` finding, `response.undecidable`, every
       refusal of `Riddler.Screens.seal_secrets/4`, and a response finding on
-      a question whose `messages` does not carry its code. It never replaces `:message`, which stays this package's own
-      sentence; where a finding is shown to a visitor, a renderer shows this
-      where it is a string and its own text otherwise.
+      a question whose `messages` does not carry its code. It never replaces
+      `:message`, which stays this package's own sentence; where a finding is
+      shown to a visitor, a renderer shows this where it is a string and its
+      own text otherwise.
 
   ## Examples
 

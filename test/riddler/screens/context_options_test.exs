@@ -197,6 +197,21 @@ defmodule Riddler.Screens.ContextOptionsTest do
       refute Map.has_key?(node, :answer_options_from)
     end
 
+    # Sabotage: let the path be read where the authored list is nil; the
+    # options came from the context, not nil, and this test went red.
+    test "a nil authored list beside a path, on a document no one validated, stays nil and reads nothing" do
+      validated = document([plan(%{"answer_options" => authored()})])
+      [screen] = validated.screens
+      [node] = screen.nodes
+      unvalidated = %{validated | screens: [%{screen | nodes: [%{node | answer_options: nil}]}]}
+
+      assert {:ok, resolved, %{missing_variables: []}} =
+               Screens.resolve_screen(unvalidated, "account", root(@plans))
+
+      assert [%{answer_options: nil} = presented] = resolved.nodes
+      refute Map.has_key?(presented, :answer_options_from)
+    end
+
     # Sabotage: presented the node before its options were read from context;
     # the prefill among the context's options was not presented and this test
     # went red.
