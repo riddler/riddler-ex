@@ -1,0 +1,3 @@
+### Added
+
+- `Riddler.Journey.Host`, the behaviour for a host's own loop, so that a renderer drives any host through the same four callbacks: `start/2` answers `{:ok, journey, answer}`, `present/1` answers `{:ok, scope, answer}`, and `submit/2` and `back/2` answer `{:ok, answer}` or `{:error, findings}`, each answer being what `Riddler.Journey.present/3` answers, and every one of the four may answer `{:error, :no_such_journey}`, the refusal `Riddler.Journey.Access.check/4` gives; this package calls none of them and steps nothing, and a host that does not implement it sees every existing answer unchanged.
