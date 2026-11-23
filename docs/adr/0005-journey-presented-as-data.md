@@ -1477,7 +1477,7 @@ This note decides nothing.
 
 ## Amendment, 2026-11-23: who may see and step a Journey, its scope, and the progress a host supplies
 
-Status: proposed
+Status: accepted (2026-11-23, riddler 0.7.0)
 
 Recorded 2026-11-23, bead rd-xea9. That the host contract for who may see
 and step a Journey lives in this package as three modules,
@@ -1921,3 +1921,82 @@ anonymous visitor: one the host does not know, with no actor to pass.
 - How a storage package keeps the scope, for an execution and for one it
   starts from another.
 - What a renderer shows for the refusal, and how it draws progress.
+
+---
+
+Noted 2026-11-23. The amendment above headed "who may see and step a
+Journey, its scope, and the progress a host supplies" moves from `proposed`
+to `accepted`, its Status line flipped in place and nothing else in it
+reworded. The record's own Status stays accepted, and its row in
+`docs/adr/README.md` is unchanged. The flip was decided by the conductor
+under a standing consent, 2026-11-23.
+
+It shipped in riddler 0.7.0, the commit tagged `v0.7.0` (`139349d`) and
+published on Hex; its code half is `36f2b7b` (the scope), `0ff7b96` (the
+access behaviour, its check, the kind check and the three test access
+modules), `d50b404` (the host behaviour) and `e315060` (progress). It was
+re-verified at the tag, every cite re-located by anchor there; `main` is
+that commit. What was read:
+
+- `Riddler.Journey.Scope.new/2`, `to_data/1` and `from_data/1` answer each
+  row of the amendment's table as written: a kind and an id that are both
+  strings of at least one byte give the struct, anything else
+  `{:error, :invalid_scope}`; `from_data/1` reads only `"kind"` and `"id"`
+  of a map and refuses a struct. The module has no function that changes a
+  scope.
+- `Riddler.Journey.Access` declares `member?/2`, `scopes/1` and, under
+  `@optional_callbacks`, `allowed?/3`. `check/4` answers `:ok` or
+  `{:error, :no_such_journey}` by the amendment's table: it calls
+  `Code.ensure_loaded/1` on an atom `access` before it reads what the
+  module exports, refuses a value that is not an atom without loading it,
+  calls `allowed?/3` only after `member?/2` answers `true`, reads only an
+  answer of exactly `true` as a yes, and rescues nothing. `check_kind/2`
+  answers `:ok` only for a `Scope` whose `kind` equals a string of at least
+  one byte, and calls nothing. Neither reads a store or starts a process.
+- `Riddler.Journey.Host` declares `start/2`, `present/1`, `submit/2` and
+  `back/2` with the amendment's typespecs, and its moduledoc carries "What
+  a renderer asks, and when" as the amendment states it. Nothing in this
+  package calls the four callbacks.
+- `Riddler.Journey.present/3` reads `"progress"` from a screen status's map
+  through the private `progress/1` in `lib/riddler/journey.ex`: a plain map
+  whose `"step"` and `"of"` are integers of at least 1, `"step"` not above
+  `"of"`, is carried at the answer root as those two keys alone; an absent
+  one adds no key; anything else answers `{:error, :unknown_status}`. A
+  status with no `"progress"` answers what it answered at `v0.6.0`, and
+  `put_context/2` and `decode_submit/1` are unchanged since then. The
+  presented answer's schema declares an optional `"progress"` object under
+  its screen branch, `"step"` and `"of"` integers of at least 1. The screen
+  document's schema, the submit's schema, `Riddler.Finding` and
+  `Riddler.Screens` are unchanged since `ba33a99`, and the only change to
+  `mix.exs` is `@version`.
+- `priv/schemas/corpus-case.schema.json` enumerates `journey.from_data`,
+  `journey.check` and `journey.check_kind`, and its descriptions of
+  `capability` and of a case's input say what each exercises and takes.
+  Each has its one case file under `corpus/journey/`, and the progress cases
+  are in `corpus/journey/present.json`. `Riddler.Corpus` hands a
+  `journey.check` case's `access` over as the test access module it names,
+  its `scope` through `Scope.from_data/1` where that reads it, and its
+  `operation` as the atom it names, each other value as itself.
+- Every worked example was run at `139349d` with access modules written to
+  the examples' description, and answers as written.
+
+Three sentences are read, not changed:
+
+- **The `members` test access module's `scopes` column.** The amendment's
+  table says `scopes(actor)` of `members` gives "the items of `actor` that
+  `Scope.from_data/1` admits". `Riddler.Corpus.TestAccess.Members.scopes/1`
+  at `0ff7b96`, in `lib/riddler/corpus/test_access.ex`, lists only an item
+  that is a scope's data form exactly, so an item `Scope.from_data/1`
+  admits that carries a key beside `"kind"` and `"id"` is not listed. That
+  is the amendment's own rule that a scope is in `scopes(actor)` exactly
+  when `member?(actor, scope)` is `true`, which the `member?` column, an
+  exact match on the data form, already met. No corpus answer reads it:
+  `check/4` does not call `scopes/1`.
+- **What is described and not cited.** The amendment says nothing it adds is
+  "citable from `lib/`, `priv/` or `corpus/` until they land". All of it has
+  landed, at the commits above, and the cites in this note are to them.
+- **Its own status.** The amendment's opening paragraph calls its own part
+  "written 2026-11-23 at `proposed`". It was written so; it now reads
+  accepted, by this note.
+
+This note decides nothing.
