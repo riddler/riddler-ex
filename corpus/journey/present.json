@@ -5494,6 +5494,1069 @@
         "status": "screen"
       },
       "name": "A choice question picking several presents its default list, or its prefill's list where the options read from context carry every value"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "business_submitted"
+          ]
+        },
+        "progress": {
+          "of": 3,
+          "step": 1
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "business_details",
+          "nodes": [
+            {
+              "key": "business_name",
+              "label": "Business name",
+              "required": true,
+              "type": "text_question"
+            },
+            {
+              "key": "business_next",
+              "label": "Continue",
+              "outcome": "business_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Tell us about your business"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3,
+            "step": 1
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts carry progress presents its step and of beside the moves"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "business_submitted"
+          ]
+        },
+        "progress": {
+          "of": 3,
+          "step": 3
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "business_details",
+          "nodes": [
+            {
+              "key": "business_name",
+              "label": "Business name",
+              "required": true,
+              "type": "text_question"
+            },
+            {
+              "key": "business_next",
+              "label": "Continue",
+              "outcome": "business_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Tell us about your business"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3,
+            "step": 3
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress is at its last step presents a step equal to of"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "business_submitted"
+          ]
+        },
+        "progress": {
+          "of": 3,
+          "step": 2
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "business_details",
+          "nodes": [
+            {
+              "key": "business_name",
+              "label": "Business name",
+              "required": true,
+              "type": "text_question"
+            },
+            {
+              "key": "business_next",
+              "label": "Continue",
+              "outcome": "business_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Tell us about your business"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "label": "Almost there",
+            "of": 3,
+            "step": 2
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress carries a key beside step and of presents step and of alone"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": true,
+          "outcomes": [
+            "business_submitted"
+          ]
+        },
+        "progress": {
+          "of": 3,
+          "step": 2
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "business_details",
+          "nodes": [
+            {
+              "key": "business_name",
+              "label": "Business name",
+              "required": true,
+              "type": "text_question"
+            },
+            {
+              "key": "business_next",
+              "label": "Continue",
+              "outcome": "business_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Tell us about your business"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "back": true,
+          "progress": {
+            "of": 3,
+            "step": 2
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts carry back and progress presents back in its moves and the progress beside them"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": true,
+          "outcomes": [
+            "business_submitted"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "business_details",
+          "nodes": [
+            {
+              "key": "business_name",
+              "label": "Business name",
+              "required": true,
+              "type": "text_question"
+            },
+            {
+              "key": "business_next",
+              "label": "Continue",
+              "outcome": "business_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Tell us about your business"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "back": true
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts carry no progress presents no progress"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "business_submitted"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "key": "business_details",
+          "nodes": [
+            {
+              "key": "business_name",
+              "label": "Business name",
+              "required": true,
+              "type": "text_question"
+            },
+            {
+              "key": "business_next",
+              "label": "Continue",
+              "outcome": "business_submitted",
+              "type": "button"
+            }
+          ],
+          "title": "Tell us about your business"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A bare screen status presents no progress"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": "1 of 3"
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress is not an object is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": null
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress is null is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": [
+            1,
+            3
+          ]
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress is an array is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress lacks step is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "step": 1
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress lacks of is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3,
+            "step": 1.5
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress step is not an integer is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3,
+            "step": "1"
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress step is a string is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3.5,
+            "step": 1
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress of is not an integer is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3,
+            "step": 0
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress step is zero is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3,
+            "step": -1
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress step is below zero is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 0,
+            "step": 1
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress of is zero is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3,
+            "step": 4
+          }
+        },
+        "root": {},
+        "screen": "business_details",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress step is above of is an error"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "back": "yes"
+        },
+        "root": {},
+        "screen": "business_review",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts carry a back that is not a boolean, naming a key the document does not declare, is an unknown status, not a missing screen"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": true,
+        "root": {},
+        "screen": "business_review",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts are not an object, naming a key the document does not declare, is an unknown status, not a missing screen"
+    },
+    {
+      "expected": {
+        "error": "unknown_status"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3,
+            "step": 4
+          }
+        },
+        "root": {},
+        "screen": "business_review",
+        "status": "screen"
+      },
+      "name": "A screen status whose progress is malformed, naming a key the document does not declare, is an unknown status, not a missing screen"
+    },
+    {
+      "expected": {
+        "error": "no_such_screen"
+      },
+      "input": {
+        "document": {
+          "id": "merchant_signup",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "business_details",
+              "nodes": [
+                {
+                  "key": "business_name",
+                  "label": "Business name",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "business_next",
+                  "label": "Continue",
+                  "outcome": "business_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Tell us about your business"
+            }
+          ]
+        },
+        "opts": {
+          "progress": {
+            "of": 3,
+            "step": 1
+          }
+        },
+        "root": {},
+        "screen": "business_review",
+        "status": "screen"
+      },
+      "name": "A screen status whose opts carry valid progress, naming a key the document does not declare, is a missing screen"
     }
   ],
   "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"

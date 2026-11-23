@@ -21,7 +21,8 @@ defmodule Riddler.Journey do
 
     * `{:screen, key}`, or `{:screen, key, opts}` - the visitor is to be
       shown the screen the document declares under `key`, and `opts` may say
-      that the host lets the visitor go back from it;
+      that the host lets the visitor go back from it, and how far through
+      the Journey the visitor is;
     * `:waiting`, or `{:waiting, info}` - the execution is waiting on
       something that is not the visitor, and `info` may say why and when a
       client should ask again;
@@ -30,7 +31,8 @@ defmodule Riddler.Journey do
 
   `present/3` answers a string-keyed map whose `"state"` is `"screen"`,
   `"waiting"` or `"done"`, with `"screen"` and `"moves"` beside it exactly
-  when the state is a screen, `"reason"` and `"retry_after_ms"` beside a waiting state
+  when the state is a screen, `"progress"` beside a screen state exactly when
+  the host supplied it, `"reason"` and `"retry_after_ms"` beside a waiting state
   exactly when the host supplied them, and `"result"` beside a done state
   exactly when the host supplied one. String keys throughout, so the answer
   can be put on any wire as JSON as it stands.
@@ -114,7 +116,10 @@ defmodule Riddler.Journey do
           | :done
           | {:done, result :: map()}
 
-  @typedoc ~s(Optionally `"back"` => `t:boolean/0`. Other keys are not read.)
+  @typedoc """
+  Optionally `"back"` => `t:boolean/0` and `"progress"` => `%{"step" =>
+  t:pos_integer/0, "of" => t:pos_integer/0}`. Other keys are not read.
+  """
   @type screen_opts :: map()
 
   @typedoc """
@@ -132,8 +137,10 @@ defmodule Riddler.Journey do
 
   @typedoc """
   `"state"` => `"screen"` | `"waiting"` | `"done"`; only when `"state"` is
-  `"screen"`, `"screen"` => `t:screen/0` and `"moves"` => `t:moves/0`; only
-  on a waiting answer, and each only where the host supplied it, `"reason"`
+  `"screen"`, `"screen"` => `t:screen/0` and `"moves"` => `t:moves/0`, and,
+  only where the host supplied it, `"progress"` => `%{"step" =>
+  t:pos_integer/0, "of" => t:pos_integer/0}`; only on a waiting answer, and
+  each only where the host supplied it, `"reason"`
   => `t:String.t/0` and `"retry_after_ms"` => `t:non_neg_integer/0`; and
   only on a done answer, and only where the host supplied it, `"result"` =>
   `t:map/0`.
@@ -188,8 +195,17 @@ defmodule Riddler.Journey do
   outcome is listed twice. `"back"` is `true` exactly when the host passed
   `{:screen, key, opts}` with `"back"` true in `opts`, and `false`
   otherwise. `opts` is a string-keyed map; a key it carries beside `"back"`
-  is not read and nothing of it reaches the answer, so `{:screen, key, %{}}`
-  answers exactly what `{:screen, key}` answers.
+  and `"progress"` is not read and nothing of it reaches the answer, so
+  `{:screen, key, %{}}` answers exactly what `{:screen, key}` answers.
+
+  Beside `"moves"` the answer carries `"progress"`, `%{"step" => n, "of" =>
+  m}`, exactly when `opts` carries a `"progress"`: a map of `"step"` and
+  `"of"`, each an integer of at least 1, with `"step"` not above `"of"`. A
+  key the progress map carries beside those two is not read and nothing of
+  it reaches the answer. Where `opts` carries no `"progress"`, the answer has
+  no `"progress"` key. This module counts no steps: how far through a Path a
+  visitor is, is the host's engine's to know, and a client draws progress
+  only when the answer carries it.
 
   A text, choice or boolean question's node carries `"value"` where a
   response the root holds, its prefill or its default yields one, as
@@ -224,8 +240,10 @@ defmodule Riddler.Journey do
   answer `Riddler.Screens.resolve_screen/3` gives for it. A status outside the
   three is `{:error, :unknown_status}`, so a host that builds its status from
   its own data is told rather than handed an exception. So is `{:screen,
-  key, opts}` whose `opts` is not a map (a struct included) or whose
-  `"back"` is not a boolean, whatever `key` names. So is `{:waiting,
+  key, opts}` whose `opts` is not a map (a struct included), whose `"back"`
+  is not a boolean, or whose `"progress"` is not a map (a struct included),
+  lacks `"step"` or `"of"`, or carries one that is not an integer or is
+  below 1, or a `"step"` above `"of"`, whatever `key` names. So is `{:waiting,
   info}` whose `info` is not a map (a struct included), whose `"reason"` is
   not a string, or whose `"retry_after_ms"` is not an integer or is below
   zero, and so is `{:done, result}` whose `result` is not a map (a struct
@@ -301,11 +319,13 @@ defmodule Riddler.Journey do
   @spec present(Document.t(), term(), root()) ::
           {:ok, answer()} | {:error, :no_such_screen} | {:error, :unknown_status}
   def present(%Document{} = document, {:screen, key}, root) when is_map(root),
-    do: present_screen(document, key, false, root)
+    do: present_screen(document, key, false, nil, root)
 
   def present(%Document{} = document, {:screen, key, opts}, root) when is_map(root) do
-    case back(opts) do
-      {:ok, back} -> present_screen(document, key, back, root)
+    with {:ok, back} <- back(opts),
+         {:ok, progress} <- progress(opts) do
+      present_screen(document, key, back, progress, root)
+    else
       :error -> {:error, :unknown_status}
     end
   end
@@ -522,25 +542,26 @@ defmodule Riddler.Journey do
   defp waiting_value?("reason", value), do: is_binary(value)
   defp waiting_value?("retry_after_ms", value), do: is_integer(value) and value >= 0
 
-  defp present_screen(document, key, back, root) do
+  defp present_screen(document, key, back, progress, root) do
     case Screens.resolve_screen(document, key, root) do
       {:ok, screen, diagnostics} ->
-        {:ok,
-         %{
-           "state" => "screen",
-           "screen" => screen_data(screen, diagnostics),
-           "moves" => %{"outcomes" => outcomes(screen), "back" => back}
-         }}
+        answer = %{
+          "state" => "screen",
+          "screen" => screen_data(screen, diagnostics),
+          "moves" => %{"outcomes" => outcomes(screen), "back" => back}
+        }
+
+        {:ok, put_progress(answer, progress)}
 
       {:error, :no_such_screen} = no_such_screen ->
         no_such_screen
     end
   end
 
-  # The screen options' one key, kept only where it is a boolean; any other
-  # key is not read. A map that carries `"back"` with another type, and
-  # anything that is not a plain map, is `:error`, which `present/3` answers
-  # as a status outside the shapes.
+  # The screen options' back key, kept only where it is a boolean; the
+  # progress key is `progress/1`'s, and any other key is not read. A map that
+  # carries `"back"` with another type, and anything that is not a plain map,
+  # is `:error`, which `present/3` answers as a status outside the shapes.
   defp back(opts) when is_map(opts) and not is_struct(opts) do
     case Map.fetch(opts, "back") do
       {:ok, back} when is_boolean(back) -> {:ok, back}
@@ -550,6 +571,30 @@ defmodule Riddler.Journey do
   end
 
   defp back(_opts), do: :error
+
+  # The screen options' progress, kept only where it is a plain map whose
+  # `"step"` and `"of"` are integers of at least 1, `"step"` not above
+  # `"of"`, and carried as those two keys alone; any other key of it is not
+  # read. Absent, it is `nil`, and the answer carries no progress. Anything
+  # else is `:error`, which `present/3` answers as a status outside the
+  # shapes. `back/1` has already refused opts that are not a plain map.
+  defp progress(opts) do
+    case Map.fetch(opts, "progress") do
+      {:ok, %{"step" => step, "of" => of} = progress}
+      when not is_struct(progress) and is_integer(step) and is_integer(of) and step >= 1 and
+             step <= of ->
+        {:ok, %{"step" => step, "of" => of}}
+
+      {:ok, _malformed} ->
+        :error
+
+      :error ->
+        {:ok, nil}
+    end
+  end
+
+  defp put_progress(answer, nil), do: answer
+  defp put_progress(answer, progress), do: Map.put(answer, "progress", progress)
 
   # The outcome of each shown button, read from the resolved screen, where
   # hidden nodes are absent and every container is already its winner. Only
