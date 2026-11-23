@@ -4415,3 +4415,16 @@ exists; the second says what a diagnostic holds and leaves the code and the
 amendment as they are; the third and fourth say which text above governs which
 point and decide nothing new; the fifth narrows the wording of a note under
 the record it cites. No document, response or call is answered differently.
+
+---
+
+Noted 2026-11-23, bead rd-muvv. The amendment above headed "a value of the
+wrong type in a field the schema types is not a document" lists the codes
+`validate/1` raises for a button's wrong-typed fields as
+`document.invalid_validates` and `document.invalid_style`. A button's
+`outcome` that is there and is not a string, `null` included, is a third:
+`document.invalid_outcome`, raised from riddler 0.6.0 and recorded by the
+amendment of 2026-11-19 in ADR-0005 headed "the back request, and a button's
+outcome is a string". Read that amendment for the finding's `field`, its
+`node_key` and its order against `document.duplicate_outcome`. Nothing above
+is changed, and this note decides nothing.
