@@ -38,7 +38,9 @@ defmodule Riddler.CorpusTest do
     "corpus/journey/present.json",
     "corpus/journey/put_context.json",
     "corpus/journey/decode_submit.json",
-    "corpus/journey/from_data.json"
+    "corpus/journey/from_data.json",
+    "corpus/journey/check.json",
+    "corpus/journey/check_kind.json"
   ]
 
   @document_schema "priv/schemas/screen-document.schema.json"
@@ -65,7 +67,9 @@ defmodule Riddler.CorpusTest do
     "corpus/journey/present.json" => 50,
     "corpus/journey/put_context.json" => 8,
     "corpus/journey/decode_submit.json" => 22,
-    "corpus/journey/from_data.json" => 18
+    "corpus/journey/from_data.json" => 18,
+    "corpus/journey/check.json" => 24,
+    "corpus/journey/check_kind.json" => 14
   }
 
   @draft_7 "http://json-schema.org/draft-07/schema#"
@@ -418,6 +422,22 @@ defmodule Riddler.CorpusTest do
     # differed and this test went red.
     test "every journey scope case answers what the corpus states" do
       assert mismatches("corpus/journey/from_data.json") == []
+    end
+
+    # Sabotage: made `Riddler.Journey.Access.check/4` ignore member?/2's
+    # answer; the cases of an actor outside the scope came back ok and this
+    # test went red. And again with the runner's present operation no longer
+    # mapped to :present; the cases presenting came back refused and it went
+    # red.
+    test "every journey access case answers what the corpus states" do
+      assert mismatches("corpus/journey/check.json") == []
+    end
+
+    # Sabotage: made `Riddler.Journey.Access.check_kind/2` compare the kinds
+    # case-insensitively; the case of an expected kind spelled Merchant came
+    # back ok and this test went red.
+    test "every journey scope kind case answers what the corpus states" do
+      assert mismatches("corpus/journey/check_kind.json") == []
     end
   end
 

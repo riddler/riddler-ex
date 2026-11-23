@@ -1,0 +1,184 @@
+{
+  "capability": "journey.check_kind",
+  "cases": [
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "expected_kind": "merchant",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "A merchant scope is of the kind merchant"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "expected_kind": "signup",
+        "scope": {
+          "id": "S-77",
+          "kind": "signup"
+        }
+      },
+      "name": "A signup scope is of the kind signup"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "expected_kind": "merchant",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant",
+          "label": "Main street"
+        }
+      },
+      "name": "A key beside kind and id in the scope is not read"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": "tenant",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "A merchant scope is not of the kind tenant"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": "Merchant",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "The kind is compared byte for byte, not case-folded"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": " merchant",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "The expected kind is not trimmed"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": "M-1001",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "The scope's id is not its kind"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": "",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An empty expected kind is refused"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": null,
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An expected kind stated as null is refused"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": 1,
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An expected kind stated as a number is refused"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": [
+          "merchant"
+        ],
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An expected kind stated as an array is refused"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": "merchant",
+        "scope": {
+          "kind": "merchant"
+        }
+      },
+      "name": "A scope missing its id is refused"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": "merchant",
+        "scope": "merchant"
+      },
+      "name": "A scope stated as a string is refused rather than parsed"
+    },
+    {
+      "expected": {
+        "error": "wrong_scope_kind"
+      },
+      "input": {
+        "expected_kind": "merchant",
+        "scope": null
+      },
+      "name": "A scope stated as null is refused"
+    }
+  ],
+  "name": "Checking a scope against the one scope kind a Path expects: the kinds compared byte for byte, and one refusal for every other value"
+}
