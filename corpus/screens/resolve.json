@@ -3354,6 +3354,66 @@
     {
       "expected": {
         "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "work_email",
+              "variable": "context.cost_center"
+            },
+            {
+              "key": "work_email",
+              "variable": "context.cost_center"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "key": "account",
+            "nodes": [
+              {
+                "help": "Billed to .",
+                "key": "work_email",
+                "label": "Work email for ",
+                "type": "text_question"
+              }
+            ],
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "help": "Billed to {{ context.cost_center }}.",
+                  "key": "work_email",
+                  "label": "Work email for {{ context.cost_center }}",
+                  "type": "text_question"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "A variable missing from both a question's label and its help is reported once for each field, twice under the question's key"
+    },
+    {
+      "expected": {
+        "diagnostics": {
           "missing_variables": [],
           "undecidable_conditions": []
         },
