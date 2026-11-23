@@ -284,6 +284,161 @@ defmodule Riddler.JourneyTest do
     end
   end
 
+  describe "present/3 and a screen's progress" do
+    # A merchant signup wizard's details screen, the first of the host's
+    # three steps.
+    @signup %{
+      "schema_version" => 1,
+      "id" => "merchant_signup",
+      "screens" => [
+        %{
+          "key" => "business_details",
+          "title" => "Tell us about your business",
+          "nodes" => [
+            %{
+              "type" => "text_question",
+              "key" => "business_name",
+              "label" => "Business name",
+              "required" => true
+            },
+            %{
+              "type" => "button",
+              "key" => "business_next",
+              "label" => "Continue",
+              "outcome" => "business_submitted"
+            }
+          ]
+        }
+      ]
+    }
+
+    defp signup_status(opts), do: {:screen, "business_details", opts}
+
+    # Sabotage: carried the host's progress map whole rather than its step and
+    # of alone; the "label" beside them reached the answer and this test went
+    # red.
+    test "answers the progress the host supplied beside the moves, its step and of alone" do
+      document = Document.admit(@signup)
+      opts = %{"progress" => %{"step" => 1, "of" => 3, "label" => "Getting started"}}
+
+      assert {:ok, answer} = Journey.present(document, signup_status(opts), %{})
+      assert answer["progress"] == %{"step" => 1, "of" => 3}
+      assert Map.keys(answer) |> Enum.sort() == ["moves", "progress", "screen", "state"]
+
+      assert {:ok, %{"progress" => %{"step" => 1, "of" => 1}}} =
+               Journey.present(
+                 document,
+                 signup_status(%{"progress" => %{"step" => 1, "of" => 1}}),
+                 %{}
+               )
+
+      assert {:ok, %{"progress" => %{"step" => 3, "of" => 3}}} =
+               Journey.present(
+                 document,
+                 signup_status(%{"progress" => %{"step" => 3, "of" => 3}}),
+                 %{}
+               )
+    end
+
+    # Sabotage: put a progress of step 1 of 1 on every screen answer the host
+    # passed none for; each answer carried a "progress" key and this test went
+    # red.
+    test "answers no progress where the host supplied none, exactly as before" do
+      document = Document.admit(@signup)
+      bare = Journey.present(document, {:screen, "business_details"}, %{})
+
+      assert {:ok, answer} = bare
+      refute Map.has_key?(answer, "progress")
+
+      for opts <- [%{}, %{"back" => false}, %{"trail" => ["business_details"]}] do
+        assert Journey.present(document, signup_status(opts), %{}) == bare
+      end
+
+      assert {:ok, with_back} = Journey.present(document, signup_status(%{"back" => true}), %{})
+      refute Map.has_key?(with_back, "progress")
+    end
+
+    # Back and progress leave each other untouched: the answer with progress
+    # is the answer without it, plus the progress key, for either back.
+    #
+    # Sabotage: dropped the progress from every answer whatever the host
+    # supplied; the answer with progress equalled the one without and this
+    # test went red.
+    test "changes nothing of the answer but the progress key" do
+      document = Document.admit(@signup)
+      progress = %{"step" => 2, "of" => 3}
+
+      for back <- [true, false] do
+        {:ok, without} = Journey.present(document, signup_status(%{"back" => back}), %{})
+
+        {:ok, with} =
+          Journey.present(
+            document,
+            signup_status(%{"back" => back, "progress" => progress}),
+            %{}
+          )
+
+        assert with == Map.put(without, "progress", progress)
+      end
+    end
+
+    # Sabotage: accepted a step above of; the step 4 of 3 was answered as a
+    # screen and this test went red. And again with the step's floor moved
+    # from 1 to 0; the step 0 of 3 was answered as a screen.
+    test "refuses a progress that is not a map of step and of, each at least 1, step not above of" do
+      document = Document.admit(@signup)
+      a_struct = URI.parse("/") |> Map.put("step", 1) |> Map.put("of", 3)
+
+      malformed = [
+        "1 of 3",
+        nil,
+        [1, 3],
+        a_struct,
+        %{"of" => 3},
+        %{"step" => 1},
+        %{"step" => 1.5, "of" => 3},
+        %{"step" => "1", "of" => 3},
+        %{"step" => 1, "of" => 3.5},
+        %{"step" => 1, "of" => nil},
+        %{"step" => 0, "of" => 3},
+        %{"step" => -1, "of" => 3},
+        %{"step" => 1, "of" => 0},
+        %{"step" => 4, "of" => 3},
+        %{step: 1, of: 3}
+      ]
+
+      for progress <- malformed do
+        assert Journey.present(document, signup_status(%{"progress" => progress}), %{}) ==
+                 {:error, :unknown_status},
+               "progress #{inspect(progress)} was not refused"
+      end
+    end
+
+    # Pins the order the moduledoc states: the opts are read before the key is
+    # looked up, so malformed opts answer an unknown status whatever the key
+    # names, and well-formed opts answer a missing screen for an undeclared
+    # key.
+    #
+    # Sabotage: resolved the screen before reading the opts; the malformed
+    # opts on an undeclared key answered :no_such_screen and this test went
+    # red.
+    test "refuses malformed opts as an unknown status before it looks the key up" do
+      document = Document.admit(@signup)
+      undeclared = fn opts -> {:screen, "business_review", opts} end
+
+      for opts <- [%{"back" => "yes"}, true, %{"progress" => %{"step" => 4, "of" => 3}}] do
+        assert Journey.present(document, undeclared.(opts), %{}) == {:error, :unknown_status},
+               "opts #{inspect(opts)} on an undeclared key was not an unknown status"
+      end
+
+      assert Journey.present(
+               document,
+               undeclared.(%{"progress" => %{"step" => 1, "of" => 3}}),
+               %{}
+             ) == {:error, :no_such_screen}
+    end
+  end
+
   describe "present/3 for waiting and done" do
     # Sabotage: made the waiting clause answer "done"; the state no longer
     # matched and this test went red.

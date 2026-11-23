@@ -36,6 +36,9 @@
           "moves": {
             "$ref": "#/definitions/moves"
           },
+          "progress": {
+            "$ref": "#/definitions/progress"
+          },
           "screen": {
             "$ref": "#/definitions/screen"
           }
@@ -546,6 +549,24 @@
       },
       "required": [
         "type"
+      ],
+      "type": "object"
+    },
+    "progress": {
+      "description": "How far through the Journey the visitor is, as the host supplied it: step of of, step not above of. A screen state carries it only where the host supplied it, and a client draws progress only where it is there.",
+      "properties": {
+        "of": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "step": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "step",
+        "of"
       ],
       "type": "object"
     },

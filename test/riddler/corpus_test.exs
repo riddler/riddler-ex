@@ -64,7 +64,7 @@ defmodule Riddler.CorpusTest do
     "corpus/screens/validate_screen.json" => 78,
     "corpus/screens/seal_secrets.json" => 15,
     "corpus/templates/render.json" => 74,
-    "corpus/journey/present.json" => 50,
+    "corpus/journey/present.json" => 72,
     "corpus/journey/put_context.json" => 8,
     "corpus/journey/decode_submit.json" => 22,
     "corpus/journey/from_data.json" => 18,
@@ -576,6 +576,33 @@ defmodule Riddler.CorpusTest do
                schema,
                Map.put(screen_answer(), "moves", Map.delete(moves, "back"))
              )
+    end
+
+    # Sabotage: dropped "minimum" from the progress step in the schema; the
+    # step of zero validated and this test went red. And again with "of"
+    # dropped from the progress's required list; the progress with no of
+    # validated.
+    test "admits an optional progress on a screen state, its step and of integers of at least 1" do
+      schema = resolved_schema(@presented_schema)
+      progress = %{"step" => 1, "of" => 3}
+
+      assert ExJsonSchema.Validator.valid?(schema, screen_answer())
+      assert ExJsonSchema.Validator.valid?(schema, Map.put(screen_answer(), "progress", progress))
+
+      for malformed <- [
+            %{"step" => 0, "of" => 3},
+            %{"step" => 1, "of" => 0},
+            %{"step" => 1.5, "of" => 3},
+            %{"step" => 1},
+            %{"of" => 3},
+            "1 of 3"
+          ] do
+        refute ExJsonSchema.Validator.valid?(
+                 schema,
+                 Map.put(screen_answer(), "progress", malformed)
+               ),
+               "progress #{inspect(malformed)} validated"
+      end
     end
 
     # Sabotage: dropped "outcome" from the button's required list in the
