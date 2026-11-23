@@ -1,0 +1,3 @@
+### Added
+
+- `Riddler.Journey.Access`, the behaviour a host implements to say who may see and step a Journey - `member?/2`, `scopes/1` and an optional `allowed?/3` per operation (`:present`, `:submit`, `:back`) - with `check/4`, the one pure check a renderer asks, answering `:ok` or `{:error, :no_such_journey}`, the same refusal for a Journey that is not the actor's as for one that does not exist, and `check_kind/2`, answering `:ok` when a scope's kind is the kind the host's Path record names, byte for byte, and `{:error, :wrong_scope_kind}` otherwise; a host that does not implement it sees every existing answer unchanged, and the conformance corpus's new `journey.check` and `journey.check_kind` capabilities state what both checks answer.

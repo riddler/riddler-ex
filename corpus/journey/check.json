@@ -1,0 +1,475 @@
+{
+  "capability": "journey.check",
+  "cases": [
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "A member of the merchant's scope may present its Journey"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "submit",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "A member of the merchant's scope may submit its Journey"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "back",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "A member of the merchant's scope may go back in its Journey"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          },
+          {
+            "id": "T-42",
+            "kind": "tenant"
+          }
+        ],
+        "operation": "submit",
+        "scope": {
+          "id": "T-42",
+          "kind": "tenant"
+        }
+      },
+      "name": "A member of a tenant and a merchant is a member of each"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "S-77",
+            "kind": "signup"
+          }
+        ],
+        "operation": "submit",
+        "scope": {
+          "id": "S-77",
+          "kind": "signup"
+        }
+      },
+      "name": "A signup applicant may submit the signup Journey that is theirs"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-2002",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "Another merchant's Journey is refused as if it did not exist"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": [],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An actor who belongs to no scope is refused"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": "M-1001",
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An actor that is not a list belongs to no scope"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "Merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "The same kind and id in another case is another scope"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant",
+            "label": "Main street"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An item carrying a key beside kind and id is not the scope's data form"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant",
+          "label": "Main street"
+        }
+      },
+      "name": "A key beside kind and id in the scope is not read"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "access": "present_only",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "Where only presenting is allowed, a member may present"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "present_only",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "submit",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "Where only presenting is allowed, a member may not submit"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "present_only",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "back",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "Where only presenting is allowed, a member may not go back"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "present_only",
+        "actor": [
+          {
+            "id": "M-2002",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "Where only presenting is allowed, one who is not a member may not present"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "not_boolean",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "A membership stated as the string true is not a yes"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "admins",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An access module no runtime supplies is refused"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": null,
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An access module stated as null is refused"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "approve",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An operation outside the three is refused"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "PRESENT",
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An operation is not case-folded"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": null,
+        "scope": {
+          "id": "M-1001",
+          "kind": "merchant"
+        }
+      },
+      "name": "An operation stated as null is refused"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": {
+          "kind": "merchant"
+        }
+      },
+      "name": "A scope missing its id is refused"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": "merchant:M-1001"
+      },
+      "name": "A scope stated as a string is refused rather than parsed"
+    },
+    {
+      "expected": {
+        "error": "no_such_journey"
+      },
+      "input": {
+        "access": "members",
+        "actor": [
+          {
+            "id": "M-1001",
+            "kind": "merchant"
+          }
+        ],
+        "operation": "present",
+        "scope": null
+      },
+      "name": "A scope stated as null is refused"
+    }
+  ],
+  "name": "Asking whether an actor may present, submit or go back in a Journey of a scope: ok only when the host says yes to every question it is asked, and one refusal for every other answer, whatever its cause"
+}

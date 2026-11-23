@@ -16,8 +16,10 @@ defmodule Riddler.Corpus do
   # files and the schemas are not in the package tarball, so this module is
   # meaningful in a checkout of this repository and nowhere else.
 
+  alias Riddler.Corpus.TestAccess
   alias Riddler.Encoding
   alias Riddler.Journey
+  alias Riddler.Journey.Access
   alias Riddler.Journey.Scope
   alias Riddler.Screens
   alias Riddler.Screens.Document
@@ -34,7 +36,9 @@ defmodule Riddler.Corpus do
     "corpus/journey/present.json",
     "corpus/journey/put_context.json",
     "corpus/journey/decode_submit.json",
-    "corpus/journey/from_data.json"
+    "corpus/journey/from_data.json",
+    "corpus/journey/check.json",
+    "corpus/journey/check_kind.json"
   ]
 
   @schema_files [
@@ -193,6 +197,32 @@ defmodule Riddler.Corpus do
     end
   end
 
+  # The access module is the fixed test access module the case names, as
+  # `test_access/1` gives it. The actor is handed over as the case states it,
+  # and the scope and the operation as `case_scope/1` and `case_operation/1`
+  # give them.
+  # A pass is stated as `"ok"`, and a refusal as error and its reason.
+  defp run("journey.check", input) do
+    answered =
+      Access.check(
+        test_access(input["access"]),
+        input["actor"],
+        case_scope(input["scope"]),
+        case_operation(input["operation"])
+      )
+
+    encode_check(answered)
+  end
+
+  # The scope as `case_scope/1` gives it, and the expected kind handed over as
+  # the case states it, any JSON value. Stated as the access cases state theirs.
+  defp run("journey.check_kind", input) do
+    input["scope"]
+    |> case_scope()
+    |> Access.check_kind(input["expected_kind"])
+    |> encode_check()
+  end
+
   # A case states the status a host passes as JSON, which has no tuple and no
   # atom: `"waiting"` and `"done"` are the two bare statuses, `"screen"` is
   # `{:screen, key}` with the key under the input's own `"screen"`, and
@@ -211,6 +241,34 @@ defmodule Riddler.Corpus do
   defp status(%{"status" => "done", "result" => result}), do: {:done, result}
   defp status(%{"status" => "done"}), do: :done
   defp status(input), do: input["status"]
+
+  defp encode_check(:ok), do: %{"ok" => true}
+  defp encode_check({:error, reason}), do: %{"error" => Atom.to_string(reason)}
+
+  # The three fixed test access modules, by the name a case gives each; the
+  # file that defines them says what each answers. Any other value is handed
+  # over as itself, which is not a module exporting `member?/2`.
+  defp test_access("members"), do: TestAccess.Members
+  defp test_access("present_only"), do: TestAccess.PresentOnly
+  defp test_access("not_boolean"), do: TestAccess.NotBoolean
+  defp test_access(other), do: other
+
+  # A scope is stated in its data form: handed over as the `Scope` that
+  # `Scope.from_data/1` gives for it where that reads it, and as the case
+  # states it otherwise.
+  defp case_scope(data) do
+    case Scope.from_data(data) do
+      {:ok, scope} -> scope
+      {:error, :invalid_scope} -> data
+    end
+  end
+
+  # `present`, `submit` and `back` are handed over as those operations, and any
+  # other value as itself, which is an operation outside the three.
+  defp case_operation("present"), do: :present
+  defp case_operation("submit"), do: :submit
+  defp case_operation("back"), do: :back
+  defp case_operation(other), do: other
 
   # The fixed test sealer, the same in every runtime so that a case can state
   # what it answers. It counts the plaintexts it is handed within one call,
