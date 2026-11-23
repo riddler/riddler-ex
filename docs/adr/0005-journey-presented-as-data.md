@@ -1500,7 +1500,7 @@ the pure check does with an answer that is not `true`, the progress
 option's shape and where it sits in the answer, and the corpus
 capabilities - is this entry's own, written 2026-11-23 at `proposed`.
 
-Every cite below of the package as it stands is read at `fea9e05`. The code
+Every cite below of the package as it stands is read at `ba33a99`. The code
 half is separate requests (bead rd-u3qf for the scope; rd-4bn8 for the
 access behaviour, its check and the kind check; rd-1l4y for the host
 behaviour; rd-w87s for progress). Nothing below is citable from `lib/`,
@@ -1562,14 +1562,18 @@ answers `:ok` or `{:error, :no_such_journey}`, and nothing else:
 | `member?(actor, scope)` answers `true`, and `access` does not export `allowed?/3` | `:ok` |
 | `member?(actor, scope)` answers `true`, and `allowed?(actor, scope, operation)` answers `true` | `:ok` |
 | `member?/2` or `allowed?/3` answers anything other than `true`, `false` included | `{:error, :no_such_journey}` |
-| `scope` not a `Scope` struct, `operation` outside the three, or `access` not a module exporting `member?/2` | `{:error, :no_such_journey}` |
+| `scope` not a `Scope` struct, `operation` outside the three, or `access` not an atom naming a module that exports `member?/2` | `{:error, :no_such_journey}` |
 
-`allowed?/3` is called only after `member?/2` has answered `true`. The
-refusal is spelled in the register of `:no_such_screen` (Decision 3), and it
-does not say why: a renderer that asks for a Journey that is not the
-actor's is answered exactly as it would be for a Journey that does not
-exist, so a refusal tells the asker nothing about which Journeys exist. Every
-doubt is a refusal: an answer that is not exactly `true` refuses.
+What `access` exports is read after `Code.ensure_loaded/1` on it, in every
+row above, so a module not yet loaded is not taken for one that does not
+export the callback; an `access` that is not an atom is refused without
+being loaded. `allowed?/3` is called only after `member?/2` has answered
+`true`. The refusal is spelled in the register of `:no_such_screen`
+(Decision 3), and it does not say why: a renderer that asks for a Journey
+that is not the actor's is answered exactly as it would be for a Journey
+that does not exist, so a refusal tells the asker nothing about which
+Journeys exist. Every doubt is a refusal: an answer that is not exactly
+`true` refuses.
 
 `check/4` is pure in this package's sense: it keeps no state, starts no
 process and reads no store or execution. It calls the host's two callbacks
@@ -1619,15 +1623,19 @@ change once the Journey starts.
 **What a renderer asks, and when.** A renderer asks `check/4` with the
 Journey's scope:
 
+- before a start, with `:present` and the scope the Journey is to be
+  started under, before `start/2` is called, so that no Journey is
+  started under a scope the actor does not belong to;
 - on mount, with `:present`, after `present/1` and before anything of the
   answer is shown;
 - on every submit, with `:submit`, before `submit/2` is called;
 - on every back, with `:back`, before `back/2` is called.
 
 On `{:error, :no_such_journey}` it shows the one refusal, shows nothing of
-the Journey, and calls no callback that would step it. It asks again on
-every submit and every back rather than once, because whether an actor
-belongs to a scope is the host's, and can change while a Journey is open.
+the Journey, and calls no callback that would start or step it. It asks
+again on every submit and every back rather than once, because whether an
+actor belongs to a scope is the host's, and can change while a Journey is
+open.
 This package renders nothing and sees no renderer, so it cannot enforce
 the order; it is stated here as the contract a renderer is built to, as
 the fallback for an unknown node type is in the Amendment of 2026-11-18
@@ -1650,7 +1658,7 @@ carries one that is not an integer, below 1, or a `"step"` above `"of"`,
 makes the status one outside the shapes, and Decision 3's table answers it
 on its row "anything else", `{:error, :unknown_status}`, as a `"back"` that
 is not a boolean is answered (the private `back/1` in
-`lib/riddler/journey.ex` at `fea9e05`). This package does not count steps
+`lib/riddler/journey.ex` at `ba33a99`). This package does not count steps
 and does not compute progress: how far through a Path a visitor is, is the
 host's engine's to know. A renderer draws progress only when the answer
 carries it.
@@ -1658,7 +1666,7 @@ carries it.
 **Skip stays an authored button.** A screen a visitor may leave without
 filling it carries a button raising its own outcome with `validates` false,
 as a Back button does (the `Riddler.Screens.Type.Button` moduledoc at
-`fea9e05`, "the opt-out is what lets a Back button leave a half-filled
+`ba33a99`, "the opt-out is what lets a Back button leave a half-filled
 screen without an error"). There is no generic skip: `"moves"` gains no key
 for one, and no submit shape is added for one.
 
@@ -1666,18 +1674,42 @@ for one, and no submit shape is added for one.
 optional `"progress"` object on a screen answer, its `"step"` and `"of"`
 integers of at least 1, in the release whose code presents it. The scope,
 the access check and the kind check are held to the corpus by three new
-capabilities, by Decision 5's convention, each with one case file:
-`journey.scope` (`corpus/journey/scope.json`, `Scope.from_data/1`),
-`journey.check_access` (`corpus/journey/check_access.json`, `check/4`) and
-`journey.check_kind` (`corpus/journey/check_kind.json`, `check_kind/2`).
-Their input and answer are not `present/3`'s, so they are capabilities of
-their own; the corpus case schema's capability enumeration gains the three
-(`priv/schemas/corpus-case.schema.json` at `fea9e05`, the enumeration under
-`capability`). A `journey.check_access` case runs against fixed test access
-modules the runner supplies, as a `screens.seal_secrets` case runs against
-the one test sealer, and a case states its answer as `{"ok": true}` or as
-`{"error": "no_such_journey"}`. A refusal in the other two is stated as
-`{"error": reason}`, as Decision 5 states one. Progress is held in the
+capabilities, by Decision 5's convention, each with one case file. Each
+existing capability id names an area and a function of it, as
+`journey.present` names `present/3` and `screens.admit` names `admit/1`
+(the enumeration under `capability` in
+`priv/schemas/corpus-case.schema.json` at `ba33a99`), and the new ids
+follow it: `journey.from_data` (`corpus/journey/from_data.json`,
+`Scope.from_data/1`), `journey.check` (`corpus/journey/check.json`,
+`check/4`) and `journey.check_kind` (`corpus/journey/check_kind.json`,
+`check_kind/2`). Their input and answer are not `present/3`'s, so they are
+capabilities of their own. The corpus case schema's capability enumeration
+gains the three, and the description beside it, which says what each
+capability exercises, gains a sentence for each; the description of a
+case's input says what each of the three takes, as it does for the
+existing ones.
+
+A `journey.check` case runs against fixed test access modules the runner
+supplies, as a `screens.seal_secrets` case runs against the one test
+sealer, and a case states its answer as `{"ok": true}` or as
+`{"error": "no_such_journey"}`. Its input carries `access`, `actor`,
+`scope` and `operation`. `actor` is handed over as the case states it, any
+JSON value. `scope` is handed over as the `Scope` that `Scope.from_data/1`
+gives for it where that answers `{:ok, ...}`, and as the case states it
+otherwise. `operation` is `present`, `submit` or `back`, handed over as
+that operation, and any other value is handed over as itself, which is an
+operation outside the three. `access` names one of the three test access
+modules below, and any other value is handed over as itself, which is not
+a module exporting `member?/2`. Every runtime supplies the three:
+
+| Name | `member?(actor, scope)` | `scopes(actor)` | `allowed?(actor, scope, operation)` |
+|---|---|---|---|
+| `members` | `true` when `actor` is a list holding `Scope.to_data(scope)`, `false` otherwise | the items of `actor` that `Scope.from_data/1` admits, as `Scope` structs, in order; `[]` when `actor` is not a list | not exported |
+| `present_only` | as `members` | as `members` | `true` when `operation` is `:present`, `false` otherwise |
+| `not_boolean` | the string `"true"`, for every actor and scope | `[]` | not exported |
+
+A refusal in the other two is stated as `{"error": reason}`, as Decision 5
+states one. Progress is held in the
 existing `journey.present` capability and its one case file,
 `corpus/journey/present.json`, because it is a screen option `present/3`
 reads.
@@ -1703,7 +1735,7 @@ A contract for the code half, as the record's own typespecs are.
 @callback allowed?(actor(), Riddler.Journey.Scope.t(), operation()) :: boolean()
 @optional_callbacks allowed?: 3
 
-@spec check(module(), actor(), term(), term()) :: :ok | {:error, :no_such_journey}
+@spec check(term(), actor(), term(), term()) :: :ok | {:error, :no_such_journey}
 @spec check_kind(term(), term()) :: :ok | {:error, :wrong_scope_kind}
 
 # Riddler.Journey.Host
@@ -1731,9 +1763,9 @@ Optionally "back" => boolean() and "progress" => %{"step" => pos_integer(),
 @type screen_opts :: map()
 ```
 
-`check/4`'s scope and operation, and `check_kind/2`'s two arguments, are typed
-`term()` because a value outside the types is answered with the refusal
-rather than left outside the function. `present/3`, `put_context/2`,
+`check/4`'s access module, scope and operation, and `check_kind/2`'s two
+arguments, are typed `term()` because a value outside the types is
+answered with the refusal rather than left outside the function. `present/3`, `put_context/2`,
 `decode_submit/1` and their specs are as the record and its Amendments give
 them.
 
