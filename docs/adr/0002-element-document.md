@@ -4428,3 +4428,432 @@ amendment of 2026-11-19 in ADR-0005 headed "the back request, and a button's
 outcome is a string". Read that amendment for the finding's `field`, its
 `node_key` and its order against `document.duplicate_outcome`. Nothing above
 is changed, and this note decides nothing.
+
+---
+
+## Amendment, 2026-11-24: the children of a screen are `elements`, as `schema_version` 2
+
+Status: proposed
+
+Recorded 2026-11-24, bead rd-jezd. That the children of a screen and of a
+container are renamed from `nodes` to `elements` as version 2 of the
+document, with a version 1 document still admitted, was ruled by the
+operator, 2026-11-24; it reverses the earlier decision that named them
+`nodes`, and this entry does not argue that decision again. That every
+finding names the element it belongs to as `element_key`, to be revisited
+only if a second document kind ever exists, was ruled by the operator,
+2026-11-24. That version 1 is admitted until the documents of the hosts in
+production have been rewritten to version 2 by the upgrade task, and is then
+dropped, was ruled by the operator, 2026-11-24. That the other version's
+spelling is refused by one finding naming the refused key, that an absent
+`schema_version` stays version 1, that the screen document schema stays one
+file describing both versions with its child definition named `element`,
+how the corpus holds the two versions, that a resolved screen keeps the
+`schema_version` its document declared and spells `elements` for either
+version, and that the earlier sentences on the word are superseded by a rule
+rather than edited were decided by the conductor under a standing consent,
+2026-11-24. The rest - the finding's code and fields, what admission reads
+under each version, the renamed surface, the schema's shape, and what a host
+changes - is this entry's own, written 2026-11-24 at `proposed`.
+
+Every cite below of the package as it stands is read at `59f58db`. The code
+half is separate requests; nothing below is citable from `lib/`, `priv/` or
+`corpus/` until they land, so what they add is described here, not cited.
+ADR-0005 carries the companion amendment of the same date, headed "a
+presented screen carries `elements`, and a finding `element_key`", for the
+presented answer and a finding's wire form.
+
+### What the record now decides
+
+**A screen's children are its elements.** What this record calls a node - a
+child of a screen, and a candidate of a `variant` - is an element from this
+entry on. A version 2 document spells the list a screen carries, and the list
+a `variant` carries, `elements`; a version 1 document spells both `nodes`, as
+every document has until now. An element's `type`, `key` and `condition`, the
+fields each type names, and every rule this record and its amendments state
+about a node are unchanged and hold of an element: a key in
+`[a-z][a-z0-9_]*`, unique across the whole document; a type the registry
+knows; a condition over `context.*` and `responses.*`. The kind stays
+`screens`, and the body key `screens`, the modules under `Riddler.Screens`
+and the corpus capabilities `screens.*` keep their names. The Consequences
+paragraph on the first release's `Riddler.Elements` stands: no module and no
+capability is named for the element.
+
+**`schema_version` is 1 or 2.** The envelope's `schema_version` is the
+integer `1` or the integer `2`. A document that carries no `schema_version`
+is version 1, as it is admitted today (the private
+`schema_version_findings/1` in `lib/riddler/screens/document.ex` at
+`59f58db` raises nothing for an absent version); version 2 is written
+explicitly. A number with no fractional part is its integer, so `2.0` is
+version 2, as the amendment above of 2026-10-20 reads `1.0`. Any other
+integer is refused `document.invalid_schema_version`, as an integer other
+than `1` is today (the module attribute `@schema_version` in the same file);
+its message names the two versions this package implements.
+
+**Each version has exactly one spelling, and the other is refused by name.**
+In a version 1 document a screen and a `variant` carry their children under
+`nodes`; in a version 2 document, under `elements`. A screen or a `variant`
+that carries the other version's key - `elements` in a version 1 document,
+`nodes` in a version 2 one - is refused by `validate/1` with one finding,
+whether or not it also carries its own version's key:
+
+| Finding field | Value |
+|---|---|
+| `code` | `"document.other_version_spelling"`, a new code |
+| `field` | the key refused: `"elements"` or `"nodes"` |
+| `element_key` | the key of the screen or the `variant` that carries it, by the rule every finding's key follows: `nil` where that key is absent or is not a string |
+| `message` | the code half's, in the register of the existing findings, naming the key the document's version spells |
+
+This is the record's rule under "The vocabulary is fixed here for every
+document, case and schema downstream", applied to a version: "nothing is
+accepted and rewritten, because a document that is accepted under two
+spellings will be authored under both". Neither version admits the other's
+key as a second spelling of its own, and no call but the upgrade task's
+rewrites a document.
+
+What admission reads under each version:
+
+- A screen's or a `variant`'s children are read from its own version's key
+  and from no other. A value under the other version's key is held to the
+  shape the schema gives it (below), and is then carried nowhere: nothing
+  under it is admitted, validated or resolved, and the one finding above is
+  all it raises. So a version 2 screen that spells only `nodes` is admitted
+  with no elements and that finding; a version 2 `variant` that spells only
+  `nodes` raises that finding and no finding about its missing candidates,
+  neither `document.missing_field` nor `document.empty_variant`.
+- A screen that carries neither key is not a document, as a screen with no
+  list of nodes is not one today (the `admit/1` documentation in
+  `lib/riddler/screens/document.ex` at `59f58db`, "a screen with no list of
+  nodes"). A screen or a `variant` whose own key holds a value that is not a
+  list of elements is not a document either, as today.
+- On an element whose type reads no children, `nodes` and `elements` are
+  fields the type does not name, dropped at admit with no finding, as `nodes`
+  is on such a node today (the private `unread_nodes/1` in the same file).
+  The refusal is about the key a screen or a container spells its children
+  under, and only a screen and a container have children.
+- A version 1 document that spells `nodes` wherever it has children, as
+  every document admitted today does, is admitted, validated and resolved as
+  at `59f58db`, finding for finding, but for the finding field's name below
+  and the spelling of what resolution answers.
+
+**What admission builds is the package's reading, under one name.** The
+admitted document is `Riddler.Screens.Document`'s struct, and the struct is
+not the JSON: a screen in it carries its children as `elements`, and a
+`variant` its candidates as `elements`, whichever version the document was
+written in. That is the package reading a document under the one spelling its
+version has, not accepting a second spelling of it. The struct keeps
+`schema_version` as the document declared it, `nil` where it declared none.
+
+**A resolved screen spells `elements`, for a document of either version.**
+`Riddler.Screens.resolve/2` and `resolve_screen/3` answer screens whose
+children are `elements`, so the Decision's paragraph "A resolved screen is
+the same shape as the screen it came from" now reads: same envelope, same
+screen `key` and `title`, elements in the same order, with the same four
+differences and one addition. A resolved document keeps `schema_version` as
+its document declared it (`resolve/2` in `lib/riddler/screens.ex` at
+`59f58db` copies `document.schema_version` onto the `Riddler.Screens.Resolved`
+it builds), so a resolved version 1 document carries `schema_version` `1`, or
+none, and `elements`. What resolution answers is the package's answer and has
+one spelling; a document's version says how the document was written, not how
+the answer is. ADR-0005's companion amendment decides the same of the
+presented answer.
+
+**Every finding names its element as `element_key`.** `Riddler.Finding`'s
+field `node_key` is renamed `element_key`: the same value, a string or `nil`,
+by the same rule (the `:node_key` bullet of the `Riddler.Finding` moduledoc at
+`59f58db`), on every finding this package raises - the `document.*`,
+`response.*`, `submit.*` and `template.*` findings and the `seal_secrets/4`
+refusals - whatever version the document is. The struct carries no `node_key`
+beside it. In a finding's data form the key is `"element_key"`, and the corpus
+compares a finding by `"code"`, `"field"` and `"element_key"` where it
+compares by `"node_key"` today (`encode_findings/1` in `lib/riddler/corpus.ex`
+at `59f58db`). The diagnostics are unchanged: an entry in
+`missing_variables` or `undecidable_conditions` names its element by `key`, as
+it names a node today.
+
+**The public surface named for a node is renamed for the element.** At
+`59f58db` that surface is the `:node_key` field of `Riddler.Finding`, the type
+`Riddler.Screens.Type.node_t/0`, and the `nodes` field of the `screen` types
+of `Riddler.Screens.Document` and `Riddler.Screens.Resolved`. Each says
+element in its place: the field `:element_key`, the type
+`Riddler.Screens.Type.element/0`, and the field `elements`. The documentation
+of every module that says node for a screen's child says element. No function
+is added or removed by the rename, and no function's arguments change.
+
+**One screen document schema describes both versions.**
+`priv/schemas/screen-document.schema.json` stays the one document schema
+(`test/packaging_test.exs` at `59f58db` holds the package to exactly one). Its
+definition `node` is named `element`. A screen and an element each type
+`elements` and `nodes` as a list of elements, and a screen requires one of the
+two; `schema_version` stays typed an integer, and the schema's description of
+it names the two versions and the key each spells. The schema makes neither
+key required nor forbidden by the value of `schema_version`: a document whose
+screen or container carries the other version's key is a document, refused by
+the finding above, and a `schema_version` other than 1 and 2 is a finding too,
+so both stay findings against an admitted document and the schema's own
+sentence "schema-valid means admitted" stays true. `finding.schema.json` names
+and requires `element_key` in place of `node_key`, and the corpus case schema's
+description of a finding in an expected answer names `code`, `field` and
+`element_key`.
+
+**The corpus holds both versions.** The version 1 cases stay in their
+capability files with their inputs as written; version 2 cases sit beside
+them in the same files, under the same capabilities. No capability is added
+for a version and no case carries a version of its own: a case's document
+says its version in its envelope. The expected side of every case, of either
+version, is the package's answer, so a resolved or presented screen in it
+spells `elements` and a finding in it carries `element_key`. Among the version
+2 cases are the refusal above in both directions.
+
+**The upgrade task, and the end of version 1.** A host rewrites a version 1
+document as version 2 with `mix riddler.upgrade`, which takes the path of a
+document, or with a pure function the package exposes that takes a decoded
+document, for a host to call from its own migration. Each makes exactly two
+changes: `schema_version` becomes `2`, and the `nodes` of every screen and
+every `variant` becomes `elements`, its list as written. Nothing else in the
+document is read or changed, so a document that is wrong stays wrong in the
+same way and is refused by the same findings. Version 1 admission ends once
+the documents of the hosts in production have been rewritten by the upgrade
+task, and that retirement is its own later change: this entry gives it no
+date and no release, and until it lands a version 1 document is admitted as
+above.
+
+### What a host on riddler 0.7.0 changes
+
+- **Its documents: nothing, to keep them admitted.** A version 1 document, with
+  or without `schema_version`, is admitted, validated and resolved as before. A
+  host writing a new document may write it at version 2; one rewriting its
+  existing documents runs the upgrade task. One case is refused that 0.7.0
+  admitted: a version 1 document whose screen or `variant` carries an
+  `elements` key, which 0.7.0 dropped as a field it does not know, now raises
+  `document.other_version_spelling`.
+- **What resolution answers.** A resolved screen's children are `elements`,
+  the struct field and the data form's key alike, where they were `nodes`.
+- **A finding.** `finding.node_key` is `finding.element_key`, and a finding's
+  `"node_key"` in its data form is `"element_key"`.
+- **Code naming the types.** `Riddler.Screens.Type.node_t/0` is
+  `Riddler.Screens.Type.element/0`.
+- **A runtime in another language.** It re-vendors the corpus from the tag of
+  the release that makes the change; the expected answers of its version 1
+  cases spell `elements` and `element_key` there, and version 2 cases are
+  beside them.
+- **A presented answer.** ADR-0005's companion amendment says what a client
+  of `Riddler.Journey.present/3` reads.
+
+### Typespecs
+
+A contract for the code half, as the record's own typespecs are. Each
+replaces the type of the same role in the Typespecs section above; nothing
+else there changes.
+
+```elixir
+# A screen, in Riddler.Screens.Document and Riddler.Screens.Resolved.
+@type screen :: %{key: String.t(), title: String.t(), elements: [element()]}
+
+# Riddler.Screens.Type, in place of node_t/0. A variant carries its
+# candidates as :elements.
+@type element :: %{
+        :type => String.t(),
+        :key => String.t(),
+        optional(:condition) => String.t(),
+        optional(atom()) => term()
+      }
+
+# Riddler.Finding: node_key renamed element_key, nothing else changed.
+@type t :: %Riddler.Finding{
+        code: String.t(),
+        message: String.t(),
+        field: String.t() | nil,
+        element_key: String.t() | nil,
+        position: position() | nil,
+        author_message: String.t() | nil
+      }
+```
+
+### Worked examples
+
+These are from patron registration, a visitor becoming a library patron, the
+example world the repository names for new teaching text.
+
+A version 2 document:
+
+```json
+{
+  "schema_version": 2,
+  "id": "patron_registration",
+  "screens": [
+    {
+      "key": "patron_details",
+      "title": "Get your library card",
+      "elements": [
+        {
+          "type": "text",
+          "key": "welcome_back",
+          "condition": "context.returning == 'yes'",
+          "text": "Welcome back, {{ context.first_name }}."
+        },
+        {
+          "type": "text_question",
+          "key": "reminder_email",
+          "label": "Email for due-date reminders",
+          "required": true,
+          "format": "email"
+        },
+        {
+          "type": "variant",
+          "key": "card_notice",
+          "elements": [
+            {
+              "type": "text",
+              "key": "card_notice_child",
+              "condition": "context.age < 13",
+              "text": "A parent or guardian signs for a child card."
+            },
+            {
+              "type": "text",
+              "key": "card_notice_adult",
+              "text": "Your card is ready the same day."
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "key": "details_next",
+          "label": "Continue",
+          "outcome": "details_submitted"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Its version 1 form is the same document with `"schema_version": 1`, or no
+`schema_version`, and both `"elements"` keys spelled `"nodes"`. That version 1
+form is what the upgrade task takes, and the document above is what it
+writes.
+
+Resolved with `resolve_screen(document, "patron_details", root)`, where the
+root's `"context"` is `{"returning": "yes", "first_name": "Ada", "age": 34}`,
+either form answers this screen, in its data form:
+
+```json
+{
+  "key": "patron_details",
+  "title": "Get your library card",
+  "elements": [
+    {"type": "text", "key": "welcome_back", "text": "Welcome back, Ada."},
+    {
+      "type": "text_question",
+      "key": "reminder_email",
+      "label": "Email for due-date reminders",
+      "required": true,
+      "format": "email"
+    },
+    {"type": "text", "key": "card_notice_adult", "text": "Your card is ready the same day."},
+    {"type": "button", "key": "details_next", "label": "Continue", "outcome": "details_submitted"}
+  ]
+}
+```
+
+The variant is replaced by its winner, the child-card notice's condition
+being false, and the version the document was written in changes nothing in
+the screen. `resolve/2` over the version 1 form answers a resolved document
+whose `schema_version` is `1`, or absent, and whose screens spell `elements`.
+
+Things an author might write, and what `validate/1` says of each:
+
+- The version 2 document above with its screen's `"elements"` spelled
+  `"nodes"`: one finding, `document.other_version_spelling`, its `field`
+  `"nodes"` and its `element_key` `"patron_details"`. The screen is admitted
+  with no elements, so nothing under `"nodes"` is checked.
+- The version 2 document above with only the `card_notice` variant's
+  `"elements"` spelled `"nodes"`: one finding, `document.other_version_spelling`,
+  its `field` `"nodes"` and its `element_key` `"card_notice"`, and no
+  `document.missing_field` or `document.empty_variant` for the variant.
+- The version 1 form with its screen's `"nodes"` spelled `"elements"`: one
+  finding, `document.other_version_spelling`, its `field` `"elements"` and its
+  `element_key` `"patron_details"`.
+- Either form with `"schema_version": 3`: `document.invalid_schema_version`,
+  its `field` `"schema_version"` and its `element_key` `nil`.
+
+Validated with `validate_screen(document, "patron_details", root)`, where the
+root's `"responses"` holds `"reminder_email": "ada-at-example"`, either form
+answers one finding, `response.format`, its `field` `"format"` and its
+`element_key` `"reminder_email"`, where riddler 0.7.0 answers the same finding
+with `node_key` `"reminder_email"`.
+
+### Which sentences this supersedes
+
+By rule, not one by one. From this entry on, wherever this record, its
+amendments and its notes say node, nodes or `node_key` of a child of a screen
+or of a container, read element, `elements` and `element_key`; `nodes` stays
+the key a version 1 document spells, and only there. Nothing above is edited:
+the dated amendments and notes stay as written, and each reads under this
+rule. The sentences of the Decision that the rule reaches are these, by their
+lead sentences:
+
+- "A document is a JSON object with an envelope and screens." - its
+  "`schema_version`, an integer, `1` in this version" reads `1` or `2`, as
+  above.
+- "A screen is `key`, `title` and `nodes`." - a screen is `key`, `title` and
+  `elements` at version 2, and `nodes` at version 1.
+- "Every node has a `type`, ...", "Every node has a `key`." and "A node may
+  carry a `condition`, ..." - each is said of an element.
+- "The node vocabulary, `responses`, buttons, `outcome` and `writes` are the
+  screens kind's and no other's." - the element vocabulary.
+- "The v1 types are `heading`, `text`, `text_question`, `button` and
+  `variant`." - its "`variant` carries `nodes`, a list of candidate nodes"
+  reads `elements` at version 2.
+- "A resolved screen is the same shape as the screen it came from." and "A
+  resolved document carries `diagnostics`." - as above.
+
+Beside the Decision, the Context's "what a node is" and the fixture's
+"eighteen nodes", the Consequences paragraph on the JSON Schema ("the screen
+and the common node fields"), the Typespecs' `screen` and `node_t`, and the
+worked examples' resolved screen, which spells `nodes` and now spells
+`elements`, read under the same rule. The worked examples' `variant` is a
+version 1 document's and stays one.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the rule
+stated above answers a call one way, and this entry answers the same call
+another". The Decision answers a `schema_version` of `2` with
+`document.invalid_schema_version`, and this entry admits it. A resolved screen
+answers its children as `nodes` and a finding carries `node_key`, and this
+entry answers `elements` and `element_key`. It also adds a refusal, the other
+mark the README names as sufficient: a version 1 screen or `variant` carrying
+an `elements` key is admitted at `59f58db`, the key dropped, and this entry
+refuses it.
+
+### What is unchanged
+
+A version 1 document that spells `nodes` is admitted, validated and resolved
+as before, finding for finding: every finding keeps its code, its `field`, its
+`position`, its `message` and its `author_message`, and the key it carried as
+`node_key` it carries as `element_key`. Every element type, every field, every
+finding code but the one this entry adds, every refusal and every resolution
+rule stands. `responses.<key>` still addresses a question's response by the
+question's key. The rename adds no function and no argument; the upgrade task
+and the pure function beside it, named above, are the one addition. The
+runtime dependencies stay `predicator` and `solid`. The vocabulary is the
+record's: `responses`, `context`, `outcome`, `writes`, `elements` (and `nodes`
+in a version 1 document), `element_key`, and a question owns its
+`answer_options`.
+
+### What this does not decide
+
+- When version 1 admission ends, beyond the ruling that it ends once the
+  documents of the hosts in production are rewritten, and what that later
+  change refuses.
+- What the upgrade task does with a document that is not version 1 - one
+  already at version 2, one of another version, or a version 1 document that
+  already carries an `elements` key - beyond the rule that it reads and changes
+  nothing but the version and the key.
+- Which key a document of a version other than 1 and 2 is read under, beyond
+  its `document.invalid_schema_version`.
+- ADR-0001's sentences that compare a corpus finding by `code`, `field` and
+  `node_key`: from the release that renames the field they describe the
+  comparison by `element_key`, and that record is not amended here.
+- How a renderer draws an element.

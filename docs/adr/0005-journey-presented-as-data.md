@@ -2000,3 +2000,213 @@ Three sentences are read, not changed:
   accepted, by this note.
 
 This note decides nothing.
+
+---
+
+## Amendment, 2026-11-24: a presented screen carries `elements`, and a finding `element_key`
+
+Status: proposed
+
+Recorded 2026-11-24, bead rd-jezd, the companion of ADR-0002's amendment of
+the same date headed "the children of a screen are `elements`, as
+`schema_version` 2", which decides the document, admission, resolution and
+the finding's field; this entry decides what of that crosses the wire. That
+the children of a screen are renamed from `nodes` to `elements`, with a
+version 1 document still admitted, was ruled by the operator, 2026-11-24,
+and so was `element_key` on every finding. That the presented answer spells
+`elements` for a document of either version was decided by the conductor
+under a standing consent, 2026-11-24. The rest - the answer's keys, the
+finding's wire form, the schemas and what a client changes - is this entry's
+own, written 2026-11-24 at `proposed`.
+
+Every cite below of the package as it stands is read at `59f58db`. The code
+half is separate requests; nothing below is citable from `lib/`, `priv/` or
+`corpus/` until they land, so what they add is described here, not cited.
+
+### What the record now decides
+
+**A presented screen's children are `"elements"`, for a document of either
+version.** Decision 3 says `"screen"` holds `"key"`, `"title"` and `"nodes"`
+as resolution leaves them; the key is `"elements"`. `present/3` answers the
+screen `Riddler.Screens.resolve_screen/3` answers, in its data form (the
+private `screen_data/2` in `lib/riddler/journey.ex` at `59f58db`), and
+ADR-0002's amendment of this date decides that a resolved screen spells
+`elements` whichever version its document is written in. So for the same
+screen and root, a host presenting a version 1 document and one presenting its
+version 2 form hand a client the same answer. The answer carries no
+`schema_version` and gains none: a client reads one spelling and never needs
+to know which version the host's document is. No presented answer carries
+`"nodes"`.
+
+**`"moves"` reads the presented elements.** The amendment above of
+2026-11-18 says `"outcomes"` is the `outcome` of each button among the
+presented screen's `"nodes"`; it is each button among its `"elements"`, in
+document order, by the same rule. `"moves"` is otherwise unchanged.
+
+**A finding's wire form carries `"element_key"`.** The wire form the
+amendment above of 2026-11-18 tabulates under "A finding's wire form is its
+struct's data form" has `"element_key"` where it has `"node_key"`: a string,
+or `null`, the same value by the same rule. Every key of the form is present,
+the six of the struct (`defstruct` in `lib/riddler/finding.ex` at `59f58db`
+with its field renamed): `"code"`, `"message"`, `"field"`, `"element_key"`,
+`"position"` and `"author_message"`. No finding carries `"node_key"`. A submit
+finding's `"element_key"` and `"position"` are `null`, as its `node_key` and
+`position` are today. The corpus compares a finding by `"code"`, `"field"` and
+`"element_key"`.
+
+**The schemas change with the release that makes the change.** In
+`presented-answer.schema.json` the definition `node` is named `element`, and a
+screen names and requires `"elements"` where it names and requires `"nodes"`
+(its `screen` definition's `required` at `59f58db`). In `finding.schema.json`
+`element_key` is named and required where `node_key` is. The amendment above
+of 2026-11-18 says that "No schema forbids a key it does not name", so that
+"what a later release presents still validates against this one"; that holds
+for a key a release adds, and this release removes two that earlier schemas
+require. An answer of this release does not validate against the presented
+answer's schema of riddler 0.7.0, nor a finding against its finding schema. The
+schemas are versioned with the package, as that amendment decides, and the
+release's changelog names the change. No schema forbids a key it does not name
+still: an earlier schema lets `"elements"` and `"element_key"` through, and
+what it refuses is the `"nodes"` and `"node_key"` it requires and no longer
+finds.
+
+**The enumeration and the fallback are said of elements.** The presented
+answer's schema enumerates the element types, the same types as today, and a
+client that meets an element whose `type` is not in the enumeration of the
+schema it was built against does not render that element and does not let the
+visitor submit that screen from it, as the amendment above of 2026-11-18
+decides of a node.
+
+### What a client or a host on riddler 0.7.0 changes
+
+- It reads a presented screen's `"elements"` where it read `"nodes"`. Each
+  element is what a node was: the same `"type"`, `"key"` and fields.
+- It reads a finding's `"element_key"` where it read `"node_key"`, on a
+  `document.*`, `response.*` or `submit.*` finding alike.
+- It validates an answer and a finding against the schemas of the release it
+  is built to.
+- It sends the same submit: `"screen"`, `"outcome"` and `"responses"`, a
+  response keyed by its question's key. `decode_submit/1` is unchanged but for
+  the finding field's name.
+- Its documents are ADR-0002's amendment of this date's to answer: a version 1
+  document is presented as above, with no change to it.
+
+### Typespecs
+
+The record's `screen` typedoc, as its Typespecs give it, reads:
+
+```elixir
+@typedoc """
+"key", "title", "elements" (the resolved elements, string-keyed) and
+"diagnostics" => %{"missing_variables" => [...],
+"undecidable_conditions" => [...]}.
+"""
+@type screen :: %{required(String.t()) => term()}
+```
+
+Every other type in the record and its amendments is unchanged.
+`Riddler.Finding.t()` is ADR-0002's amendment of this date's.
+
+### Worked examples
+
+Patron registration, the document of the record's own worked examples. It is
+a version 1 document, written with `"nodes"`, and it is admitted as it is. The
+root is the returning visitor's, `%{"context" => %{"returning" => "yes",
+"first_name" => "Ada"}}`:
+
+```elixir
+Riddler.Journey.present(document, {:screen, "patron_details"}, root)
+#=> {:ok,
+#    %{
+#      "state" => "screen",
+#      "screen" => %{
+#        "key" => "patron_details",
+#        "title" => "Get your library card",
+#        "elements" => [
+#          %{"type" => "text", "key" => "welcome_back",
+#            "text" => "Welcome back, Ada."},
+#          %{"type" => "text_question", "key" => "reminder_email",
+#            "label" => "Email for due-date reminders",
+#            "required" => true, "format" => "email"},
+#          %{"type" => "button", "key" => "details_next",
+#            "label" => "Continue", "outcome" => "details_submitted"}
+#        ],
+#        "diagnostics" => %{
+#          "missing_variables" => [],
+#          "undecidable_conditions" => []
+#        }
+#      },
+#      "moves" => %{"outcomes" => ["details_submitted"], "back" => false}
+#    }}
+```
+
+The same document at version 2, its `"nodes"` spelled `"elements"` and its
+`"schema_version"` `2`, presents exactly this answer.
+
+The visitor submits `"ada-at-example"` for the reminder email, and the host's
+`validate_screen/3` refuses it. The finding the host sends the client is, on
+the wire:
+
+```json
+{
+  "code": "response.format",
+  "message": "...",
+  "field": "format",
+  "element_key": "reminder_email",
+  "position": null,
+  "author_message": null
+}
+```
+
+A submit with no `"outcome"` is refused by `decode_submit/1` with
+`%Riddler.Finding{code: "submit.missing_field", field: "outcome",
+element_key: nil, ...}`.
+
+### Which sentences this supersedes
+
+By the rule of ADR-0002's amendment of this date: from this entry on, wherever
+this record, its amendments and its notes say node, nodes, `"nodes"` or
+`node_key` of a child of a screen, read element, elements, `"elements"` and
+`element_key`. Nothing above is edited, and the dated amendments and notes stay
+as written. The passages the rule reaches are Decision 3's paragraph headed
+"The screen is data, and its diagnostics come with it."; the Typespecs'
+`screen` typedoc; the worked examples' presented screens; and, in the
+amendment of 2026-11-18, the `"moves"` paragraph's "among the presented
+screen's `"nodes"`", the paragraph "A finding's wire form is its struct's data
+form." with its table and its sentence on the corpus, "A submit finding's
+`node_key` and `position` are nil", "The presented answer's schema enumerates
+the node types." and "The fallback for a node type a client does not know."; in
+the amendment of 2026-11-19, the worked example's `node_key: "details_next"`;
+and the vocabulary the amendments of 2026-11-18 and 2026-11-23 list under
+"What is unchanged", `nodes` among it. A worked example's document written with `"nodes"` is a version 1
+document, and stays one.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the rule
+stated above answers a call one way, and this entry answers the same call
+another". Decision 3 answers a presented screen's children as `"nodes"`, and
+this entry answers `"elements"`; the amendment of 2026-11-18 gives a finding's
+wire form a `"node_key"`, and this entry gives it `"element_key"`; and that
+amendment's reading that a later answer validates against an earlier schema is
+answered another way for this release.
+
+### What is unchanged
+
+The status shapes and their refusals, the answer's `"state"`, `"moves"`,
+`"reason"`, `"retry_after_ms"`, `"result"` and `"progress"`, the submit and
+`decode_submit/1`'s codes and order, `put_context/2`, the access and host
+behaviours and the scope are unchanged. A finding keeps its code, its message,
+its `"field"`, its `"position"` and its `"author_message"`. `Riddler.Journey`
+gains no function and no argument. Decision 6 stands: this package renders,
+stores and transports nothing. The vocabulary is the record's: `responses`,
+`context`, `outcome`, `writes`, `elements`, `element_key`, and a question owns
+its `answer_options`.
+
+### What this does not decide
+
+- How a renderer draws an element, and the attributes it marks one with.
+- The transport, identity for the anonymous visitor and streaming, as the
+  amendments above leave them.
+- When version 1 admission ends; ADR-0002's amendment of this date says what
+  is ruled of it.
