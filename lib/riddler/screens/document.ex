@@ -36,8 +36,12 @@ defmodule Riddler.Screens.Document do
   spell their children under: `nodes` at version 1, which is the version of a
   document that declares none, and `elements` at version 2. Either way the
   admitted struct carries them as `elements`. The other version's key is held
-  to the shape the schema gives it, a list of elements, and is then carried
-  nowhere; `validate/1` refuses the screen or the variant that carried it.
+  to the shape the schema gives it and is then carried nowhere; `validate/1`
+  refuses the screen or the variant that carried it. That shape is a list of
+  elements, except an `elements` on an element of a version 1 document, which
+  is any value, as it was before version 2 existed. A document at a version
+  this package does not implement is read as riddler 0.7.0 read it, from
+  `nodes`, unless none of its screens carries that key.
 
   `admit/1` answers `nil` for an input that is not a screen document - not
   a map, or a map whose spine is not a document's: no list of screens, a
@@ -229,7 +233,10 @@ defmodule Riddler.Screens.Document do
   # inside. `admit/1` reads a version written with no fractional part as its
   # integer, so `1.0` is version 1, and a document that declares no version is
   # version 1.
-  @spellings %{1 => {"nodes", "elements"}, 2 => {"elements", "nodes"}}
+  @spellings %{
+    1 => %{own: "nodes", other: "elements", refuses: true, typed: false},
+    2 => %{own: "elements", other: "nodes", refuses: true, typed: true}
+  }
   @schema_versions Map.keys(@spellings)
 
   # What an admitted screen or variant carries when its document wrote the
@@ -326,7 +333,7 @@ defmodule Riddler.Screens.Document do
          true <- typed?(raw, @envelope_scalars),
          {:ok, metadata} <- admit_metadata(Map.fetch(raw, "metadata")),
          version = integral(Map.get(raw, "schema_version")),
-         {:ok, admitted} <- admit_each(screens, &admit_screen(&1, spelling(version))) do
+         {:ok, admitted} <- admit_each(screens, &admit_screen(&1, spelling(version, screens))) do
       %__MODULE__{
         schema_version: version,
         kind: admit_kind(Map.get(raw, "kind")),
@@ -457,11 +464,13 @@ defmodule Riddler.Screens.Document do
   # screen that carries neither is not a document.
   defp admit_screen(raw, spelling) when is_map(raw) and not is_struct(raw) do
     with true <- typed?(raw, @screen_scalars),
-         {:ok, raw, other} <- spelled(raw, spelling),
-         elements when is_list(elements) <- Map.get(raw, "elements", other && []),
+         {children, other} = spelled(raw, spelling),
+         :ok <- held(other, spelling, :screen),
+         refused = refused(other, spelling),
+         elements when is_list(elements) <- Map.get(children, "elements", refused && []),
          {:ok, admitted} <- admit_each(elements, &admit_node(&1, spelling)) do
       screen = %{key: Map.get(raw, "key"), title: Map.get(raw, "title"), elements: admitted}
-      {:ok, other_spelling(screen, other)}
+      {:ok, other_spelling(screen, refused)}
     else
       _not_a_screen -> :error
     end
@@ -470,11 +479,11 @@ defmodule Riddler.Screens.Document do
   defp admit_screen(_raw, _spelling), do: :error
 
   defp admit_node(raw, spelling) when is_map(raw) and not is_struct(raw) do
-    with true <- typed?(raw, @node_scalars),
-         {:ok, raw, other} <- spelled(raw, spelling) do
-      admit_common(raw, other, spelling)
+    if typed?(raw, @node_scalars) do
+      {children, other} = spelled(raw, spelling)
+      admit_common(children, other, spelling)
     else
-      _not_an_element -> :error
+      :error
     end
   end
 
@@ -484,91 +493,111 @@ defmodule Riddler.Screens.Document do
     common = Map.put_new(take(raw, @common_fields), :type, nil)
 
     case Registry.fetch(common.type) do
-      {:ok, module} -> admit_typed(raw, common, module, other, spelling)
-      :error -> with :ok <- unread_nodes(raw, spelling), do: {:ok, common}
+      {:ok, module} ->
+        admit_typed(raw, common, module, other, spelling)
+
+      :error ->
+        with :ok <- held(other, spelling, :element),
+             :ok <- unread_nodes(raw, spelling),
+             do: {:ok, common}
     end
   end
 
   defp admit_typed(raw, common, module, other, spelling) do
     %{required: required, optional: optional} = module.fields()
-    container? = :elements in required or :elements in optional
+    refused = (:elements in required or :elements in optional) && refused(other, spelling)
 
-    with {:ok, typed} <- admit_choice(Map.merge(common, take(raw, required ++ optional))) do
-      admit_candidates(raw, typed, container? && other, spelling)
+    with :ok <- held(other, spelling, :element),
+         {:ok, typed} <- admit_choice(Map.merge(common, take(raw, required ++ optional))) do
+      admit_candidates(raw, typed, refused, spelling)
     end
   end
 
   # Only a container has children, so only a container is refused for the
   # other version's key; on any other element both keys are fields its type
-  # does not name, dropped once they are held to their shape.
-  defp admit_candidates(raw, typed, other, spelling) do
+  # does not name, dropped once each is held to the shape the schema gives it.
+  defp admit_candidates(raw, typed, refused, spelling) do
     case Map.fetch(typed, :elements) do
       {:ok, candidates} when is_list(candidates) ->
         with {:ok, admitted} <- admit_each(candidates, &admit_node(&1, spelling)) do
-          {:ok, typed |> Map.put(:elements, admitted) |> other_spelling(other)}
+          {:ok, typed |> Map.put(:elements, admitted) |> other_spelling(refused)}
         end
 
       {:ok, _not_a_list} ->
         :error
 
       :error ->
-        with :ok <- unread_nodes(raw, spelling), do: {:ok, other_spelling(typed, other)}
+        with :ok <- unread_nodes(raw, spelling), do: {:ok, other_spelling(typed, refused)}
     end
   end
 
-  # The key a document of this version spells a screen's and a container's
-  # children under, and the other version's key, which it refuses. A document
-  # that declares no version is version 1. A version this package does not
-  # implement has no spelling of its own: its children are read from
-  # `elements` where it carries that key and from `nodes` otherwise, and the
-  # version is the one finding `validate/1` raises about it.
-  defp spelling(nil), do: Map.fetch!(@spellings, 1)
-  defp spelling(version) when is_map_key(@spellings, version), do: Map.fetch!(@spellings, version)
-  defp spelling(_unknown), do: :unknown
+  # How a document of this version reads a screen's and a container's
+  # children: the key it spells them under (`own`), the other version's key
+  # (`other`), whether it refuses that other key by name (`refuses`), and
+  # whether an element's `elements` is held to a shape (`typed`). A document
+  # that declares no version is version 1.
+  #
+  # A version this package does not implement refuses no key, and is read as
+  # riddler 0.7.0 read it: from `nodes`, wherever any of its screens carries
+  # that key, with `elements` left unread; a document none of whose screens
+  # carries `nodes` is read from `elements`. Either way the version is the one
+  # finding `validate/1` raises about the reading.
+  defp spelling(nil, _screens), do: Map.fetch!(@spellings, 1)
+
+  defp spelling(version, _screens) when is_map_key(@spellings, version),
+    do: Map.fetch!(@spellings, version)
+
+  defp spelling(_unknown, screens) do
+    if Enum.any?(screens, &(is_map(&1) and Map.has_key?(&1, "nodes"))),
+      do: %{own: "nodes", other: "elements", refuses: false, typed: false},
+      else: %{own: "elements", other: "nodes", refuses: false, typed: false}
+  end
 
   # The value with its children under `"elements"`, read from the key its
-  # version spells, and the other version's key where the value carries it.
-  # Whatever is under that other key is held to the shape the schema gives it,
-  # a list of elements, and is then carried nowhere: nothing under it is
-  # admitted, validated or resolved. `:error` for a value that is not a
-  # document.
-  defp spelled(raw, spelling) do
-    {own, other} = keys(raw, spelling)
+  # version spells, and the other version's key with what it holds, where the
+  # value carries it. Whatever is under that other key is carried nowhere:
+  # nothing under it is admitted, validated or resolved.
+  defp spelled(raw, %{own: own, other: other}) do
+    children = Map.drop(raw, ["nodes", "elements"])
 
-    with :ok <- held_to_shape(raw, other, spelling) do
-      children = Map.drop(raw, ["nodes", "elements"])
+    children =
+      case Map.fetch(raw, own) do
+        {:ok, value} -> Map.put(children, "elements", value)
+        :error -> children
+      end
 
-      children =
-        case Map.fetch(raw, own) do
-          {:ok, value} -> Map.put(children, "elements", value)
-          :error -> children
-        end
-
-      {:ok, children, refused(raw, other, spelling)}
+    case Map.fetch(raw, other) do
+      {:ok, value} -> {children, {other, value}}
+      :error -> {children, nil}
     end
   end
 
-  defp keys(_raw, {own, other}), do: {own, other}
+  defp refused({other, _value}, %{refuses: true}), do: other
+  defp refused(_other, _spelling), do: nil
 
-  defp keys(raw, :unknown) do
-    if Map.has_key?(raw, "elements"), do: {"elements", "nodes"}, else: {"nodes", "elements"}
+  # A key that is carried nowhere is held to the shape the document schema
+  # gives it there, and to no other, so that what the schema calls a document
+  # is admitted and what it refuses is not. `nodes` is a list of elements on a
+  # screen and on an element at every version, as riddler 0.7.0 held it.
+  # `elements` is a list of elements on a screen of a version this package
+  # implements, and on an element only at version 2: on an element at version 1,
+  # or at a version this package does not implement, it is a field the
+  # element's type does not name and is dropped unread, as 0.7.0 dropped it.
+  defp held(nil, _spelling, _where), do: :ok
+
+  defp held({key, value}, spelling, where) do
+    if held?(key, spelling, where), do: shape(value, spelling), else: :ok
   end
 
-  defp refused(_raw, _other, :unknown), do: nil
-  defp refused(raw, other, _spelling), do: if(Map.has_key?(raw, other), do: other)
+  defp held?("nodes", _spelling, _where), do: true
+  defp held?("elements", %{refuses: refuses}, :screen), do: refuses
+  defp held?("elements", %{typed: typed}, :element), do: typed
 
-  defp held_to_shape(raw, key, spelling) do
-    case Map.fetch(raw, key) do
-      :error ->
-        :ok
-
-      {:ok, candidates} when is_list(candidates) ->
-        with {:ok, _dropped} <- admit_each(candidates, &admit_node(&1, spelling)), do: :ok
-
-      {:ok, _not_a_list} ->
-        :error
-    end
+  defp shape(candidates, spelling) when is_list(candidates) do
+    with {:ok, _dropped} <- admit_each(candidates, &admit_node(&1, spelling)), do: :ok
   end
+
+  defp shape(_not_a_list, _spelling), do: :error
 
   defp other_spelling(admitted, nil), do: admitted
   defp other_spelling(admitted, false), do: admitted
@@ -632,12 +661,16 @@ defmodule Riddler.Screens.Document do
 
   # Children on an element whose type reads none - every type but the
   # container, and a type the registry does not know - are carried nowhere,
-  # as no field a type does not name is. The schema types `elements` and
-  # `nodes` on every element all the same, so a value there that is not a
-  # list of elements is not a document, and a list of elements is admitted and
-  # dropped. The other version's key was held to its shape when the children
-  # were read; this is the element's own.
-  defp unread_nodes(raw, spelling), do: held_to_shape(raw, "elements", spelling)
+  # as no field a type does not name is, once held to the shape the schema
+  # gives it, by `held/3`. The other version's key was held when the element
+  # was read; this is the element's own key, under the `"elements"` the
+  # children were read into.
+  defp unread_nodes(raw, %{own: own} = spelling) do
+    case Map.fetch(raw, "elements") do
+      {:ok, value} -> held({own, value}, spelling, :element)
+      :error -> :ok
+    end
+  end
 
   # Whether each of these fields, where the value carries it, holds a value of
   # the JSON type the schema gives it. A field that is absent is not this
@@ -788,14 +821,14 @@ defmodule Riddler.Screens.Document do
 
   # The key a document of this version writes a screen's and a variant's
   # children under, which is what a finding about those children names in its
-  # `field`. A version this package does not implement is named by the
-  # admitted struct's key.
+  # `field`. A version this package does not implement is named as riddler
+  # 0.7.0 named it, `nodes`.
   defp own_spelling(nil), do: own_spelling(1)
 
   defp own_spelling(version) when is_map_key(@spellings, version),
-    do: elem(Map.fetch!(@spellings, version), 0)
+    do: Map.fetch!(@spellings, version).own
 
-  defp own_spelling(_unknown), do: "elements"
+  defp own_spelling(_unknown), do: "nodes"
 
   defp spelled_fields(findings, version) do
     own = own_spelling(version)

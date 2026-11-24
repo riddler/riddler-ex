@@ -1,5 +1,68 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "maximum": 2,
+            "minimum": 1
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "screens": {
+            "items": {
+              "properties": {
+                "elements": {
+                  "items": {
+                    "$ref": "#/definitions/node"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "maximum": 2,
+            "minimum": 2
+          }
+        },
+        "required": [
+          "schema_version"
+        ]
+      },
+      "then": {
+        "properties": {
+          "screens": {
+            "items": {
+              "properties": {
+                "elements": {
+                  "items": {
+                    "$ref": "#/definitions/node_version_2"
+                  },
+                  "type": "array"
+                },
+                "nodes": {
+                  "items": {
+                    "$ref": "#/definitions/node_version_2"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "definitions": {
     "node": {
       "description": "A node. The fields every node shares are described here, and one field a type names: the answer_options of a choice_question, typed by the conditional below. Every other field a type names is the type's own and is carried through untouched.",
@@ -19,11 +82,7 @@
           "type": "string"
         },
         "elements": {
-          "description": "The candidates of a container in a version 2 document, considered in order. A version 1 document spells them nodes, and a runtime refuses the other version's key by name; on an element whose type has no candidates either key is carried nowhere.",
-          "items": {
-            "$ref": "#/definitions/node"
-          },
-          "type": "array"
+          "description": "The candidates of a container in a version 2 document, considered in order; a version 1 document spells them nodes, and a runtime refuses the other version's key by name on a container. Typed here only at version 2, by the conditional at the top of this schema: on an element of a version 1 document, or of a version a runtime does not implement, it is a field the element's type does not name, of any value, as it was before version 2 existed."
         },
         "key": {
           "description": "How everything else names the node. A runtime holds it to [a-z][a-z0-9_]* and to being unique across the whole document; both are findings against an admitted document rather than reasons this is not a document.",
@@ -62,6 +121,28 @@
       },
       "type": "object"
     },
+    "node_version_2": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/node"
+        }
+      ],
+      "description": "An element of a version 2 document: a node whose elements and nodes are each a list of elements of a version 2 document, wherever they are carried.",
+      "properties": {
+        "elements": {
+          "items": {
+            "$ref": "#/definitions/node_version_2"
+          },
+          "type": "array"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/definitions/node_version_2"
+          },
+          "type": "array"
+        }
+      }
+    },
     "screen": {
       "anyOf": [
         {
@@ -78,10 +159,7 @@
       "description": "A screen: its key, its title, and its nodes in order.",
       "properties": {
         "elements": {
-          "items": {
-            "$ref": "#/definitions/node"
-          },
-          "type": "array"
+          "description": "The elements of a screen in a version 2 document; a version 1 document spells them nodes. A list of elements at version 1 and 2, by the conditionals at the top of this schema; at a version a runtime does not implement it is untyped, as it was before version 2 existed."
         },
         "key": {
           "type": "string"

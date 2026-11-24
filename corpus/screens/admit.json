@@ -5749,6 +5749,326 @@
         }
       },
       "name": "A schema version this package does not implement, written with elements, raises that finding alone"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "elements": "four of them",
+                  "key": "welcome_back",
+                  "text": "Welcome back.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 1 element whose type has no candidates carries elements of any value, dropped unread as before"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.other_version_spelling",
+            "field": "elements",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "welcome_back",
+                  "text": "Welcome back.",
+                  "type": "text"
+                },
+                {
+                  "elements": "four of them",
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 1 variant carrying elements that is not a list is refused by name, the value unread"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "elements": "four of them",
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "welcome_back",
+                  "text": "Welcome back.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 1 screen whose elements is not a list is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_schema_version",
+            "field": "schema_version",
+            "node_key": null
+          },
+          {
+            "code": "document.empty_variant",
+            "field": "nodes",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 3,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "welcome_back",
+                  "text": "Welcome back.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_notice",
+                  "nodes": [],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A schema version this package does not implement, spelled with nodes, names an empty variant's field nodes"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_schema_version",
+            "field": "schema_version",
+            "node_key": null
+          },
+          {
+            "code": "document.missing_field",
+            "field": "nodes",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 3,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "welcome_back",
+                  "text": "Welcome back.",
+                  "type": "text"
+                },
+                {
+                  "elements": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A schema version this package does not implement, spelled with nodes, finds a variant carrying only elements missing nodes"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_schema_version",
+            "field": "schema_version",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 3,
+          "screens": [
+            {
+              "elements": "four of them",
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "welcome_back",
+                  "text": "Welcome back.",
+                  "type": "text"
+                },
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A schema version this package does not implement reads a screen carrying nodes and elements from nodes, elements unread"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"
