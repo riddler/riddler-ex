@@ -2059,16 +2059,24 @@ finding's `"element_key"` and `"position"` are `null`, as its `node_key` and
 screen names and requires `"elements"` where it names and requires `"nodes"`
 (its `screen` definition's `required` at `59f58db`). In `finding.schema.json`
 `element_key` is named and required where `node_key` is. The amendment above
-of 2026-11-18 says that "No schema forbids a key it does not name", so that
-"what a later release presents still validates against this one"; that holds
-for a key a release adds, and this release removes two that earlier schemas
-require. An answer of this release does not validate against the presented
-answer's schema of riddler 0.7.0, nor a finding against its finding schema. The
-schemas are versioned with the package, as that amendment decides, and the
-release's changelog names the change. No schema forbids a key it does not name
-still: an earlier schema lets `"elements"` and `"element_key"` through, and
-what it refuses is the `"nodes"` and `"node_key"` it requires and no longer
-finds.
+of 2026-11-18 says, under "No schema forbids a key it does not name", that
+"An answer, a submit or a finding that carries a key a later release adds
+still validates against an earlier release's schema", and the presented
+answer schema's own `description` at `59f58db` says "what a later release
+presents still validates against this one". Both hold for a key a release
+adds, and this release removes two keys that earlier schemas require. An
+answer of this release does not validate against the presented answer's
+schema of riddler 0.7.0, and a finding does not validate against its finding
+schema. The schemas are versioned with the package, as that amendment
+decides, and the release's changelog names the change. No schema forbids a
+key it does not name still: an earlier schema lets `"elements"` and
+`"element_key"` through, and what it refuses is the `"nodes"` and
+`"node_key"` it requires and no longer finds. The code half rewrites the
+presented answer schema's `description` to match. Its sentence on what a
+later release presents is said of a key a release adds, not of this
+release's rename, and its node wording ("hidden nodes absent", "A node whose
+type ...") says element, as do the descriptions of the definition it
+renames.
 
 **The enumeration and the fallback are said of elements.** The presented
 answer's schema enumerates the element types, the same types as today, and a
@@ -2168,7 +2176,8 @@ By the rule of ADR-0002's amendment of this date: from this entry on, wherever
 this record, its amendments and its notes say node, nodes, `"nodes"` or
 `node_key` of a child of a screen, read element, elements, `"elements"` and
 `element_key`. Nothing above is edited, and the dated amendments and notes stay
-as written. The passages the rule reaches are Decision 3's paragraph headed
+as written. The rule governs, not a list, and it reaches every such passage.
+Among the passages it reaches are Decision 3's paragraph headed
 "The screen is data, and its diagnostics come with it."; the Typespecs'
 `screen` typedoc; the worked examples' presented screens; and, in the
 amendment of 2026-11-18, the `"moves"` paragraph's "among the presented
@@ -2178,8 +2187,8 @@ form." with its table and its sentence on the corpus, "A submit finding's
 the node types." and "The fallback for a node type a client does not know."; in
 the amendment of 2026-11-19, the worked example's `node_key: "details_next"`;
 and the vocabulary the amendments of 2026-11-18 and 2026-11-23 list under
-"What is unchanged", `nodes` among it. A worked example's document written with `"nodes"` is a version 1
-document, and stays one.
+"What is unchanged", `nodes` among it. A worked example's document written
+with `"nodes"` is a version 1 document, and stays one.
 
 ### Why an amendment and not a note
 
