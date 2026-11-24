@@ -4620,15 +4620,27 @@ above.
 
 ### What a host on riddler 0.7.0 changes
 
-- **Its documents: nothing, to keep them admitted.** A version 1 document, with
-  or without `schema_version`, is admitted, validated and resolved as before. A
-  host writing a new document may write it at version 2; one rewriting its
+- **Its documents: nothing, to keep them admitted.** This is about the JSON a
+  host writes, not about what admission builds from it (the next bullet). A
+  version 1 document, with or without `schema_version`, is admitted, validated
+  and resolved as before. A host writing a new document may write it at version 2; one rewriting its
   existing documents runs the upgrade task. One case is refused that 0.7.0
   admitted: a version 1 document whose screen or `variant` carries an
   `elements` key, which 0.7.0 dropped as a field it does not know, now raises
   `document.other_version_spelling`.
+- **What admission builds.** A screen of the admitted `Riddler.Screens.Document`
+  carries its children as `elements`, and a `variant` its candidates as
+  `elements`, where they were `nodes` (the `screen` type of
+  `Riddler.Screens.Document` at `59f58db` names `nodes:`). This holds for a
+  version 1 document too. A host that reads or matches `nodes` on an admitted
+  document changes to `elements`.
 - **What resolution answers.** A resolved screen's children are `elements`,
   the struct field and the data form's key alike, where they were `nodes`.
+- **The exported schemas.** In the screen document schema the definition
+  `node` is named `element`, so a host that references
+  `#/definitions/node` references `#/definitions/element`. The finding
+  schema names and requires `element_key` where it names and requires
+  `node_key`, so a host that validates a finding against it reads that key.
 - **A finding.** `finding.node_key` is `finding.element_key`, and a finding's
   `"node_key"` in its data form is `"element_key"`.
 - **Code naming the types.** `Riddler.Screens.Type.node_t/0` is
@@ -4790,8 +4802,8 @@ amendments and its notes say node, nodes or `node_key` of a child of a screen
 or of a container, read element, `elements` and `element_key`; `nodes` stays
 the key a version 1 document spells, and only there. Nothing above is edited:
 the dated amendments and notes stay as written, and each reads under this
-rule. The sentences of the Decision that the rule reaches are these, by their
-lead sentences:
+rule, and the rule governs, not a list. Among the sentences of the Decision
+that it reaches are these, by their lead sentences:
 
 - "A document is a JSON object with an envelope and screens." - its
   "`schema_version`, an integer, `1` in this version" reads `1` or `2`, as
@@ -4808,11 +4820,12 @@ lead sentences:
 - "A resolved screen is the same shape as the screen it came from." and "A
   resolved document carries `diagnostics`." - as above.
 
-Beside the Decision, the Context's "what a node is" and the fixture's
-"eighteen nodes", the Consequences paragraph on the JSON Schema ("the screen
-and the common node fields"), the Typespecs' `screen` and `node_t`, and the
-worked examples' resolved screen, which spells `nodes` and now spells
-`elements`, read under the same rule. The worked examples' `variant` is a
+The rule reaches every other sentence of the Decision that says node for a
+screen's child as well. Beside the Decision, among the passages it reaches
+are the Context's "what a node is" and the fixture's "eighteen nodes", the
+Consequences paragraph on the JSON Schema ("the screen and the common node
+fields"), the Typespecs' `screen` and `node_t`, and the worked examples'
+resolved screen, which spells `nodes` and now spells `elements`. The worked examples' `variant` is a
 version 1 document's and stays one.
 
 ### Why an amendment and not a note
