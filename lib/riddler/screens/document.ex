@@ -38,10 +38,11 @@ defmodule Riddler.Screens.Document do
   admitted struct carries them as `elements`. The other version's key is held
   to the shape the schema gives it and is then carried nowhere; `validate/1`
   refuses the screen or the variant that carried it. That shape is a list of
-  elements, except an `elements` on an element of a version 1 document, which
-  is any value, as it was before version 2 existed. A document at a version
-  this package does not implement is read as riddler 0.7.0 read it, from
-  `nodes`, unless none of its screens carries that key.
+  elements, except an `elements` in a version 1 document, on a screen or an
+  element, which is any value, as it was before version 2 existed. A document
+  at a version this package does not implement is read as riddler 0.7.0 read
+  it, from `nodes`, unless none of its screens carries that key; then it is
+  read from `elements` as a version 2 document is, refusing no key.
 
   `admit/1` answers `nil` for an input that is not a screen document - not
   a map, or a map whose spine is not a document's: no list of screens, a
@@ -465,7 +466,7 @@ defmodule Riddler.Screens.Document do
   defp admit_screen(raw, spelling) when is_map(raw) and not is_struct(raw) do
     with true <- typed?(raw, @screen_scalars),
          {children, other} = spelled(raw, spelling),
-         :ok <- held(other, spelling, :screen),
+         :ok <- held(other, spelling),
          refused = refused(other, spelling),
          elements when is_list(elements) <- Map.get(children, "elements", refused && []),
          {:ok, admitted} <- admit_each(elements, &admit_node(&1, spelling)) do
@@ -497,7 +498,7 @@ defmodule Riddler.Screens.Document do
         admit_typed(raw, common, module, other, spelling)
 
       :error ->
-        with :ok <- held(other, spelling, :element),
+        with :ok <- held(other, spelling),
              :ok <- unread_nodes(raw, spelling),
              do: {:ok, common}
     end
@@ -507,7 +508,7 @@ defmodule Riddler.Screens.Document do
     %{required: required, optional: optional} = module.fields()
     refused = (:elements in required or :elements in optional) && refused(other, spelling)
 
-    with :ok <- held(other, spelling, :element),
+    with :ok <- held(other, spelling),
          {:ok, typed} <- admit_choice(Map.merge(common, take(raw, required ++ optional))) do
       admit_candidates(raw, typed, refused, spelling)
     end
@@ -534,14 +535,16 @@ defmodule Riddler.Screens.Document do
   # How a document of this version reads a screen's and a container's
   # children: the key it spells them under (`own`), the other version's key
   # (`other`), whether it refuses that other key by name (`refuses`), and
-  # whether an element's `elements` is held to a shape (`typed`). A document
+  # whether `elements` is held to a shape where nothing reads it (`typed`),
+  # which is wherever the document is read from `elements`. A document
   # that declares no version is version 1.
   #
   # A version this package does not implement refuses no key, and is read as
   # riddler 0.7.0 read it: from `nodes`, wherever any of its screens carries
   # that key, with `elements` left unread; a document none of whose screens
-  # carries `nodes` is read from `elements`. Either way the version is the one
-  # finding `validate/1` raises about the reading.
+  # carries `nodes` is read from `elements`, as a version 2 document is but
+  # refusing no key. Either way the version is the one finding `validate/1`
+  # raises about the reading.
   defp spelling(nil, _screens), do: Map.fetch!(@spellings, 1)
 
   defp spelling(version, _screens) when is_map_key(@spellings, version),
@@ -550,7 +553,7 @@ defmodule Riddler.Screens.Document do
   defp spelling(_unknown, screens) do
     if Enum.any?(screens, &(is_map(&1) and Map.has_key?(&1, "nodes"))),
       do: %{own: "nodes", other: "elements", refuses: false, typed: false},
-      else: %{own: "elements", other: "nodes", refuses: false, typed: false}
+      else: %{own: "elements", other: "nodes", refuses: false, typed: true}
   end
 
   # The value with its children under `"elements"`, read from the key its
@@ -579,19 +582,19 @@ defmodule Riddler.Screens.Document do
   # gives it there, and to no other, so that what the schema calls a document
   # is admitted and what it refuses is not. `nodes` is a list of elements on a
   # screen and on an element at every version, as riddler 0.7.0 held it.
-  # `elements` is a list of elements on a screen of a version this package
-  # implements, and on an element only at version 2: on an element at version 1,
-  # or at a version this package does not implement, it is a field the
-  # element's type does not name and is dropped unread, as 0.7.0 dropped it.
-  defp held(nil, _spelling, _where), do: :ok
+  # `elements` is a list of elements, on a screen and on an element alike,
+  # wherever a document is read from `elements`: at version 2, and at a
+  # version this package does not implement when none of its screens carries
+  # `nodes`. Wherever a document is read from `nodes` it is a key nothing
+  # reads, of any value, dropped unread as 0.7.0 dropped it.
+  defp held(nil, _spelling), do: :ok
 
-  defp held({key, value}, spelling, where) do
-    if held?(key, spelling, where), do: shape(value, spelling), else: :ok
+  defp held({key, value}, spelling) do
+    if held?(key, spelling), do: shape(value, spelling), else: :ok
   end
 
-  defp held?("nodes", _spelling, _where), do: true
-  defp held?("elements", %{refuses: refuses}, :screen), do: refuses
-  defp held?("elements", %{typed: typed}, :element), do: typed
+  defp held?("nodes", _spelling), do: true
+  defp held?("elements", %{typed: typed}), do: typed
 
   defp shape(candidates, spelling) when is_list(candidates) do
     with {:ok, _dropped} <- admit_each(candidates, &admit_node(&1, spelling)), do: :ok
@@ -667,7 +670,7 @@ defmodule Riddler.Screens.Document do
   # children were read into.
   defp unread_nodes(raw, %{own: own} = spelling) do
     case Map.fetch(raw, "elements") do
-      {:ok, value} -> held({own, value}, spelling, :element)
+      {:ok, value} -> held({own, value}, spelling)
       :error -> :ok
     end
   end

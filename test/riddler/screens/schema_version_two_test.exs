@@ -230,8 +230,8 @@ defmodule Riddler.Screens.SchemaVersionTwoTest do
     # on an element whose type has no candidates, `elements` was a field the
     # type does not name, of any value. Version 1 still reads it so.
     #
-    # Sabotage: made `held?/3` hold an element's `elements` to its shape at
-    # every version; the leaf's string was refused and this went red.
+    # Sabotage: made `held?/2` hold `elements` to its shape at every version;
+    # the leaf's string was refused and this went red.
     test "drops elements of any value on an element whose type has no candidates, unread" do
       raw =
         update_screen(version_one(), fn screen ->
@@ -296,9 +296,9 @@ defmodule Riddler.Screens.SchemaVersionTwoTest do
                {"document.missing_field", "nodes", "card_notice"}
     end
 
-    # Sabotage: made `held?/3` hold a screen's `elements` to its shape at
-    # every version; the version 3 screen's string was refused and this went
-    # red.
+    # Sabotage: made `spelling/2` hold `elements` to its shape in a document
+    # read from nodes at an unknown version; the version 3 screen's string
+    # was refused and this went red.
     test "reads a screen carrying nodes and elements from nodes, elements unread" do
       raw =
         version_one()

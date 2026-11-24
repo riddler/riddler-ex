@@ -1,7 +1,7 @@
 ### Added
 
 - A screen document may declare `schema_version` 2, which spells the children of a screen and of a `variant` `elements`; a version 1 document, or one declaring no version, still spells them `nodes` and is admitted, validated and resolved as before.
-- `document.other_version_spelling` refuses a screen or a `variant` carrying the other version's key, `nodes` at version 2 or `elements` at version 1, with one finding naming the key; nothing under that key is read, and nothing is rewritten at admit.
+- `document.other_version_spelling` refuses a screen or a `variant` carrying the other version's key, `nodes` at version 2 or `elements` at version 1, with one finding naming the key; nothing under that key is read, and nothing is rewritten at admit. At version 1 the refused `elements` may hold any value, as 0.7.0 dropped it.
 
 ### Changed
 
@@ -9,5 +9,4 @@
 - The admitted `Riddler.Screens.Document` and the resolved `Riddler.Screens.Resolved` carry a screen's and a `variant`'s children as `elements` where they carried `nodes`, for a document of either version; read or match `elements`.
 - `Riddler.Screens.Type.node_t/0` is `Riddler.Screens.Type.element/0`, and `Riddler.Screens.Type.Variant` names its candidates `:elements` in `fields/0` and `"elements"` in the field of its own findings.
 - A version 1 document whose screen or `variant` carries an `elements` key, which was dropped before, is refused with `document.other_version_spelling`: remove the key from the document, or write the document at version 2.
-- A screen in a version 1 document whose `elements` is not a list of elements is not a screen document, where 0.7.0 dropped the key unread; on an element of a version 1 document an `elements` of any value still leaves the document a document. Remove the key from the document.
-- The screen document schema types `elements` beside `nodes`, requires a screen to carry one of the two, types a screen's `elements` at versions 1 and 2, and types an element's `elements` at version 2 only; a host validating documents against it before admitting them takes the new schema.
+- The screen document schema types `elements` beside `nodes`, requires a screen to carry one of the two, and types `elements` on a screen and an element only where a document is read from `elements`, at version 2; a host validating documents against it before admitting them takes the new schema.
