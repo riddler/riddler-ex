@@ -62,7 +62,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
 
       iex> node = %{type: "choice_question", key: "pickup_branch", label: "Where will you collect your card?", select: "one", answer_options: [%{value: "riverside", label: "Riverside"}, %{value: "riverside", label: "Riverside (east entrance)"}]}
       iex> [finding] = Riddler.Screens.Type.ChoiceQuestion.validate(node)
-      iex> {finding.code, finding.node_key}
+      iex> {finding.code, finding.element_key}
       {"document.duplicate_option_value", "pickup_branch"}
   """
 
@@ -93,7 +93,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
 
   @impl true
   def validate(node) do
-    key = Finding.node_key(node[:key])
+    key = Finding.element_key(node[:key])
 
     select_findings(node, key) ++
       options_findings(node, key) ++
@@ -122,7 +122,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
             message:
               ~s(select says whether the visitor picks one option or several, "one" or "many", not #{inspect(select)}),
             field: "select",
-            node_key: key
+            element_key: key
           }
         ]
 
@@ -146,7 +146,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
             code: "document.empty_answer_options",
             message: "a choice question offers at least one option, and this one offers none",
             field: "answer_options",
-            node_key: key
+            element_key: key
           }
         ]
 
@@ -227,7 +227,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
       code: "document.invalid_option",
       message: message,
       field: "answer_options",
-      node_key: key
+      element_key: key
     }
   end
 
@@ -245,7 +245,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
         message:
           "the value #{inspect(value)} is carried by #{counts[value]} options; the options of one question carry different values",
         field: "answer_options",
-        node_key: key
+        element_key: key
       }
     end
   end
@@ -323,7 +323,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
       code: "document.invalid_selection_bounds",
       message: message,
       field: Atom.to_string(bound),
-      node_key: key
+      element_key: key
     }
   end
 
@@ -343,7 +343,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
             message:
               "required says whether the visitor has to pick an option, true or false, not #{inspect(required)}",
             field: "required",
-            node_key: key
+            element_key: key
           }
         ]
 
@@ -367,7 +367,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
             message:
               "a style is the name a renderer looks up, a string, not #{inspect(style)}; which names there are is the renderer's",
             field: "style",
-            node_key: key
+            element_key: key
           }
         ]
 

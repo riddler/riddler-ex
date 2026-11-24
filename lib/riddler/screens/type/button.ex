@@ -54,7 +54,7 @@ defmodule Riddler.Screens.Type.Button do
             message:
               "an outcome is the name a client sends back for the press, a string, not #{inspect(outcome)}",
             field: "outcome",
-            node_key: Finding.node_key(node[:key])
+            element_key: Finding.element_key(node[:key])
           }
         ]
 
@@ -64,7 +64,7 @@ defmodule Riddler.Screens.Type.Button do
   end
 
   defp writes_findings(node) do
-    key = Finding.node_key(node[:key])
+    key = Finding.element_key(node[:key])
 
     case Map.fetch(node, :writes) do
       {:ok, writes} when is_map(writes) -> Enum.flat_map(writes, &write_findings(&1, key))
@@ -89,7 +89,7 @@ defmodule Riddler.Screens.Type.Button do
             message:
               "a style is the name a renderer looks up, a string, not #{inspect(style)}; which names there are is the renderer's",
             field: "style",
-            node_key: Finding.node_key(node[:key])
+            element_key: Finding.element_key(node[:key])
           }
         ]
 
@@ -114,7 +114,7 @@ defmodule Riddler.Screens.Type.Button do
             message:
               "validates says whether pressing this button validates the screen first, true or false, not #{inspect(validates)}",
             field: "validates",
-            node_key: Finding.node_key(node[:key])
+            element_key: Finding.element_key(node[:key])
           }
         ]
 
@@ -161,7 +161,7 @@ defmodule Riddler.Screens.Type.Button do
       code: "document.invalid_writes",
       message: message,
       field: "writes",
-      node_key: key
+      element_key: key
     }
   end
 end

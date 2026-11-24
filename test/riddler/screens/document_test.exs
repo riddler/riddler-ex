@@ -56,7 +56,7 @@ defmodule Riddler.Screens.DocumentTest do
           %{
             key: screen["key"],
             title: screen["title"],
-            nodes: Enum.map(screen["nodes"], &hand_built_node/1)
+            elements: Enum.map(screen["nodes"], &hand_built_node/1)
           }
         end)
     }
@@ -65,7 +65,7 @@ defmodule Riddler.Screens.DocumentTest do
   defp hand_built_node(node) do
     node
     |> Map.new(fn
-      {"nodes", candidates} -> {:nodes, Enum.map(candidates, &hand_built_node/1)}
+      {"nodes", candidates} -> {:elements, Enum.map(candidates, &hand_built_node/1)}
       {spelling, value} -> {String.to_existing_atom(spelling), value}
     end)
     |> Map.put_new(:type, nil)
@@ -159,7 +159,7 @@ defmodule Riddler.Screens.DocumentTest do
 
     screens =
       Enum.sum_by(document.screens, fn screen ->
-        2 + Enum.sum_by(screen.nodes, &struct_node_leaves/1)
+        2 + Enum.sum_by(screen.elements, &struct_node_leaves/1)
       end)
 
     envelope + metadata + screens
@@ -168,7 +168,7 @@ defmodule Riddler.Screens.DocumentTest do
   defp struct_node_leaves(node) do
     Enum.sum_by(Map.to_list(node), fn
       {:writes, writes} -> map_size(writes)
-      {:nodes, candidates} -> Enum.sum_by(candidates, &struct_node_leaves/1)
+      {:elements, candidates} -> Enum.sum_by(candidates, &struct_node_leaves/1)
       {_field, _value} -> 1
     end)
   end
@@ -201,7 +201,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert Enum.map(document.screens, & &1.key) == ["account", "plan", "confirm"]
 
-      assert Enum.map(document.screens, fn screen -> Enum.map(screen.nodes, & &1.key) end) ==
+      assert Enum.map(document.screens, fn screen -> Enum.map(screen.elements, & &1.key) end) ==
                Enum.map(raw["screens"], fn screen ->
                  Enum.map(screen["nodes"], & &1["key"])
                end)
@@ -252,7 +252,10 @@ defmodule Riddler.Screens.DocumentTest do
         })
 
       assert document.metadata == %{"name" => "Signup screens", "tenant" => "acme"}
-      assert [%{key: "account", title: "Create your account", nodes: [node]}] = document.screens
+
+      assert [%{key: "account", title: "Create your account", elements: [node]}] =
+               document.screens
+
       assert node == %{type: "heading", key: "account_heading", level: 1, text: "Hi"}
     end
 
@@ -266,7 +269,7 @@ defmodule Riddler.Screens.DocumentTest do
           ])
         )
 
-      assert [%{nodes: [node]}] = document.screens
+      assert [%{elements: [node]}] = document.screens
       assert node == %{type: "text", key: "account_intro", text: "Hello"}
     end
 
@@ -290,7 +293,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       document = Document.admit(raw)
 
-      assert [%{nodes: [node]}] = document.screens
+      assert [%{elements: [node]}] = document.screens
       assert node == %{type: "text_question", key: "account_plan", label: "Which plan?"}
       refute Map.has_key?(node, :answer_options)
       assert {:ok, ^document} = Document.validate(document)
@@ -312,8 +315,8 @@ defmodule Riddler.Screens.DocumentTest do
           ])
         )
 
-      assert [%{nodes: [variant]}] = document.screens
-      assert variant.nodes == [%{type: "text", key: "account_notice_default", text: "Welcome"}]
+      assert [%{elements: [variant]}] = document.screens
+      assert variant.elements == [%{type: "text", key: "account_notice_default", text: "Welcome"}]
     end
   end
 
@@ -386,7 +389,7 @@ defmodule Riddler.Screens.DocumentTest do
     # and it is admitted and dropped like any other field the type does not
     # name: nothing reads it, and the node validates as it would without it.
     #
-    # Sabotage: made `admit_typed/3` put a `:nodes` onto a node whose type
+    # Sabotage: made `admit_typed/3` put a `:elements` onto a node whose type
     # reads none when the document wrote one; the heading came back carrying
     # it and this went red.
     test "admits a list of nodes on a node whose type reads none, and drops it" do
@@ -395,7 +398,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       document = Document.admit(document([Map.put(heading, "nodes", [text])]))
 
-      assert [%{nodes: [node]}] = document.screens
+      assert [%{elements: [node]}] = document.screens
       assert node == %{type: "heading", key: "account_heading", level: 1, text: "Hi"}
       assert {:ok, ^document} = Document.validate(document)
     end
@@ -448,7 +451,7 @@ defmodule Riddler.Screens.DocumentTest do
       assert [finding] = findings(raw)
       assert finding.code == "document.unknown_kind"
       assert finding.field == "kind"
-      assert finding.node_key == nil
+      assert finding.element_key == nil
       assert finding.message =~ "emails"
     end
 
@@ -477,7 +480,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.unknown_type"
       assert finding.field == "type"
-      assert finding.node_key == "pictures"
+      assert finding.element_key == "pictures"
       assert finding.message =~ "carousel"
     end
 
@@ -494,7 +497,7 @@ defmodule Riddler.Screens.DocumentTest do
       [finding] = findings(raw)
 
       assert finding.code == "document.duplicate_key"
-      assert finding.node_key == "intro"
+      assert finding.element_key == "intro"
       assert finding.message =~ "2 times"
     end
 
@@ -512,7 +515,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       [missing] = findings(document([%{"type" => "text", "text" => "Hi"}]))
       assert missing.code == "document.invalid_key"
-      assert missing.node_key == nil
+      assert missing.element_key == nil
     end
 
     # `admit/1` answers `nil` for a key that is not a string, so this is a
@@ -527,7 +530,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.invalid_key"
       assert finding.field == "key"
-      assert finding.node_key == nil
+      assert finding.element_key == nil
       assert finding.message =~ "7"
       assert finding.message =~ "string"
       refute finding.message =~ "carries no key"
@@ -552,7 +555,7 @@ defmodule Riddler.Screens.DocumentTest do
              ]
     end
 
-    # Sabotage: write `node_key: node[:key]` back into any one raise site that
+    # Sabotage: write `element_key: node[:key]` back into any one raise site that
     # coerces, and that finding carries the integer key, which the Finding
     # typespec does not admit and a host reading the key cannot use.
     #
@@ -649,8 +652,8 @@ defmodule Riddler.Screens.DocumentTest do
              }
 
       for finding <- raised do
-        assert is_binary(finding.node_key) or is_nil(finding.node_key),
-               "#{finding.code} carries node_key #{inspect(finding.node_key)}"
+        assert is_binary(finding.element_key) or is_nil(finding.element_key),
+               "#{finding.code} carries element_key #{inspect(finding.element_key)}"
       end
     end
 
@@ -662,7 +665,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.missing_field"
       assert finding.field == "outcome"
-      assert finding.node_key == "account_continue"
+      assert finding.element_key == "account_continue"
     end
 
     # Sabotage: widen the heading level guard to `level >= 1` and a level of 9
@@ -677,7 +680,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.level_out_of_range"
       assert finding.field == "level"
-      assert finding.node_key == "account_heading"
+      assert finding.element_key == "account_heading"
     end
 
     # Sabotage: treat `Predicator.compile/1`'s `{:error, _}` as success and a
@@ -697,7 +700,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.invalid_condition"
       assert finding.field == "condition"
-      assert finding.node_key == "account_greeting"
+      assert finding.element_key == "account_greeting"
       assert finding.message =~ "does not parse"
     end
 
@@ -722,7 +725,7 @@ defmodule Riddler.Screens.DocumentTest do
       assert %Document{} = Document.admit(raw)
       assert [finding] = findings(raw)
       assert finding.code == "document.invalid_template"
-      assert finding.node_key == "h"
+      assert finding.element_key == "h"
       assert finding.position == nil
       assert finding.message =~ "could not be parsed"
     end
@@ -743,7 +746,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.invalid_template"
       assert finding.field == "include"
-      assert finding.node_key == "first_name"
+      assert finding.element_key == "first_name"
       assert finding.message =~ "the label template is refused"
     end
 
@@ -778,7 +781,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.invalid_writes"
       assert finding.field == "writes"
-      assert finding.node_key == "plan_business"
+      assert finding.element_key == "plan_business"
     end
 
     # Sabotage: drop the membership check in `TextQuestion.validate/1` and a
@@ -798,7 +801,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.unknown_format"
       assert finding.field == "format"
-      assert finding.node_key == "email"
+      assert finding.element_key == "email"
     end
 
     # A `pattern` is an expression the author wrote and this package compiles,
@@ -823,7 +826,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.invalid_pattern"
       assert finding.field == "pattern"
-      assert finding.node_key == "card_last_four"
+      assert finding.element_key == "card_last_four"
       assert finding.message =~ "[0-9"
     end
 
@@ -849,7 +852,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.invalid_pattern"
       assert finding.field == "pattern"
-      assert finding.node_key == "card_last_four"
+      assert finding.element_key == "card_last_four"
       assert finding.message =~ "4"
     end
 
@@ -912,7 +915,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.empty_variant"
       assert finding.field == "nodes"
-      assert finding.node_key == "notice"
+      assert finding.element_key == "notice"
     end
 
     # Sabotage: drop the FIRST candidate instead of the last before the
@@ -942,7 +945,7 @@ defmodule Riddler.Screens.DocumentTest do
         )
 
       assert finding.code == "document.unreachable_variant_candidate"
-      assert finding.node_key == "notice"
+      assert finding.element_key == "notice"
       assert finding.message =~ "notice_default"
     end
 
@@ -963,32 +966,33 @@ defmodule Riddler.Screens.DocumentTest do
         )
 
       assert finding.code == "document.level_out_of_range"
-      assert finding.node_key == "notice_default"
+      assert finding.element_key == "notice_default"
     end
 
     # The envelope and boolean shapes the record states. Each is checked only
     # where the document carries the field: the schema requires `screens` and
     # nothing else, so requiredness is not what these checks answer.
 
-    # Sabotage: dropped the `schema_version_findings(@schema_version)` clause
-    # and every document in the suite raised a finding about its own version,
-    # so this went red with most of the file red beside it; then widened the
-    # remaining clause to `when is_integer(version)` and a document declaring
-    # version 2 validated clean, so this went red alone.
+    # Sabotage: dropped the `when version in @schema_versions` clause of
+    # `schema_version_findings/1` and every document in the suite raised a
+    # finding about its own version, so this went red with most of the file
+    # red beside it; then widened the remaining clause to `when
+    # is_integer(version)` and a document declaring version 3 validated clean,
+    # so this went red alone.
     test "a schema_version this package is not the runtime for" do
       raw =
         Map.put(
           document([%{"type" => "text", "key" => "account_intro", "text" => "Hi"}]),
           "schema_version",
-          2
+          3
         )
 
       [finding] = findings(raw)
 
       assert finding.code == "document.invalid_schema_version"
       assert finding.field == "schema_version"
-      assert finding.node_key == nil
-      assert finding.message =~ "2"
+      assert finding.element_key == nil
+      assert finding.message =~ "3"
     end
 
     # An id or a screen title that is not a string is not a document, so
@@ -1029,7 +1033,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.invalid_required"
       assert finding.field == "required"
-      assert finding.node_key == "email"
+      assert finding.element_key == "email"
       assert finding.message =~ "yes"
     end
 
@@ -1052,7 +1056,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.invalid_validates"
       assert finding.field == "validates"
-      assert finding.node_key == "account_continue"
+      assert finding.element_key == "account_continue"
       assert finding.message =~ "always"
     end
 
@@ -1068,7 +1072,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.invalid_outcome"
       assert finding.field == "outcome"
-      assert finding.node_key == "account_continue"
+      assert finding.element_key == "account_continue"
       assert finding.message =~ "not 1"
     end
 
@@ -1087,7 +1091,7 @@ defmodule Riddler.Screens.DocumentTest do
             }
           ])
 
-        assert [%{code: "document.invalid_outcome", node_key: "account_continue"}] =
+        assert [%{code: "document.invalid_outcome", element_key: "account_continue"}] =
                  findings(raw),
                "#{inspect(outcome)} validated without the finding"
       end
@@ -1131,7 +1135,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.invalid_style"
       assert finding.field == "style"
-      assert finding.node_key == "account_continue"
+      assert finding.element_key == "account_continue"
       assert finding.message =~ "1"
     end
 
@@ -1219,7 +1223,7 @@ defmodule Riddler.Screens.DocumentTest do
         )
 
       assert finding.code == "document.invalid_template"
-      assert finding.node_key == "greeting"
+      assert finding.element_key == "greeting"
       assert finding.position == %{line: 1, column: 4}
       assert finding.message =~ "(line 1, column 4)"
     end
@@ -1249,7 +1253,7 @@ defmodule Riddler.Screens.DocumentTest do
           )
 
         assert finding.code == "document.invalid_condition"
-        assert finding.node_key == "account_greeting"
+        assert finding.element_key == "account_greeting"
         assert finding.position == position
         assert finding.message =~ "(line #{position.line}, column #{position.column})"
       end
@@ -1337,7 +1341,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       assert finding.code == "document.duplicate_outcome"
       assert finding.field == "outcome"
-      assert finding.node_key == "account_create_again"
+      assert finding.element_key == "account_create_again"
       assert finding.message =~ ~s("account_submitted")
       assert finding.message =~ ~s("account_create")
       assert finding.message =~ ~s("account")
@@ -1405,7 +1409,7 @@ defmodule Riddler.Screens.DocumentTest do
           ])
         )
 
-      assert {finding.code, finding.node_key} == {"document.duplicate_outcome", "plan_default"}
+      assert {finding.code, finding.element_key} == {"document.duplicate_outcome", "plan_default"}
       assert finding.message =~ ~s("plan_business")
     end
 
@@ -1438,7 +1442,7 @@ defmodule Riddler.Screens.DocumentTest do
           ])
         )
 
-      assert {second.node_key, third.node_key} == {"plan_personal", "plan_team"}
+      assert {second.element_key, third.element_key} == {"plan_personal", "plan_team"}
       assert third.message =~ ~s("plan_business")
       refute third.message =~ ~s("plan_personal")
     end
@@ -1454,8 +1458,8 @@ defmodule Riddler.Screens.DocumentTest do
         ])
 
       assert [
-               %{code: "document.invalid_outcome", node_key: "plan_business"},
-               %{code: "document.invalid_outcome", node_key: "plan_personal"}
+               %{code: "document.invalid_outcome", element_key: "plan_business"},
+               %{code: "document.invalid_outcome", element_key: "plan_personal"}
              ] = findings(numbered)
 
       assert ["document.missing_field", "document.duplicate_outcome"] =
@@ -1514,13 +1518,13 @@ defmodule Riddler.Screens.DocumentTest do
     end
 
     # Sabotage: made `admit/1` carry the `schema_version` as written; the
-    # message named 2.0 and this went red.
+    # message named 3.0 and this went red.
     test "is read as its integer when it is not this version, and refused naming the integer" do
-      [finding] = findings(Map.put(document([text_node()]), "schema_version", 2.0))
+      [finding] = findings(Map.put(document([text_node()]), "schema_version", 3.0))
 
       assert finding.code == "document.invalid_schema_version"
-      assert finding.message =~ "not 2"
-      refute finding.message =~ "2.0"
+      assert finding.message =~ "not 3"
+      refute finding.message =~ "3.0"
     end
 
     # Sabotage: made the float clause of `of_type?/2` count every float as an

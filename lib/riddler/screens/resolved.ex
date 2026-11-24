@@ -49,7 +49,7 @@ defmodule Riddler.Screens.Resolved do
         }
 
   @typedoc "A resolved screen: the shape of the screen it came from."
-  @type screen :: %{key: term(), title: term(), nodes: [Riddler.Screens.Type.node_t()]}
+  @type screen :: %{key: term(), title: term(), elements: [Riddler.Screens.Type.element()]}
 
   @type t :: %__MODULE__{
           schema_version: term(),

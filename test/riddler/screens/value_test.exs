@@ -16,7 +16,7 @@ defmodule Riddler.Screens.ValueTest do
   defp findings(nodes) do
     case Document.validate(document(nodes)) do
       {:ok, _document} -> []
-      {:error, findings} -> Enum.map(findings, &{&1.code, &1.node_key, &1.field})
+      {:error, findings} -> Enum.map(findings, &{&1.code, &1.element_key, &1.field})
     end
   end
 
@@ -58,7 +58,7 @@ defmodule Riddler.Screens.ValueTest do
 
   defp resolved(nodes, root) do
     {:ok, screen, diagnostics} = Screens.resolve_screen(document(nodes), "account", root)
-    {screen.nodes, diagnostics}
+    {screen.elements, diagnostics}
   end
 
   defp values(nodes, root) do
@@ -247,7 +247,7 @@ defmodule Riddler.Screens.ValueTest do
       assert {:error, [finding]} =
                Screens.validate_screen(document(nodes), "account", %{"context" => @context})
 
-      assert {finding.code, finding.node_key} == {"response.required", "work_email"}
+      assert {finding.code, finding.element_key} == {"response.required", "work_email"}
     end
   end
 end

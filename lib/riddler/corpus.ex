@@ -365,7 +365,7 @@ defmodule Riddler.Corpus do
   # is not obliged to reproduce word for word.
   defp encode_findings(findings) do
     Enum.map(findings, fn finding ->
-      %{"code" => finding.code, "field" => finding.field, "node_key" => finding.node_key}
+      %{"code" => finding.code, "field" => finding.field, "node_key" => finding.element_key}
     end)
   end
 

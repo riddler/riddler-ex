@@ -1110,7 +1110,7 @@
       "input": {
         "document": {
           "id": "edoc_signup_screens",
-          "schema_version": 2,
+          "schema_version": 3,
           "screens": [
             {
               "key": "account",
@@ -4793,6 +4793,962 @@
         }
       },
       "name": "A message keyed by a code outside its question's type is refused, for each type the table limits"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 document spells a screen's and a variant's children elements, and is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.other_version_spelling",
+            "field": "nodes",
+            "node_key": "patron_details"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "key": "Pictures",
+                  "type": "carousel"
+                },
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 screen that spells its children nodes is refused by name, and nothing under nodes is checked"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.other_version_spelling",
+            "field": "nodes",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 variant that spells its candidates nodes is refused by name, and not as missing or empty"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.other_version_spelling",
+            "field": "nodes",
+            "node_key": "patron_details"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "nodes": [],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 screen carrying nodes beside its elements is refused by name"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.other_version_spelling",
+            "field": "elements",
+            "node_key": "patron_details"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 1 screen that spells its children elements is refused by name"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.other_version_spelling",
+            "field": "elements",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 1 variant carrying elements beside its nodes is refused by name"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.other_version_spelling",
+            "field": "elements",
+            "node_key": "patron_details"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "screens": [
+            {
+              "elements": [],
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A document declaring no schema_version is version 1, and elements on its screen is refused by name"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.empty_variant",
+            "field": "elements",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 variant with no candidates is refused naming elements"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.missing_field",
+            "field": "elements",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 variant carrying neither key is refused as missing elements"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.unreachable_variant_candidate",
+            "field": "elements",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    },
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 variant whose unconditional candidate is not last is refused naming elements"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.unreachable_variant_candidate",
+            "field": "nodes",
+            "node_key": "card_notice"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    },
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 1 variant whose unconditional candidate is not last is refused naming nodes"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 screen carrying neither elements nor nodes is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": "four of them",
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 screen whose elements is not a list is not a screen document"
+    },
+    {
+      "expected": {
+        "admitted": false,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "nodes": "four of them",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 screen whose nodes is not a list is not a screen document, the other version's key held to its shape"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "elements": [],
+                  "key": "welcome_back",
+                  "nodes": [],
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 element whose type has no candidates carries a list under elements or nodes, and both are dropped"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2.0,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A version 2 written with no fractional part is version 2"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_schema_version",
+            "field": "schema_version",
+            "node_key": null
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 3,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        }
+      },
+      "name": "A schema version this package does not implement, written with elements, raises that finding alone"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"

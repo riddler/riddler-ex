@@ -90,7 +90,7 @@ defmodule Riddler.Screens.MessagesTest do
       messages = %{"response.required" => "Answer this one."}
 
       for node <- [email(%{}), plan(%{}), newsletter(%{}), pin(%{})] do
-        %Document{screens: [%{nodes: [admitted]}]} =
+        %Document{screens: [%{elements: [admitted]}]} =
           document([Map.put(node, "messages", messages)])
 
         assert admitted.messages == messages, node["type"]
@@ -104,7 +104,7 @@ defmodule Riddler.Screens.MessagesTest do
                %Finding{
                  code: "document.invalid_messages",
                  field: "messages",
-                 node_key: "work_email"
+                 element_key: "work_email"
                }
              ] =
                findings([email(%{"messages" => @format_text})])
@@ -115,7 +115,7 @@ defmodule Riddler.Screens.MessagesTest do
     # with the value check answering []; the number went unreported.
     test "refuses each value in messages that is not a string, and only those" do
       assert [
-               %Finding{code: "document.invalid_messages", field: "messages", node_key: "plan"} =
+               %Finding{code: "document.invalid_messages", field: "messages", element_key: "plan"} =
                  finding
              ] =
                findings([
@@ -148,7 +148,7 @@ defmodule Riddler.Screens.MessagesTest do
                  })
                ])
 
-      assert first.node_key == "work_email"
+      assert first.element_key == "work_email"
       assert first.message =~ ~s("response.not_an_option")
       assert second.message =~ ~s("response.undecidable")
     end
@@ -185,7 +185,7 @@ defmodule Riddler.Screens.MessagesTest do
     # Sabotage: added "response.format" to the secret question's codes; the
     # secret question keying it was admitted and this test went red.
     test "refuses a format message on a secret question, which is held to no format" do
-      assert [%Finding{code: "document.unknown_message_code", node_key: "account_pin"}] =
+      assert [%Finding{code: "document.unknown_message_code", element_key: "account_pin"}] =
                findings([pin(%{"messages" => %{"response.format" => "Not a PIN."}})])
     end
   end
@@ -254,7 +254,7 @@ defmodule Riddler.Screens.MessagesTest do
             Screens.validate_screen(document, "account", root, "account_next")
           ] do
         assert {:error, findings} = answer
-        assert Enum.map(findings, &{&1.node_key, &1.code, &1.author_message}) == expected
+        assert Enum.map(findings, &{&1.element_key, &1.code, &1.author_message}) == expected
       end
     end
 

@@ -29,9 +29,9 @@ defmodule Riddler.Screens.ValidationTest do
 
   defp fixture_document, do: Document.admit(raw_fixture())
 
-  defp put_node_field(raw, node_key, field, value) do
+  defp put_node_field(raw, element_key, field, value) do
     update_in(raw, ["screens", Access.all(), "nodes", Access.all()], fn node ->
-      if node["key"] == node_key, do: Map.put(node, field, value), else: node
+      if node["key"] == element_key, do: Map.put(node, field, value), else: node
     end)
   end
 
@@ -139,7 +139,7 @@ defmodule Riddler.Screens.ValidationTest do
     %Document{
       schema_version: 1,
       id: "edoc_keys",
-      screens: [%{key: "keys", title: "Keys", nodes: Enum.map(nodes, &hand_built_node/1)}]
+      screens: [%{key: "keys", title: "Keys", elements: Enum.map(nodes, &hand_built_node/1)}]
     }
   end
 
@@ -253,14 +253,14 @@ defmodule Riddler.Screens.ValidationTest do
       # condition cannot be decided against, so the screen reports that beside
       # the unanswered question. Both are asserted rather than one filtered out,
       # so that a change to either is visible here.
-      assert Enum.map(findings, &{&1.code, &1.node_key}) == [
+      assert Enum.map(findings, &{&1.code, &1.element_key}) == [
                {"response.undecidable", "account_greeting"},
                {"response.required", "first_name"}
              ]
 
       required = Enum.find(findings, &(&1.code == "response.required"))
 
-      assert %Finding{field: "required", node_key: "first_name"} = required
+      assert %Finding{field: "required", element_key: "first_name"} = required
       assert required.message =~ "First name"
     end
 
@@ -272,7 +272,7 @@ defmodule Riddler.Screens.ValidationTest do
                  "responses" => %{"first_name" => "   ", "email" => @good_email}
                })
 
-      assert finding.node_key == "first_name"
+      assert finding.element_key == "first_name"
     end
 
     # Sabotage: made `validate_screen/3` collect only the first node's
@@ -284,7 +284,7 @@ defmodule Riddler.Screens.ValidationTest do
                  "responses" => %{"first_name" => ""}
                })
 
-      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
+      assert Enum.map(findings, & &1.element_key) == ["first_name", "email"]
     end
 
     # The confirm screen rather than the plan screen, because the question has
@@ -325,7 +325,7 @@ defmodule Riddler.Screens.ValidationTest do
                  "responses" => %{"first_name" => "Ada", "email" => "ada.example.com"}
                })
 
-      assert %Finding{code: "response.format", field: "format", node_key: "email"} = finding
+      assert %Finding{code: "response.format", field: "format", element_key: "email"} = finding
     end
   end
 
@@ -351,7 +351,7 @@ defmodule Riddler.Screens.ValidationTest do
                  "responses" => %{"seats" => 3}
                })
 
-      assert finding.node_key == "referral"
+      assert finding.element_key == "referral"
     end
   end
 
@@ -384,7 +384,7 @@ defmodule Riddler.Screens.ValidationTest do
     # Sabotage: made `opted_out?/2` answer `true` for any button it found; the
     # Continue press skipped the checks and this test went red.
     test "the Continue button on the same screen answers the finding" do
-      assert {:error, [%Finding{node_key: "first_name"} | _rest]} =
+      assert {:error, [%Finding{element_key: "first_name"} | _rest]} =
                Screens.validate_screen(
                  account_with_back_document(),
                  "account",
@@ -401,7 +401,7 @@ defmodule Riddler.Screens.ValidationTest do
                  "responses" => %{"first_name" => ""}
                })
 
-      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
+      assert Enum.map(findings, & &1.element_key) == ["first_name", "email"]
     end
 
     # Sabotage: made `opted_out?/2` answer `true` for a key naming no button;
@@ -416,7 +416,7 @@ defmodule Riddler.Screens.ValidationTest do
                  "no_such_button"
                )
 
-      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
+      assert Enum.map(findings, & &1.element_key) == ["first_name", "email"]
     end
   end
 
@@ -440,7 +440,7 @@ defmodule Riddler.Screens.ValidationTest do
                  "responses" => %{"first_name" => ""}
                })
 
-      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
+      assert Enum.map(findings, & &1.element_key) == ["first_name", "email"]
     end
 
     # The same rule reached through the arity-4 form: an absent pressed key
@@ -458,7 +458,7 @@ defmodule Riddler.Screens.ValidationTest do
                  nil
                )
 
-      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
+      assert Enum.map(findings, & &1.element_key) == ["first_name", "email"]
     end
 
     # The shape the amendment's own paragraph beginning "The case is narrower"
@@ -483,7 +483,7 @@ defmodule Riddler.Screens.ValidationTest do
                  }
                )
 
-      assert Enum.map(findings, & &1.node_key) == ["first_name", "email"]
+      assert Enum.map(findings, & &1.element_key) == ["first_name", "email"]
     end
 
     # A keyless node sitting in front of a keyed one hides nothing, because
@@ -541,7 +541,7 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, findings} =
                Screens.validate_screen(document, "account", root, "account_back")
 
-      assert Enum.map(findings, &{&1.code, &1.node_key}) == [
+      assert Enum.map(findings, &{&1.code, &1.element_key}) == [
                {"response.undecidable", "account_back"},
                {"response.required", "first_name"},
                {"response.required", "email"}
@@ -558,7 +558,7 @@ defmodule Riddler.Screens.ValidationTest do
       # first finding above reports.
       assert {:ok, screen, diagnostics} = Screens.resolve_screen(document, "account", root)
 
-      refute "account_back" in Enum.map(screen.nodes, & &1.key)
+      refute "account_back" in Enum.map(screen.elements, & &1.key)
 
       assert diagnostics.undecidable_conditions == [
                %{key: "account_back", condition: "context.is_business == true"}
@@ -632,7 +632,7 @@ defmodule Riddler.Screens.ValidationTest do
       assert :ok == Screens.validate_screen(document, "card", typed)
       assert :ok == Screens.validate_screen(document, "card", typed, "card_pay")
 
-      assert {:error, [%Finding{code: "response.required", node_key: "card_field"}]} =
+      assert {:error, [%Finding{code: "response.required", element_key: "card_field"}]} =
                Screens.validate_screen(document, "card", %{
                  "responses" => %{"card_field" => "   "}
                })
@@ -768,12 +768,12 @@ defmodule Riddler.Screens.ValidationTest do
       root = %{"context" => %{"is_business" => true}, "responses" => %{}}
 
       {:ok, shown, diagnostics} = Screens.resolve_screen(checkout_document(), "checkout", root)
-      assert Enum.map(shown.nodes, & &1.key) == ["full_name", "vat_id"]
+      assert Enum.map(shown.elements, & &1.key) == ["full_name", "vat_id"]
       assert diagnostics.undecidable_conditions == []
 
       submitted = put_in(root, ["responses"], %{"full_name" => "Ada"})
 
-      assert {:error, [%Finding{code: "response.required", node_key: "vat_id"}]} =
+      assert {:error, [%Finding{code: "response.required", element_key: "vat_id"}]} =
                Screens.validate_screen(checkout_document(), "checkout", submitted)
     end
 
@@ -804,7 +804,7 @@ defmodule Riddler.Screens.ValidationTest do
 
       {:ok, screen, diagnostics} = Screens.resolve_screen(checkout_document(), "checkout", root)
 
-      assert Enum.map(screen.nodes, & &1.key) == ["full_name"]
+      assert Enum.map(screen.elements, & &1.key) == ["full_name"]
 
       assert diagnostics.undecidable_conditions == [
                %{key: "vat_id", condition: "context.is_business == true"}
@@ -826,7 +826,7 @@ defmodule Riddler.Screens.ValidationTest do
 
       {:ok, screen, diagnostics} = Screens.resolve_screen(checkout_document(), "checkout", root)
 
-      assert Enum.map(screen.nodes, & &1.key) == ["full_name"]
+      assert Enum.map(screen.elements, & &1.key) == ["full_name"]
 
       assert diagnostics.undecidable_conditions == [
                %{key: "vat_id", condition: "context.is_business == true"}
@@ -835,7 +835,7 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, [finding]} =
                Screens.validate_screen(checkout_document(), "checkout", root)
 
-      assert %Finding{code: "response.undecidable", field: "condition", node_key: "vat_id"} =
+      assert %Finding{code: "response.undecidable", field: "condition", element_key: "vat_id"} =
                finding
 
       assert finding.message =~ "context.is_business == true"
@@ -867,7 +867,7 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, findings} =
                Screens.validate_screen(referral_required_document(), "confirm", %{})
 
-      assert Enum.map(findings, &{&1.code, &1.node_key}) == [
+      assert Enum.map(findings, &{&1.code, &1.element_key}) == [
                {"response.undecidable", "confirm_referral_heading"},
                {"response.undecidable", "referral"}
              ]
@@ -911,7 +911,7 @@ defmodule Riddler.Screens.ValidationTest do
 
       assert {"response.undecidable", "account_greeting"} in Enum.map(
                findings,
-               &{&1.code, &1.node_key}
+               &{&1.code, &1.element_key}
              )
     end
 
@@ -970,7 +970,7 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, findings} =
                Screens.validate_screen(checkout_document(), "checkout", root)
 
-      assert Enum.map(findings, &{&1.code, &1.node_key}) == [
+      assert Enum.map(findings, &{&1.code, &1.element_key}) == [
                {"response.undecidable", "vat_id"},
                {"response.required", "full_name"}
              ]
@@ -996,7 +996,7 @@ defmodule Riddler.Screens.ValidationTest do
                  root
                )
 
-      assert %Finding{code: "response.undecidable", field: "condition", node_key: "vat_id"} =
+      assert %Finding{code: "response.undecidable", field: "condition", element_key: "vat_id"} =
                finding
 
       assert finding.position == %{line: 1, column: 1}
@@ -1024,7 +1024,7 @@ defmodule Riddler.Screens.ValidationTest do
 
       assert {:error, [finding]} = Screens.validate_screen(document, "checkout", root)
 
-      assert %Finding{code: "response.undecidable", field: "condition", node_key: "vat_id"} =
+      assert %Finding{code: "response.undecidable", field: "condition", element_key: "vat_id"} =
                finding
 
       assert finding.position == %{line: 1, column: 23}
@@ -1037,7 +1037,7 @@ defmodule Riddler.Screens.ValidationTest do
       # finding stays because a host that never called this is still told.
       assert {:error, document_findings} = Document.validate(document)
 
-      assert Enum.map(document_findings, &{&1.code, &1.node_key}) == [
+      assert Enum.map(document_findings, &{&1.code, &1.element_key}) == [
                {"document.invalid_condition", "vat_id"}
              ]
     end
@@ -1053,16 +1053,16 @@ defmodule Riddler.Screens.ValidationTest do
       %Document{screens: [screen]} = document = checkout_document()
 
       nodes =
-        Enum.map(screen.nodes, fn
+        Enum.map(screen.elements, fn
           %{key: "vat_id"} = node -> %{node | condition: 42}
           node -> node
         end)
 
-      document = %{document | screens: [%{screen | nodes: nodes}]}
+      document = %{document | screens: [%{screen | elements: nodes}]}
 
       assert {:error, [finding]} = Screens.validate_screen(document, "checkout", root)
 
-      assert %Finding{code: "response.undecidable", field: "condition", node_key: "vat_id"} =
+      assert %Finding{code: "response.undecidable", field: "condition", element_key: "vat_id"} =
                finding
 
       assert finding.position == nil
@@ -1077,7 +1077,7 @@ defmodule Riddler.Screens.ValidationTest do
     # the evaluator's answer alone: an unbound name, a decided value that is not
     # a boolean and an evaluation error each have one cause and say it, and the
     # two answers that cover more than one cause say neither. The `code`, the
-    # `field`, the `node_key` and the `position` are what they were before the
+    # `field`, the `element_key` and the `position` are what they were before the
     # message split, and each case below pins them beside the sentence.
 
     defp undecided_finding(condition, context) do
@@ -1086,7 +1086,7 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, [finding]} =
                Screens.validate_screen(checkout_condition_document(condition), "checkout", root)
 
-      assert %Finding{code: "response.undecidable", field: "condition", node_key: "vat_id"} =
+      assert %Finding{code: "response.undecidable", field: "condition", element_key: "vat_id"} =
                finding
 
       finding
@@ -1161,7 +1161,7 @@ defmodule Riddler.Screens.ValidationTest do
   end
 
   describe "a node key the record does not admit" do
-    # Sabotage: write `node_key: node[:key]` back into `finding/4` and the
+    # Sabotage: write `element_key: node[:key]` back into `finding/4` and the
     # required finding carries the integer key, which the `Riddler.Finding`
     # typespec does not admit and a host indexing findings by that field
     # cannot look a node up by.
@@ -1173,7 +1173,7 @@ defmodule Riddler.Screens.ValidationTest do
 
       assert {:error, [finding]} = Screens.validate_screen(document, "keys", %{})
       assert finding.code == "response.required"
-      assert finding.node_key == nil
+      assert finding.element_key == nil
     end
 
     # Sabotage: the same site as the required case - `finding/4` is what both
@@ -1194,10 +1194,10 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, [finding]} = Screens.validate_screen(document, "keys", root)
       assert finding.code == "response.format"
       assert finding.field == "format"
-      assert finding.node_key == nil
+      assert finding.element_key == nil
     end
 
-    # Sabotage: write `node_key: node[:key]` back into `pattern_finding/1` and
+    # Sabotage: write `element_key: node[:key]` back into `pattern_finding/1` and
     # this finding carried the atom key.
     test "leaves the missing-pattern finding's node key nil" do
       document =
@@ -1215,10 +1215,10 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, [finding]} = Screens.validate_screen(document, "keys", root)
       assert finding.code == "response.format"
       assert finding.field == "pattern"
-      assert finding.node_key == nil
+      assert finding.element_key == nil
     end
 
-    # Sabotage: write `node_key: node[:key]` back into `range_finding/5` and
+    # Sabotage: write `element_key: node[:key]` back into `range_finding/5` and
     # the out-of-range finding carried the integer key.
     test "leaves the out-of-range finding's node key nil" do
       document =
@@ -1237,14 +1237,14 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, [finding]} = Screens.validate_screen(document, "keys", root)
       assert finding.code == "response.out_of_range"
       assert finding.field == "min"
-      assert finding.node_key == nil
+      assert finding.element_key == nil
     end
 
     # The undecidable finding is built from the resolution diagnostics rather
     # than from a node on the resolved screen, so it carries the key by its own
     # route and needs its own case.
     #
-    # Sabotage: write `node_key: key` back into `undecidable_finding/2` and the
+    # Sabotage: write `element_key: key` back into `undecidable_finding/2` and the
     # finding about the condition carried the atom key.
     test "leaves the undecidable finding's node key nil" do
       document =
@@ -1261,7 +1261,7 @@ defmodule Riddler.Screens.ValidationTest do
       root = %{"context" => %{}, "responses" => %{}}
 
       {:ok, screen, diagnostics} = Screens.resolve_screen(document, "keys", root)
-      assert screen.nodes == []
+      assert screen.elements == []
 
       assert diagnostics.undecidable_conditions == [
                %{key: :vat_id, condition: "context.is_business == true"}
@@ -1269,7 +1269,7 @@ defmodule Riddler.Screens.ValidationTest do
 
       assert {:error, [finding]} = Screens.validate_screen(document, "keys", root)
       assert finding.code == "response.undecidable"
-      assert finding.node_key == nil
+      assert finding.element_key == nil
     end
 
     # Every kind at once, the way the document half is pinned: a screen whose
@@ -1278,7 +1278,7 @@ defmodule Riddler.Screens.ValidationTest do
     #
     # Read off lib/ rather than remembered: four sites in
     # `Riddler.Screens.Validation` put a node's key on a finding, each through
-    # `Finding.node_key/1`, and this fixture reaches all four - the private
+    # `Finding.element_key/1`, and this fixture reaches all four - the private
     # `undecidable_finding/2`, `finding/4` (behind both the required and the
     # format finding), `pattern_finding/1` and `range_finding/5`. Every one of
     # them can be re-wired to the raw key. The codes are listed in order
@@ -1286,7 +1286,7 @@ defmodule Riddler.Screens.ValidationTest do
     # rather than passing a lower bound.
     #
     # Sabotage, one site at a time, each reverted from a copy before the next:
-    # writing `node_key: key` into `undecidable_finding/2`, `node[:key]` into
+    # writing `element_key: key` into `undecidable_finding/2`, `node[:key]` into
     # `finding/4`, `node[:key]` into `pattern_finding/1` and `node[:key]` into
     # `range_finding/5`. Each turned this test red on the first finding that
     # site builds, which carried the raw key: `:vat_id`, `1`, `3` and `4`
@@ -1344,8 +1344,8 @@ defmodule Riddler.Screens.ValidationTest do
              ]
 
       for finding <- findings do
-        assert finding.node_key == nil,
-               "#{finding.code} carries node_key #{inspect(finding.node_key)}"
+        assert finding.element_key == nil,
+               "#{finding.code} carries element_key #{inspect(finding.element_key)}"
       end
     end
 
@@ -1373,11 +1373,11 @@ defmodule Riddler.Screens.ValidationTest do
 
       assert :ok == Screens.validate_screen(document, "keys", %{}, 7)
 
-      assert {:error, [%Finding{code: "response.required", node_key: "seats"}]} =
+      assert {:error, [%Finding{code: "response.required", element_key: "seats"}]} =
                Screens.validate_screen(document, "keys", %{}, "7")
 
       assert {:error, findings} = Document.validate(document)
-      assert Enum.map(findings, &{&1.code, &1.node_key}) == [{"document.invalid_key", nil}]
+      assert Enum.map(findings, &{&1.code, &1.element_key}) == [{"document.invalid_key", nil}]
     end
   end
 
@@ -1457,7 +1457,7 @@ defmodule Riddler.Screens.ValidationTest do
   defp plan_findings(responses, overrides \\ %{}) do
     case plan(responses, overrides) do
       :ok -> []
-      {:error, findings} -> Enum.map(findings, &{&1.code, &1.node_key, &1.field})
+      {:error, findings} -> Enum.map(findings, &{&1.code, &1.element_key, &1.field})
     end
   end
 
@@ -1474,7 +1474,7 @@ defmodule Riddler.Screens.ValidationTest do
     test "refuses a value no option carries, naming it" do
       assert {:error, [finding]} = plan(%{"plan_choice" => "team"})
 
-      assert {finding.code, finding.node_key, finding.field} ==
+      assert {finding.code, finding.element_key, finding.field} ==
                {"response.not_an_option", "plan_choice", "answer_options"}
 
       assert finding.message =~ ~s("team")
@@ -1557,7 +1557,7 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, [finding]} =
                plan(%{"plan_heard_from" => ["search", "television", "radio"]})
 
-      assert {finding.code, finding.node_key, finding.field} ==
+      assert {finding.code, finding.element_key, finding.field} ==
                {"response.not_an_option", "plan_heard_from", "answer_options"}
 
       assert finding.message =~ ~s("television")
@@ -1658,7 +1658,7 @@ defmodule Riddler.Screens.ValidationTest do
       assert {:error, [finding]} =
                plan(%{"plan_terms" => false}, %{"plan_terms" => %{"required" => true}})
 
-      assert {finding.code, finding.node_key, finding.field} ==
+      assert {finding.code, finding.element_key, finding.field} ==
                {"response.required", "plan_terms", "required"}
     end
 
@@ -1754,7 +1754,7 @@ defmodule Riddler.Screens.ValidationTest do
     test "a select that is neither value holds a response to required and nothing else" do
       overrides = %{"plan_choice" => %{"select" => "several", "required" => true}}
 
-      assert {:error, [%Finding{code: "document.invalid_select", node_key: "plan_choice"}]} =
+      assert {:error, [%Finding{code: "document.invalid_select", element_key: "plan_choice"}]} =
                Document.validate(plan_document(overrides))
 
       for value <- ["team", ["personal", "personal"], 1] do

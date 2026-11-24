@@ -15,14 +15,14 @@ defmodule Riddler.Screens.Type.Variant do
   document says something it cannot mean, and the author is told so at admit
   time rather than discovering it as a screen that never varies.
 
-      iex> node = %{type: "variant", key: "card_notice", nodes: [
+      iex> node = %{type: "variant", key: "card_notice", elements: [
       ...>   %{type: "text", key: "card_notice_declined", condition: "context.last_charge_status == 'declined'", text: "Try another card."},
       ...>   %{type: "text", key: "card_notice_default", text: "We will charge the card on file."}
       ...> ]}
       iex> Riddler.Screens.Type.Variant.validate(node)
       []
 
-      iex> [finding] = Riddler.Screens.Type.Variant.validate(%{type: "variant", key: "card_notice", nodes: []})
+      iex> [finding] = Riddler.Screens.Type.Variant.validate(%{type: "variant", key: "card_notice", elements: []})
       iex> finding.code
       "document.empty_variant"
   """
@@ -32,23 +32,23 @@ defmodule Riddler.Screens.Type.Variant do
   alias Riddler.Finding
 
   @impl true
-  def fields, do: %{required: [:nodes], optional: []}
+  def fields, do: %{required: [:elements], optional: []}
 
   @impl true
   def validate(node) do
-    case Map.fetch(node, :nodes) do
+    case Map.fetch(node, :elements) do
       {:ok, []} ->
         [
           %Finding{
             code: "document.empty_variant",
             message: "a variant carries at least one candidate; this one carries none",
-            field: "nodes",
-            node_key: Finding.node_key(node[:key])
+            field: "elements",
+            element_key: Finding.element_key(node[:key])
           }
         ]
 
       {:ok, candidates} when is_list(candidates) ->
-        unreachable(candidates, Finding.node_key(node[:key]))
+        unreachable(candidates, Finding.element_key(node[:key]))
 
       _other ->
         []
@@ -65,8 +65,8 @@ defmodule Riddler.Screens.Type.Variant do
         code: "document.unreachable_variant_candidate",
         message:
           "the candidate #{inspect(candidate[:key])} carries no condition and is not last, so every candidate after it is unreachable",
-        field: "nodes",
-        node_key: key
+        field: "elements",
+        element_key: key
       }
     end)
   end

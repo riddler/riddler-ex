@@ -4386,6 +4386,107 @@
         }
       },
       "name": "A choice question's default naming no option it resolves to is not presented, one or many, on a document no one validated"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "patron_registration",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "key": "patron_details",
+            "nodes": [
+              {
+                "key": "welcome_back",
+                "text": "Welcome back, Ada.",
+                "type": "text"
+              },
+              {
+                "format": "email",
+                "key": "reminder_email",
+                "label": "Email for due-date reminders",
+                "required": true,
+                "type": "text_question"
+              },
+              {
+                "key": "card_notice_adult",
+                "text": "Your card is ready the same day.",
+                "type": "text"
+              },
+              {
+                "key": "details_next",
+                "label": "Continue",
+                "outcome": "details_submitted",
+                "type": "button"
+              }
+            ],
+            "title": "Get your library card"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "elements": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "card_notice",
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "patron_details",
+              "title": "Get your library card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "age": 34,
+            "first_name": "Ada",
+            "returning": "yes"
+          }
+        }
+      },
+      "name": "A version 2 document resolves to what its version 1 form resolves to, keeping the version it declared"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

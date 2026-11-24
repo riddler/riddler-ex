@@ -61,7 +61,7 @@ defmodule Riddler.Screens.Type.BooleanQuestion do
             message:
               "required says whether the visitor has to answer yes, true or false, not #{inspect(required)}",
             field: "required",
-            node_key: Finding.node_key(node[:key])
+            element_key: Finding.element_key(node[:key])
           }
         ]
 

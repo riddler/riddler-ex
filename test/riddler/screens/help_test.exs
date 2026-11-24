@@ -23,7 +23,7 @@ defmodule Riddler.Screens.HelpTest do
   defp findings(nodes) do
     case Document.validate(document(nodes)) do
       {:ok, _document} -> []
-      {:error, findings} -> Enum.map(findings, &{&1.code, &1.node_key, &1.field})
+      {:error, findings} -> Enum.map(findings, &{&1.code, &1.element_key, &1.field})
     end
   end
 
@@ -79,7 +79,7 @@ defmodule Riddler.Screens.HelpTest do
     # question's and from the boolean question's.
     test "a text, choice or boolean question keeps its help as the document wrote it" do
       help = "We send it to {{ context.company_name }}."
-      %Document{screens: [%{nodes: nodes}]} = document(questions(help))
+      %Document{screens: [%{elements: nodes}]} = document(questions(help))
 
       assert Enum.map(nodes, &Map.fetch(&1, :help)) == [{:ok, help}, {:ok, help}, {:ok, help}]
       assert findings(questions(help)) == []
@@ -121,7 +121,7 @@ defmodule Riddler.Screens.HelpTest do
           "context" => %{"company_name" => "Acme"}
         })
 
-      assert Enum.map(screen.nodes, &Map.get(&1, :help)) ==
+      assert Enum.map(screen.elements, &Map.get(&1, :help)) ==
                List.duplicate("Billed to Acme.", 3)
 
       assert diagnostics.missing_variables == [

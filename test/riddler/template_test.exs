@@ -128,7 +128,7 @@ defmodule Riddler.TemplateTest do
 
       assert finding.message =~ "include"
       assert finding.message =~ "line 1"
-      assert finding.node_key == nil
+      assert finding.element_key == nil
     end
 
     # Mutation: add "render" to @allowed_tags - the tag compiles and no

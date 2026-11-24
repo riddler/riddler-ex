@@ -92,7 +92,7 @@ defmodule Riddler.Screens.Messages do
         message:
           "#{inspect(code)} is not a code a #{node[:type]} raises on a response; the codes it raises are #{Enum.join(codes, ", ")}",
         field: "messages",
-        node_key: Finding.node_key(node[:key])
+        element_key: Finding.element_key(node[:key])
       }
     end
   end
@@ -102,7 +102,7 @@ defmodule Riddler.Screens.Messages do
       code: "document.invalid_messages",
       message: message,
       field: "messages",
-      node_key: Finding.node_key(node[:key])
+      element_key: Finding.element_key(node[:key])
     }
   end
 

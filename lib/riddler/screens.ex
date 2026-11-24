@@ -162,7 +162,7 @@ defmodule Riddler.Screens do
       ...>   })
       iex> root = %{"context" => %{"tenant_name" => "Acme", "card_expires_within_days" => 9}}
       iex> {:ok, resolved} = Riddler.Screens.resolve(document, root)
-      iex> Enum.map(hd(resolved.screens).nodes, & &1.text)
+      iex> Enum.map(hd(resolved.screens).elements, & &1.text)
       ["Charging Acme.", "The card on file expires soon."]
       iex> resolved.diagnostics
       %{missing_variables: [], undecidable_conditions: []}
@@ -214,7 +214,7 @@ defmodule Riddler.Screens do
       ...>     ]
       ...>   })
       iex> {:ok, resolved} = Riddler.Screens.resolve(document, %{})
-      iex> {hd(resolved.screens).nodes, resolved.diagnostics.undecidable_conditions}
+      iex> {hd(resolved.screens).elements, resolved.diagnostics.undecidable_conditions}
       {[], [%{key: "account_greeting", condition: "responses.first_name != ''"}]}
   """
   @spec resolve(Document.t(), map()) :: {:ok, Resolved.t()}
@@ -272,7 +272,7 @@ defmodule Riddler.Screens do
       ...>     ]
       ...>   })
       iex> {:ok, screen, diagnostics} = Riddler.Screens.resolve_screen(document, "account", %{})
-      iex> {screen.key, screen.title, screen.nodes}
+      iex> {screen.key, screen.title, screen.elements}
       {"account", "Create your account", []}
       iex> diagnostics
       %{
@@ -349,7 +349,7 @@ defmodule Riddler.Screens do
   document's defect, reported as `document.invalid_select`, and its response
   is held to `required` and to nothing else.
 
-  Every finding names the node it is about in `node_key`, the field that was
+  Every finding names the node it is about in `element_key`, the field that was
   not satisfied in `field`, and a stable `code`: `response.required`,
   `response.format`, `response.out_of_range`, `response.invalid_shape`,
   `response.not_an_option` or `response.undecidable`. There is one finding
@@ -423,7 +423,7 @@ defmodule Riddler.Screens do
       iex> Riddler.Screens.validate_screen(document, "card", %{"responses" => %{"billing_email" => "ada@example.com"}})
       :ok
       iex> {:error, [finding]} = Riddler.Screens.validate_screen(document, "card", %{"responses" => %{"billing_email" => "ada"}})
-      iex> {finding.code, finding.node_key, finding.field}
+      iex> {finding.code, finding.element_key, finding.field}
       {"response.format", "billing_email", "format"}
       iex> {:error, [finding]} = Riddler.Screens.validate_screen(document, "card", %{})
       iex> finding.code
@@ -572,7 +572,7 @@ defmodule Riddler.Screens do
       {:ok, %{"first_name" => "Ada", "library_pin" => %{"sealed" => "EXAMPLE-SEALED-HANDLE"}}}
       iex> failing = fn _plaintext -> {:error, :key_unavailable} end
       iex> {:error, [finding]} = Riddler.Screens.seal_secrets(document, "card_pin", responses, failing)
-      iex> {finding.code, finding.node_key, finding.field}
+      iex> {finding.code, finding.element_key, finding.field}
       {"response.seal_failed", "library_pin", "sealed"}
       iex> Riddler.Screens.seal_secrets(document, "branch", responses, sealer)
       {:error, :no_such_screen}
@@ -628,8 +628,8 @@ defmodule Riddler.Screens do
   # `scope` is `{root, held}`: the root a condition and a template read, and
   # the keys of the secret questions that hold a sealed value.
   defp resolve_one(screen, scope, diagnostics) do
-    {nodes, diagnostics} = resolve_nodes(screen.nodes, scope, diagnostics)
-    {%{key: screen.key, title: screen.title, nodes: nodes}, diagnostics}
+    {nodes, diagnostics} = resolve_nodes(screen.elements, scope, diagnostics)
+    {%{key: screen.key, title: screen.title, elements: nodes}, diagnostics}
   end
 
   # -- nodes -----------------------------------------------------------------
@@ -658,7 +658,7 @@ defmodule Riddler.Screens do
   end
 
   defp present(node, {root, held} = scope, diagnostics) do
-    case Map.fetch(node, :nodes) do
+    case Map.fetch(node, :elements) do
       {:ok, candidates} when is_list(candidates) -> winner(candidates, scope, diagnostics)
       _not_a_container -> resolve_leaf(node, root, held, diagnostics)
     end
@@ -669,8 +669,12 @@ defmodule Riddler.Screens do
   # then a choice question that names a context path for its options reads
   # them; then the node is presented, its value put to the options it is
   # shown. A path that read no list of options is reported under the
-  # question's key, after any variable its templates wanted.
+  # question's key, after any variable its templates wanted. A container that
+  # carried its candidates under the other version's key only is resolved as
+  # a leaf, as a container carrying none is, and what admission marked it
+  # with is the document's refusal, not a field of the element.
   defp resolve_leaf(node, root, held, diagnostics) do
+    node = Map.delete(node, :other_version_spelling)
     {node, diagnostics} = render(node, root, diagnostics)
     {node, unread} = ContextOptions.resolve(node, root["context"])
     {presented(node, root, held), missing(diagnostics, node[:key], unread)}

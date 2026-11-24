@@ -867,7 +867,7 @@ defmodule Riddler.Template do
       code: @parse_error,
       message: "the template could not be parsed: " <> reason <> span(position),
       field: nil,
-      node_key: nil,
+      element_key: nil,
       position: position
     }
   end
@@ -878,7 +878,7 @@ defmodule Riddler.Template do
       message:
         "#{lead} \"#{name}\" is not in the template subset (line #{line}, column #{column})",
       field: name,
-      node_key: nil,
+      element_key: nil,
       position: Finding.position(line, column)
     }
   end

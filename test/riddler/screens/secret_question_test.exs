@@ -34,7 +34,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
   defp findings(nodes) do
     case Document.validate(admitted(nodes)) do
       {:ok, _document} -> []
-      {:error, findings} -> Enum.map(findings, &{&1.code, &1.node_key, &1.field})
+      {:error, findings} -> Enum.map(findings, &{&1.code, &1.element_key, &1.field})
     end
   end
 
@@ -60,7 +60,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
                  required: true,
                  help: "You will type it each time you sign in, {{ context.first_name }}."
                }
-             ] = hd(document.screens).nodes
+             ] = hd(document.screens).elements
     end
 
     # Sabotage: added :format to the type's optional fields;
@@ -69,7 +69,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
       node =
         pin(%{"placeholder" => "Four digits", "format" => "pattern", "pattern" => "[0-9]{4}"})
 
-      [admitted_node] = hd(admitted([node]).screens).nodes
+      [admitted_node] = hd(admitted([node]).screens).elements
 
       assert findings([node]) == []
       refute Map.has_key?(admitted_node, :placeholder)
@@ -198,7 +198,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
 
       {:error, found} = Document.validate(Document.admit(raw))
 
-      assert Enum.map(found, &{&1.code, &1.node_key, &1.field}) ==
+      assert Enum.map(found, &{&1.code, &1.element_key, &1.field}) ==
                [{"document.secret_reference", "welcome_pin", "text"}]
 
       own = pin(%{"label" => "Confirm {{ responses.account_pin }}"})
@@ -262,10 +262,10 @@ defmodule Riddler.Screens.SecretQuestionTest do
 
       {:ok, screen, diagnostics} = Screens.resolve_screen(Document.admit(raw), "security", root)
 
-      assert Enum.map(screen.nodes, & &1.key) == ["account_pin", "pin_echo", "name_echo"]
-      assert Enum.at(screen.nodes, 0).help == "Hi Ada"
-      assert Enum.at(screen.nodes, 1).text == "PIN: "
-      assert Enum.at(screen.nodes, 2).text == "Hello Ada."
+      assert Enum.map(screen.elements, & &1.key) == ["account_pin", "pin_echo", "name_echo"]
+      assert Enum.at(screen.elements, 0).help == "Hi Ada"
+      assert Enum.at(screen.elements, 1).text == "PIN: "
+      assert Enum.at(screen.elements, 2).text == "Hello Ada."
 
       assert diagnostics == %{
                missing_variables: [%{key: "pin_echo", variable: "responses.account_pin"}],
@@ -293,7 +293,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
           "context" => %{"signed_in" => true}
         })
 
-      assert [resolved] = screen.nodes
+      assert [resolved] = screen.elements
       assert Map.keys(resolved) |> Enum.sort() == [:held, :key, :label, :required, :type]
     end
   end
@@ -420,10 +420,10 @@ defmodule Riddler.Screens.SecretQuestionTest do
       }
 
       {:ok, screen, _diagnostics} = Screens.resolve_screen(document, "security", root)
-      assert [%{key: "account_pin", held: true}] = screen.nodes
+      assert [%{key: "account_pin", held: true}] = screen.elements
 
       {:ok, resolved} = Screens.resolve(document, root)
-      assert [%{key: "account_pin", held: true}] = hd(resolved.screens).nodes
+      assert [%{key: "account_pin", held: true}] = hd(resolved.screens).elements
     end
 
     defp presented_held(:absent) do
@@ -441,7 +441,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
     test "nothing answered on a required secret question is response.required" do
       for response <- [:absent, nil, "", "   "] do
         assert {:error,
-                [%{code: "response.required", node_key: "account_pin", field: "required"}]} =
+                [%{code: "response.required", element_key: "account_pin", field: "required"}]} =
                  validated(response),
                inspect(response)
       end
@@ -465,7 +465,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
             %{}
           ] do
         assert {:error,
-                [%{code: "response.invalid_shape", node_key: "account_pin", field: "type"}]} =
+                [%{code: "response.invalid_shape", element_key: "account_pin", field: "type"}]} =
                  validated(response),
                inspect(response)
       end
@@ -502,7 +502,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
           "responses" => %{"account_pin" => @sentinel}
         })
 
-      assert {finding.code, finding.node_key} == {"response.undecidable", "pin_thanks"}
+      assert {finding.code, finding.element_key} == {"response.undecidable", "pin_thanks"}
       assert finding.message =~ "could not be decided"
     end
 

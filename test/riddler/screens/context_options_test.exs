@@ -16,7 +16,7 @@ defmodule Riddler.Screens.ContextOptionsTest do
   defp findings(nodes) do
     case Document.validate(document(nodes)) do
       {:ok, _document} -> []
-      {:error, findings} -> Enum.map(findings, &{&1.code, &1.node_key, &1.field})
+      {:error, findings} -> Enum.map(findings, &{&1.code, &1.element_key, &1.field})
     end
   end
 
@@ -45,7 +45,7 @@ defmodule Riddler.Screens.ContextOptionsTest do
 
   defp resolved(nodes, root) do
     {:ok, screen, diagnostics} = Screens.resolve_screen(document(nodes), "account", root)
-    {screen.nodes, diagnostics}
+    {screen.elements, diagnostics}
   end
 
   describe "admission" do
@@ -56,7 +56,7 @@ defmodule Riddler.Screens.ContextOptionsTest do
       assert findings([plan(%{})]) == []
 
       assert [%{answer_options_from: "context.account.plans"}] =
-               hd(document([plan(%{})]).screens).nodes
+               hd(document([plan(%{})]).screens).elements
     end
 
     # Sabotage: made the document's required-field check skip answer_options
@@ -125,7 +125,7 @@ defmodule Riddler.Screens.ContextOptionsTest do
       }
 
       assert findings([text]) == []
-      refute Map.has_key?(hd(hd(document([text]).screens).nodes), :answer_options_from)
+      refute Map.has_key?(hd(hd(document([text]).screens).elements), :answer_options_from)
     end
   end
 
@@ -202,13 +202,17 @@ defmodule Riddler.Screens.ContextOptionsTest do
     test "a nil authored list beside a path, on a document no one validated, stays nil and reads nothing" do
       validated = document([plan(%{"answer_options" => authored()})])
       [screen] = validated.screens
-      [node] = screen.nodes
-      unvalidated = %{validated | screens: [%{screen | nodes: [%{node | answer_options: nil}]}]}
+      [node] = screen.elements
+
+      unvalidated = %{
+        validated
+        | screens: [%{screen | elements: [%{node | answer_options: nil}]}]
+      }
 
       assert {:ok, resolved, %{missing_variables: []}} =
                Screens.resolve_screen(unvalidated, "account", root(@plans))
 
-      assert [%{answer_options: nil} = presented] = resolved.nodes
+      assert [%{answer_options: nil} = presented] = resolved.elements
       refute Map.has_key?(presented, :answer_options_from)
     end
 
@@ -260,7 +264,7 @@ defmodule Riddler.Screens.ContextOptionsTest do
                  root([hd(@plans)], %{"plan" => "business"})
                )
 
-      assert {finding.code, finding.node_key, finding.field} ==
+      assert {finding.code, finding.element_key, finding.field} ==
                {"response.not_an_option", "plan", "answer_options"}
     end
 

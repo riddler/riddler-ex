@@ -130,6 +130,11 @@ defmodule Riddler.Screens.Seal do
   defp first_per_key(nodes), do: Enum.uniq_by(nodes, & &1.key)
 
   defp finding(node, code, field, message) do
-    %Finding{code: code, message: message, field: field, node_key: Finding.node_key(node.key)}
+    %Finding{
+      code: code,
+      message: message,
+      field: field,
+      element_key: Finding.element_key(node.key)
+    }
   end
 end
