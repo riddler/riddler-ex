@@ -2,32 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "allOf": [
     {
-      "if": {
-        "properties": {
-          "schema_version": {
-            "maximum": 2,
-            "minimum": 1
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "screens": {
-            "items": {
-              "properties": {
-                "elements": {
-                  "items": {
-                    "$ref": "#/definitions/node"
-                  },
-                  "type": "array"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    {
+      "description": "Version 2: a document is read from elements, and elements and nodes are lists of elements wherever they are carried.",
       "if": {
         "properties": {
           "schema_version": {
@@ -61,6 +36,68 @@
           }
         }
       }
+    },
+    {
+      "description": "A version a runtime does not implement: read from nodes, as before version 2 existed, when any screen carries nodes, and then every screen carries it; read from elements as at version 2 when none does.",
+      "if": {
+        "properties": {
+          "schema_version": {
+            "not": {
+              "maximum": 2,
+              "minimum": 1
+            }
+          }
+        },
+        "required": [
+          "schema_version"
+        ]
+      },
+      "then": {
+        "else": {
+          "properties": {
+            "screens": {
+              "items": {
+                "properties": {
+                  "elements": {
+                    "items": {
+                      "$ref": "#/definitions/node_version_2"
+                    },
+                    "type": "array"
+                  },
+                  "nodes": {
+                    "items": {
+                      "$ref": "#/definitions/node_version_2"
+                    },
+                    "type": "array"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "if": {
+          "properties": {
+            "screens": {
+              "contains": {
+                "required": [
+                  "nodes"
+                ]
+              }
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "screens": {
+              "items": {
+                "required": [
+                  "nodes"
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "definitions": {
@@ -82,7 +119,7 @@
           "type": "string"
         },
         "elements": {
-          "description": "The candidates of a container in a version 2 document, considered in order; a version 1 document spells them nodes, and a runtime refuses the other version's key by name on a container. Typed here only at version 2, by the conditional at the top of this schema: on an element of a version 1 document, or of a version a runtime does not implement, it is a field the element's type does not name, of any value, as it was before version 2 existed."
+          "description": "The candidates of a container in a document read from elements, considered in order; a version 1 document spells them nodes, and a runtime refuses the other version's key by name on a container. Typed only where a document is read from elements, by the conditionals at the top of this schema: at version 2, and at a version a runtime does not implement when none of the document's screens carries nodes. In a document read from nodes it is a field nothing reads, of any value, as it was before version 2 existed."
         },
         "key": {
           "description": "How everything else names the node. A runtime holds it to [a-z][a-z0-9_]* and to being unique across the whole document; both are findings against an admitted document rather than reasons this is not a document.",
@@ -159,7 +196,7 @@
       "description": "A screen: its key, its title, and its nodes in order.",
       "properties": {
         "elements": {
-          "description": "The elements of a screen in a version 2 document; a version 1 document spells them nodes. A list of elements at version 1 and 2, by the conditionals at the top of this schema; at a version a runtime does not implement it is untyped, as it was before version 2 existed."
+          "description": "The elements of a screen in a document read from elements; a version 1 document spells them nodes. Typed as the element's own elements is, by the conditionals at the top of this schema; in a document read from nodes it is a field nothing reads, of any value, as it was before version 2 existed."
         },
         "key": {
           "type": "string"
