@@ -406,7 +406,7 @@ defmodule Riddler.Journey do
   `submit.missing_field` for a key the map does not carry, and
   `submit.invalid_field` for a `"screen"` or `"outcome"` that is not a string
   or a `"responses"` that is not a map (a struct included). The `:field` of
-  either names the key; `:node_key` and `:position` are `nil`.
+  either names the key; `:element_key` and `:position` are `nil`.
 
   No document and no execution is read, so the screen is not compared with
   the screen the host's execution is at and the outcome is not checked
@@ -603,7 +603,7 @@ defmodule Riddler.Journey do
   # document each string outcome is listed once, at its first button, so the
   # list stays what the presented answer's schema says it is.
   defp outcomes(screen) do
-    for %{type: "button", outcome: outcome} <- screen.nodes,
+    for %{type: "button", outcome: outcome} <- screen.elements,
         is_binary(outcome),
         uniq: true,
         do: outcome

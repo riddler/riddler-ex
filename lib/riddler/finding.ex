@@ -18,7 +18,7 @@ defmodule Riddler.Finding do
     * `:field` - what the finding is about: the name of the refused construct
       for a template, the offending field for a document. `nil` when the
       refusal is about the input as a whole.
-    * `:node_key` - the key of the document node the finding belongs to, and
+    * `:element_key` - the key of the document node the finding belongs to, and
       always a string or `nil`. It is `nil` wherever there is no key a host
       can look a node up by: a template finding, because a template is
       compiled on its own without the document that carries it; a finding
@@ -81,7 +81,7 @@ defmodule Riddler.Finding do
       ...>   field: "include",
       ...>   position: %{line: 1, column: 3}
       ...> }
-      iex> {finding.node_key, finding.position}
+      iex> {finding.element_key, finding.position}
       {nil, %{line: 1, column: 3}}
   """
 
@@ -97,31 +97,31 @@ defmodule Riddler.Finding do
           code: String.t(),
           message: String.t(),
           field: String.t() | nil,
-          node_key: String.t() | nil,
+          element_key: String.t() | nil,
           position: position() | nil,
           author_message: String.t() | nil
         }
 
   @enforce_keys [:code, :message]
-  defstruct [:code, :message, :field, :node_key, :position, :author_message]
+  defstruct [:code, :message, :field, :element_key, :position, :author_message]
 
-  # The `:node_key` a raw document key earns. A key is a string by the record
+  # The `:element_key` a raw document key earns. A key is a string by the record
   # the document implements, so a key of any other form is one no host can
   # look a node up by and this field is `nil` for it, exactly as it is for a
   # node that declares no key at all. Every check that puts a node's key on a
   # finding goes through here, which is what keeps the field inside its own
   # typespec whatever a host wrote.
   @doc false
-  @spec node_key(term()) :: String.t() | nil
-  def node_key(key) when is_binary(key), do: key
-  def node_key(_key), do: nil
+  @spec element_key(term()) :: String.t() | nil
+  def element_key(key) when is_binary(key), do: key
+  def element_key(_key), do: nil
 
   # The `:position` a line and a column earn. A position is a whole span or it
   # is nothing: a line without a column, or either of them absent because the
   # parser reported an error it had no place for, is a span no editor can
   # point at, and this field is `nil` for it rather than half a pair. Every
   # check that puts a source position on a finding goes through here, for the
-  # reason `node_key/1` exists - it is what keeps the field inside its own
+  # reason `element_key/1` exists - it is what keeps the field inside its own
   # typespec whatever the parser handed back.
   @doc false
   @spec position(term(), term()) :: position() | nil

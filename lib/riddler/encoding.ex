@@ -11,6 +11,12 @@ defmodule Riddler.Encoding do
   # states, and `Riddler.Journey`, whose answer is that data form itself. Two
   # copies would let the corpus hold a runtime to a form the package does not
   # answer in.
+  #
+  # Two atom keys keep the spelling the data form has carried so far. The
+  # admitted and resolved structs name a screen's children `:elements` and a
+  # finding's element `:element_key`, while the data form a client reads
+  # still says `"nodes"` and `"node_key"`; the data form changes in its own
+  # step, and these two clauses are what that step removes.
 
   @doc false
   @spec to_data(term()) :: term()
@@ -24,6 +30,8 @@ defmodule Riddler.Encoding do
   def to_data(atom) when is_atom(atom), do: Atom.to_string(atom)
   def to_data(value), do: value
 
+  defp key(:elements), do: "nodes"
+  defp key(:element_key), do: "node_key"
   defp key(key) when is_atom(key), do: Atom.to_string(key)
   defp key(key), do: key
 end

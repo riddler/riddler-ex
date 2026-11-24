@@ -671,7 +671,7 @@ defmodule Riddler.JourneyTest do
       for submit <- [nil, "account", 1, ["account"], {:account}, URI.parse("https://example.com")] do
         assert {:error, [finding]} = Journey.decode_submit(submit)
 
-        assert %Riddler.Finding{code: "submit.not_an_object", field: nil, node_key: nil} =
+        assert %Riddler.Finding{code: "submit.not_an_object", field: nil, element_key: nil} =
                  finding
 
         assert is_binary(finding.message)
@@ -683,7 +683,7 @@ defmodule Riddler.JourneyTest do
     test "reports every missing key, in the order screen, outcome, responses" do
       assert {:error, findings} = Journey.decode_submit(%{"variant" => "b"})
 
-      assert Enum.map(findings, &{&1.code, &1.field, &1.node_key, &1.position}) == [
+      assert Enum.map(findings, &{&1.code, &1.field, &1.element_key, &1.position}) == [
                {"submit.missing_field", "screen", nil, nil},
                {"submit.missing_field", "outcome", nil, nil},
                {"submit.missing_field", "responses", nil, nil}
@@ -731,7 +731,7 @@ defmodule Riddler.JourneyTest do
     test "reports a back request's missing or non-string screen, and nothing else" do
       assert {:error, [finding]} = Journey.decode_submit(%{"back" => true})
 
-      assert {finding.code, finding.field, finding.node_key, finding.position} ==
+      assert {finding.code, finding.field, finding.element_key, finding.position} ==
                {"submit.missing_field", "screen", nil, nil}
 
       for screen <- [nil, 2, %{"key" => "plan"}, :plan] do

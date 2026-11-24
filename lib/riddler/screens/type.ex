@@ -33,10 +33,11 @@ defmodule Riddler.Screens.Type do
   alias Riddler.Finding
 
   @typedoc """
-  An admitted node: `:type` and, where the document declared them, `:key`,
-  `:condition` and the fields the node's type names.
+  An admitted element, a child of a screen or of a container: `:type` and,
+  where the document declared them, `:key`, `:condition` and the fields the
+  element's type names.
   """
-  @type node_t :: %{:type => term(), optional(atom()) => term()}
+  @type element :: %{:type => term(), optional(atom()) => term()}
 
   @doc """
   The fields a node of this type may carry, split into required and optional.
@@ -46,5 +47,5 @@ defmodule Riddler.Screens.Type do
   @doc """
   The findings only this type can raise about an admitted node of it.
   """
-  @callback validate(node_t()) :: [Finding.t()]
+  @callback validate(element()) :: [Finding.t()]
 end

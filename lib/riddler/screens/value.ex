@@ -57,7 +57,7 @@ defmodule Riddler.Screens.Value do
           code: "document.invalid_default",
           message: default_message(node, default),
           field: "default",
-          node_key: Finding.node_key(node[:key])
+          element_key: Finding.element_key(node[:key])
         }
       ]
     else
@@ -104,7 +104,7 @@ defmodule Riddler.Screens.Value do
           message:
             "the prefill #{inspect(prefill)} is not a path under context: a string of dotted segments starting at context, at least one more after it, each a lower-case letter followed by lower-case letters, digits and underscores",
           field: "prefill",
-          node_key: Finding.node_key(node[:key])
+          element_key: Finding.element_key(node[:key])
         }
       ]
     else

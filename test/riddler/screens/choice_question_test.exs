@@ -63,7 +63,7 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
   end
 
   defp only_node(raw) do
-    assert %Document{screens: [%{nodes: [node]}]} = Document.admit(raw)
+    assert %Document{screens: [%{elements: [node]}]} = Document.admit(raw)
     node
   end
 
@@ -74,7 +74,7 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
     end
   end
 
-  defp tuples(raw), do: raw |> findings() |> Enum.map(&{&1.code, &1.field, &1.node_key})
+  defp tuples(raw), do: raw |> findings() |> Enum.map(&{&1.code, &1.field, &1.element_key})
 
   defp schema, do: @schema |> File.read!() |> Jason.decode!() |> ExJsonSchema.Schema.resolve()
 
@@ -250,7 +250,7 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
 
       found = findings(document([plan_choice(%{"answer_options" => options})]))
 
-      assert Enum.map(found, &{&1.code, &1.field, &1.node_key}) ==
+      assert Enum.map(found, &{&1.code, &1.field, &1.element_key}) ==
                List.duplicate({"document.invalid_option", "answer_options", "plan_choice"}, 3)
 
       assert [no_value, bad_value, no_label] = Enum.map(found, & &1.message)
@@ -298,7 +298,7 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
 
       assert [finding] = findings(document([plan_choice(%{"answer_options" => options})]))
 
-      assert {finding.code, finding.field, finding.node_key} ==
+      assert {finding.code, finding.field, finding.element_key} ==
                {"document.invalid_template", "include", "plan_choice"}
 
       assert finding.message =~ "option 2"
@@ -374,7 +374,7 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
         answer_options: ["personal", %{value: 7, label: "Business"}]
       }
 
-      document = %Document{screens: [%{key: "plan", title: "Pick a plan", nodes: [node]}]}
+      document = %Document{screens: [%{key: "plan", title: "Pick a plan", elements: [node]}]}
 
       assert {:error, found} = Document.validate(document)
       assert Enum.map(found, & &1.code) == ["document.invalid_option", "document.invalid_option"]
@@ -411,7 +411,7 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
 
       {:ok, screen, diagnostics} = Screens.resolve_screen(choice_document(options), "plan", root)
 
-      assert [node] = screen.nodes
+      assert [node] = screen.elements
 
       assert node.answer_options == [
                %{value: "personal", label: "Personal, for "},
@@ -438,7 +438,7 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
         Screens.resolve_screen(choice_document(options), "plan", %{"context" => %{"seats" => 1}})
 
       assert [%{answer_options: [%{value: "personal", label: "{% include 'personal' %}"}]}] =
-               screen.nodes
+               screen.elements
     end
   end
 end

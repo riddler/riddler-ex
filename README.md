@@ -68,13 +68,13 @@ iex> document =
 iex> {:ok, ^document} = Document.validate(document)
 iex> root = %{"context" => %{"returning" => "yes", "first_name" => "Ada"}}
 iex> {:ok, resolved} = Screens.resolve(document, root)
-iex> Enum.map(hd(resolved.screens).nodes, & &1.key)
+iex> Enum.map(hd(resolved.screens).elements, & &1.key)
 ["welcome_back", "reminder_email", "details_next"]
-iex> hd(hd(resolved.screens).nodes).text
+iex> hd(hd(resolved.screens).elements).text
 "Welcome back, Ada."
 iex> typed = Map.put(root, "responses", %{"reminder_email" => "ada"})
 iex> {:error, [finding]} = Screens.validate_screen(document, "patron_details", typed)
-iex> {finding.code, finding.node_key}
+iex> {finding.code, finding.element_key}
 {"response.format", "reminder_email"}
 ```
 

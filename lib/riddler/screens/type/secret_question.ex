@@ -94,7 +94,7 @@ defmodule Riddler.Screens.Type.SecretQuestion do
             message:
               "required says whether the visitor has to give a response, true or false, not #{inspect(required)}",
             field: "required",
-            node_key: Finding.node_key(node[:key])
+            element_key: Finding.element_key(node[:key])
           }
         ]
 
@@ -113,7 +113,7 @@ defmodule Riddler.Screens.Type.SecretQuestion do
         message:
           "a secret question starts from no value, so it carries no #{field}; its response is only what the visitor types",
         field: Atom.to_string(field),
-        node_key: Finding.node_key(node[:key])
+        element_key: Finding.element_key(node[:key])
       }
     end
   end

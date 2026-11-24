@@ -20,7 +20,7 @@ defmodule Riddler.Screens.Document do
   `Jason.decode!/1` gives - and builds a struct whose fields are atoms. The
   two are different things: what the host writes is JSON, and what this
   package reads is the struct. A screen is `%{key: ..., title: ...,
-  nodes: [...]}` and a node is an atom-keyed map carrying `:type`, its `:key`
+  elements: [...]}` and a node is an atom-keyed map carrying `:type`, its `:key`
   and `:condition` where the document declared them, and the fields its type
   names. `metadata` is the one map that keeps its string keys: it is an open
   map by declaration, and a host may put what it likes beside `name`,
@@ -31,6 +31,13 @@ defmodule Riddler.Screens.Document do
   `"screens"` for it, so a document authored before kinds existed is
   admitted unchanged. A `kind` this package has no runtime for is carried as
   it was written and refused by `validate/1`.
+
+  The envelope's `schema_version` says which key a screen and a variant
+  spell their children under: `nodes` at version 1, which is the version of a
+  document that declares none, and `elements` at version 2. Either way the
+  admitted struct carries them as `elements`. The other version's key is held
+  to the shape the schema gives it, a list of elements, and is then carried
+  nowhere; `validate/1` refuses the screen or the variant that carried it.
 
   `admit/1` answers `nil` for an input that is not a screen document - not
   a map, or a map whose spine is not a document's: no list of screens, a
@@ -68,8 +75,15 @@ defmodule Riddler.Screens.Document do
       package has no runtime for. The finding carries the value and no node
       key, because the envelope is the document's and not any one node's.
     * `document.invalid_schema_version` - the envelope declares a
-      `schema_version` other than the one this package implements. No node
-      key, for the same reason.
+      `schema_version` other than the two this package implements, 1 and 2.
+      No node key, for the same reason.
+    * `document.other_version_spelling` - a screen or a variant carries the
+      other version's key for its children: `elements` in a version 1
+      document, or one declaring no version, and `nodes` in a version 2
+      document. One finding, whether or not it carries its own version's key
+      beside it, its `field` the key refused and its `element_key` the
+      screen's or the variant's. Nothing under that key is admitted, so a
+      variant refused for it is not also missing its candidates.
     * `document.unknown_type` - the registry has no such type.
     * `document.duplicate_key` - a key used twice anywhere in the document.
       Only the keys that are strings are compared. A key that is not a string
@@ -81,7 +95,7 @@ defmodule Riddler.Screens.Document do
       a string, or a key not matching `[a-z][a-z0-9_]*`. One code, three
       messages, because all three are the same mistake from the document's
       side: the node has no name anything else can use. The first two carry
-      no node key - `node_key` is how a host looks the node up, and neither
+      no node key - `element_key` is how a host looks the node up, and neither
       an absent key nor a key of the wrong form is a name to look one up by -
       and the key the document did write is named in the message.
     * `document.missing_field` - a field the node's type requires.
@@ -160,7 +174,7 @@ defmodule Riddler.Screens.Document do
       holds.
     * `document.secret_reference` - a template, a condition or a button's
       `writes` entry, anywhere in the document, names a secret question's
-      response, `responses.<key>`, or a path under it. Its `node_key` is the
+      response, `responses.<key>`, or a path under it. Its `element_key` is the
       node carrying the reference and its `field` the field that carries it;
       the message names the secret question's key, which is not a secret.
     * `document.duplicate_outcome` - two buttons that a screen can show
@@ -171,7 +185,7 @@ defmodule Riddler.Screens.Document do
       from being compared, because which of two conditions holds is the
       root's and not the document's. One finding for each button that
       repeats an outcome a button before it on the screen raises, its `field`
-      `"outcome"` and its `node_key` the repeating button's key; the message
+      `"outcome"` and its `element_key` the repeating button's key; the message
       names the earlier button. Only outcomes that are strings are compared,
       so a button raising `document.invalid_outcome` is not compared, and
       the findings come after every other finding on the screen.
@@ -189,7 +203,7 @@ defmodule Riddler.Screens.Document do
       ...>   ]}]
       ...> })
       iex> {:ok, ^doc} = Riddler.Screens.Document.validate(doc)
-      iex> hd(hd(doc.screens).nodes).key
+      iex> hd(hd(doc.screens).elements).key
       "account_heading"
 
       iex> Riddler.Screens.Document.admit("not a document")
@@ -207,13 +221,22 @@ defmodule Riddler.Screens.Document do
   # admitted unchanged.
   @default_kind "screens"
 
-  # The version of this contract this package implements. The envelope's
-  # `schema_version` is an integer and it is this integer in this version, so
-  # a document authored against a contract this package is not the runtime for
-  # says so in one field rather than by failing somewhere inside. `admit/1`
-  # reads a version written with no fractional part as its integer, so `1.0`
-  # is this version.
-  @schema_version 1
+  # The versions of this contract this package implements, each with the key
+  # its document spells a screen's and a variant's children under and the
+  # other version's key, which it refuses. The envelope's `schema_version` is
+  # an integer, so a document authored against a contract this package is not
+  # the runtime for says so in one field rather than by failing somewhere
+  # inside. `admit/1` reads a version written with no fractional part as its
+  # integer, so `1.0` is version 1, and a document that declares no version is
+  # version 1.
+  @spellings %{1 => {"nodes", "elements"}, 2 => {"elements", "nodes"}}
+  @schema_versions Map.keys(@spellings)
+
+  # What an admitted screen or variant carries when its document wrote the
+  # other version's key beside or instead of its own: that key, and nothing of
+  # what was under it. `validate/1` reads it, and a valid document never
+  # carries it.
+  @other_spelling :other_version_spelling
 
   # The kinds this version has a runtime for. It is the registry of kinds,
   # and it is the other half of the rule that makes `kind` an open string in
@@ -222,11 +245,17 @@ defmodule Riddler.Screens.Document do
   # kind's rules.
   @kinds [@default_kind]
 
-  @typedoc "An admitted screen: its key, its title, and its nodes in order."
+  @typedoc """
+  An admitted screen: its key, its title, and its elements in order, whichever
+  version the document was written in. A screen that carried the other
+  version's key carries that key as `:other_version_spelling`, which is what
+  `validate/1` refuses it by.
+  """
   @type screen :: %{
-          key: String.t() | nil,
-          title: String.t() | nil,
-          nodes: [Riddler.Screens.Type.node_t()]
+          required(:key) => String.t() | nil,
+          required(:title) => String.t() | nil,
+          required(:elements) => [Riddler.Screens.Type.element()],
+          optional(:other_version_spelling) => String.t()
         }
 
   @typedoc "An admitted document."
@@ -296,9 +325,10 @@ defmodule Riddler.Screens.Document do
     with screens when is_list(screens) <- Map.get(raw, "screens"),
          true <- typed?(raw, @envelope_scalars),
          {:ok, metadata} <- admit_metadata(Map.fetch(raw, "metadata")),
-         {:ok, admitted} <- admit_each(screens, &admit_screen/1) do
+         version = integral(Map.get(raw, "schema_version")),
+         {:ok, admitted} <- admit_each(screens, &admit_screen(&1, spelling(version))) do
       %__MODULE__{
-        schema_version: integral(Map.get(raw, "schema_version")),
+        schema_version: version,
         kind: admit_kind(Map.get(raw, "kind")),
         id: Map.get(raw, "id"),
         metadata: metadata,
@@ -326,7 +356,7 @@ defmodule Riddler.Screens.Document do
       ...>   ]}
       ...> ]})
       iex> {:error, [finding]} = Riddler.Screens.Document.validate(doc)
-      iex> {finding.code, finding.node_key}
+      iex> {finding.code, finding.element_key}
       {"document.unknown_type", "pictures"}
   """
   @spec validate(t()) :: {:ok, t()} | {:error, [Finding.t()]}
@@ -337,7 +367,7 @@ defmodule Riddler.Screens.Document do
       kind_findings(document) ++
         envelope_findings(document) ++
         duplicate_findings(document) ++
-        Enum.flat_map(document.screens, &screen_findings(&1, secrets))
+        Enum.flat_map(document.screens, &screen_findings(&1, secrets, document.schema_version))
 
     case findings do
       [] -> {:ok, document}
@@ -378,8 +408,8 @@ defmodule Riddler.Screens.Document do
   # that is a string. `secret_keys/1` reads every screen through it, and the
   # seal reads the one screen it was named. No part of the package's surface.
   @doc false
-  @spec secret_questions(%{nodes: [map()]}) :: [map()]
-  def secret_questions(%{nodes: nodes}), do: Enum.flat_map(nodes, &secret_questions_under/1)
+  @spec secret_questions(%{elements: [map()]}) :: [map()]
+  def secret_questions(%{elements: nodes}), do: Enum.flat_map(nodes, &secret_questions_under/1)
 
   defp secret_questions_under(node) do
     own =
@@ -421,55 +451,128 @@ defmodule Riddler.Screens.Document do
     end
   end
 
-  defp admit_screen(raw) when is_map(raw) and not is_struct(raw) do
-    with nodes when is_list(nodes) <- Map.get(raw, "nodes"),
-         true <- typed?(raw, @screen_scalars),
-         {:ok, admitted} <- admit_each(nodes, &admit_node/1) do
-      {:ok, %{key: Map.get(raw, "key"), title: Map.get(raw, "title"), nodes: admitted}}
+  # A screen's children are read from the key its document's version spells
+  # and from no other. A screen that carries only the other version's key is
+  # admitted with no elements, and `validate/1` refuses it by that key; a
+  # screen that carries neither is not a document.
+  defp admit_screen(raw, spelling) when is_map(raw) and not is_struct(raw) do
+    with true <- typed?(raw, @screen_scalars),
+         {:ok, raw, other} <- spelled(raw, spelling),
+         elements when is_list(elements) <- Map.get(raw, "elements", other && []),
+         {:ok, admitted} <- admit_each(elements, &admit_node(&1, spelling)) do
+      screen = %{key: Map.get(raw, "key"), title: Map.get(raw, "title"), elements: admitted}
+      {:ok, other_spelling(screen, other)}
     else
       _not_a_screen -> :error
     end
   end
 
-  defp admit_screen(_raw), do: :error
+  defp admit_screen(_raw, _spelling), do: :error
 
-  defp admit_node(raw) when is_map(raw) and not is_struct(raw) do
-    if typed?(raw, @node_scalars), do: admit_common(raw), else: :error
+  defp admit_node(raw, spelling) when is_map(raw) and not is_struct(raw) do
+    with true <- typed?(raw, @node_scalars),
+         {:ok, raw, other} <- spelled(raw, spelling) do
+      admit_common(raw, other, spelling)
+    else
+      _not_an_element -> :error
+    end
   end
 
-  defp admit_node(_raw), do: :error
+  defp admit_node(_raw, _spelling), do: :error
 
-  defp admit_common(raw) do
+  defp admit_common(raw, other, spelling) do
     common = Map.put_new(take(raw, @common_fields), :type, nil)
 
     case Registry.fetch(common.type) do
-      {:ok, module} -> admit_typed(raw, common, module)
-      :error -> with :ok <- unread_nodes(raw), do: {:ok, common}
+      {:ok, module} -> admit_typed(raw, common, module, other, spelling)
+      :error -> with :ok <- unread_nodes(raw, spelling), do: {:ok, common}
     end
   end
 
-  defp admit_typed(raw, common, module) do
+  defp admit_typed(raw, common, module, other, spelling) do
     %{required: required, optional: optional} = module.fields()
+    container? = :elements in required or :elements in optional
 
     with {:ok, typed} <- admit_choice(Map.merge(common, take(raw, required ++ optional))) do
-      admit_candidates(raw, typed)
+      admit_candidates(raw, typed, container? && other, spelling)
     end
   end
 
-  defp admit_candidates(raw, typed) do
-    case Map.fetch(typed, :nodes) do
+  # Only a container has children, so only a container is refused for the
+  # other version's key; on any other element both keys are fields its type
+  # does not name, dropped once they are held to their shape.
+  defp admit_candidates(raw, typed, other, spelling) do
+    case Map.fetch(typed, :elements) do
       {:ok, candidates} when is_list(candidates) ->
-        with {:ok, admitted} <- admit_each(candidates, &admit_node/1) do
-          {:ok, Map.put(typed, :nodes, admitted)}
+        with {:ok, admitted} <- admit_each(candidates, &admit_node(&1, spelling)) do
+          {:ok, typed |> Map.put(:elements, admitted) |> other_spelling(other)}
         end
 
       {:ok, _not_a_list} ->
         :error
 
       :error ->
-        with :ok <- unread_nodes(raw), do: {:ok, typed}
+        with :ok <- unread_nodes(raw, spelling), do: {:ok, other_spelling(typed, other)}
     end
   end
+
+  # The key a document of this version spells a screen's and a container's
+  # children under, and the other version's key, which it refuses. A document
+  # that declares no version is version 1. A version this package does not
+  # implement has no spelling of its own: its children are read from
+  # `elements` where it carries that key and from `nodes` otherwise, and the
+  # version is the one finding `validate/1` raises about it.
+  defp spelling(nil), do: Map.fetch!(@spellings, 1)
+  defp spelling(version) when is_map_key(@spellings, version), do: Map.fetch!(@spellings, version)
+  defp spelling(_unknown), do: :unknown
+
+  # The value with its children under `"elements"`, read from the key its
+  # version spells, and the other version's key where the value carries it.
+  # Whatever is under that other key is held to the shape the schema gives it,
+  # a list of elements, and is then carried nowhere: nothing under it is
+  # admitted, validated or resolved. `:error` for a value that is not a
+  # document.
+  defp spelled(raw, spelling) do
+    {own, other} = keys(raw, spelling)
+
+    with :ok <- held_to_shape(raw, other, spelling) do
+      children = Map.drop(raw, ["nodes", "elements"])
+
+      children =
+        case Map.fetch(raw, own) do
+          {:ok, value} -> Map.put(children, "elements", value)
+          :error -> children
+        end
+
+      {:ok, children, refused(raw, other, spelling)}
+    end
+  end
+
+  defp keys(_raw, {own, other}), do: {own, other}
+
+  defp keys(raw, :unknown) do
+    if Map.has_key?(raw, "elements"), do: {"elements", "nodes"}, else: {"nodes", "elements"}
+  end
+
+  defp refused(_raw, _other, :unknown), do: nil
+  defp refused(raw, other, _spelling), do: if(Map.has_key?(raw, other), do: other)
+
+  defp held_to_shape(raw, key, spelling) do
+    case Map.fetch(raw, key) do
+      :error ->
+        :ok
+
+      {:ok, candidates} when is_list(candidates) ->
+        with {:ok, _dropped} <- admit_each(candidates, &admit_node(&1, spelling)), do: :ok
+
+      {:ok, _not_a_list} ->
+        :error
+    end
+  end
+
+  defp other_spelling(admitted, nil), do: admitted
+  defp other_spelling(admitted, false), do: admitted
+  defp other_spelling(admitted, other), do: Map.put(admitted, @other_spelling, other)
 
   # A choice question's `answer_options` is the one field a type names that
   # the document schema types, under a conditional on the node's `type`: an
@@ -527,23 +630,14 @@ defmodule Riddler.Screens.Document do
 
   defp integral(value), do: value
 
-  # A `nodes` on a node whose type reads none - every type but the container,
-  # and a type the registry does not know - is carried nowhere, as no field a
-  # type does not name is. The schema types `nodes` on every node all the
-  # same, so a value there that is not a list of nodes is not a document, and
-  # a list of nodes is admitted and dropped.
-  defp unread_nodes(raw) do
-    case Map.fetch(raw, "nodes") do
-      :error ->
-        :ok
-
-      {:ok, candidates} when is_list(candidates) ->
-        with {:ok, _dropped} <- admit_each(candidates, &admit_node/1), do: :ok
-
-      {:ok, _not_a_list} ->
-        :error
-    end
-  end
+  # Children on an element whose type reads none - every type but the
+  # container, and a type the registry does not know - are carried nowhere,
+  # as no field a type does not name is. The schema types `elements` and
+  # `nodes` on every element all the same, so a value there that is not a
+  # list of elements is not a document, and a list of elements is admitted and
+  # dropped. The other version's key was held to its shape when the children
+  # were read; this is the element's own.
+  defp unread_nodes(raw, spelling), do: held_to_shape(raw, "elements", spelling)
 
   # Whether each of these fields, where the value carries it, holds a value of
   # the JSON type the schema gives it. A field that is absent is not this
@@ -590,7 +684,7 @@ defmodule Riddler.Screens.Document do
         message:
           "#{inspect(kind)} is not a content kind this package has a runtime for; the kinds are #{Enum.join(@kinds, ", ")}",
         field: "kind",
-        node_key: nil
+        element_key: nil
       }
     ]
   end
@@ -608,16 +702,16 @@ defmodule Riddler.Screens.Document do
   end
 
   defp schema_version_findings(nil), do: []
-  defp schema_version_findings(@schema_version), do: []
+  defp schema_version_findings(version) when version in @schema_versions, do: []
 
   defp schema_version_findings(version) do
     [
       %Finding{
         code: "document.invalid_schema_version",
         message:
-          "a document this package is the runtime for declares schema_version #{@schema_version}, not #{inspect(version)}",
+          "a document this package is the runtime for declares schema_version #{Enum.join(@schema_versions, " or ")}, not #{inspect(version)}",
         field: "schema_version",
-        node_key: nil
+        element_key: nil
       }
     ]
   end
@@ -634,7 +728,7 @@ defmodule Riddler.Screens.Document do
         message:
           "the key #{inspect(key)} is used #{count} times; every key in a document is unique across the whole document",
         field: "key",
-        node_key: key
+        element_key: key
       }
     end)
   end
@@ -647,7 +741,7 @@ defmodule Riddler.Screens.Document do
   defp every_key(document) do
     document.screens
     |> Enum.flat_map(fn screen ->
-      [screen.key | Enum.flat_map(screen.nodes, &node_keys/1)]
+      [screen.key | Enum.flat_map(screen.elements, &node_keys/1)]
     end)
     |> Enum.filter(&is_binary/1)
   end
@@ -657,16 +751,59 @@ defmodule Riddler.Screens.Document do
   end
 
   defp candidates(node) do
-    case node[:nodes] do
+    case node[:elements] do
       candidates when is_list(candidates) -> candidates
       _none -> []
     end
   end
 
-  defp screen_findings(screen, secrets) do
+  defp screen_findings(screen, secrets, version) do
     key_findings(screen.key, "the screen #{inspect(screen.title)}") ++
-      Enum.flat_map(screen.nodes, &node_findings(&1, secrets)) ++
+      other_spelling_findings(screen, "screen", version) ++
+      Enum.flat_map(screen.elements, &node_findings(&1, secrets, version)) ++
       outcome_findings(screen)
+  end
+
+  # -- each version has one spelling for a screen's children ------------------
+
+  # A screen or a variant that carried the other version's key, whether or not
+  # it carried its own beside it. One finding, naming the key refused; what was
+  # under it was never admitted, so nothing under it raises anything.
+  defp other_spelling_findings(%{@other_spelling => other} = admitted, what, version) do
+    own = own_spelling(version)
+    key = Finding.element_key(admitted[:key])
+
+    [
+      %Finding{
+        code: "document.other_version_spelling",
+        message:
+          "the #{what} #{inspect(key)} carries #{inspect(other)}, and a version #{version || 1} document spells a #{what}'s elements #{inspect(own)} and no other way",
+        field: other,
+        element_key: key
+      }
+    ]
+  end
+
+  defp other_spelling_findings(_admitted, _what, _version), do: []
+
+  # The key a document of this version writes a screen's and a variant's
+  # children under, which is what a finding about those children names in its
+  # `field`. A version this package does not implement is named by the
+  # admitted struct's key.
+  defp own_spelling(nil), do: own_spelling(1)
+
+  defp own_spelling(version) when is_map_key(@spellings, version),
+    do: elem(Map.fetch!(@spellings, version), 0)
+
+  defp own_spelling(_unknown), do: "elements"
+
+  defp spelled_fields(findings, version) do
+    own = own_spelling(version)
+
+    Enum.map(findings, fn
+      %Finding{field: "elements"} = finding -> %{finding | field: own}
+      finding -> finding
+    end)
   end
 
   # -- each button a screen can show raises its own outcome -------------------
@@ -680,7 +817,7 @@ defmodule Riddler.Screens.Document do
   # raised is one finding naming the first such button.
   defp outcome_findings(screen) do
     {findings, _seen} =
-      Enum.reduce(screen.nodes, {[], %{}}, fn node, {findings, seen} ->
+      Enum.reduce(screen.elements, {[], %{}}, fn node, {findings, seen} ->
         buttons = buttons_under(node)
 
         repeats =
@@ -713,11 +850,11 @@ defmodule Riddler.Screens.Document do
       message:
         "the outcome #{inspect(outcome)} is raised by the button #{inspect(first_key)} too, and the screen #{inspect(screen_key)} can show both; each button a screen can show raises its own outcome",
       field: "outcome",
-      node_key: Finding.node_key(key)
+      element_key: Finding.element_key(key)
     }
   end
 
-  defp node_findings(node, secrets) do
+  defp node_findings(node, secrets, version) do
     case Registry.fetch(node.type) do
       :error ->
         [
@@ -726,20 +863,21 @@ defmodule Riddler.Screens.Document do
             message:
               "#{inspect(node.type)} is not a node type this package knows; the types are #{Enum.join(Registry.types(), ", ")}",
             field: "type",
-            node_key: Finding.node_key(node[:key])
+            element_key: Finding.element_key(node[:key])
           }
         ]
 
       {:ok, module} ->
-        key = Finding.node_key(node[:key])
+        key = Finding.element_key(node[:key])
 
         key_findings(node[:key], "the #{node.type} node") ++
           condition_findings(node, key) ++
-          missing_findings(node, module, key) ++
+          spelled_fields(missing_findings(node, module, key), version) ++
+          other_spelling_findings(node, node.type, version) ++
           template_findings(node, key) ++
           secret_reference_findings(node, key, secrets) ++
-          module.validate(node) ++
-          Enum.flat_map(candidates(node), &node_findings(&1, secrets))
+          spelled_fields(module.validate(node), version) ++
+          Enum.flat_map(candidates(node), &node_findings(&1, secrets, version))
     end
   end
 
@@ -753,7 +891,7 @@ defmodule Riddler.Screens.Document do
           message:
             "the key #{inspect(key)} starts with a lower-case letter and carries only lower-case letters, digits and underscores after it",
           field: "key",
-          node_key: key
+          element_key: key
         }
       ]
     end
@@ -765,7 +903,7 @@ defmodule Riddler.Screens.Document do
         code: "document.invalid_key",
         message: "#{what} carries no key, and a key is how everything else names a node",
         field: "key",
-        node_key: nil
+        element_key: nil
       }
     ]
   end
@@ -773,7 +911,7 @@ defmodule Riddler.Screens.Document do
   # A key that is there and is not a string is a different mistake from an
   # absent one, and the author fixing it needs to be told which: they wrote a
   # key, and they wrote it in a form nothing can name a node by. The value is
-  # named here and not put on `node_key`, for the reason the moduledoc gives.
+  # named here and not put on `element_key`, for the reason the moduledoc gives.
   defp key_findings(key, what) do
     [
       %Finding{
@@ -781,7 +919,7 @@ defmodule Riddler.Screens.Document do
         message:
           "#{what} carries #{inspect(key)} as its key, and a key is the string that names a node",
         field: "key",
-        node_key: nil
+        element_key: nil
       }
     ]
   end
@@ -827,7 +965,7 @@ defmodule Riddler.Screens.Document do
       code: "document.invalid_condition",
       message: "the condition does not parse: #{detail}" <> span(position),
       field: "condition",
-      node_key: key,
+      element_key: key,
       position: position
     }
   end
@@ -835,12 +973,15 @@ defmodule Riddler.Screens.Document do
   defp missing_findings(node, module, key) do
     %{required: required} = module.fields()
 
-    for field <- required, not Map.has_key?(node, field), not supplied?(node, field) do
+    for field <- required,
+        not Map.has_key?(node, field),
+        not supplied?(node, field),
+        not refused?(node, field) do
       %Finding{
         code: "document.missing_field",
         message: "a #{node.type} node carries #{field}, and this one does not",
         field: Atom.to_string(field),
-        node_key: key
+        element_key: key
       }
     end
   end
@@ -853,6 +994,11 @@ defmodule Riddler.Screens.Document do
     do: Map.has_key?(node, :answer_options_from)
 
   defp supplied?(_node, _field), do: false
+
+  # A container that carried its candidates under the other version's key
+  # only is refused for that key and not also for missing its own.
+  defp refused?(node, :elements), do: Map.has_key?(node, @other_spelling)
+  defp refused?(_node, _field), do: false
 
   defp template_findings(node, key) do
     node_fields =
@@ -911,7 +1057,7 @@ defmodule Riddler.Screens.Document do
         message:
           "the #{field} reads responses.#{secret}, the response to the secret question #{inspect(secret)}, and no template, condition or write reads a secret question's response",
         field: field,
-        node_key: key
+        element_key: key
       }
     end
   end
@@ -1010,7 +1156,7 @@ defmodule Riddler.Screens.Document do
             code: "document.invalid_template",
             message: "#{what} is refused: #{finding.message}",
             field: finding.field,
-            node_key: key,
+            element_key: key,
             position: finding.position
           }
         end)
@@ -1023,7 +1169,7 @@ defmodule Riddler.Screens.Document do
         code: "document.invalid_template",
         message: "#{what} is refused: #{inspect(source)} is not template source",
         field: field,
-        node_key: key
+        element_key: key
       }
     ]
   end

@@ -50,7 +50,7 @@ defmodule Riddler.Screens.ContextOptions do
           message:
             "answer_options_from #{inspect(path)} is not a path under context: a string of dotted segments starting at context, at least one more after it, each a lower-case letter followed by lower-case letters, digits and underscores",
           field: "answer_options_from",
-          node_key: Finding.node_key(node[:key])
+          element_key: Finding.element_key(node[:key])
         }
       ]
     else
@@ -66,7 +66,7 @@ defmodule Riddler.Screens.ContextOptions do
           message:
             "a choice question takes its options from answer_options or from answer_options_from, one of them, and this one carries both",
           field: "answer_options_from",
-          node_key: Finding.node_key(node[:key])
+          element_key: Finding.element_key(node[:key])
         }
       ]
     else

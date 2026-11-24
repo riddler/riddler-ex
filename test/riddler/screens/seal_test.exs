@@ -77,7 +77,7 @@ defmodule Riddler.Screens.SealTest do
     end
   end
 
-  defp codes({:error, findings}), do: Enum.map(findings, &{&1.code, &1.node_key, &1.field})
+  defp codes({:error, findings}), do: Enum.map(findings, &{&1.code, &1.element_key, &1.field})
   defp codes(answer), do: answer
 
   describe "a seal that succeeds" do

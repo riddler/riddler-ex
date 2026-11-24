@@ -19,9 +19,9 @@ defmodule Riddler.ScreensTest do
     screen
   end
 
-  defp keys(screen), do: Enum.map(screen.nodes, & &1.key)
+  defp keys(screen), do: Enum.map(screen.elements, & &1.key)
 
-  defp node(screen, key), do: Enum.find(screen.nodes, &(&1.key == key))
+  defp node(screen, key), do: Enum.find(screen.elements, &(&1.key == key))
 
   defp root(responses, context \\ %{}),
     do: %{"context" => context, "responses" => responses}
@@ -174,7 +174,7 @@ defmodule Riddler.ScreensTest do
              ]
 
       assert node(screen, "confirm_referral_heading").text == "One more thing, Ada"
-      refute Enum.any?(screen.nodes, &Map.has_key?(&1, :condition))
+      refute Enum.any?(screen.elements, &Map.has_key?(&1, :condition))
     end
 
     # Sabotage: made `resolve_screen/3` answer the empty diagnostics instead of
@@ -256,7 +256,7 @@ defmodule Riddler.ScreensTest do
     test "a resolved screen carries no condition and every write intact" do
       root = root(%{"seats" => 2, "first_name" => "Ada", "email" => "ada@example.com"})
       {:ok, resolved} = Screens.resolve(document(), root)
-      nodes = Enum.flat_map(resolved.screens, & &1.nodes)
+      nodes = Enum.flat_map(resolved.screens, & &1.elements)
 
       refute Enum.any?(nodes, &Map.has_key?(&1, :condition))
 
@@ -310,7 +310,7 @@ defmodule Riddler.ScreensTest do
       root = root(%{}, %{"has_card_on_file" => false})
       {:ok, resolved} = Screens.resolve(document, root)
 
-      assert hd(resolved.screens).nodes == []
+      assert hd(resolved.screens).elements == []
       assert resolved.diagnostics.undecidable_conditions == []
     end
 
@@ -362,7 +362,7 @@ defmodule Riddler.ScreensTest do
 
       {:ok, resolved} = Screens.resolve(document, root(%{}, %{"last_charge_status" => "ok"}))
 
-      assert hd(resolved.screens).nodes == []
+      assert hd(resolved.screens).elements == []
     end
   end
 
@@ -393,7 +393,7 @@ defmodule Riddler.ScreensTest do
       root = %{"responses" => %{}, "visitor" => %{"name" => "Acme"}}
       {:ok, resolved} = Screens.resolve(document, root)
 
-      assert hd(hd(resolved.screens).nodes).text == "Charging ."
+      assert hd(hd(resolved.screens).elements).text == "Charging ."
 
       assert resolved.diagnostics.missing_variables == [
                %{key: "card_intro", variable: "visitor.name"}
