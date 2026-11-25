@@ -137,6 +137,35 @@ defmodule Riddler.Screens.UpgradeTest do
       assert [%{code: "document.unknown_type"}] = findings(upgraded)
     end
 
+    # Sabotage: answered a bare variant in `rename/1` with
+    # `Map.put(map, "elements", [])`; the variant came back carrying elements
+    # and this went red.
+    test "a container admitted with no nodes, at the top or nested, is carried as written" do
+      bare = %{"type" => "variant", "key" => "bare"}
+
+      nested = %{
+        "type" => "variant",
+        "key" => "outer",
+        "nodes" => [Map.put(bare, "key", "inner")]
+      }
+
+      document = %{
+        "screens" => [%{"key" => "s", "title" => "S", "nodes" => [bare, nested]}]
+      }
+
+      assert Document.admit(document)
+      assert {:ok, upgraded} = Screens.upgrade(document)
+      assert [^bare, outer] = hd(upgraded["screens"])["elements"]
+
+      assert outer == %{
+               "type" => "variant",
+               "key" => "outer",
+               "elements" => [%{"type" => "variant", "key" => "inner"}]
+             }
+
+      assert findings(upgraded) == Enum.map(findings(document), &respelled/1)
+    end
+
     # Sabotage: sent a version 2 document through the rewrite as version 1 is;
     # the document spelling `nodes` came back renamed and this went red.
     test "a version 2 document is answered unchanged, whatever it spells" do
@@ -271,6 +300,39 @@ defmodule Riddler.Screens.UpgradeTest do
 
       assert {:ok, ~s({"schema_version":2,"screens":[{"key":"a","title":"A","elements":[]}]})} =
                Upgrade.rewrite_text(absent)
+    end
+
+    # Sabotage: read the last of two `type` keys in `type/1`, as the walk did
+    # before; the duplicate-type text was refused as an unverified edit and
+    # this went red.
+    test "reads a key written twice as JSON.decode/1 does, the first of them" do
+      twice_typed =
+        ~s({"screens":[{"key":"a","title":"A","nodes":[{"type":"text","type":"variant","key":"v","nodes":[]}]}]})
+
+      assert {:ok, upgraded} = Upgrade.rewrite_text(twice_typed)
+      assert {:ok, JSON.decode!(upgraded)} == Screens.upgrade(JSON.decode!(twice_typed))
+
+      twice_screens =
+        ~s({"screens":[{"key":"a","title":"A","nodes":[]}],"screens":[{"key":"b","title":"B","nodes":[]}]})
+
+      assert {:ok, upgraded} = Upgrade.rewrite_text(twice_screens)
+      assert {:ok, JSON.decode!(upgraded)} == Screens.upgrade(JSON.decode!(twice_screens))
+
+      twice_nodes = ~s({"screens":[{"key":"a","title":"A","nodes":[],"nodes":[]}]})
+
+      assert Upgrade.rewrite_text(twice_nodes) ==
+               {:ok,
+                ~s({"schema_version":2,"screens":[{"key":"a","title":"A","elements":[],"elements":[]}]})}
+    end
+
+    # Sabotage: made `verified/2` answer `{:ok, edited}` whatever it decoded
+    # to; the mismatched edit was answered and this went red.
+    test "an edit that does not decode to the upgraded document is refused, not written" do
+      assert Upgrade.verified(~s({"schema_version":2}), %{"schema_version" => 2}) ==
+               {:ok, ~s({"schema_version":2})}
+
+      assert Upgrade.verified(~s({"schema_version":1}), %{"schema_version" => 2}) ==
+               {:error, :unverified_edit}
     end
 
     # Sabotage: answered a JSON decode error as `:not_a_document`; this went

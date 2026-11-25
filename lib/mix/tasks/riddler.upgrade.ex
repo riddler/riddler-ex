@@ -25,9 +25,10 @@ defmodule Mix.Tasks.Riddler.Upgrade do
   is running it once. The task exits 1, writing nothing, for a path that
   cannot be read, a file that is not JSON, a document
   `Riddler.Screens.Document.admit/1` answers `nil` for, a version 1 document
-  that already carries an `elements` key on a screen or an element, and a
-  document whose `schema_version` is neither 1 nor 2; the message names
-  which. It takes one path and no options.
+  that already carries an `elements` key on a screen or an element, a
+  document whose `schema_version` is neither 1 nor 2, and a file whose edited
+  text would not decode to the document `Riddler.Screens.upgrade/1` answers;
+  the message names which. It takes one path and no options.
   """
 
   use Mix.Task
@@ -85,6 +86,11 @@ defmodule Mix.Tasks.Riddler.Upgrade do
       "it is a version 1 document that already carries an elements key on a screen " <>
         "or an element. A version 1 document spells its children nodes; remove the " <>
         "elements key and run the task again."
+
+  defp reason(:unverified_edit),
+    do:
+      "editing its text in place did not give the document " <>
+        "Riddler.Screens.upgrade/1 answers for it, so nothing was written."
 
   defp reason(:unsupported_version),
     do: "its schema_version is neither 1 nor 2; only a version 1 document is upgraded."
