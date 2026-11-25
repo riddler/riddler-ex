@@ -21,10 +21,11 @@ defmodule Riddler.Screens.Document do
   two are different things: what the host writes is JSON, and what this
   package reads is the struct. A screen is `%{key: ..., title: ...,
   elements: [...]}` and an element is an atom-keyed map carrying `:type`, its `:key`
-  and `:condition` where the document declared them, and the fields its type
-  names. `metadata` is the one map that keeps its string keys: it is an open
-  map by declaration, and a host may put what it likes beside `name`,
-  `description` and `domain`.
+  and `:condition` where the document declared them, its
+  `:accessible_label` and `:accessible_description` where the document wrote
+  them, on any type, and the fields its type names. `metadata` is the one
+  map that keeps its string keys: it is an open map by declaration, and a
+  host may put what it likes beside `name`, `description` and `domain`.
 
   The envelope's `kind` names the content kind the document belongs to, and
   a document that omits it is a screen document: the admitted struct carries
@@ -108,9 +109,11 @@ defmodule Riddler.Screens.Document do
     * `document.invalid_condition` - a condition that does not parse.
     * `document.invalid_template` - a template field holding a construct
       outside the template subset, a choice question option's `label` and
-      `description` and an image's `alt` among them. An option's
-      `description` that is not a string is this finding too. The finding
-      carries the construct the template refused, and the element's key.
+      `description`, an image's `alt`, and the `accessible_label` and
+      `accessible_description` any element may carry among them. An option's
+      `description`, an `alt` or an accessible field that is not a string is
+      this finding too. The finding carries the construct the template
+      refused, and the element's key.
     * `document.invalid_writes` - a write that does not address a response,
       or whose value is not the constant form.
     * `document.invalid_url` - an image's `src` or a link's `href`, written
@@ -291,14 +294,17 @@ defmodule Riddler.Screens.Document do
   defstruct schema_version: nil, kind: @default_kind, id: nil, metadata: %{}, screens: []
 
   # The fields every element carries whatever its type is. The rest come from
-  # the type's own `fields/0`.
-  @common_fields [:type, :key, :condition]
+  # the type's own `fields/0`. The accessible label and description are here
+  # rather than in any type's list because every type may carry them; both are
+  # templates, so they are on the template list below too.
+  @accessible_fields [:accessible_label, :accessible_description]
+  @common_fields [:type, :key, :condition | @accessible_fields]
 
   # The string fields a document writes as templates. Every other string in a
   # document is literal text. This is the one declaration of the list: the
   # admit-time refusal below and `Riddler.Screens`' resolve-time render are two
   # passes over the same fields, and both read it through `template_fields/0`.
-  @template_fields [:text, :label, :placeholder, :help, :alt]
+  @template_fields [:text, :label, :placeholder, :help, :alt | @accessible_fields]
 
   # The element type whose response no template, condition or write may read.
   @secret_type "secret_question"

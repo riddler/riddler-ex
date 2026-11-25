@@ -114,6 +114,12 @@
         ]
       },
       "properties": {
+        "accessible_description": {
+          "description": "A template in the subset: a longer account an assistive technology may read after the element's name. Optional on every type. A value that is not a string is a finding against an admitted document rather than a reason this is not a document, so it is not typed here."
+        },
+        "accessible_label": {
+          "description": "A template in the subset: the name an assistive technology gives the element where its visible text is not enough. Optional on every type. A value that is not a string is a finding against an admitted document rather than a reason this is not a document, so it is not typed here."
+        },
         "condition": {
           "description": "An expression over context.* and responses.*. Whether it parses is a runtime finding.",
           "type": "string"

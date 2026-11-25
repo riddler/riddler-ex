@@ -7666,7 +7666,7 @@
           ]
         }
       },
-      "name": "A link carrying an outcome, writes and validates is admitted with each dropped"
+      "name": "A link carrying an outcome, writes and validates is admitted with no finding"
     },
     {
       "expected": {
@@ -8040,6 +8040,396 @@
         }
       },
       "name": "An option description reading a secret question's response is a secret reference"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "key": "account_intro",
+                  "text": "It takes a minute.",
+                  "type": "text"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "alt": "",
+                  "key": "acme_logo",
+                  "src": "/images/acme.png",
+                  "type": "image"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "key": "account_rule",
+                  "type": "divider"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "href": "https://acme.example/terms",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "type": "link"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "answer_options": [
+                    {
+                      "label": "Personal",
+                      "value": "personal"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "key": "accepts_terms",
+                  "label": "I accept the terms",
+                  "type": "boolean_question"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "type": "secret_question"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "elements": [
+                    {
+                      "condition": "context.experiment == 'b'",
+                      "key": "welcome_b",
+                      "text": "Welcome to Acme.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "welcome_variant",
+                  "type": "variant"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_created",
+                  "type": "button"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Every element type carrying an accessible_label and an accessible_description is admitted with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "element_key": "account_rule",
+            "field": "accessible_label"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "accessible_label": 3,
+                  "key": "account_rule",
+                  "type": "divider"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "An accessible_label that is not a string is an invalid template"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "element_key": "account_intro",
+            "field": "accessible_description"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "accessible_description": [
+                    "a",
+                    "list"
+                  ],
+                  "key": "account_intro",
+                  "text": "It takes a minute.",
+                  "type": "text"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "An accessible_description that is not a string is an invalid template"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "element_key": "account_next",
+            "field": "include"
+          },
+          {
+            "code": "document.invalid_template",
+            "element_key": "account_next",
+            "field": "render"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "accessible_description": "{% render 'plan_summary' %}",
+                  "accessible_label": "{% include 'footer' %}",
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_created",
+                  "type": "button"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "An accessible_label and an accessible_description holding a construct outside the subset are each refused, naming the construct"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.secret_reference",
+            "element_key": "pin_note",
+            "field": "accessible_label"
+          },
+          {
+            "code": "document.secret_reference",
+            "element_key": "pin_note",
+            "field": "accessible_description"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "type": "secret_question"
+                },
+                {
+                  "accessible_description": "{{ responses.account_pin.size }} digits",
+                  "accessible_label": "Your PIN is {{ responses.account_pin }}",
+                  "key": "pin_note",
+                  "text": "Keep it safe.",
+                  "type": "text"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "An accessible_label or an accessible_description reading a secret question's response is a secret reference"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.missing_field",
+            "element_key": "billing_terms",
+            "field": "label"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "https://acme.example/terms",
+                  "key": "billing_terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link carrying no label is missing a field"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "element_key": "billing_terms",
+            "field": "include"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "https://acme.example/terms",
+                  "key": "billing_terms",
+                  "label": "{% include 'footer' %}",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link label holding a construct outside the subset is refused, naming the construct"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "element_key": "account_next",
+            "field": "accessible_label"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "key": "account_heading",
+                  "level": 1,
+                  "text": "Create your account",
+                  "type": "heading"
+                },
+                {
+                  "accessible_description": "The first of three steps.",
+                  "accessible_label": "Create your Acme account",
+                  "key": "welcome_variant",
+                  "nodes": [
+                    {
+                      "accessible_description": "The first of three steps.",
+                      "accessible_label": "Create your Acme account",
+                      "key": "welcome_b",
+                      "text": "Welcome to Acme.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "accessible_label": 3,
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_created",
+                  "type": "button"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "An accessible_label and an accessible_description in a version 1 document are admitted and held to the template rule, as at version 2"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"

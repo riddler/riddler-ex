@@ -5448,6 +5448,112 @@
         }
       },
       "name": "A choice question reading its options from context carries no description the host's list holds"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "account_rule",
+              "variable": "context.tenant.plan"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "accessible_label": "The Acme logo",
+                "alt": "",
+                "key": "acme_logo",
+                "src": "/images/acme.png",
+                "type": "image"
+              },
+              {
+                "accessible_description": "Your details follow, ",
+                "key": "account_rule",
+                "type": "divider"
+              },
+              {
+                "accessible_label": "Welcome to Acme",
+                "key": "welcome_b",
+                "text": "Welcome.",
+                "type": "text"
+              },
+              {
+                "format": "email",
+                "key": "work_email",
+                "label": "Work email",
+                "type": "text_question"
+              }
+            ],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "accessible_label": "The {{ context.tenant.name }} logo",
+                  "alt": "",
+                  "key": "acme_logo",
+                  "src": "/images/acme.png",
+                  "type": "image"
+                },
+                {
+                  "accessible_description": "Your details follow, {{ context.tenant.plan }}",
+                  "key": "account_rule",
+                  "type": "divider"
+                },
+                {
+                  "accessible_description": "Not carried either",
+                  "accessible_label": "Not carried",
+                  "elements": [
+                    {
+                      "accessible_label": "Welcome to {{ context.tenant.name }}",
+                      "condition": "context.experiment == 'b'",
+                      "key": "welcome_b",
+                      "text": "Welcome.",
+                      "type": "text"
+                    }
+                  ],
+                  "key": "welcome_variant",
+                  "type": "variant"
+                },
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "experiment": "b",
+            "tenant": {
+              "name": "Acme"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "An accessible_label and an accessible_description are templates rendered on any type, a variant carrying its winner's and not its own"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"
