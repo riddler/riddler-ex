@@ -166,6 +166,13 @@ defmodule Riddler.Screens do
       ["Charging Acme.", "The card on file expires soon."]
       iex> resolved.diagnostics
       %{missing_variables: [], undecidable_conditions: []}
+
+  ## Rewriting a version 1 document
+
+  `upgrade/1` rewrites a decoded version 1 document as version 2, the key and
+  the version and nothing else, for a host migrating the documents it stores;
+  `mix riddler.upgrade` does the same to a file. Admission never rewrites a
+  document.
   """
 
   alias Riddler.Finding
@@ -174,6 +181,7 @@ defmodule Riddler.Screens do
   alias Riddler.Screens.Resolved
   alias Riddler.Screens.Seal
   alias Riddler.Screens.Type.SecretQuestion
+  alias Riddler.Screens.Upgrade
   alias Riddler.Screens.Validation
   alias Riddler.Screens.Value
   alias Riddler.Template
@@ -586,6 +594,77 @@ defmodule Riddler.Screens do
       screen -> Seal.seal(document, screen, screen_key, responses, sealer)
     end
   end
+
+  @typedoc """
+  Why `upgrade/1` refuses a document: it is not a screen document,
+  `Riddler.Screens.Document.admit/1` answering `nil` for it
+  (`:not_a_document`); it is a version 1 document carrying an `elements` key
+  on a screen or an element (`:other_version_spelling`); or its
+  `schema_version` is neither 1 nor 2 (`:unsupported_version`).
+  """
+  @type upgrade_error :: :not_a_document | :other_version_spelling | :unsupported_version
+
+  @doc """
+  Rewrites a decoded version 1 screen document as version 2.
+
+  It makes exactly two changes: `schema_version` becomes `2`, and the `nodes`
+  of every screen and of every `variant` becomes `elements`, its list as
+  written. Nothing else in the document is read or changed, so a document that
+  is wrong stays wrong in the same way and is refused by the same findings. A
+  `nodes` on an element whose type reads no children is a field admission
+  drops at either version, and it is left as written. A document that declares
+  no `schema_version`, or `1`, is version 1.
+
+  It is for a host's own migration over the documents it stores, and
+  `mix riddler.upgrade` is the same rewrite over a file. Nothing at admit
+  rewrites a document: `Riddler.Screens.Document.admit/1` reads a version 1
+  document as version 1, and only this call, when a host makes it, rewrites
+  one.
+
+  A version 2 document is answered unchanged, so the call is idempotent. It
+  refuses, with the reason `t:upgrade_error/0` names, a document `admit/1`
+  answers `nil` for, a version 1 document that already carries an `elements`
+  key on a screen or on an element at any depth - the rename would collide
+  with it, or version 2 would read it - and a document of any other
+  version. A version 1 document with findings of its own, an unknown type
+  say, is upgraded, and keeps them.
+
+      iex> version_one = %{
+      ...>   "id" => "patron_registration",
+      ...>   "screens" => [
+      ...>     %{
+      ...>       "key" => "patron_details",
+      ...>       "title" => "Get your library card",
+      ...>       "nodes" => [
+      ...>         %{
+      ...>           "type" => "variant",
+      ...>           "key" => "card_notice",
+      ...>           "nodes" => [
+      ...>             %{"type" => "text", "key" => "card_notice_adult", "text" => "Your card is ready the same day."}
+      ...>           ]
+      ...>         }
+      ...>       ]
+      ...>     }
+      ...>   ]
+      ...> }
+      iex> {:ok, version_two} = Riddler.Screens.upgrade(version_one)
+      iex> version_two["schema_version"]
+      2
+      iex> [%{"key" => "patron_details", "elements" => [notice]}] = version_two["screens"]
+      iex> Enum.map(notice["elements"], & &1["key"])
+      ["card_notice_adult"]
+      iex> Riddler.Screens.upgrade(version_two)
+      {:ok, version_two}
+      iex> Riddler.Screens.upgrade(%{"screens" => "three of them"})
+      {:error, :not_a_document}
+      iex> Riddler.Screens.upgrade(%{"schema_version" => 3, "screens" => []})
+      {:error, :unsupported_version}
+      iex> colliding = put_in(version_one, ["screens", Access.at(0), "elements"], [])
+      iex> Riddler.Screens.upgrade(colliding)
+      {:error, :other_version_spelling}
+  """
+  @spec upgrade(term()) :: {:ok, map()} | {:error, upgrade_error()}
+  def upgrade(document), do: Upgrade.upgrade(document)
 
   # -- screens ---------------------------------------------------------------
 

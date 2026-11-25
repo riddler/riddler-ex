@@ -4396,6 +4396,107 @@
         "id": "patron_registration",
         "kind": "screens",
         "metadata": {},
+        "schema_version": 1,
+        "screens": [
+          {
+            "elements": [
+              {
+                "key": "welcome_back",
+                "text": "Welcome back, Ada.",
+                "type": "text"
+              },
+              {
+                "format": "email",
+                "key": "reminder_email",
+                "label": "Email for due-date reminders",
+                "required": true,
+                "type": "text_question"
+              },
+              {
+                "key": "card_notice_adult",
+                "text": "Your card is ready the same day.",
+                "type": "text"
+              },
+              {
+                "key": "details_next",
+                "label": "Continue",
+                "outcome": "details_submitted",
+                "type": "button"
+              }
+            ],
+            "key": "patron_details",
+            "title": "Get your library card"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "patron_registration",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "patron_details",
+              "nodes": [
+                {
+                  "condition": "context.returning == 'yes'",
+                  "key": "welcome_back",
+                  "text": "Welcome back, {{ context.first_name }}.",
+                  "type": "text"
+                },
+                {
+                  "format": "email",
+                  "key": "reminder_email",
+                  "label": "Email for due-date reminders",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "key": "card_notice",
+                  "nodes": [
+                    {
+                      "condition": "context.age < 13",
+                      "key": "card_notice_child",
+                      "text": "A parent or guardian signs for a child card.",
+                      "type": "text"
+                    },
+                    {
+                      "key": "card_notice_adult",
+                      "text": "Your card is ready the same day.",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "variant"
+                },
+                {
+                  "key": "details_next",
+                  "label": "Continue",
+                  "outcome": "details_submitted",
+                  "type": "button"
+                }
+              ],
+              "title": "Get your library card"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "age": 34,
+            "first_name": "Ada",
+            "returning": "yes"
+          }
+        }
+      },
+      "name": "A version 1 document, the before of the upgrade pair whose after is the version 2 case below, resolves to the same screens, keeping the version it declared"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "patron_registration",
+        "kind": "screens",
+        "metadata": {},
         "schema_version": 2,
         "screens": [
           {
