@@ -10,6 +10,36 @@ fragment in [`changelog.d/`](https://github.com/riddler/riddler-ex/blob/v0.3.0/c
 into a version section at release. See that README for the format and for when a
 change warrants an entry at all.
 
+## [0.8.0] 2026-11-24
+
+A minor release that renames what riddler answers. The presented answer, the
+resolved screen and every finding now spell `elements` and `element_key` where
+0.7.0 spelled `nodes` and `node_key`, so a host reading `nodes` or `node_key`
+must change. A screen document may declare `schema_version` 2, which spells the
+children of a screen `elements`; a version 1 document is still admitted and
+resolves to the same content under the new key. The upgrading page,
+`docs/upgrading/from-0-7-0.md`, and `mix riddler.upgrade` are how a host moves.
+
+### Added
+
+- A screen document may declare `schema_version` 2, which spells the children of a screen and of a `variant` `elements`; a version 1 document, or one declaring no version, still spells them `nodes` and is admitted, validated and resolved as before.
+- `document.other_version_spelling` refuses a screen or a `variant` carrying the other version's key, `nodes` at version 2 or `elements` at version 1, with one finding naming the key; nothing under that key is read, and nothing is rewritten at admit. At version 1 the refused `elements` may hold any value, as 0.7.0 dropped it.
+- `mix riddler.upgrade PATH` rewrites the screen document in one file from version 1 to version 2, in place: `schema_version` becomes `2` and the `nodes` of every screen and every `variant` becomes `elements`, every other byte as written. A version 2 document is left as it is; a file that is not JSON, a document `admit/1` answers `nil` for, a version 1 document already carrying an `elements` key and a document of another version, and a file whose edited text would not decode to the document `upgrade/1` answers, are refused with exit status 1, writing nothing.
+- `Riddler.Screens.upgrade/1` makes the same rewrite on a decoded document, for a host's own migration, answering `{:ok, document}` or `{:error, :not_a_document | :other_version_spelling | :unsupported_version}`. Nothing at admit rewrites a document.
+
+### Changed
+
+- The presented answer `Riddler.Journey.present/3` returns carries a screen's children under `"elements"` where it carried `"nodes"`, for a document of either version; a version 1 document presents the same content under the new key. Read `screen["elements"]` where you read `screen["nodes"]`.
+- The data form of a `Riddler.Finding` carries `"element_key"` where it carried `"node_key"`, the same value by the same rule; a client reads `finding["element_key"]`.
+- The conformance corpus states a resolved screen's children under `elements` and every finding's element under `element_key`, for a document of either version; a runtime vendoring the corpus answers in the new spelling.
+- `priv/schemas/presented-answer.schema.json` requires a screen's `elements` where it required `nodes`, and names its child definition `element` where it was `node`; `priv/schemas/finding.schema.json` requires `element_key` where it required `node_key`; `priv/schemas/screen-document.schema.json` names its child definition `element` where it was `node`, adds the version 2 definition `element_version_2`, and still types a version 1 document's `nodes`. A host validating against these schemas takes the new ones.
+- `Riddler.Finding`'s field `node_key` is `element_key`, the same value by the same rule; read `finding.element_key` where you read `finding.node_key`.
+- The admitted `Riddler.Screens.Document` and the resolved `Riddler.Screens.Resolved` carry a screen's and a `variant`'s children as `elements` where they carried `nodes`, for a document of either version; read or match `elements`.
+- `Riddler.Screens.Type.node_t/0` is `Riddler.Screens.Type.element/0`, and `Riddler.Screens.Type.Variant` names its candidates `:elements` in `fields/0` and `"elements"` in the field of its own findings when it is called directly (`Riddler.Screens.Document.validate/1` at version 1 still answers `"nodes"`).
+- A version 1 document whose screen or `variant` carries an `elements` key, which was dropped before, is refused with `document.other_version_spelling`: remove the key from the document, or write the document at version 2.
+- The screen document schema types `elements` beside `nodes`, requires a screen to carry one of the two, and types `elements` on a screen and an element only where a document is read from `elements`, at version 2; a host validating documents against it before admitting them takes the new schema.
+- A document at a schema version this package does not implement, written in the `elements` form, is now admitted and refused with `document.invalid_schema_version`, where 0.7.0 answered `nil` for it.
+
 ## [0.7.0] 2026-11-23
 
 A minor release for the contract between a host and the Journeys it runs.
