@@ -60,11 +60,13 @@ defmodule Riddler.MixProject do
         "docs/guides/present-a-journey.md",
         "docs/guides/seal-a-secret-answer.md",
         "docs/guides/supply-options-at-run-time.md",
-        "docs/explanation/what-riddler-is-for.md"
+        "docs/explanation/what-riddler-is-for.md",
+        "docs/upgrading/from-0-7-0.md"
       ],
       groups_for_extras: [
         "How-to guides": ~r{docs/guides/},
-        Explanation: ~r{docs/explanation/}
+        Explanation: ~r{docs/explanation/},
+        Upgrading: ~r{docs/upgrading/}
       ],
       # The groups follow the package's own seams so the sidebar reads as the
       # architecture rather than as the alphabet: the screen document and the
@@ -100,7 +102,8 @@ defmodule Riddler.MixProject do
       files: ~w(lib priv/schemas mix.exs .formatter.exs README.md LICENSE CHANGELOG.md
            docs/guides/ask-a-choice-question.md docs/guides/post-a-submit.md
            docs/guides/present-a-journey.md docs/guides/seal-a-secret-answer.md
-           docs/guides/supply-options-at-run-time.md docs/explanation/what-riddler-is-for.md),
+           docs/guides/supply-options-at-run-time.md docs/upgrading/from-0-7-0.md
+           docs/explanation/what-riddler-is-for.md),
       links: %{
         "GitHub" => @source_url,
         "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md"

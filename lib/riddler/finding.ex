@@ -18,14 +18,14 @@ defmodule Riddler.Finding do
     * `:field` - what the finding is about: the name of the refused construct
       for a template, the offending field for a document. `nil` when the
       refusal is about the input as a whole.
-    * `:element_key` - the key of the document node the finding belongs to, and
+    * `:element_key` - the key of the document element the finding belongs to, and
       always a string or `nil`. It is `nil` wherever there is no key a host
-      can look a node up by: a template finding, because a template is
+      can look an element up by: a template finding, because a template is
       compiled on its own without the document that carries it; a finding
-      about the envelope, which is the document's and not any one node's; and
-      a node whose key is absent or is not a string. A key of the wrong form
+      about the envelope, which is the document's and not any one element's; and
+      an element whose key is absent or is not a string. A key of the wrong form
       is named in the `message` rather than carried here, because a host reads
-      this field to find the node the author has to fix and a key that is not
+      this field to find the element the author has to fix and a key that is not
       a string is not a name it can find one by.
     * `:position` - where in some source text the refusal is, as
       `%{line: line, column: column}`, both one-based. The column counts in
@@ -37,7 +37,7 @@ defmodule Riddler.Finding do
       the finding's code to know which it holds. Five places in this package
       set it: the two template refusal clauses in `Riddler.Template`, the
       `document.invalid_template` finding that re-reports a template refusal
-      against the template a document node writes, which carries the position
+      against the template a document element writes, which carries the position
       of the refusal it wraps, the `document.invalid_condition` finding, which
       carries the place the condition compiler gave for a condition that does
       not parse and nothing for a condition that never reached the parser, and
@@ -107,8 +107,8 @@ defmodule Riddler.Finding do
 
   # The `:element_key` a raw document key earns. A key is a string by the record
   # the document implements, so a key of any other form is one no host can
-  # look a node up by and this field is `nil` for it, exactly as it is for a
-  # node that declares no key at all. Every check that puts a node's key on a
+  # look an element up by and this field is `nil` for it, exactly as it is for an
+  # element that declares no key at all. Every check that puts an element's key on a
   # finding goes through here, which is what keeps the field inside its own
   # typespec whatever a host wrote.
   @doc false

@@ -78,7 +78,7 @@ defmodule Riddler.Screens.DocumentTest do
 
   # One document per way of writing a value of the wrong JSON type into a
   # field the document schema types, each named for where it goes wrong: the
-  # eight typed scalars, `null` among the values, and a `nodes` on a node
+  # eight typed scalars, `null` among the values, and a `nodes` on an element
   # whose type reads none. Every one is refused by the schema, and so every
   # one is not a document to `admit/1` either.
   defp wrong_typed do
@@ -129,7 +129,7 @@ defmodule Riddler.Screens.DocumentTest do
   # The counting rule, applied to the raw JSON and to the admitted struct so
   # that the two can be compared. A leaf field is: each of the two envelope
   # fields the document carries, each entry of `metadata`, each screen's
-  # `key` and `title`, and each field of each node - with a `writes` map
+  # `key` and `title`, and each field of each element - with a `writes` map
   # contributing one leaf per entry rather than one for the map. The
   # envelope's `kind` is decided rather than carried - it defaults to
   # "screens" when the document omits it - so it is a leaf on neither side.
@@ -185,7 +185,7 @@ defmodule Riddler.Screens.DocumentTest do
 
     # Sabotage: drop `:condition` from the document's common fields and the
     # admitted struct loses six leaves, so the two counts stop agreeing.
-    test "round-trips 91 leaf fields: envelope, metadata entries, each screen key and title, each node field, one leaf per writes entry" do
+    test "round-trips 91 leaf fields: envelope, metadata entries, each screen key and title, each element field, one leaf per writes entry" do
       raw = fixture_json()
       document = Document.admit(raw)
 
@@ -194,8 +194,8 @@ defmodule Riddler.Screens.DocumentTest do
     end
 
     # Sabotage: return the accumulator unreversed from `admit_each/2` and the
-    # screens and nodes come back in reverse order.
-    test "keeps every screen and node, in order, with its key" do
+    # screens and elements come back in reverse order.
+    test "keeps every screen and element, in order, with its key" do
       raw = fixture_json()
       document = Document.admit(raw)
 
@@ -260,7 +260,7 @@ defmodule Riddler.Screens.DocumentTest do
     end
 
     # Sabotage: add `:colour` to the text type's optional fields and the
-    # unknown field is carried onto the admitted node.
+    # unknown field is carried onto the admitted element.
     test "does not carry a field this version does not know" do
       document =
         Document.admit(
@@ -279,7 +279,7 @@ defmodule Riddler.Screens.DocumentTest do
     # field dropped, and nothing said about it.
     #
     # Sabotage: add `:answer_options` to the text question type's optional
-    # fields and the reserved field is carried onto the admitted node.
+    # fields and the reserved field is carried onto the admitted element.
     test "does not carry answer_options, the field reserved for question types this version does not build" do
       raw =
         document([
@@ -299,9 +299,9 @@ defmodule Riddler.Screens.DocumentTest do
       assert {:ok, ^document} = Document.validate(document)
     end
 
-    # Sabotage: stop recursing into a variant's candidates and the inner node
+    # Sabotage: stop recursing into a variant's candidates and the inner element
     # keeps its string keys.
-    test "admits a variant's candidates as nodes" do
+    test "admits a variant's candidates as elements" do
       document =
         Document.admit(
           document([
@@ -323,7 +323,7 @@ defmodule Riddler.Screens.DocumentTest do
   describe "a value of the wrong JSON type where the schema types one" do
     # Sabotage: dropped `true <- typed?(raw, @envelope_scalars)` from
     # `admit/1`; an id of 7 was admitted and this went red. Again with the
-    # screen's check dropped from `admit_screen/1`, and again with the node's
+    # screen's check dropped from `admit_screen/1`, and again with the element's
     # dropped from `admit_node/1`: red each time.
     test "is not a document, in every typed scalar and with every wrong type" do
       admitted = for {name, raw} <- wrong_typed(), Document.admit(raw) != nil, do: name
@@ -337,7 +337,7 @@ defmodule Riddler.Screens.DocumentTest do
     # not.
     #
     # Sabotage: made `unread_nodes/1` answer `:ok` whatever it was handed; a
-    # heading carrying a string of nodes was admitted while the schema refused
+    # heading carrying a string of elements was admitted while the schema refused
     # it, and this went red.
     test "agrees with the document schema in both directions" do
       schema =
@@ -385,14 +385,14 @@ defmodule Riddler.Screens.DocumentTest do
       assert version == 1.0
     end
 
-    # A `nodes` list on a node whose type reads none is the schema's to admit,
+    # A `nodes` list on an element whose type reads none is the schema's to admit,
     # and it is admitted and dropped like any other field the type does not
-    # name: nothing reads it, and the node validates as it would without it.
+    # name: nothing reads it, and the element validates as it would without it.
     #
-    # Sabotage: made `admit_typed/3` put a `:elements` onto a node whose type
+    # Sabotage: made `admit_typed/3` put a `:elements` onto an element whose type
     # reads none when the document wrote one; the heading came back carrying
     # it and this went red.
-    test "admits a list of nodes on a node whose type reads none, and drops it" do
+    test "admits a list of elements on an element whose type reads none, and drops it" do
       heading = %{"type" => "heading", "key" => "account_heading", "level" => 1, "text" => "Hi"}
       text = %{"type" => "text", "key" => "account_intro", "text" => "Hi"}
 
@@ -437,7 +437,7 @@ defmodule Riddler.Screens.DocumentTest do
     # Sabotage: made `kind_findings/1` return `[]` for every kind and a
     # document declaring a kind with no runtime validated clean, so this went
     # red.
-    test "a kind this package has no runtime for is a finding naming the value and no node" do
+    test "a kind this package has no runtime for is a finding naming the value and no element" do
       raw =
         Map.put(
           document([%{"type" => "text", "key" => "account_intro", "text" => "Hello"}]),
@@ -523,7 +523,7 @@ defmodule Riddler.Screens.DocumentTest do
     #
     # Sabotage: delete the non-string clause of `key_findings/2` and the
     # integer key falls through to the absent-key clause, which tells the
-    # author the node carries no key when it carries one of the wrong form.
+    # author the element carries no key when it carries one of the wrong form.
     test "a key that is there and is not a string, on a struct built by hand" do
       [finding] =
         hand_built_findings(document([%{"type" => "text", "key" => 7, "text" => "Hi"}]))
@@ -537,7 +537,7 @@ defmodule Riddler.Screens.DocumentTest do
     end
 
     # Sabotage: drop the `is_binary/1` filter from `every_key/1` and the two
-    # nodes keyed 7 are reported as a duplicate key as well as an invalid one,
+    # elements keyed 7 are reported as a duplicate key as well as an invalid one,
     # which says the document uses one key twice when it has no usable key.
     test "a non-string key used twice on a struct built by hand is not a duplicate" do
       raw = %{
@@ -564,11 +564,11 @@ defmodule Riddler.Screens.DocumentTest do
     # the duplicate-key finding behind an `is_binary` filter, so each has a
     # string before it names one and no raw-key re-wiring makes either emit
     # anything else. What covers those two is the exact code frequency alone:
-    # drop their fixture nodes and the frequency disagrees.
+    # drop their fixture elements and the frequency disagrees.
     #
     # `admit/1` answers `nil` for every key below that is not a string, so the
     # struct is built by hand.
-    test "no finding carries a non-string node key" do
+    test "no finding carries a non-string element key" do
       raw = %{
         "screens" => [
           %{
@@ -622,7 +622,7 @@ defmodule Riddler.Screens.DocumentTest do
 
       raised = hand_built_findings(raw)
 
-      # Every site that puts a node's key on a finding is exercised here, and
+      # Every site that puts an element's key on a finding is exercised here, and
       # the codes are enumerated rather than counted so that a site dropped
       # from the fixture stops this test rather than passing a lower bound.
       # Read off lib/ rather than remembered: seventeen sites carry a key, and
@@ -659,7 +659,7 @@ defmodule Riddler.Screens.DocumentTest do
 
     # Sabotage: return `[]` from `missing_findings/3` and a button with no
     # outcome is admitted.
-    test "a field the node's type requires" do
+    test "a field the element's type requires" do
       [finding] =
         findings(document([%{"type" => "button", "key" => "account_continue", "label" => "Go"}]))
 
@@ -1363,8 +1363,8 @@ defmodule Riddler.Screens.DocumentTest do
                )
     end
 
-    # Sabotage: compared the buttons under one node with each other as well
-    # as with the buttons under other nodes; the two candidates were refused
+    # Sabotage: compared the buttons under one element with each other as well
+    # as with the buttons under other elements; the two candidates were refused
     # and this test went red.
     test "admits two buttons in different candidates of one variant, nested or not" do
       flat =
@@ -1473,7 +1473,7 @@ defmodule Riddler.Screens.DocumentTest do
     end
 
     # Sabotage: in Document.screen_findings/2, moved the screen's duplicate
-    # pass (Document's own private outcome_findings/1) ahead of the node
+    # pass (Document's own private outcome_findings/1) ahead of the element
     # findings; the duplicate_outcome came first and this went red.
     test "an outcome that is not a string is refused before the screen's duplicates" do
       assert [

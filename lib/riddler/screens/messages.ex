@@ -13,7 +13,7 @@ defmodule Riddler.Screens.Messages do
   # interpolating nothing. Which codes a type can raise is per type, not per
   # question, so a text question with no `format` may still key
   # `response.format`. `response.undecidable` is no type's, because it is
-  # about a node's condition and not about a response.
+  # about an element's condition and not about a response.
   #
   # An author's message never replaces a finding's `message`, which stays this
   # package's own sentence; it rides beside it as `author_message`. And it

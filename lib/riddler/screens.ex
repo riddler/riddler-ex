@@ -5,7 +5,7 @@ defmodule Riddler.Screens do
 
   `Riddler.Screens.Document` answers whether a document is well formed, on its
   own, before anyone arrives. This module answers the other question: given a
-  host's `context` and a visitor's `responses`, which nodes are shown, what do
+  host's `context` and a visitor's `responses`, which elements are shown, what do
   their templates say, and which container won. `resolve/2` answers it for a
   whole document and `resolve_screen/3` for the one screen a host is about to
   render.
@@ -22,7 +22,7 @@ defmodule Riddler.Screens do
   two keys: `"context"`, what the host knows, and `"responses"`, what the
   visitor has submitted so far. Both are string-keyed, because both are decoded
   JSON, and a response is addressed `responses.<key>` where the key is the key
-  of the question node it belongs to.
+  of the question element it belongs to.
 
   A secret question's response is the one a condition and a template never
   read. Before any condition is evaluated or any template rendered, the
@@ -35,14 +35,14 @@ defmodule Riddler.Screens do
   validation still reads the secret question's own response from the root the
   host passed.
 
-  ## What resolution does to a node
+  ## What resolution does to an element
 
-  A node with no condition is shown. A node whose condition evaluates false is
-  hidden silently, because that is the condition doing its job. A node whose
+  An element with no condition is shown. An element whose condition evaluates false is
+  hidden silently, because that is the condition doing its job. An element whose
   condition cannot be evaluated - a variable the root does not carry, an
   operand of the wrong type, anything that is not true or false - is hidden
   *and* reported in `undecidable_conditions`: the author asked a question the
-  runtime could not answer, and a visitor should not be shown a node on a
+  runtime could not answer, and a visitor should not be shown an element on a
   guess.
 
   A container resolves to the first of its candidates whose condition holds,
@@ -53,7 +53,7 @@ defmodule Riddler.Screens do
   each of a choice question's `answer_options` - is rendered leniently: a
   variable the root does not carry renders as the empty string and is reported
   in `missing_variables`, so a visitor sees a screen rather than an error page.
-  An option's `value` is literal and is left as written. A node that is hidden is never rendered, so it contributes no
+  An option's `value` is literal and is left as written. An element that is hidden is never rendered, so it contributes no
   missing variables.
 
   A choice question that names `answer_options_from` reads its options from
@@ -97,7 +97,7 @@ defmodule Riddler.Screens do
   whose value is a string, and `false` otherwise - nothing answered, the
   plaintext the visitor typed, or any other shape. It is read before the secret
   responses are removed from the root a condition and a template read, and it
-  is all the node carries of the response: never the plaintext, never the
+  is all the element carries of the response: never the plaintext, never the
   sealed string.
 
   ## What a set of responses has to satisfy
@@ -105,7 +105,7 @@ defmodule Riddler.Screens do
   `validate_screen/3` and `validate_screen/4` answer the last question:
   whether what the visitor typed is enough to submit the screen. They resolve
   the screen first and check only what came back, so a question a condition hid
-  cannot fail, and they consult what the node declares - `required`, `format`,
+  cannot fail, and they consult what the element declares - `required`, `format`,
   and `min` and `max` on the numeric formats; a choice question's
   `answer_options`, `select` and selection bounds; and a boolean question's
   `true` or `false`. The arity-4 form takes the key of the button the visitor
@@ -129,7 +129,7 @@ defmodule Riddler.Screens do
   responses they check are the ones inside it. The screen validated is the
   screen shown: a question the host's `context` made visible to this visitor
   is a question this visitor can fail. A condition that root could not decide
-  is a finding rather than a pass wherever the press validates, because a node
+  is a finding rather than a pass wherever the press validates, because an element
   hidden from the validator and not from the visitor is the one case this
   cannot guess at. A choice question that reads its options from context is
   checked against the options that root's `"context"` holds, so a value the
@@ -138,13 +138,13 @@ defmodule Riddler.Screens do
 
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
-      ...>     "schema_version" => 1,
+      ...>     "schema_version" => 2,
       ...>     "id" => "edoc_checkout",
       ...>     "screens" => [
       ...>       %{
       ...>         "key" => "card",
       ...>         "title" => "Your card",
-      ...>         "nodes" => [
+      ...>         "elements" => [
       ...>           %{
       ...>             "type" => "text",
       ...>             "key" => "card_intro",
@@ -204,13 +204,13 @@ defmodule Riddler.Screens do
 
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
-      ...>     "schema_version" => 1,
+      ...>     "schema_version" => 2,
       ...>     "id" => "edoc_signup",
       ...>     "screens" => [
       ...>       %{
       ...>         "key" => "account",
       ...>         "title" => "Create your account",
-      ...>         "nodes" => [
+      ...>         "elements" => [
       ...>           %{
       ...>             "type" => "text",
       ...>             "key" => "account_greeting",
@@ -253,8 +253,8 @@ defmodule Riddler.Screens do
   resolved document - `missing_variables` and `undecidable_conditions`, both in
   document order - narrowed to the one screen. A caller is never handed a
   screen whose resolution reported something without being handed the report,
-  which is what lets a single-screen host tell a node hidden by a condition
-  that held from a node hidden because the condition could not be decided.
+  which is what lets a single-screen host tell an element hidden by a condition
+  that held from an element hidden because the condition could not be decided.
 
   Returns `{:error, :no_such_screen}` when the document declares no screen
   under that key: asking for a screen that is not there is the host's mistake,
@@ -262,13 +262,13 @@ defmodule Riddler.Screens do
 
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
-      ...>     "schema_version" => 1,
+      ...>     "schema_version" => 2,
       ...>     "id" => "edoc_signup",
       ...>     "screens" => [
       ...>       %{
       ...>         "key" => "account",
       ...>         "title" => "Create your account",
-      ...>         "nodes" => [
+      ...>         "elements" => [
       ...>           %{
       ...>             "type" => "text",
       ...>             "key" => "account_greeting",
@@ -318,7 +318,7 @@ defmodule Riddler.Screens do
 
   `:ok`, or every reason the screen is not ready to be submitted. Checks run
   over the *resolved* screen and nothing else: the screen is resolved against
-  the root the host resolved with, so a node a condition hid is a node the
+  the root the host resolved with, so an element a condition hid is an element the
   visitor never saw and cannot be held to. A question the visitor was never
   asked cannot fail.
 
@@ -328,7 +328,7 @@ defmodule Riddler.Screens do
   question a `context` condition made visible to this visitor is a question
   this visitor can fail.
 
-  What is checked is what the node declares. `required` is unanswered when the
+  What is checked is what the element declares. `required` is unanswered when the
   response is absent or is a string of whitespace. `format` names one of the
   validation formats the internal Riddler.Screens.Document.formats/0 lists,
   and a blank response that is not required is not put to it - a format has
@@ -357,16 +357,16 @@ defmodule Riddler.Screens do
   document's defect, reported as `document.invalid_select`, and its response
   is held to `required` and to nothing else.
 
-  Every finding names the node it is about in `element_key`, the field that was
+  Every finding names the element it is about in `element_key`, the field that was
   not satisfied in `field`, and a stable `code`: `response.required`,
   `response.format`, `response.out_of_range`, `response.invalid_shape`,
   `response.not_an_option` or `response.undecidable`. There is one finding
-  per failing node, because an empty field is one thing wrong with a screen
+  per failing element, because an empty field is one thing wrong with a screen
   and not three.
 
   `response.undecidable` is the one that is not about a response. A condition
   this root could not decide - a variable the root does not carry, an operand
-  of the wrong type - is reported as a finding on the node that carries it,
+  of the wrong type - is reported as a finding on the element that carries it,
   with `field` `"condition"`. So is a condition that is not valid predicator at
   all, and one that is not a string: the code is the one fail-closed answer for
   every condition resolution could not decide, so that a host which skipped
@@ -385,7 +385,7 @@ defmodule Riddler.Screens do
   A condition that could not be decided says the
   root the host handed in does not carry what the document asks about, which
   is a defect in the call rather than a property of the visitor, so treating
-  the node as hidden and answering `:ok` would accept a submission nobody
+  the element as hidden and answering `:ok` would accept a submission nobody
   checked. It is reported wherever the pressed button validates. The press
   that does not is one through a button declaring `validates` as `false`,
   which answers `:ok` without running a check at all - see
@@ -396,7 +396,7 @@ defmodule Riddler.Screens do
   nothing can press a button nothing can name.
 
   A condition this root *decides* false is a different thing and stays silent:
-  the node is hidden, and a question the visitor was never asked cannot fail.
+  the element is hidden, and a question the visitor was never asked cannot fail.
   So is a variable a template wanted and the root did not carry - that renders
   as the empty string, is reported in `missing_variables`, and is no finding.
 
@@ -410,13 +410,13 @@ defmodule Riddler.Screens do
 
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
-      ...>     "schema_version" => 1,
+      ...>     "schema_version" => 2,
       ...>     "id" => "edoc_checkout",
       ...>     "screens" => [
       ...>       %{
       ...>         "key" => "card",
       ...>         "title" => "Your card",
-      ...>         "nodes" => [
+      ...>         "elements" => [
       ...>           %{
       ...>             "type" => "text_question",
       ...>             "key" => "billing_email",
@@ -458,7 +458,7 @@ defmodule Riddler.Screens do
       iex> screen = %{
       ...>   "key" => "card",
       ...>   "title" => "Your card",
-      ...>   "nodes" => [
+      ...>   "elements" => [
       ...>     %{"type" => "text_question", "key" => "billing_email", "label" => "Receipt to", "required" => true},
       ...>     %{"type" => "button", "key" => "card_back", "label" => "Back", "outcome" => "went_back", "validates" => false},
       ...>     %{"type" => "button", "key" => "card_pay", "label" => "Pay", "outcome" => "paid"}
@@ -466,7 +466,7 @@ defmodule Riddler.Screens do
       ...> }
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
-      ...>     "schema_version" => 1,
+      ...>     "schema_version" => 2,
       ...>     "id" => "edoc_checkout",
       ...>     "screens" => [screen]
       ...>   })
@@ -557,13 +557,13 @@ defmodule Riddler.Screens do
 
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
-      ...>     "schema_version" => 1,
+      ...>     "schema_version" => 2,
       ...>     "id" => "edoc_patron_registration",
       ...>     "screens" => [
       ...>       %{
       ...>         "key" => "card_pin",
       ...>         "title" => "Protect your card",
-      ...>         "nodes" => [
+      ...>         "elements" => [
       ...>           %{
       ...>             "type" => "secret_question",
       ...>             "key" => "library_pin",
@@ -711,7 +711,7 @@ defmodule Riddler.Screens do
     {%{key: screen.key, title: screen.title, elements: nodes}, diagnostics}
   end
 
-  # -- nodes -----------------------------------------------------------------
+  # -- elements -----------------------------------------------------------------
 
   defp resolve_nodes(nodes, scope, diagnostics) do
     {resolved, diagnostics} =
@@ -725,7 +725,7 @@ defmodule Riddler.Screens do
     {Enum.reverse(resolved), diagnostics}
   end
 
-  # A node is shown, or it is not and `nil` says so. The two reasons it is not
+  # An element is shown, or it is not and `nil` says so. The two reasons it is not
   # are different things: a false condition is silent, an undecidable one is
   # reported, and a container that no candidate won is neither - the container
   # asked a question and every answer was no.
@@ -743,10 +743,10 @@ defmodule Riddler.Screens do
     end
   end
 
-  # The node's templates are rendered first, so that options read from the
+  # The element's templates are rendered first, so that options read from the
   # context, which are the host's data and not templates, are never rendered;
   # then a choice question that names a context path for its options reads
-  # them; then the node is presented, its value put to the options it is
+  # them; then the element is presented, its value put to the options it is
   # shown. A path that read no list of options is reported under the
   # question's key, after any variable its templates wanted. A container that
   # carried its candidates under the other version's key only is resolved as
@@ -759,7 +759,7 @@ defmodule Riddler.Screens do
     {presented(node, root, held), missing(diagnostics, node[:key], unread)}
   end
 
-  # A resolved node carries no condition. A secret question carries no initial
+  # A resolved element carries no condition. A secret question carries no initial
   # value either: one written on it is `document.secret_initial_value`, and a
   # document no one validated does not pass it on. It carries `held` instead,
   # true exactly where the host's root holds the sealed form for it, and
@@ -830,9 +830,9 @@ defmodule Riddler.Screens do
     render_options(node, root, diagnostics)
   end
 
-  # A choice question's option labels are templates, after the node's own
+  # A choice question's option labels are templates, after the element's own
   # fields and in the order the options are listed; each option's `value` is
-  # literal and left as written. An option label is not a field of the node,
+  # literal and left as written. An option label is not a field of the element,
   # so it is read here beside the document's list, as `validate/1` refuses it
   # beside that list. A variable one wants is reported under the question's
   # key. Only a choice question carries `answer_options`: on every other type

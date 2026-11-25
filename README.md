@@ -49,11 +49,11 @@ iex> alias Riddler.Screens
 iex> alias Riddler.Screens.Document
 iex> document =
 ...>   Document.admit(%{
-...>     "schema_version" => 1,
+...>     "schema_version" => 2,
 ...>     "id" => "patron_registration",
 ...>     "screens" => [
 ...>       %{"key" => "patron_details", "title" => "Get your library card",
-...>         "nodes" => [
+...>         "elements" => [
 ...>           %{"type" => "text", "key" => "welcome_back",
 ...>             "condition" => "context.returning == 'yes'",
 ...>             "text" => "Welcome back, {{ context.first_name }}."},
@@ -88,6 +88,7 @@ iex> {finding.code, finding.element_key}
   - [Seal and unseal a secret answer](docs/guides/seal-a-secret-answer.md): ask for a PIN with a `secret_question`, seal it with your own sealer before it reaches your execution, and see what Riddler never sees.
   - [Post a submit](docs/guides/post-a-submit.md): decode what a client sends back with `Riddler.Journey.decode_submit/1`, compare it with where your execution is, validate it, seal it, and tell the client what was wrong.
   - [Supply options at run time](docs/guides/supply-options-at-run-time.md): let a choice question read its options from your context with `answer_options_from`, and check a response against the options of the moment.
+  - [Move a host from 0.7.0 to elements](docs/upgrading/from-0-7-0.md): the three renamed keys, the upgrade task that rewrites a stored document, and what keeps working for a version 1 document.
   - [Check a document before you save it](https://hexdocs.pm/riddler/Riddler.Screens.Document.html#validate/1): every reason a document is refused, in one pass; the function's reference until a guide page exists.
   - [Resolve the one screen you are about to render](https://hexdocs.pm/riddler/Riddler.Screens.html#resolve_screen/3): a screen and its diagnostics for one visitor; the function's reference until a guide page exists.
   - [Let a Back button skip the response check](https://hexdocs.pm/riddler/Riddler.Screens.html#validate_screen/4): honour a pressed button's `validates`; the function's reference until a guide page exists.
@@ -95,10 +96,10 @@ iex> {finding.code, finding.element_key}
 - Look up
   - [The API reference on HexDocs](https://hexdocs.pm/riddler): every public module and function of this version.
   - [`Riddler.Screens.Document`](https://hexdocs.pm/riddler/Riddler.Screens.Document.html): what `admit/1` takes and builds, and every finding code `validate/1` returns.
-  - [`Riddler.Screens`](https://hexdocs.pm/riddler/Riddler.Screens.html): the root a condition and a template read, what resolution does to a node, and what a set of responses has to satisfy.
-  - [`Riddler.Screens.Type.ChoiceQuestion`](https://hexdocs.pm/riddler/Riddler.Screens.Type.ChoiceQuestion.html) and [`Riddler.Screens.Type.BooleanQuestion`](https://hexdocs.pm/riddler/Riddler.Screens.Type.BooleanQuestion.html): the fields of the two choice node types and the findings each raises.
+  - [`Riddler.Screens`](https://hexdocs.pm/riddler/Riddler.Screens.html): the root a condition and a template read, what resolution does to an element, and what a set of responses has to satisfy.
+  - [`Riddler.Screens.Type.ChoiceQuestion`](https://hexdocs.pm/riddler/Riddler.Screens.Type.ChoiceQuestion.html) and [`Riddler.Screens.Type.BooleanQuestion`](https://hexdocs.pm/riddler/Riddler.Screens.Type.BooleanQuestion.html): the fields of the two choice element types and the findings each raises.
   - [`Riddler.Journey`](https://hexdocs.pm/riddler/Riddler.Journey.html): the status a host passes, the answer `present/3` gives, how `put_context/2` replaces the context, and what `decode_submit/1` checks of a submit.
-  - [`Riddler.Screens.Registry`](https://hexdocs.pm/riddler/Riddler.Screens.Registry.html): the node types this version knows, by the name a document spells them with.
+  - [`Riddler.Screens.Registry`](https://hexdocs.pm/riddler/Riddler.Screens.Registry.html): the element types this version knows, by the name a document spells them with.
   - [`Riddler.Template`](https://hexdocs.pm/riddler/Riddler.Template.html): the tags and filters the template subset admits, and how a refusal is reported.
   - [`Riddler.Finding`](https://hexdocs.pm/riddler/Riddler.Finding.html): the fields of a finding, the unit every refusal reports.
   - [The screen document schema](https://github.com/riddler/riddler-ex/blob/v0.7.0/priv/schemas/screen-document.schema.json): the JSON schema of a screen document, shipped in the package under `priv/schemas`.
@@ -120,7 +121,7 @@ which evaluates the conditions a document declares, and
 [solid](https://hex.pm/packages/solid) `~> 1.3`, which parses the template
 subset. Its functions take a document already decoded, so a host decodes
 with whichever JSON library it already uses. This version reads documents
-that declare `schema_version` 1 and ships one content kind, `screens`; a
+that declare `schema_version` 1 or 2 and ships one content kind, `screens`; a
 document naming no `kind` is a screen document. Nothing in the statifier
 family is a dependency: a host that uses both calls into Riddler, never the
 reverse.

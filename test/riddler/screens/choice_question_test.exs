@@ -105,7 +105,7 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
     end
 
     # Sabotage: added `:style` to the boolean question type's optional fields;
-    # the style was carried onto the admitted node and this went red.
+    # the style was carried onto the admitted element and this went red.
     test "admits a boolean question and drops a style written on it" do
       node = only_node(document([terms(%{"style" => "toggle", "format" => "checkbox"})]))
 
@@ -152,14 +152,14 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
       end
     end
 
-    # On every node but a choice question, answer_options is a field the type
-    # does not name: admitted and dropped whatever it holds, a node naming no
+    # On every element but a choice question, answer_options is a field the type
+    # does not name: admitted and dropped whatever it holds, an element naming no
     # type included.
     #
-    # Sabotage: made `admit_node/1` hold the answer_options of every node to
+    # Sabotage: made `admit_node/1` hold the answer_options of every element to
     # the choice question's shape; a text question carrying a string of
     # options was not a document and this went red.
-    test "drops answer_options of any shape on a node that is not a choice question" do
+    test "drops answer_options of any shape on an element that is not a choice question" do
       for options <- ["monthly", nil, ["monthly"], [%{"value" => 1}]],
           carrier <- [
             %{"type" => "text_question", "key" => "plan_choice", "label" => "Which plan?"},
@@ -174,11 +174,11 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
   describe "the document schema" do
     # Both directions over the shapes above, checked against the schema the
     # package ships: a value admission refuses is one the schema refuses, and
-    # a node naming no type, or a type that is not a choice question, is not
+    # an element naming no type, or a type that is not a choice question, is not
     # held to the conditional.
     #
     # Sabotage: dropped the `required` clause from the schema's conditional; a
-    # node naming no type and carrying a list of strings under answer_options
+    # element naming no type and carrying a list of strings under answer_options
     # failed the schema while admission admitted it, and this went red. Again
     # with the conditional dropped altogether: the choice question whose
     # options are a string passed the schema and this went red.

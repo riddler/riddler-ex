@@ -261,7 +261,7 @@ defmodule Riddler.Screens.MessagesTest do
     # Sabotage: set an author_message on every undecidable finding in
     # `Validation.validate/5`; the condition finding carried it and this test
     # went red.
-    test "never sets author_message on a finding about a node's condition" do
+    test "never sets author_message on a finding about an element's condition" do
       document =
         document([
           email(%{

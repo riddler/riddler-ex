@@ -69,13 +69,13 @@ defmodule Riddler.Journey do
 
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
-      ...>     "schema_version" => 1,
+      ...>     "schema_version" => 2,
       ...>     "id" => "patron_registration",
       ...>     "screens" => [
       ...>       %{
       ...>         "key" => "patron_details",
       ...>         "title" => "Get your library card",
-      ...>         "nodes" => [
+      ...>         "elements" => [
       ...>           %{
       ...>             "type" => "text",
       ...>             "key" => "welcome_back",
@@ -207,11 +207,11 @@ defmodule Riddler.Journey do
   visitor is, is the host's engine's to know, and a client draws progress
   only when the answer carries it.
 
-  A text, choice or boolean question's node carries `"value"` where a
+  A text, choice or boolean question's element carries `"value"` where a
   response the root holds, its prefill or its default yields one, as
   `Riddler.Screens` describes, and never its `"default"` or `"prefill"`.
 
-  A secret question's node carries `"held"`, `true` where the root holds the
+  A secret question's element carries `"held"`, `true` where the root holds the
   sealed form for it and `false` otherwise, and nothing more of its response:
   the plaintext a visitor typed and the sealed string a host keeps are nowhere
   in the answer.
@@ -255,13 +255,13 @@ defmodule Riddler.Journey do
 
       iex> document =
       ...>   Riddler.Screens.Document.admit(%{
-      ...>     "schema_version" => 1,
+      ...>     "schema_version" => 2,
       ...>     "id" => "patron_registration",
       ...>     "screens" => [
       ...>       %{
       ...>         "key" => "patron_details",
       ...>         "title" => "Get your library card",
-      ...>         "nodes" => [
+      ...>         "elements" => [
       ...>           %{
       ...>             "type" => "button",
       ...>             "key" => "details_next",
@@ -597,7 +597,7 @@ defmodule Riddler.Journey do
   defp put_progress(answer, progress), do: Map.put(answer, "progress", progress)
 
   # The outcome of each shown button, read from the resolved screen, where
-  # hidden nodes are absent and every container is already its winner. Only
+  # hidden elements are absent and every container is already its winner. Only
   # a document `validate/1` refuses can carry a shown button whose outcome is
   # not a string, or two shown buttons raising one outcome; for such a
   # document each string outcome is listed once, at its first button, so the

@@ -65,7 +65,7 @@ defmodule Riddler.Screens.ValidationTest do
     |> Document.admit()
   end
 
-  # A button node carrying no `key` at all, declaring that it does not
+  # A button element carrying no `key` at all, declaring that it does not
   # validate. `Document.admit/1` takes it - `Document.validate/1` is the call
   # that reports it, as `document.invalid_key` - so a host that admits a
   # document without validating it can hand this screen to response
@@ -73,7 +73,7 @@ defmodule Riddler.Screens.ValidationTest do
   @keyless_back %{"type" => "button", "label" => "Back", "validates" => false}
 
   # The fixture's account screen carrying that keyless button and nothing
-  # else new: the arity-3 form's own absent pressed key and this node's absent
+  # else new: the arity-3 form's own absent pressed key and this element's absent
   # key are the two absences the opt-out must not read as a press.
   defp account_with_keyless_button_document do
     raw_fixture() |> add_node("account", @keyless_back) |> Document.admit()
@@ -82,7 +82,7 @@ defmodule Riddler.Screens.ValidationTest do
   # The same screen with a keyless button carrying the DEFAULT in FRONT of a
   # keyed Back button declaring `false`. `add_node/3` appends, so the keyless
   # one is earlier in document order, which is the order that matters: the
-  # opt-out takes the first button its match finds, and a keyless node that
+  # opt-out takes the first button its match finds, and a keyless element that
   # could be found would carry the answer the keyed press must not get.
   defp keyless_before_keyed_back_document do
     raw_fixture()
@@ -112,7 +112,7 @@ defmodule Riddler.Screens.ValidationTest do
   # `validates` as `false` and carrying a condition of its own that the roots
   # below cannot decide - they carry no `context` at all, so
   # `context.is_business` is undefined and the condition comes back neither
-  # true nor false. The Back button is the only node whose condition is
+  # true nor false. The Back button is the only element whose condition is
   # undecidable under those roots: the fixture's own conditional greeting asks
   # about `responses.first_name`, which the roots below do carry.
   defp back_hidden_by_its_own_condition_document do
@@ -128,7 +128,7 @@ defmodule Riddler.Screens.ValidationTest do
     |> Document.admit()
   end
 
-  # A screen whose nodes are keyed with something that is not a string. A key
+  # A screen whose elements are keyed with something that is not a string. A key
   # is a string by the record the document implements and by the schema, so
   # `Document.admit/1` answers `nil` for such a document. The struct is built
   # by hand instead - every field the atom of its spelling, as `admit/1` would
@@ -243,7 +243,7 @@ defmodule Riddler.Screens.ValidationTest do
   describe "required over the signup fixture" do
     # Sabotage: made `blank?/1` answer `false` for `nil`; the unanswered name
     # raised no finding and this test went red.
-    test "a required question with no response at all is a finding naming the node" do
+    test "a required question with no response at all is a finding naming the element" do
       assert {:error, findings} =
                Screens.validate_screen(fixture_document(), "account", %{
                  "responses" => %{"email" => @good_email}
@@ -275,10 +275,10 @@ defmodule Riddler.Screens.ValidationTest do
       assert finding.element_key == "first_name"
     end
 
-    # Sabotage: made `validate_screen/3` collect only the first node's
-    # findings instead of every node's; the email finding was lost and this
+    # Sabotage: made `validate_screen/3` collect only the first element's
+    # findings instead of every element's; the email finding was lost and this
     # test went red.
-    test "every failing node on the screen is reported, in document order" do
+    test "every failing element on the screen is reported, in document order" do
       assert {:error, findings} =
                Screens.validate_screen(fixture_document(), "account", %{
                  "responses" => %{"first_name" => ""}
@@ -330,8 +330,8 @@ defmodule Riddler.Screens.ValidationTest do
   end
 
   describe "checks run over the resolved screen only" do
-    # Sabotage: made resolution keep a node whose condition decided false
-    # (`shown/3`'s false branch answering the node instead of `nil`); the hidden
+    # Sabotage: made resolution keep an element whose condition decided false
+    # (`shown/3`'s false branch answering the element instead of `nil`); the hidden
     # referral question reached the checks, raised a required finding, and this
     # test went red.
     test "a question the visitor's responses hid cannot fail, blank or not" do
@@ -428,7 +428,7 @@ defmodule Riddler.Screens.ValidationTest do
   describe "a button carrying no key" do
     # The defect this block exists for. Before the change the arity-3 call
     # answered `:ok` here, because the absent pressed key and the keyless
-    # node's absent key compared equal and every finding on the screen was
+    # element's absent key compared equal and every finding on the screen was
     # silenced at once.
     #
     # Sabotage: dropped the `opted_out?(_screen, nil)` clause, putting the two
@@ -448,7 +448,7 @@ defmodule Riddler.Screens.ValidationTest do
     # is told what the screen says.
     #
     # Sabotage: the same dropped clause; the explicit `nil` found the keyless
-    # node, the call answered `:ok`, and this test went red.
+    # element, the call answered `:ok`, and this test went red.
     test "does not opt out a press of nil handed to the arity-4 form" do
       assert {:error, findings} =
                Screens.validate_screen(
@@ -465,7 +465,7 @@ defmodule Riddler.Screens.ValidationTest do
     # works through: a keyless button carrying the default sits in front of a
     # later keyless one declaring `validates` as `false`. The rule is that the
     # arity-3 call never opts out, so it reports here whatever the keyless
-    # nodes declare and in whatever order.
+    # elements declare and in whatever order.
     #
     # Sabotage: made the `nil` clause of `opted_out?/2` answer whether any
     # button on the screen declares `validates` as `false`; the later keyless
@@ -486,12 +486,12 @@ defmodule Riddler.Screens.ValidationTest do
       assert Enum.map(findings, & &1.element_key) == ["first_name", "email"]
     end
 
-    # A keyless node sitting in front of a keyed one hides nothing, because
-    # the match a non-nil press makes cannot land on a node with no key. The
+    # A keyless element sitting in front of a keyed one hides nothing, because
+    # the match a non-nil press makes cannot land on an element with no key. The
     # keyless button here carries the default, so a match that did land on it
     # would answer the opposite of what the press asked for.
     #
-    # Sabotage: made `button?/2` answer `true` for a keyless node whatever the
+    # Sabotage: made `button?/2` answer `true` for a keyless element whatever the
     # pressed key; the keyless Help button was found first, its default read
     # as validating, the Back press ran the checks on the blank name, and this
     # test went red.
@@ -529,7 +529,7 @@ defmodule Riddler.Screens.ValidationTest do
     # Sabotage: in `lib/riddler/screens.ex`, made the `_undecidable ->` arm of
     # the `case` inside `evaluate/4`'s binary clause answer
     # `{true, undecidable(diagnostics, key, condition)}` rather than
-    # `{false, ...}`, so a node whose condition could not be decided stayed on
+    # `{false, ...}`, so an element whose condition could not be decided stayed on
     # the resolved screen instead of being dropped. The Back button was then on
     # the screen, `opted_out?/2` found it and read its `validates` as `false`,
     # the keyed press answered `:ok`, and this test went red on its first
@@ -796,7 +796,7 @@ defmodule Riddler.Screens.ValidationTest do
     # now answers with, beside the whole-document ones, because the two are the
     # same report about the same screen.
     #
-    # Sabotage: made `shown/3` answer the node for an undecidable condition
+    # Sabotage: made `shown/3` answer the element for an undecidable condition
     # instead of `nil`; the question appeared on the screen the visitor would
     # have been shown and this test went red.
     test "the same screen under an empty context hides the question entirely" do
@@ -841,13 +841,13 @@ defmodule Riddler.Screens.ValidationTest do
       assert finding.message =~ "context.is_business == true"
     end
 
-    # The two reasons a node is not on the screen stay different things. A
-    # condition the root decides false hides its node silently and validation
+    # The two reasons an element is not on the screen stay different things. A
+    # condition the root decides false hides its element silently and validation
     # is `:ok`; the same condition the root cannot decide is reported and
     # validation is not.
     #
     # Sabotage: made `undecidable_findings/1` raise a finding for every hidden
-    # node rather than for the reported ones; the decidable half answered
+    # element rather than for the reported ones; the decidable half answered
     # findings and this test went red.
     test "reports where a decidable false condition stays silent" do
       decided = %{"responses" => %{"seats" => 1}}
@@ -1160,12 +1160,12 @@ defmodule Riddler.Screens.ValidationTest do
     end
   end
 
-  describe "a node key the record does not admit" do
+  describe "an element key the record does not admit" do
     # Sabotage: write `element_key: node[:key]` back into `finding/4` and the
     # required finding carries the integer key, which the `Riddler.Finding`
     # typespec does not admit and a host indexing findings by that field
-    # cannot look a node up by.
-    test "leaves the required finding's node key nil" do
+    # cannot look an element up by.
+    test "leaves the required finding's element key nil" do
       document =
         non_string_key_document([
           %{"type" => "text_question", "key" => 7, "label" => "Your name", "required" => true}
@@ -1178,7 +1178,7 @@ defmodule Riddler.Screens.ValidationTest do
 
     # Sabotage: the same site as the required case - `finding/4` is what both
     # kinds are built from - and the format finding carried the integer key.
-    test "leaves the format finding's node key nil" do
+    test "leaves the format finding's element key nil" do
       document =
         non_string_key_document([
           %{
@@ -1199,7 +1199,7 @@ defmodule Riddler.Screens.ValidationTest do
 
     # Sabotage: write `element_key: node[:key]` back into `pattern_finding/1` and
     # this finding carried the atom key.
-    test "leaves the missing-pattern finding's node key nil" do
+    test "leaves the missing-pattern finding's element key nil" do
       document =
         non_string_key_document([
           %{
@@ -1220,7 +1220,7 @@ defmodule Riddler.Screens.ValidationTest do
 
     # Sabotage: write `element_key: node[:key]` back into `range_finding/5` and
     # the out-of-range finding carried the integer key.
-    test "leaves the out-of-range finding's node key nil" do
+    test "leaves the out-of-range finding's element key nil" do
       document =
         non_string_key_document([
           %{
@@ -1241,12 +1241,12 @@ defmodule Riddler.Screens.ValidationTest do
     end
 
     # The undecidable finding is built from the resolution diagnostics rather
-    # than from a node on the resolved screen, so it carries the key by its own
+    # than from an element on the resolved screen, so it carries the key by its own
     # route and needs its own case.
     #
     # Sabotage: write `element_key: key` back into `undecidable_finding/2` and the
     # finding about the condition carried the atom key.
-    test "leaves the undecidable finding's node key nil" do
+    test "leaves the undecidable finding's element key nil" do
       document =
         non_string_key_document([
           %{
@@ -1273,11 +1273,11 @@ defmodule Riddler.Screens.ValidationTest do
     end
 
     # Every kind at once, the way the document half is pinned: a screen whose
-    # nodes are all keyed with something the record does not admit raises one
+    # elements are all keyed with something the record does not admit raises one
     # finding per kind, and not one of them carries a key a host cannot use.
     #
     # Read off lib/ rather than remembered: four sites in
-    # `Riddler.Screens.Validation` put a node's key on a finding, each through
+    # `Riddler.Screens.Validation` put an element's key on a finding, each through
     # `Finding.element_key/1`, and this fixture reaches all four - the private
     # `undecidable_finding/2`, `finding/4` (behind both the required and the
     # format finding), `pattern_finding/1` and `range_finding/5`. Every one of

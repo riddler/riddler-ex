@@ -8,16 +8,16 @@ screens, and one of them asks which library card they want.
 It assumes you already have a document that admits and validates; if not,
 start from the basic usage in the README.
 
-## Pick the node type
+## Pick the element type
 
-Two node types ask a question with fixed answers:
+Two element types ask a question with fixed answers:
 
 - `choice_question` offers a list of options and the visitor picks one or
   several of them.
 - `boolean_question` is a lone checkbox or toggle, and the visitor answers
   yes or no.
 
-Both are nodes of a screen like any other, so each carries a `key`, unique
+Both are elements of a screen like any other, so each carries a `key`, unique
 across the whole document, and an optional `condition`.
 
 ## Ask one question with `choice_question`
@@ -41,7 +41,7 @@ A `choice_question` needs a `label`, a `select` and `answer_options`:
 ```
 
 - `label` is what the visitor is asked. It is a template, so it can read
-  `context` as a text node does.
+  `context` as a text element does.
 - `select` is `"one"` or `"many"`. It fixes the shape of what the visitor
   submits, as the next sections show. A `select` that is neither is a
   finding, `document.invalid_select`.
@@ -138,7 +138,7 @@ order with each option's `label` rendered against the root. Each `value` comes
 back exactly as written, and `select`, `style`, `required` and the bounds are
 carried through. A variable an option label wants that the root does not carry
 renders as the empty string and is reported in `missing_variables` under the
-question's key, as for any other template on the node.
+question's key, as for any other template on the element.
 
 Resolved against a root whose `context.branch_name` is `Riverside`, the last
 option above reads `%{value: "local_authors", label: "Books by Riverside

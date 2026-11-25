@@ -76,11 +76,11 @@ defmodule Riddler.Screens.ContextOptions do
 
   # -- resolution --------------------------------------------------------------
 
-  # The node with its options read from the context, and the paths to report
+  # The element with its options read from the context, and the paths to report
   # as missing: the path as written where it read no list of options, and
   # nothing otherwise. A question carrying both fields is refused at admit;
   # a document no one validated keeps the options it authored, and the path
-  # is read for nothing. Either way the resolved node carries no
+  # is read for nothing. Either way the resolved element carries no
   # `answer_options_from`.
   @doc false
   @spec resolve(map(), map()) :: {map(), [String.t()]}

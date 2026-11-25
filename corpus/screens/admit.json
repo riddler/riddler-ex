@@ -74,7 +74,7 @@
           ]
         }
       },
-      "name": "A screen carrying no list of nodes is not a screen document"
+      "name": "A screen carrying no list of elements is not a screen document"
     },
     {
       "expected": {
@@ -96,7 +96,7 @@
           ]
         }
       },
-      "name": "A node that is not an object is not a screen document"
+      "name": "An element that is not an object is not a screen document"
     },
     {
       "expected": {
@@ -327,7 +327,7 @@
           ]
         }
       },
-      "name": "A node key that is not a string is not a screen document"
+      "name": "An element key that is not a string is not a screen document"
     },
     {
       "expected": {
@@ -353,7 +353,7 @@
           ]
         }
       },
-      "name": "A node type that is not a string is not a screen document"
+      "name": "An element type that is not a string is not a screen document"
     },
     {
       "expected": {
@@ -408,7 +408,7 @@
           ]
         }
       },
-      "name": "Nodes that are not a list, on a node whose type reads none, are not a screen document"
+      "name": "Elements that are not a list, on an element whose type reads none, are not a screen document"
     },
     {
       "expected": {
@@ -442,7 +442,7 @@
           ]
         }
       },
-      "name": "A list of nodes on a node whose type reads none is admitted with no finding, and nothing reads it"
+      "name": "A list of elements on an element whose type reads none is admitted with no finding, and nothing reads it"
     },
     {
       "expected": {
@@ -462,7 +462,7 @@
           ]
         }
       },
-      "name": "A screen whose every node is conditional may declare no node at all, and is admitted"
+      "name": "A screen whose every element is conditional may declare no element at all, and is admitted"
     },
     {
       "expected": {
@@ -657,7 +657,7 @@
           ]
         }
       },
-      "name": "A node type no runtime knows is refused, naming the type and the node"
+      "name": "An element type no runtime knows is refused, naming the type and the element"
     },
     {
       "expected": {
@@ -759,7 +759,7 @@
           ]
         }
       },
-      "name": "A field the node's type requires and the node does not carry is refused"
+      "name": "A field the element's type requires and the element does not carry is refused"
     },
     {
       "expected": {
@@ -1094,7 +1094,7 @@
           ]
         }
       },
-      "name": "A kind no runtime knows is refused, naming the kind and no node"
+      "name": "A kind no runtime knows is refused, naming the kind and no element"
     },
     {
       "expected": {
@@ -1127,7 +1127,7 @@
           ]
         }
       },
-      "name": "A schema version this package does not implement is refused, naming no node"
+      "name": "A schema version this package does not implement is refused, naming no element"
     },
     {
       "expected": {
@@ -1824,7 +1824,7 @@
           ]
         }
       },
-      "name": "A node naming no type is not held to the choice question's options, and is refused only for its type"
+      "name": "An element naming no type is not held to the choice question's options, and is refused only for its type"
     },
     {
       "expected": {
@@ -2748,7 +2748,7 @@
           ]
         }
       },
-      "name": "A template, a condition and a write reading a secret question's response are each refused on the node carrying it"
+      "name": "A template, a condition and a write reading a secret question's response are each refused on the element carrying it"
     },
     {
       "expected": {
@@ -3367,7 +3367,7 @@
           ]
         }
       },
-      "name": "A default and a prefill on a node that is not a question are dropped with no finding"
+      "name": "A default and a prefill on an element that is not a question are dropped with no finding"
     },
     {
       "expected": {
@@ -3833,7 +3833,7 @@
           ]
         }
       },
-      "name": "Messages on a node that is not a question are dropped with no finding"
+      "name": "Messages on an element that is not a question are dropped with no finding"
     },
     {
       "expected": {
