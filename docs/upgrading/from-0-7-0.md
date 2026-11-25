@@ -44,8 +44,8 @@ The end follows the hosts' own rewrite of their documents to version 2.
    copies: the presented answer and finding schemas require the new keys, and
    the screen document schema types `elements` beside `nodes`. A `$ref` to
    `#/definitions/node` becomes `#/definitions/element`.
-5. Where you name `Riddler.Screens.Type.node_t/0` in a typespec, name
-   `Riddler.Screens.Type.element/0`.
+5. Where a typespec names the type `node_t` of the `Riddler.Screens.Type`
+   module, name `t:Riddler.Screens.Type.element/0` instead.
 
 ## Rewrite the stored documents
 
