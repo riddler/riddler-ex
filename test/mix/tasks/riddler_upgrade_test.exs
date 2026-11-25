@@ -89,6 +89,28 @@ defmodule Mix.Tasks.Riddler.UpgradeTest do
     end
   end
 
+  # Sabotage: answered a bare variant in `rename/1` with
+  # `Map.put(map, "elements", [])`; the edited text no longer decoded to that
+  # answer, the task refused the file and this went red.
+  test "rewrites a document whose variant carries no candidates, exiting 0" do
+    text =
+      ~s({"screens": [{"key": "s", "title": "S", "nodes": [{"type": "variant", "key": "v"}]}]})
+
+    path = document!("bare.json", text)
+
+    ran =
+      try do
+        Task.run([path])
+      rescue
+        error in Mix.Error -> {:refused, error.message}
+      end
+
+    assert ran == :ok
+
+    assert File.read!(path) ==
+             ~s({"schema_version": 2,"screens": [{"key": "s", "title": "S", "elements": [{"type": "variant", "key": "v"}]}]})
+  end
+
   # Sabotage: took the first of several paths; two paths no longer raised and
   # this went red.
   test "takes exactly one readable path and no options" do

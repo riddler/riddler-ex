@@ -65,6 +65,11 @@ defmodule Riddler.Screens.Upgrade do
     |> Map.put("elements", Enum.map(children, &rename_container/1))
   end
 
+  # A container admission took with no `nodes` at all - a `variant` carrying
+  # no candidates, which `validate/1` refuses - has no key to rename, and is
+  # carried as written.
+  defp rename(map), do: map
+
   defp rename_container(element) do
     if container?(element["type"]), do: rename(element), else: element
   end
@@ -86,11 +91,12 @@ defmodule Riddler.Screens.Upgrade do
 
   @doc false
   @spec rewrite_text(String.t()) ::
-          {:ok, String.t()} | {:error, Riddler.Screens.upgrade_error() | :not_json}
+          {:ok, String.t()}
+          | {:error, Riddler.Screens.upgrade_error() | :not_json | :unverified_edit}
   def rewrite_text(text) when is_binary(text) do
     with {:ok, decoded} <- decode(text),
          {:ok, upgraded} <- upgrade(decoded) do
-      if upgraded == decoded, do: {:ok, text}, else: {:ok, edit(text, upgraded)}
+      if upgraded == decoded, do: {:ok, text}, else: verified(edit(text), upgraded)
     end
   end
 
@@ -101,14 +107,26 @@ defmodule Riddler.Screens.Upgrade do
     end
   end
 
-  # The text with the key and the version edited in place, and the proof that
-  # it decodes to the upgraded document: the edit is the decoded rewrite, or
-  # it is not written.
-  defp edit(text, upgraded) do
+  # The edited text, answered only when it decodes to the upgraded document:
+  # the edit is the decoded rewrite, or it is refused and nothing is written.
+  # Only the text path can fail this way, so `upgrade/1` never answers it.
+  @doc false
+  @spec verified(String.t(), map()) :: {:ok, String.t()} | {:error, :unverified_edit}
+  def verified(edited, upgraded) do
+    case JSON.decode(edited) do
+      {:ok, ^upgraded} -> {:ok, edited}
+      _other -> {:error, :unverified_edit}
+    end
+  end
+
+  # The text with the key and the version edited in place. Where an object
+  # carries a key twice, `JSON.decode/1` keeps the first, so the walk reads the
+  # first `screens`, the first `type` and the first `nodes` as admission did;
+  # every `nodes` key of a screen or a container is renamed, so that none is
+  # left beside the `elements` it becomes.
+  defp edit(text) do
     {root, _end} = value(text, 0)
-    edited = apply_edits(text, version_edit(text, root) ++ screens_edits(root))
-    ^upgraded = JSON.decode!(edited)
-    edited
+    apply_edits(text, version_edit(text, root) ++ screens_edits(root))
   end
 
   defp version_edit(text, {:object, start, _stop, entries} = root) do
@@ -127,15 +145,20 @@ defmodule Riddler.Screens.Upgrade do
 
   defp screens_edits(root) do
     {_key, _start, _stop, {:array, _from, _to, screens}} =
-      List.last(entries_named(root, "screens"))
+      hd(entries_named(root, "screens"))
 
     Enum.flat_map(screens, &children_edits(&1, true))
   end
 
   defp children_edits({:object, _start, _stop, _entries} = object, true) do
-    for {_key, key_start, key_stop, children} <- entries_named(object, "nodes"),
-        edit <- [{key_start, key_stop, ~s("elements")} | elements_edits(children)],
-        do: edit
+    case entries_named(object, "nodes") do
+      [] ->
+        []
+
+      [{_key, _start, _stop, read} | _later] = keys ->
+        renamed = for {_key, from, to, _value} <- keys, do: {from, to, ~s("elements")}
+        renamed ++ elements_edits(read)
+    end
   end
 
   defp children_edits(_value, _read?), do: []
@@ -147,7 +170,7 @@ defmodule Riddler.Screens.Upgrade do
   defp elements_edits(_not_read), do: []
 
   defp type(object) do
-    case List.last(entries_named(object, "type")) do
+    case List.first(entries_named(object, "type")) do
       {_key, _start, _stop, {:string, _from, _to, type}} -> type
       _none -> nil
     end
