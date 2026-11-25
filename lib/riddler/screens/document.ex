@@ -107,12 +107,20 @@ defmodule Riddler.Screens.Document do
     * `document.level_out_of_range` - a heading level outside 1 to 6.
     * `document.invalid_condition` - a condition that does not parse.
     * `document.invalid_template` - a template field holding a construct
-      outside the template subset, a choice question option's `label`
-      among them. The finding carries the construct the template refused,
+      outside the template subset, a choice question option's `label` and
+      an image's `alt` among them. The finding carries the construct the template refused,
       and the element's key.
     * `document.invalid_writes` - a write that does not address a response,
       or whose value is not the constant form.
-    * `document.invalid_style` - a `style` is there and is not a string, on a
+  * `document.invalid_url` - an image's `src`, written as a literal, is not a
+  URL the rule admits: an `https://` URL naming a host, a host-relative
+  URL, or a base64 `data:` image of one of four raster types within its
+  bound, as `Riddler.Screens.Type.Image` states. Its `field` is `"src"`,
+  and its message says which part of the rule the value fails and never
+  quotes the value.
+  * `document.invalid_hint` - an image's `size` or `fit` is there and is not
+  a string.
+  * `document.invalid_style` - a `style` is there and is not a string, on a
       element whose type names one: a button or a choice question. Which string
       it is stays the renderer's business; that it is a string is this
       package's.
@@ -154,8 +162,8 @@ defmodule Riddler.Screens.Document do
       neither has no shape to read, and its default is not checked. A choice
       question that reads its options from context has no option of its own
       for a default to name, and any default on it is refused.
-    * `document.invalid_context_path` - a `prefill`, or a choice question's
-      `answer_options_from`, that is not a string of dotted segments starting
+    * `document.invalid_context_path` - a `prefill`, a choice question's
+      `answer_options_from`, or an image's `src` beginning `context.`, that is not a string of dotted segments starting
       at `context`, with at least one more after it, each in the key shape
       `[a-z][a-z0-9_]*`; its `field` names which.
     * `document.conflicting_options` - a choice question carries both
@@ -286,7 +294,7 @@ defmodule Riddler.Screens.Document do
   # document is literal text. This is the one declaration of the list: the
   # admit-time refusal below and `Riddler.Screens`' resolve-time render are two
   # passes over the same fields, and both read it through `template_fields/0`.
-  @template_fields [:text, :label, :placeholder, :help]
+  @template_fields [:text, :label, :placeholder, :help, :alt]
 
   # The element type whose response no template, condition or write may read.
   @secret_type "secret_question"

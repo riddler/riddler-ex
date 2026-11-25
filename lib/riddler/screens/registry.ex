@@ -10,11 +10,12 @@ defmodule Riddler.Screens.Registry do
   not know is refused here, loudly, naming the type and the element - never an
   element quietly passed through as though the runtime had understood it.
 
-  The types are `heading`, `text`, `text_question`, `choice_question`,
-  `boolean_question`, `secret_question`, `button` and `variant`.
+  The types are `heading`, `text`, `image`, `text_question`,
+  `choice_question`, `boolean_question`, `secret_question`, `button` and
+  `variant`.
 
       iex> Riddler.Screens.Registry.types()
-      ["boolean_question", "button", "choice_question", "heading", "secret_question", "text", "text_question", "variant"]
+      ["boolean_question", "button", "choice_question", "heading", "image", "secret_question", "text", "text_question", "variant"]
 
       iex> Riddler.Screens.Registry.fetch("heading")
       {:ok, Riddler.Screens.Type.Heading}
@@ -30,6 +31,7 @@ defmodule Riddler.Screens.Registry do
     "button" => Type.Button,
     "choice_question" => Type.ChoiceQuestion,
     "heading" => Type.Heading,
+    "image" => Type.Image,
     "secret_question" => Type.SecretQuestion,
     "text" => Type.Text,
     "text_question" => Type.TextQuestion,
