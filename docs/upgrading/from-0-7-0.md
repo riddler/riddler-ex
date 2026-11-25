@@ -5,8 +5,9 @@ calls a screen's children elements. It uses patron registration: a host that
 stores the library card application screens as JSON and presents them to
 visitors.
 
-Three keys were renamed. Nothing else about a document, a finding or a
-presented answer changed its meaning.
+Three keys were renamed, and two names that point at them moved with them
+(listed below). One case that 0.7.0 admitted is now refused (see "What stays
+working").
 
 | Where | 0.7.0 | Now |
 |---|---|---|
@@ -19,7 +20,11 @@ The value of `element_key` is the one `node_key` carried, by the same rule.
 ## What stays working
 
 A document that declares `schema_version` 1, or none, is still admitted,
-validated and resolved, and still spells its children `nodes`. You can move
+validated and resolved, and still spells its children `nodes`, with one
+exception: a version 1 document whose screen or `variant` also carries an
+`elements` key was accepted by 0.7.0, which dropped the key, and is now
+refused with `document.other_version_spelling`. Remove the key, or rewrite
+the document at version 2. You can move
 the code first and the stored documents later. The presented answer and the
 findings use the new keys for a document of either version, so the change to
 your clients does not wait on your documents.
@@ -37,7 +42,10 @@ The end follows the hosts' own rewrite of their documents to version 2.
    of a resolved screen, match on `elements`.
 4. If you validate against the JSON schemas in the package, take the new
    copies: the presented answer and finding schemas require the new keys, and
-   the screen document schema types `elements` beside `nodes`.
+   the screen document schema types `elements` beside `nodes`. A `$ref` to
+   `#/definitions/node` becomes `#/definitions/element`.
+5. Where you name `Riddler.Screens.Type.node_t/0` in a typespec, name
+   `Riddler.Screens.Type.element/0`.
 
 ## Rewrite the stored documents
 
