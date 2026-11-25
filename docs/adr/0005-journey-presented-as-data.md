@@ -2386,3 +2386,154 @@ is the record's: `responses`, `context`, `outcome`, `writes`, `elements`,
   what the server answers a client that does not support a type.
 - The transport, identity for the anonymous visitor and streaming, as the
   amendments above leave them.
+
+---
+
+## Amendment, 2026-11-24: a presented screen's diagnostics may carry `undecidable_checks`
+
+Status: proposed
+
+Recorded 2026-11-24, bead rd-t1ap, the companion of ADR-0002's amendment of
+the same date headed "a question's `checks`, conditions its author writes and
+the host's validation evaluates", which decides the field, admission,
+response validation and the diagnostics entry; this entry decides what of
+that crosses the wire. That a question may carry checks its author writes as
+predicator conditions, evaluated in the host like the rest of response
+validation, was ruled by the operator, 2026-11-24, and so was that a check
+whose condition cannot be decided raises no finding and is reported in the
+diagnostics. The rest - the key on the wire, the schema's property, and what
+a client built to an earlier release meets - is this entry's own, written
+2026-11-24 at `proposed`.
+
+Every cite below of the package as it stands is read at `3d5085f`. The code
+half is a separate request; nothing below is citable from `lib/`, `priv/` or
+`corpus/` until it lands, so what it adds is described here, not cited.
+
+### What the record now decides
+
+**A presented screen's `"diagnostics"` may carry a third list.** Decision 3
+says the diagnostics carry `"missing_variables"` and
+`"undecidable_conditions"`, and the amendment above of this date headed "a
+presented screen carries `image`, `divider` and `link`, the new formats and
+hints, and an accessible label" says they keep the two lists they have. This
+entry answers that call another way. Where resolution reports a check the
+root could not decide, `"diagnostics"` carries `"undecidable_checks"` beside
+the two: a list in document order, each entry an object of `"key"`, the
+question's key, `"code"`, the check's code, and `"condition"`, the check's
+condition, each as the document wrote it. Where resolution reports none, the
+key is absent and the diagnostics are as at `3d5085f`, so a screen with no
+check, or none undecided, is presented byte for byte as before. An entry
+carries no response. It rides inside `"screen"`, as the diagnostics do, in
+the data form of Decision 3.
+
+**The presented answer's schema names it.** The `diagnostics` definition in
+`presented-answer.schema.json` (at `3d5085f`) gains an optional property
+`undecidable_checks`: an array of objects, each requiring `key`, `code` and
+`condition`, each a string, described as a check the root could not decide,
+whose question is shown and which raised no finding. Its `required` stays
+the two lists. Because no schema forbids a key it does not name, as the
+amendment above of 2026-11-18 decides, an answer carrying the key validates
+against an earlier release's schema too, and a client built to that schema
+meets an unknown key it may ignore.
+
+**A presented question carries no `checks`.** ADR-0002's amendment of this
+date leaves a resolved question without its `checks`, as without its
+`condition`, so no element of a presented screen carries one and no element
+definition in the schema gains a property. A client is not handed a check
+and evaluates none.
+
+**A check's finding is in the wire form a finding already has.** A failing
+check's finding is a `Riddler.Finding` like any other: its `"code"` the
+author's code, in the `check.` namespace; its `"field"` `"checks"`; its
+`"element_key"` the question's key; its `"position"` `null`; its
+`"author_message"` the check's message. `finding.schema.json` (at `3d5085f`)
+enumerates no code and describes `"author_message"` as the text the
+document's author set for the finding's code on the question its response
+is about, which a check's message is; it does not change. A client tells an
+author's finding from the package's by the `check.` prefix, and shows
+`"author_message"` where it is a string, as for any finding.
+
+### Typespecs
+
+The record's `screen` typedoc, as the amendment above of this date headed "a
+presented screen carries `elements`, and a finding `element_key`" gives it,
+reads:
+
+```elixir
+@typedoc """
+"key", "title", "elements" (the resolved elements, string-keyed) and
+"diagnostics" => %{"missing_variables" => [...],
+"undecidable_conditions" => [...]}, with "undecidable_checks" => [...]
+beside them where resolution reported a check it could not decide.
+"""
+@type screen :: %{required(String.t()) => term()}
+```
+
+Every other type in the record and its amendments is unchanged.
+
+### Worked examples
+
+Patron registration, the screen `"patron_contact"` of ADR-0002's amendment of
+this date. With a root whose `"context"` carries no `"today"` and no
+`"branch"`, and whose `"responses"` carry `"birth_date": "2031-04-17"` and
+`"holds_requested": "7"` and nothing else,
+`present(document, {:screen, "patron_contact"}, root)` answers, abridged to
+the diagnostics:
+
+```elixir
+#=> {:ok,
+#    %{
+#      "state" => "screen",
+#      "screen" => %{
+#        "key" => "patron_contact",
+#        "title" => "How we reach you",
+#        "elements" => [...],
+#        "diagnostics" => %{
+#          "missing_variables" => [],
+#          "undecidable_conditions" => [],
+#          "undecidable_checks" => [
+#            %{"key" => "birth_date",
+#              "code" => "check.birth_date_in_future",
+#              "condition" => "trim(responses.birth_date)::date <= context.today::date"},
+#            %{"key" => "holds_requested",
+#              "code" => "check.too_many_holds",
+#              "condition" => "responses.holds_requested::integer <= context.branch.max_holds"}
+#          ]
+#        }
+#      },
+#      "moves" => %{"outcomes" => ["contact_submitted"], "back" => false}
+#    }}
+```
+
+The two email questions are nothing answered, so neither's check is read and
+neither is listed. With the root's `"context"` carrying `"today"` and
+`"branch"`, both checks are decided, and the diagnostics carry the two lists
+alone.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the rule
+stated above answers a call one way, and this entry answers the same call
+another". Decision 3 and the amendment above of this date answer which lists
+a presented screen's diagnostics carry with two; this entry answers it with
+a third where it holds an entry.
+
+### What is unchanged
+
+The status shapes and their refusals, the answer's `"state"`, `"reason"`,
+`"retry_after_ms"`, `"result"` and `"progress"`, `"moves"`, the submit and
+`decode_submit/1`, `put_context/2`, the access and host behaviours, the
+scope, every element's presented fields, a finding's wire form and
+`finding.schema.json` are unchanged. `Riddler.Journey` gains no function and
+no argument. Decision 6 stands: this package renders, stores and transports
+nothing, and it reads no clock. The vocabulary is the record's: `responses`,
+`context`, `outcome`, `writes`, `elements`, `element_key`, and a question
+owns its `answer_options`.
+
+### What this does not decide
+
+- How a client shows a check's finding beyond `"author_message"`, and
+  whether it shows an undecided check to anyone.
+- A check handed to a client or evaluated in one.
+- The transport, identity for the anonymous visitor and streaming, as the
+  amendments above leave them.
