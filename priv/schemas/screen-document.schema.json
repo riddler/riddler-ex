@@ -21,13 +21,13 @@
               "properties": {
                 "elements": {
                   "items": {
-                    "$ref": "#/definitions/node_version_2"
+                    "$ref": "#/definitions/element_version_2"
                   },
                   "type": "array"
                 },
                 "nodes": {
                   "items": {
-                    "$ref": "#/definitions/node_version_2"
+                    "$ref": "#/definitions/element_version_2"
                   },
                   "type": "array"
                 }
@@ -60,13 +60,13 @@
                 "properties": {
                   "elements": {
                     "items": {
-                      "$ref": "#/definitions/node_version_2"
+                      "$ref": "#/definitions/element_version_2"
                     },
                     "type": "array"
                   },
                   "nodes": {
                     "items": {
-                      "$ref": "#/definitions/node_version_2"
+                      "$ref": "#/definitions/element_version_2"
                     },
                     "type": "array"
                   }
@@ -101,8 +101,8 @@
     }
   ],
   "definitions": {
-    "node": {
-      "description": "A node. The fields every node shares are described here, and one field a type names: the answer_options of a choice_question, typed by the conditional below. Every other field a type names is the type's own and is carried through untouched.",
+    "element": {
+      "description": "An element. The fields every element shares are described here, and one field a type names: the answer_options of a choice_question, typed by the conditional below. Every other field a type names is the type's own and is carried through untouched.",
       "if": {
         "properties": {
           "type": {
@@ -122,25 +122,25 @@
           "description": "The candidates of a container in a document read from elements, considered in order; a version 1 document spells them nodes, and a runtime refuses the other version's key by name on a container. Typed only where a document is read from elements, by the conditionals at the top of this schema: at version 2, and at a version a runtime does not implement when none of the document's screens carries nodes. In a document read from nodes it is a field nothing reads, of any value, as it was before version 2 existed."
         },
         "key": {
-          "description": "How everything else names the node. A runtime holds it to [a-z][a-z0-9_]* and to being unique across the whole document; both are findings against an admitted document rather than reasons this is not a document.",
+          "description": "How everything else names the element. A runtime holds it to [a-z][a-z0-9_]* and to being unique across the whole document; both are findings against an admitted document rather than reasons this is not a document.",
           "type": "string"
         },
         "nodes": {
           "description": "The candidates of a container in a version 1 document, considered in order. A version 2 document spells them elements, and a runtime refuses the other version's key by name; on an element whose type has no candidates either key is carried nowhere.",
           "items": {
-            "$ref": "#/definitions/node"
+            "$ref": "#/definitions/element"
           },
           "type": "array"
         },
         "type": {
-          "description": "An open string. This schema deliberately does not enumerate the node types: a host carrying a document through a validator older than one of its types should not have it rejected on the way. The runtime's registry is the other half of the rule - it does enumerate the types, and a type it does not know is a finding naming the type and the node, never a node quietly passed through.",
+          "description": "An open string. This schema deliberately does not enumerate the element types: a host carrying a document through a validator older than one of its types should not have it rejected on the way. The runtime's registry is the other half of the rule - it does enumerate the types, and a type it does not know is a finding naming the type and the element, never an element quietly passed through.",
           "type": "string"
         }
       },
       "then": {
         "properties": {
           "answer_options": {
-            "description": "The options of a choice question, in the order the visitor is shown them. Each is an object whose value and label are strings where present; that the list is not empty, that each option carries both, that a value is in the key shape and unique among the question's options are findings against an admitted document. The conditional names the type in a required clause too, so a node naming no type is not held to it.",
+            "description": "The options of a choice question, in the order the visitor is shown them. Each is an object whose value and label are strings where present; that the list is not empty, that each option carries both, that a value is in the key shape and unique among the question's options are findings against an admitted document. The conditional names the type in a required clause too, so an element naming no type is not held to it.",
             "items": {
               "properties": {
                 "label": {
@@ -158,23 +158,23 @@
       },
       "type": "object"
     },
-    "node_version_2": {
+    "element_version_2": {
       "allOf": [
         {
-          "$ref": "#/definitions/node"
+          "$ref": "#/definitions/element"
         }
       ],
-      "description": "An element of a version 2 document: a node whose elements and nodes are each a list of elements of a version 2 document, wherever they are carried.",
+      "description": "An element of a version 2 document: an element whose elements and nodes are each a list of elements of a version 2 document, wherever they are carried.",
       "properties": {
         "elements": {
           "items": {
-            "$ref": "#/definitions/node_version_2"
+            "$ref": "#/definitions/element_version_2"
           },
           "type": "array"
         },
         "nodes": {
           "items": {
-            "$ref": "#/definitions/node_version_2"
+            "$ref": "#/definitions/element_version_2"
           },
           "type": "array"
         }
@@ -193,7 +193,7 @@
           ]
         }
       ],
-      "description": "A screen: its key, its title, and its nodes in order.",
+      "description": "A screen: its key, its title, and its elements in order.",
       "properties": {
         "elements": {
           "description": "The elements of a screen in a document read from elements; a version 1 document spells them nodes. Typed as the element's own elements is, by the conditionals at the top of this schema; in a document read from nodes it is a field nothing reads, of any value, as it was before version 2 existed."
@@ -203,7 +203,7 @@
         },
         "nodes": {
           "items": {
-            "$ref": "#/definitions/node"
+            "$ref": "#/definitions/element"
           },
           "type": "array"
         },
@@ -214,14 +214,14 @@
       "type": "object"
     }
   },
-  "description": "The structural contract of a screen document: the envelope, the screen, the common node fields, and the one field a type names that it types, the answer_options of a choice_question. It describes exactly what makes a JSON value a screen document at all, and nothing more. Everything a document can be wrong about - a key that is not lower snake case, a field a node's type requires, a heading level outside 1 to 6, a condition that does not parse, a template outside the subset, a type no runtime knows - is a finding a runtime raises against an admitted document, not a reason the value is not a document. A validator holding this schema and a runtime admitting the same value therefore agree: schema-valid means admitted.",
+  "description": "The structural contract of a screen document: the envelope, the screen, the common element fields, and the one field a type names that it types, the answer_options of a choice_question. It describes exactly what makes a JSON value a screen document at all, and nothing more. Everything a document can be wrong about - a key that is not lower snake case, a field an element's type requires, a heading level outside 1 to 6, a condition that does not parse, a template outside the subset, a type no runtime knows - is a finding a runtime raises against an admitted document, not a reason the value is not a document. A validator holding this schema and a runtime admitting the same value therefore agree: schema-valid means admitted.",
   "properties": {
     "id": {
       "description": "The name of the document.",
       "type": "string"
     },
     "kind": {
-      "description": "The content kind the document belongs to. An open string, and absent means screens: this schema deliberately does not enumerate the kinds, for the same reason it does not enumerate the node types - a host carrying a document through a validator older than one of its kinds should not have it rejected on the way. The runtime keeps the other half of the rule: it does enumerate the kinds it has a runtime for, and a kind it does not know is a finding against an admitted document naming the value, never a document resolved by the wrong kind's rules.",
+      "description": "The content kind the document belongs to. An open string, and absent means screens: this schema deliberately does not enumerate the kinds, for the same reason it does not enumerate the element types - a host carrying a document through a validator older than one of its kinds should not have it rejected on the way. The runtime keeps the other half of the rule: it does enumerate the kinds it has a runtime for, and a kind it does not know is a finding against an admitted document naming the value, never a document resolved by the wrong kind's rules.",
       "type": "string"
     },
     "metadata": {

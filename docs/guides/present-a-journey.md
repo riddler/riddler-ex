@@ -80,7 +80,7 @@ Riddler.Journey.present(document, {:screen, "patron_details"}, root)
 #      "screen" => %{
 #        "key" => "patron_details",
 #        "title" => "Get your library card",
-#        "nodes" => [
+#        "elements" => [
 #          %{"type" => "text", "key" => "welcome_back", "text" => "Welcome back, Ada."},
 #          %{"type" => "button", "key" => "details_next", "label" => "Continue",
 #            "outcome" => "details_submitted"}
@@ -220,7 +220,7 @@ root = %{"context" => %{"first_name" => "Ada", "patron" => %{"email" => "ada@exa
 {:ok, %{"screen" => screen}} =
   Riddler.Journey.present(document, {:screen, "patron_details"}, root)
 
-hd(screen["nodes"])
+hd(screen["elements"])
 #=> %{
 #     "type" => "text_question",
 #     "key" => "reminder_email",

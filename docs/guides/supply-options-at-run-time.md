@@ -69,7 +69,7 @@ so a renderer draws it as it draws any choice question:
 {:ok, %{"screen" => screen}} =
   Riddler.Journey.present(document, {:screen, "patron_details"}, %{"context" => context})
 
-hd(screen["nodes"])["answer_options"]
+hd(screen["elements"])["answer_options"]
 #=> [
 #     %{"value" => "riverside", "label" => "Riverside"},
 #     %{"value" => "hilltop", "label" => "Hilltop"}
@@ -105,7 +105,7 @@ root = %{
 }
 
 {:error, [finding]} = Riddler.Screens.validate_screen(document, "patron_details", root)
-{finding.code, finding.node_key}
+{finding.code, finding.element_key}
 #=> {"response.not_an_option", "home_branch"}
 ```
 

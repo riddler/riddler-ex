@@ -634,8 +634,8 @@
         "findings": [
           {
             "code": "document.unknown_type",
-            "field": "type",
-            "node_key": "plan_pictures"
+            "element_key": "plan_pictures",
+            "field": "type"
           }
         ]
       },
@@ -665,8 +665,8 @@
         "findings": [
           {
             "code": "document.duplicate_key",
-            "field": "key",
-            "node_key": "plan_intro"
+            "element_key": "plan_intro",
+            "field": "key"
           }
         ]
       },
@@ -702,8 +702,8 @@
         "findings": [
           {
             "code": "document.invalid_key",
-            "field": "key",
-            "node_key": "Account_Heading"
+            "element_key": "Account_Heading",
+            "field": "key"
           }
         ]
       },
@@ -735,8 +735,8 @@
         "findings": [
           {
             "code": "document.missing_field",
-            "field": "text",
-            "node_key": "account_heading"
+            "element_key": "account_heading",
+            "field": "text"
           }
         ]
       },
@@ -767,8 +767,8 @@
         "findings": [
           {
             "code": "document.level_out_of_range",
-            "field": "level",
-            "node_key": "account_heading"
+            "element_key": "account_heading",
+            "field": "level"
           }
         ]
       },
@@ -800,8 +800,8 @@
         "findings": [
           {
             "code": "document.invalid_condition",
-            "field": "condition",
-            "node_key": "plan_intro"
+            "element_key": "plan_intro",
+            "field": "condition"
           }
         ]
       },
@@ -833,8 +833,8 @@
         "findings": [
           {
             "code": "document.invalid_template",
-            "field": "include",
-            "node_key": "plan_intro"
+            "element_key": "plan_intro",
+            "field": "include"
           }
         ]
       },
@@ -865,8 +865,8 @@
         "findings": [
           {
             "code": "document.invalid_writes",
-            "field": "writes",
-            "node_key": "plan_business"
+            "element_key": "plan_business",
+            "field": "writes"
           }
         ]
       },
@@ -904,8 +904,8 @@
         "findings": [
           {
             "code": "document.unknown_format",
-            "field": "format",
-            "node_key": "email"
+            "element_key": "email",
+            "field": "format"
           }
         ]
       },
@@ -937,8 +937,8 @@
         "findings": [
           {
             "code": "document.empty_variant",
-            "field": "nodes",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "nodes"
           }
         ]
       },
@@ -969,8 +969,8 @@
         "findings": [
           {
             "code": "document.unreachable_variant_candidate",
-            "field": "nodes",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "nodes"
           }
         ]
       },
@@ -1068,8 +1068,8 @@
         "findings": [
           {
             "code": "document.unknown_kind",
-            "field": "kind",
-            "node_key": null
+            "element_key": null,
+            "field": "kind"
           }
         ]
       },
@@ -1102,8 +1102,8 @@
         "findings": [
           {
             "code": "document.invalid_schema_version",
-            "field": "schema_version",
-            "node_key": null
+            "element_key": null,
+            "field": "schema_version"
           }
         ]
       },
@@ -1189,8 +1189,8 @@
         "findings": [
           {
             "code": "document.invalid_pattern",
-            "field": "pattern",
-            "node_key": "postal_code"
+            "element_key": "postal_code",
+            "field": "pattern"
           }
         ]
       },
@@ -1223,8 +1223,8 @@
         "findings": [
           {
             "code": "document.invalid_required",
-            "field": "required",
-            "node_key": "email"
+            "element_key": "email",
+            "field": "required"
           }
         ]
       },
@@ -1256,8 +1256,8 @@
         "findings": [
           {
             "code": "document.invalid_style",
-            "field": "style",
-            "node_key": "plan_personal"
+            "element_key": "plan_personal",
+            "field": "style"
           }
         ]
       },
@@ -1290,8 +1290,8 @@
         "findings": [
           {
             "code": "document.invalid_validates",
-            "field": "validates",
-            "node_key": "plan_back"
+            "element_key": "plan_back",
+            "field": "validates"
           }
         ]
       },
@@ -1324,8 +1324,8 @@
         "findings": [
           {
             "code": "document.invalid_outcome",
-            "field": "outcome",
-            "node_key": "plan_personal"
+            "element_key": "plan_personal",
+            "field": "outcome"
           }
         ]
       },
@@ -1357,8 +1357,8 @@
         "findings": [
           {
             "code": "document.invalid_outcome",
-            "field": "outcome",
-            "node_key": "plan_personal"
+            "element_key": "plan_personal",
+            "field": "outcome"
           }
         ]
       },
@@ -1390,18 +1390,18 @@
         "findings": [
           {
             "code": "document.invalid_outcome",
-            "field": "outcome",
-            "node_key": "plan_team"
+            "element_key": "plan_team",
+            "field": "outcome"
           },
           {
             "code": "document.invalid_outcome",
-            "field": "outcome",
-            "node_key": "plan_family"
+            "element_key": "plan_family",
+            "field": "outcome"
           },
           {
             "code": "document.duplicate_outcome",
-            "field": "outcome",
-            "node_key": "plan_business"
+            "element_key": "plan_business",
+            "field": "outcome"
           }
         ]
       },
@@ -1451,8 +1451,8 @@
         "findings": [
           {
             "code": "document.invalid_template",
-            "field": "include",
-            "node_key": "email"
+            "element_key": "email",
+            "field": "include"
           }
         ]
       },
@@ -1797,8 +1797,8 @@
         "findings": [
           {
             "code": "document.unknown_type",
-            "field": "type",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "type"
           }
         ]
       },
@@ -1832,13 +1832,13 @@
         "findings": [
           {
             "code": "document.missing_field",
-            "field": "select",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "select"
           },
           {
             "code": "document.missing_field",
-            "field": "answer_options",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "answer_options"
           }
         ]
       },
@@ -1869,8 +1869,8 @@
         "findings": [
           {
             "code": "document.invalid_select",
-            "field": "select",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "select"
           }
         ]
       },
@@ -1912,8 +1912,8 @@
         "findings": [
           {
             "code": "document.empty_answer_options",
-            "field": "answer_options",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "answer_options"
           }
         ]
       },
@@ -1946,18 +1946,18 @@
         "findings": [
           {
             "code": "document.invalid_option",
-            "field": "answer_options",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "answer_options"
           },
           {
             "code": "document.invalid_option",
-            "field": "answer_options",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "answer_options"
           },
           {
             "code": "document.invalid_option",
-            "field": "answer_options",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "answer_options"
           }
         ]
       },
@@ -2001,8 +2001,8 @@
         "findings": [
           {
             "code": "document.duplicate_option_value",
-            "field": "answer_options",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "answer_options"
           }
         ]
       },
@@ -2101,8 +2101,8 @@
         "findings": [
           {
             "code": "document.invalid_template",
-            "field": "include",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "include"
           }
         ]
       },
@@ -2144,8 +2144,8 @@
         "findings": [
           {
             "code": "document.invalid_selection_bounds",
-            "field": "max_selections",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "max_selections"
           }
         ]
       },
@@ -2188,13 +2188,13 @@
         "findings": [
           {
             "code": "document.invalid_selection_bounds",
-            "field": "min_selections",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "min_selections"
           },
           {
             "code": "document.invalid_selection_bounds",
-            "field": "max_selections",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "max_selections"
           }
         ]
       },
@@ -2242,8 +2242,8 @@
         "findings": [
           {
             "code": "document.invalid_selection_bounds",
-            "field": "min_selections",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "min_selections"
           }
         ]
       },
@@ -2291,13 +2291,13 @@
         "findings": [
           {
             "code": "document.invalid_required",
-            "field": "required",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "required"
           },
           {
             "code": "document.invalid_required",
-            "field": "required",
-            "node_key": "plan_terms"
+            "element_key": "plan_terms",
+            "field": "required"
           }
         ]
       },
@@ -2346,8 +2346,8 @@
         "findings": [
           {
             "code": "document.invalid_style",
-            "field": "style",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "style"
           }
         ]
       },
@@ -2435,8 +2435,8 @@
         "findings": [
           {
             "code": "document.invalid_option",
-            "field": "answer_options",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "answer_options"
           }
         ]
       },
@@ -2557,8 +2557,8 @@
         "findings": [
           {
             "code": "document.secret_initial_value",
-            "field": "default",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "default"
           }
         ]
       },
@@ -2591,8 +2591,8 @@
         "findings": [
           {
             "code": "document.secret_initial_value",
-            "field": "prefill",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "prefill"
           }
         ]
       },
@@ -2625,8 +2625,8 @@
         "findings": [
           {
             "code": "document.missing_field",
-            "field": "label",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "label"
           }
         ]
       },
@@ -2657,8 +2657,8 @@
         "findings": [
           {
             "code": "document.invalid_required",
-            "field": "required",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "required"
           }
         ]
       },
@@ -2690,18 +2690,18 @@
         "findings": [
           {
             "code": "document.secret_reference",
-            "field": "text",
-            "node_key": "pin_echo"
+            "element_key": "pin_echo",
+            "field": "text"
           },
           {
             "code": "document.secret_reference",
-            "field": "condition",
-            "node_key": "pin_thanks"
+            "element_key": "pin_thanks",
+            "field": "condition"
           },
           {
             "code": "document.secret_reference",
-            "field": "writes",
-            "node_key": "pin_skip"
+            "element_key": "pin_skip",
+            "field": "writes"
           }
         ]
       },
@@ -2756,8 +2756,8 @@
         "findings": [
           {
             "code": "document.secret_reference",
-            "field": "label",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "label"
           }
         ]
       },
@@ -2789,8 +2789,8 @@
         "findings": [
           {
             "code": "document.secret_reference",
-            "field": "text",
-            "node_key": "welcome_pin"
+            "element_key": "welcome_pin",
+            "field": "text"
           }
         ]
       },
@@ -2900,8 +2900,8 @@
         "findings": [
           {
             "code": "document.invalid_default",
-            "field": "default",
-            "node_key": "work_email"
+            "element_key": "work_email",
+            "field": "default"
           }
         ]
       },
@@ -2934,8 +2934,8 @@
         "findings": [
           {
             "code": "document.invalid_default",
-            "field": "default",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "default"
           }
         ]
       },
@@ -2978,8 +2978,8 @@
         "findings": [
           {
             "code": "document.invalid_default",
-            "field": "default",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "default"
           }
         ]
       },
@@ -3069,8 +3069,8 @@
         "findings": [
           {
             "code": "document.invalid_default",
-            "field": "default",
-            "node_key": "addons"
+            "element_key": "addons",
+            "field": "default"
           }
         ]
       },
@@ -3120,8 +3120,8 @@
         "findings": [
           {
             "code": "document.invalid_select",
-            "field": "select",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "select"
           }
         ]
       },
@@ -3166,8 +3166,8 @@
         "findings": [
           {
             "code": "document.invalid_default",
-            "field": "default",
-            "node_key": "newsletter"
+            "element_key": "newsletter",
+            "field": "default"
           }
         ]
       },
@@ -3199,8 +3199,8 @@
         "findings": [
           {
             "code": "document.invalid_context_path",
-            "field": "prefill",
-            "node_key": "work_email"
+            "element_key": "work_email",
+            "field": "prefill"
           }
         ]
       },
@@ -3233,8 +3233,8 @@
         "findings": [
           {
             "code": "document.invalid_context_path",
-            "field": "prefill",
-            "node_key": "newsletter"
+            "element_key": "newsletter",
+            "field": "prefill"
           }
         ]
       },
@@ -3266,8 +3266,8 @@
         "findings": [
           {
             "code": "document.invalid_context_path",
-            "field": "prefill",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "prefill"
           }
         ]
       },
@@ -3310,8 +3310,8 @@
         "findings": [
           {
             "code": "document.invalid_context_path",
-            "field": "prefill",
-            "node_key": "work_email"
+            "element_key": "work_email",
+            "field": "prefill"
           }
         ]
       },
@@ -3425,18 +3425,18 @@
         "findings": [
           {
             "code": "document.invalid_template",
-            "field": "strip_html",
-            "node_key": "work_email"
+            "element_key": "work_email",
+            "field": "strip_html"
           },
           {
             "code": "document.invalid_template",
-            "field": "strip_html",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "strip_html"
           },
           {
             "code": "document.invalid_template",
-            "field": "strip_html",
-            "node_key": "newsletter"
+            "element_key": "newsletter",
+            "field": "strip_html"
           }
         ]
       },
@@ -3491,18 +3491,18 @@
         "findings": [
           {
             "code": "document.invalid_template",
-            "field": "help",
-            "node_key": "work_email"
+            "element_key": "work_email",
+            "field": "help"
           },
           {
             "code": "document.invalid_template",
-            "field": "help",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "help"
           },
           {
             "code": "document.invalid_template",
-            "field": "help",
-            "node_key": "newsletter"
+            "element_key": "newsletter",
+            "field": "help"
           }
         ]
       },
@@ -3628,18 +3628,18 @@
         "findings": [
           {
             "code": "document.invalid_messages",
-            "field": "messages",
-            "node_key": "work_email"
+            "element_key": "work_email",
+            "field": "messages"
           },
           {
             "code": "document.invalid_messages",
-            "field": "messages",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "messages"
           },
           {
             "code": "document.invalid_messages",
-            "field": "messages",
-            "node_key": "newsletter"
+            "element_key": "newsletter",
+            "field": "messages"
           }
         ]
       },
@@ -3697,23 +3697,23 @@
         "findings": [
           {
             "code": "document.unknown_message_code",
-            "field": "messages",
-            "node_key": "work_email"
+            "element_key": "work_email",
+            "field": "messages"
           },
           {
             "code": "document.unknown_message_code",
-            "field": "messages",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "messages"
           },
           {
             "code": "document.unknown_message_code",
-            "field": "messages",
-            "node_key": "newsletter"
+            "element_key": "newsletter",
+            "field": "messages"
           },
           {
             "code": "document.unknown_message_code",
-            "field": "messages",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "messages"
           }
         ]
       },
@@ -3871,8 +3871,8 @@
         "findings": [
           {
             "code": "document.conflicting_options",
-            "field": "answer_options_from",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "answer_options_from"
           }
         ]
       },
@@ -3911,8 +3911,8 @@
         "findings": [
           {
             "code": "document.invalid_context_path",
-            "field": "answer_options_from",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "answer_options_from"
           }
         ]
       },
@@ -3945,8 +3945,8 @@
         "findings": [
           {
             "code": "document.invalid_default",
-            "field": "default",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "default"
           }
         ]
       },
@@ -3980,8 +3980,8 @@
         "findings": [
           {
             "code": "document.duplicate_outcome",
-            "field": "outcome",
-            "node_key": "account_create_again"
+            "element_key": "account_create_again",
+            "field": "outcome"
           }
         ]
       },
@@ -4019,8 +4019,8 @@
         "findings": [
           {
             "code": "document.duplicate_outcome",
-            "field": "outcome",
-            "node_key": "plan_personal"
+            "element_key": "plan_personal",
+            "field": "outcome"
           }
         ]
       },
@@ -4153,8 +4153,8 @@
         "findings": [
           {
             "code": "document.duplicate_outcome",
-            "field": "outcome",
-            "node_key": "plan_default"
+            "element_key": "plan_default",
+            "field": "outcome"
           }
         ]
       },
@@ -4343,18 +4343,18 @@
         "findings": [
           {
             "code": "document.invalid_default",
-            "field": "default",
-            "node_key": "addons"
+            "element_key": "addons",
+            "field": "default"
           },
           {
             "code": "document.invalid_default",
-            "field": "default",
-            "node_key": "addons_listed"
+            "element_key": "addons_listed",
+            "field": "default"
           },
           {
             "code": "document.invalid_default",
-            "field": "default",
-            "node_key": "addons_numbered"
+            "element_key": "addons_numbered",
+            "field": "default"
           }
         ]
       },
@@ -4550,8 +4550,8 @@
         "findings": [
           {
             "code": "document.missing_field",
-            "field": "answer_options",
-            "node_key": "addons"
+            "element_key": "addons",
+            "field": "answer_options"
           }
         ]
       },
@@ -4620,18 +4620,18 @@
         "findings": [
           {
             "code": "document.invalid_context_path",
-            "field": "answer_options_from",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "answer_options_from"
           },
           {
             "code": "document.invalid_context_path",
-            "field": "answer_options_from",
-            "node_key": "plan_bare"
+            "element_key": "plan_bare",
+            "field": "answer_options_from"
           },
           {
             "code": "document.invalid_context_path",
-            "field": "answer_options_from",
-            "node_key": "plan_cased"
+            "element_key": "plan_cased",
+            "field": "answer_options_from"
           }
         ]
       },
@@ -4682,13 +4682,13 @@
         "findings": [
           {
             "code": "document.secret_initial_value",
-            "field": "default",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "default"
           },
           {
             "code": "document.secret_initial_value",
-            "field": "prefill",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "prefill"
           }
         ]
       },
@@ -4721,33 +4721,33 @@
         "findings": [
           {
             "code": "document.unknown_message_code",
-            "field": "messages",
-            "node_key": "work_email"
+            "element_key": "work_email",
+            "field": "messages"
           },
           {
             "code": "document.unknown_message_code",
-            "field": "messages",
-            "node_key": "newsletter"
+            "element_key": "newsletter",
+            "field": "messages"
           },
           {
             "code": "document.unknown_message_code",
-            "field": "messages",
-            "node_key": "newsletter"
+            "element_key": "newsletter",
+            "field": "messages"
           },
           {
             "code": "document.unknown_message_code",
-            "field": "messages",
-            "node_key": "newsletter"
+            "element_key": "newsletter",
+            "field": "messages"
           },
           {
             "code": "document.unknown_message_code",
-            "field": "messages",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "messages"
           },
           {
             "code": "document.unknown_message_code",
-            "field": "messages",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "messages"
           }
         ]
       },
@@ -4857,8 +4857,8 @@
         "findings": [
           {
             "code": "document.other_version_spelling",
-            "field": "nodes",
-            "node_key": "patron_details"
+            "element_key": "patron_details",
+            "field": "nodes"
           }
         ]
       },
@@ -4924,8 +4924,8 @@
         "findings": [
           {
             "code": "document.other_version_spelling",
-            "field": "nodes",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "nodes"
           }
         ]
       },
@@ -4987,8 +4987,8 @@
         "findings": [
           {
             "code": "document.other_version_spelling",
-            "field": "nodes",
-            "node_key": "patron_details"
+            "element_key": "patron_details",
+            "field": "nodes"
           }
         ]
       },
@@ -5051,8 +5051,8 @@
         "findings": [
           {
             "code": "document.other_version_spelling",
-            "field": "elements",
-            "node_key": "patron_details"
+            "element_key": "patron_details",
+            "field": "elements"
           }
         ]
       },
@@ -5114,8 +5114,8 @@
         "findings": [
           {
             "code": "document.other_version_spelling",
-            "field": "elements",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "elements"
           }
         ]
       },
@@ -5190,8 +5190,8 @@
         "findings": [
           {
             "code": "document.other_version_spelling",
-            "field": "elements",
-            "node_key": "patron_details"
+            "element_key": "patron_details",
+            "field": "elements"
           }
         ]
       },
@@ -5253,8 +5253,8 @@
         "findings": [
           {
             "code": "document.empty_variant",
-            "field": "elements",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "elements"
           }
         ]
       },
@@ -5304,8 +5304,8 @@
         "findings": [
           {
             "code": "document.missing_field",
-            "field": "elements",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "elements"
           }
         ]
       },
@@ -5354,8 +5354,8 @@
         "findings": [
           {
             "code": "document.unreachable_variant_candidate",
-            "field": "elements",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "elements"
           }
         ]
       },
@@ -5417,8 +5417,8 @@
         "findings": [
           {
             "code": "document.unreachable_variant_candidate",
-            "field": "nodes",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "nodes"
           }
         ]
       },
@@ -5693,8 +5693,8 @@
         "findings": [
           {
             "code": "document.invalid_schema_version",
-            "field": "schema_version",
-            "node_key": null
+            "element_key": null,
+            "field": "schema_version"
           }
         ]
       },
@@ -5806,8 +5806,8 @@
         "findings": [
           {
             "code": "document.other_version_spelling",
-            "field": "elements",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "elements"
           }
         ]
       },
@@ -5862,8 +5862,8 @@
         "findings": [
           {
             "code": "document.other_version_spelling",
-            "field": "elements",
-            "node_key": "patron_details"
+            "element_key": "patron_details",
+            "field": "elements"
           }
         ]
       },
@@ -5918,13 +5918,13 @@
         "findings": [
           {
             "code": "document.invalid_schema_version",
-            "field": "schema_version",
-            "node_key": null
+            "element_key": null,
+            "field": "schema_version"
           },
           {
             "code": "document.empty_variant",
-            "field": "nodes",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "nodes"
           }
         ]
       },
@@ -5966,13 +5966,13 @@
         "findings": [
           {
             "code": "document.invalid_schema_version",
-            "field": "schema_version",
-            "node_key": null
+            "element_key": null,
+            "field": "schema_version"
           },
           {
             "code": "document.missing_field",
-            "field": "nodes",
-            "node_key": "card_notice"
+            "element_key": "card_notice",
+            "field": "nodes"
           }
         ]
       },
@@ -6026,8 +6026,8 @@
         "findings": [
           {
             "code": "document.invalid_schema_version",
-            "field": "schema_version",
-            "node_key": null
+            "element_key": null,
+            "field": "schema_version"
           }
         ]
       },
@@ -6082,8 +6082,8 @@
         "findings": [
           {
             "code": "document.other_version_spelling",
-            "field": "elements",
-            "node_key": "patron_details"
+            "element_key": "patron_details",
+            "field": "elements"
           }
         ]
       },
@@ -6134,8 +6134,8 @@
         "findings": [
           {
             "code": "document.other_version_spelling",
-            "field": "elements",
-            "node_key": "patron_details"
+            "element_key": "patron_details",
+            "field": "elements"
           }
         ]
       },

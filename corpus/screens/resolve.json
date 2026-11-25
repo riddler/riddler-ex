@@ -18,14 +18,14 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "key": "account_greeting",
                 "text": "Hello !",
                 "type": "text"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -67,14 +67,14 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "key": "account_greeting",
                 "text": "Hello Ada!",
                 "type": "text"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -123,8 +123,8 @@
         "schema_version": 1,
         "screens": [
           {
+            "elements": [],
             "key": "account",
-            "nodes": [],
             "title": "Create your account"
           }
         ]
@@ -167,14 +167,14 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "key": "account_greeting",
                 "text": "Nice to meet you again.",
                 "type": "text"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -219,14 +219,14 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "key": "account_greeting",
                 "text": "Hello Friend!",
                 "type": "text"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -268,14 +268,14 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "key": "account_greeting",
                 "text": "Hello Ada!",
                 "type": "text"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -319,14 +319,14 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "card",
-            "nodes": [
+            "elements": [
               {
                 "key": "card_notice_declined",
                 "text": "The card on file was declined. Try another one.",
                 "type": "text"
               }
             ],
+            "key": "card",
             "title": "Your card"
           }
         ]
@@ -388,14 +388,14 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "card",
-            "nodes": [
+            "elements": [
               {
                 "key": "card_notice_expiring",
                 "text": "The card on file expires soon.",
                 "type": "text"
               }
             ],
+            "key": "card",
             "title": "Your card"
           }
         ]
@@ -457,14 +457,14 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "card",
-            "nodes": [
+            "elements": [
               {
                 "key": "card_notice_default",
                 "text": "We will charge the card on file.",
                 "type": "text"
               }
             ],
+            "key": "card",
             "title": "Your card"
           }
         ]
@@ -526,8 +526,8 @@
         "schema_version": 1,
         "screens": [
           {
+            "elements": [],
             "key": "card",
-            "nodes": [],
             "title": "Your card"
           }
         ]
@@ -578,8 +578,8 @@
         "schema_version": 1,
         "screens": [
           {
+            "elements": [],
             "key": "card",
-            "nodes": [],
             "title": "Your card"
           }
         ]
@@ -635,14 +635,14 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "card",
-            "nodes": [
+            "elements": [
               {
                 "key": "card_intro",
                 "text": "Charging .",
                 "type": "text"
               }
             ],
+            "key": "card",
             "title": "Your card"
           }
         ]
@@ -676,8 +676,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "key": "account_heading",
             "level": 1,
@@ -711,6 +710,7 @@
             "type": "button"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -774,8 +774,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "key": "account_heading",
             "level": 1,
@@ -815,6 +814,7 @@
             "type": "button"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -880,8 +880,7 @@
     },
     {
       "expected": {
-        "key": "plan",
-        "nodes": [
+        "elements": [
           {
             "key": "plan_heading",
             "level": 1,
@@ -920,6 +919,7 @@
             "type": "button"
           }
         ],
+        "key": "plan",
         "title": "Pick a plan"
       },
       "input": {
@@ -1004,8 +1004,7 @@
     },
     {
       "expected": {
-        "key": "plan",
-        "nodes": [
+        "elements": [
           {
             "key": "plan_heading",
             "level": 1,
@@ -1049,6 +1048,7 @@
             "type": "button"
           }
         ],
+        "key": "plan",
         "title": "Pick a plan"
       },
       "input": {
@@ -1133,8 +1133,7 @@
     },
     {
       "expected": {
-        "key": "confirm",
-        "nodes": [
+        "elements": [
           {
             "key": "confirm_heading",
             "level": 1,
@@ -1153,6 +1152,7 @@
             "type": "button"
           }
         ],
+        "key": "confirm",
         "title": "Confirm and finish"
       },
       "input": {
@@ -1213,8 +1213,7 @@
     },
     {
       "expected": {
-        "key": "confirm",
-        "nodes": [
+        "elements": [
           {
             "key": "confirm_heading",
             "level": 1,
@@ -1246,6 +1245,7 @@
             "type": "button"
           }
         ],
+        "key": "confirm",
         "title": "Confirm and finish"
       },
       "input": {
@@ -1382,8 +1382,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "key": "account_heading",
                 "level": 1,
@@ -1417,11 +1416,11 @@
                 "type": "button"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           },
           {
-            "key": "plan",
-            "nodes": [
+            "elements": [
               {
                 "key": "plan_heading",
                 "level": 1,
@@ -1447,11 +1446,11 @@
                 "type": "button"
               }
             ],
+            "key": "plan",
             "title": "Pick a plan"
           },
           {
-            "key": "confirm",
-            "nodes": [
+            "elements": [
               {
                 "key": "confirm_heading",
                 "level": 1,
@@ -1470,6 +1469,7 @@
                 "type": "button"
               }
             ],
+            "key": "confirm",
             "title": "Confirm and finish"
           }
         ]
@@ -1649,14 +1649,14 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "key": "team_name",
                 "label": "How should Ada be shown to your team?",
                 "type": "text_question"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -1705,8 +1705,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "plan",
-            "nodes": [
+            "elements": [
               {
                 "answer_options": [
                   {
@@ -1725,6 +1724,7 @@
                 "type": "choice_question"
               }
             ],
+            "key": "plan",
             "title": "Pick a plan"
           }
         ]
@@ -1780,8 +1780,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "plan",
-            "nodes": [
+            "elements": [
               {
                 "format": "checkbox",
                 "key": "plan_terms",
@@ -1790,6 +1789,7 @@
                 "type": "boolean_question"
               }
             ],
+            "key": "plan",
             "title": "Pick a plan"
           }
         ]
@@ -1836,8 +1836,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "plan",
-            "nodes": [
+            "elements": [
               {
                 "answer_options": [
                   {
@@ -1861,6 +1860,7 @@
                 "type": "choice_question"
               }
             ],
+            "key": "plan",
             "title": "Pick a plan"
           }
         ]
@@ -1929,8 +1929,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "security",
-            "nodes": [
+            "elements": [
               {
                 "held": false,
                 "help": "Hi Ada",
@@ -1945,6 +1944,7 @@
                 "type": "text"
               }
             ],
+            "key": "security",
             "title": "Secure your account"
           }
         ]
@@ -1993,8 +1993,7 @@
     },
     {
       "expected": {
-        "key": "security",
-        "nodes": [
+        "elements": [
           {
             "held": true,
             "key": "account_pin",
@@ -2009,6 +2008,7 @@
             "type": "button"
           }
         ],
+        "key": "security",
         "title": "Secure your account"
       },
       "input": {
@@ -2050,8 +2050,7 @@
     },
     {
       "expected": {
-        "key": "security",
-        "nodes": [
+        "elements": [
           {
             "held": false,
             "key": "account_pin",
@@ -2066,6 +2065,7 @@
             "type": "button"
           }
         ],
+        "key": "security",
         "title": "Secure your account"
       },
       "input": {
@@ -2108,8 +2108,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "format": "email",
             "key": "work_email",
@@ -2118,6 +2117,7 @@
             "value": "grace@example.com"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2163,8 +2163,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "format": "email",
             "key": "work_email",
@@ -2173,6 +2172,7 @@
             "value": "ada@example.com"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2216,8 +2216,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "format": "email",
             "key": "work_email",
@@ -2226,6 +2225,7 @@
             "value": "ada@example.com"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2271,8 +2271,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "format": "email",
             "key": "work_email",
@@ -2281,6 +2280,7 @@
             "value": "team@example.com"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2314,8 +2314,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "format": "email",
             "key": "work_email",
@@ -2324,6 +2323,7 @@
             "value": "team@example.com"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2366,8 +2366,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "format": "email",
             "key": "work_email",
@@ -2375,6 +2374,7 @@
             "type": "text_question"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2426,8 +2426,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "format": "email",
                 "key": "work_email",
@@ -2435,6 +2434,7 @@
                 "type": "text_question"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -2477,8 +2477,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "format": "email",
             "key": "work_email",
@@ -2487,6 +2486,7 @@
             "value": 42
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2532,8 +2532,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "answer_options": [
               {
@@ -2552,6 +2551,7 @@
             "value": "business"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2604,8 +2604,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "answer_options": [
               {
@@ -2624,6 +2623,7 @@
             "value": "personal"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2670,8 +2670,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "answer_options": [
               {
@@ -2690,6 +2689,7 @@
             "value": "business"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2733,8 +2733,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "answer_options": [
               {
@@ -2760,6 +2759,7 @@
             ]
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2806,8 +2806,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "answer_options": [
               {
@@ -2832,6 +2831,7 @@
             ]
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2890,8 +2890,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "answer_options": [
               {
@@ -2916,6 +2915,7 @@
             ]
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -2974,8 +2974,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "key": "newsletter",
             "label": "Send me product news",
@@ -2983,6 +2982,7 @@
             "value": false
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -3011,8 +3011,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "key": "newsletter",
             "label": "Send me product news",
@@ -3020,6 +3019,7 @@
             "value": true
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -3061,8 +3061,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "key": "newsletter",
             "label": "Send me product news",
@@ -3070,6 +3069,7 @@
             "value": false
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -3114,14 +3114,14 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "key": "newsletter",
             "label": "Send me product news",
             "type": "boolean_question"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -3150,8 +3150,7 @@
     },
     {
       "expected": {
-        "key": "account",
-        "nodes": [
+        "elements": [
           {
             "format": "email",
             "key": "work_email",
@@ -3180,6 +3179,7 @@
             "type": "boolean_question"
           }
         ],
+        "key": "account",
         "title": "Create your account"
       },
       "input": {
@@ -3264,8 +3264,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "help": "Billed to Acme.",
                 "key": "work_email",
@@ -3296,6 +3295,7 @@
                 "type": "boolean_question"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -3372,8 +3372,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "help": "Billed to .",
                 "key": "work_email",
@@ -3381,6 +3380,7 @@
                 "type": "text_question"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -3423,8 +3423,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "format": "email",
                 "key": "work_email",
@@ -3478,6 +3477,7 @@
                 "type": "button"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -3565,8 +3565,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "answer_options": [
                   {
@@ -3585,6 +3584,7 @@
                 "value": "business"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -3658,8 +3658,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "answer_options": [],
                 "key": "plan",
@@ -3689,6 +3688,7 @@
                 "type": "choice_question"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -3764,8 +3764,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "key": "work_email",
                 "label": "Work email",
@@ -3782,6 +3781,7 @@
                 "type": "button"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -3835,8 +3835,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "answer_options": [
                   {
@@ -3885,6 +3884,7 @@
                 "type": "button"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -3975,8 +3975,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "answer_options": [
                   {
@@ -4020,6 +4019,7 @@
                 "type": "button"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -4110,8 +4110,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "answer_options": [
                   {
@@ -4136,6 +4135,7 @@
                 "type": "button"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -4202,8 +4202,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "format": "email",
                 "key": "work_email",
@@ -4218,6 +4217,7 @@
                 "type": "button"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -4271,8 +4271,7 @@
         "schema_version": 1,
         "screens": [
           {
-            "key": "account",
-            "nodes": [
+            "elements": [
               {
                 "answer_options": [
                   {
@@ -4316,6 +4315,7 @@
                 "type": "button"
               }
             ],
+            "key": "account",
             "title": "Create your account"
           }
         ]
@@ -4399,8 +4399,7 @@
         "schema_version": 2,
         "screens": [
           {
-            "key": "patron_details",
-            "nodes": [
+            "elements": [
               {
                 "key": "welcome_back",
                 "text": "Welcome back, Ada.",
@@ -4425,6 +4424,7 @@
                 "type": "button"
               }
             ],
+            "key": "patron_details",
             "title": "Get your library card"
           }
         ]

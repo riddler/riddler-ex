@@ -105,7 +105,7 @@ presented:
 
 ```elixir
 button =
-  Enum.find(screen["nodes"], &(&1["type"] == "button" and &1["outcome"] == outcome))
+  Enum.find(screen["elements"], &(&1["type"] == "button" and &1["outcome"] == outcome))
 
 root = %{"context" => context, "responses" => responses}
 
@@ -140,7 +140,7 @@ def post(document, screen_key, context, raw_submit, sealer) do
        {:ok, %{"screen" => screen, "moves" => moves}} <-
          Riddler.Journey.present(document, {:screen, screen_key}, %{"context" => context}),
        :ok <- known_outcome(submit["outcome"], moves),
-       button = Enum.find(screen["nodes"], &(&1["type"] == "button" and &1["outcome"] == submit["outcome"])),
+       button = Enum.find(screen["elements"], &(&1["type"] == "button" and &1["outcome"] == submit["outcome"])),
        root = %{"context" => context, "responses" => submit["responses"]},
        :ok <- Riddler.Screens.validate_screen(document, screen_key, root, button["key"]),
        {:ok, responses} <-
@@ -228,7 +228,7 @@ it.
 
 `decode_submit/1` and `validate_screen/3,4` both refuse with a list of
 `Riddler.Finding` structs. Send them to the client as a list of objects with
-the finding's keys, `code`, `message`, `field`, `node_key`, `position` and
+the finding's keys, `code`, `message`, `field`, `element_key`, `position` and
 `author_message`, every key present. `Map.from_struct/1` gives you the map to
 encode. The package ships the shape as `priv/schemas/finding.schema.json`.
 

@@ -1,6 +1,8 @@
 defmodule Riddler.Screens.SchemaVersionTwoTest do
   use ExUnit.Case, async: true
 
+  alias Riddler.Encoding
+  alias Riddler.Journey
   alias Riddler.Screens
   alias Riddler.Screens.Document
 
@@ -316,4 +318,75 @@ defmodule Riddler.Screens.SchemaVersionTwoTest do
       assert {:error, [%{code: "document.invalid_schema_version"}]} = Document.validate(document)
     end
   end
+
+  describe "what a client reads" do
+    # Sabotage: made the one encoder write `:elements` as "nodes" again; the
+    # version 1 answer spelled its children nodes and this went red.
+    test "presents a version 1 document as its version 2 form, its children under elements" do
+      {:ok, one} =
+        Journey.present(Document.admit(version_one()), {:screen, "patron_details"}, root())
+
+      {:ok, two} =
+        Journey.present(Document.admit(version_two()), {:screen, "patron_details"}, root())
+
+      assert one == two
+
+      assert %{"screen" => %{"elements" => elements}} = one
+
+      assert Enum.map(elements, & &1["key"]) == [
+               "welcome_back",
+               "card_notice_adult",
+               "details_next"
+             ]
+
+      refute "nodes" in keys_in(one)
+    end
+
+    # Sabotage: made the one encoder write `:elements` as "nodes" again; the
+    # resolved version 1 document's data form spelled its children nodes and
+    # this went red.
+    test "resolves a version 1 document to the same data as its version 2 form" do
+      {:ok, one} = Screens.resolve(Document.admit(version_one()), root())
+      {:ok, two} = Screens.resolve(Document.admit(version_two()), root())
+
+      one = Encoding.to_data(one)
+      two = Encoding.to_data(two)
+
+      assert %{one | "schema_version" => 2} == two
+      assert [%{"elements" => [_, _, _]}] = one["screens"]
+      refute "nodes" in keys_in(one)
+    end
+
+    # Sabotage: made the one encoder write `:element_key` as "node_key" again;
+    # the finding's data form named its element under node_key and this went
+    # red.
+    test "names a version 1 document's element in a finding's element_key" do
+      {:error, [finding]} =
+        version_one()
+        |> update_screen(&Map.update!(&1, "nodes", fn nodes -> nodes ++ [required_email()] end))
+        |> Document.admit()
+        |> Screens.validate_screen("patron_details", root())
+
+      assert %{"code" => "response.required", "element_key" => "reminder_email"} =
+               Encoding.to_data(finding)
+
+      refute Map.has_key?(Encoding.to_data(finding), "node_key")
+    end
+  end
+
+  defp required_email do
+    %{
+      "type" => "text_question",
+      "key" => "reminder_email",
+      "label" => "Email for reminders",
+      "required" => true
+    }
+  end
+
+  # Every key of every map in a data form, however deep.
+  defp keys_in(map) when is_map(map),
+    do: Enum.flat_map(map, fn {key, value} -> [key | keys_in(value)] end)
+
+  defp keys_in(list) when is_list(list), do: Enum.flat_map(list, &keys_in/1)
+  defp keys_in(_value), do: []
 end
