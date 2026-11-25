@@ -7787,6 +7787,259 @@
         }
       },
       "name": "A link and a divider in a version 1 document are admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "answer_options": [
+                    {
+                      "description": "One seat, billed monthly.",
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "description": "Up to 50 seats for {{ context.tenant_name }}.",
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "searchable": true,
+                  "select": "one",
+                  "style": "chips",
+                  "type": "choice_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A choice question with the chips style, searchable and an option description on each option is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "answer_options": [
+                    {
+                      "description": "One seat, billed monthly.",
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "description": "Up to 50 seats for {{ context.tenant_name }}.",
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "searchable": false,
+                  "select": "many",
+                  "style": "chips",
+                  "type": "choice_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "Chips is admitted as the style of a choice question that selects many"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_hint",
+            "element_key": "plan_choice",
+            "field": "searchable"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "answer_options": [
+                    {
+                      "description": "One seat, billed monthly.",
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "description": "Up to 50 seats for {{ context.tenant_name }}.",
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "searchable": "yes",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A choice question whose searchable is not a boolean is an invalid hint"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "element_key": "plan_choice",
+            "field": "description"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "answer_options": [
+                    {
+                      "description": 3,
+                      "label": "Personal",
+                      "value": "personal"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "An option description that is not a string is an invalid template"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_template",
+            "element_key": "plan_choice",
+            "field": "include"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "answer_options": [
+                    {
+                      "description": "{% include 'footer' %}",
+                      "label": "Personal",
+                      "value": "personal"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "An option description holding a construct outside the subset is refused, naming the construct"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.secret_reference",
+            "element_key": "plan_choice",
+            "field": "description"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "key": "account_pin",
+                  "label": "Choose a PIN",
+                  "type": "secret_question"
+                },
+                {
+                  "answer_options": [
+                    {
+                      "description": "Your PIN is {{ responses.account_pin }}.",
+                      "label": "Personal",
+                      "value": "personal"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "An option description reading a secret question's response is a secret reference"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"

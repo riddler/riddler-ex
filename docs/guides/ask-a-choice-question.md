@@ -50,7 +50,7 @@ A `choice_question` needs a `label`, a `select` and `answer_options`:
 
 ### The option shape
 
-An option is an object with two fields, and both are required:
+An option is an object with two required fields and one optional one:
 
 - `value` is what the response holds when the visitor picks the option. It
   is a string that starts with a lower-case letter and carries only
@@ -60,8 +60,15 @@ An option is an object with two fields, and both are required:
   each offer `adult`.
 - `label` is what the visitor reads. It is a template, like the question's
   own `label`.
+- `description` is optional: a line the renderer shows under the option's
+  label, such as `"Up to 30 items at a time."` under `Adult card`. It is a
+  template too. One that is not a string, or that holds a construct outside
+  the template subset, is `document.invalid_template`.
 
-A field an option carries beyond these two is dropped when the document is
+An option read from `context` through `answer_options_from` carries its
+`value` and its `label` only; a `description` in the host's list is not read.
+
+A field an option carries beyond these three is dropped when the document is
 admitted, with no finding. In particular an option has no `condition` in this
 version.
 
@@ -73,12 +80,18 @@ for a missing field or a `value` outside the pattern,
 ### The style hint
 
 `style` tells the host's renderer which widget to draw. The names offered are
-`radio` and `dropdown` for `select: "one"`, and `checkboxes` and `list` for
-`select: "many"`. The set is open and the renderer owns it: Riddler checks
-that `style` is a string and nothing more (a `style` that is not a string is
+`radio`, `dropdown` and `chips` for `select: "one"`, and `checkboxes`, `list`
+and `chips` for `select: "many"`. The set is open and the renderer owns it:
+Riddler checks that `style` is a string and nothing more (a `style` that is not a string is
 `document.invalid_style`), so a name it does not list, or one
 offered for the other `select`, is passed through to the renderer unchanged. A
 renderer that gets no `style` picks a widget by the number of options.
+
+`searchable` is a second hint, `true` or `false`, and a question without it is
+`false`. `true` asks the renderer to let the visitor filter the options, which
+helps with a long list such as the branches of a library. It changes nothing
+about what the visitor may submit. A `searchable` that is not a boolean is
+`document.invalid_hint`.
 
 `boolean_question` carries no `style`; one written on it is dropped when the
 document is admitted.

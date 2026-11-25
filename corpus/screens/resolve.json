@@ -5296,6 +5296,158 @@
         }
       },
       "name": "A text carries the style the document wrote, and a text with none carries none"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "plan_choice",
+              "variable": "context.first_name"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "answer_options": [
+                  {
+                    "description": "One seat, for .",
+                    "label": "Personal",
+                    "value": "personal"
+                  },
+                  {
+                    "description": "Up to 50 seats for Acme.",
+                    "label": "Business",
+                    "value": "business"
+                  }
+                ],
+                "key": "plan_choice",
+                "label": "Which plan?",
+                "searchable": true,
+                "select": "one",
+                "style": "chips",
+                "type": "choice_question"
+              }
+            ],
+            "key": "plan",
+            "title": "Pick a plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "answer_options": [
+                    {
+                      "description": "One seat, for {{ context.first_name }}.",
+                      "label": "Personal",
+                      "value": "personal"
+                    },
+                    {
+                      "description": "Up to 50 seats for {{ context.tenant_name }}.",
+                      "label": "Business",
+                      "value": "business"
+                    }
+                  ],
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "searchable": true,
+                  "select": "one",
+                  "style": "chips",
+                  "type": "choice_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant_name": "Acme"
+          },
+          "responses": {}
+        }
+      },
+      "name": "An option description is a template rendered against the root, and searchable is carried as written"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "answer_options": [
+                  {
+                    "label": "Personal",
+                    "value": "personal"
+                  }
+                ],
+                "key": "plan_choice",
+                "label": "Which plan?",
+                "select": "one",
+                "type": "choice_question"
+              }
+            ],
+            "key": "plan",
+            "title": "Pick a plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "answer_options_from": "context.plans",
+                  "key": "plan_choice",
+                  "label": "Which plan?",
+                  "select": "one",
+                  "type": "choice_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "plans": [
+              {
+                "description": "One seat.",
+                "label": "Personal",
+                "value": "personal"
+              }
+            ]
+          },
+          "responses": {}
+        }
+      },
+      "name": "A choice question reading its options from context carries no description the host's list holds"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

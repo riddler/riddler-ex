@@ -13,9 +13,12 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   `[a-z][a-z0-9_]*`, so that a condition or a template compares a response
   with it as written, and unique among this question's own options. It is not
   a key, so two questions may both offer the same value. `label` is what the
-  visitor reads, and it is a template. Admission keeps exactly those two
-  fields of an option and drops any other, as it drops an element field a type
-  does not name.
+  visitor reads, and it is a template. An option may also carry
+  `description`, a line a renderer shows under its label, and a template too:
+  one that is not a string, or that holds a construct outside the subset, is
+  `document.invalid_template`. Admission keeps exactly those three fields of
+  an option and drops any other, as it drops an element field a type does not
+  name.
 
   `answer_options_from` is the other way to give a question its options: a
   path under `context`, written as a `prefill` is - `"context.branches"` -
@@ -27,9 +30,9 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   where it is a list of objects each carrying a `"value"` in the key shape
   and a `"label"`, a string, no value twice; the resolved question carries
   them as `answer_options`, each its value and its label as the host wrote
-  them - the labels are not templates. A path that reaches no such list
-  resolves the question with no options and is reported in
-  `missing_variables`. A response is checked against the options the context
+  them - the labels are not templates, and a `"description"` the host's list
+  carries is not read. A path that reaches no such list resolves the question
+  with no options and is reported in `missing_variables`. A response is checked against the options the context
   holds when the screen is validated, not when it was shown. The checks of
   authored options do not apply to such a question, and its selection bounds
   are not compared with a number of options at admit, there being none.
@@ -46,12 +49,15 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   `response.out_of_range` - to the plain string its author shows for it,
   which a finding with that code carries as `author_message`.
 
-  `style` is a hint a renderer reads - `radio` or `dropdown` for one,
-  `checkboxes` or `list` for many - from an open set the renderer owns; what
-  this type checks is that it is a string. `required` defaults to false, and
-  true means the visitor picks at least one option. `min_selections` and
-  `max_selections` bound how many options a visitor picks, and they are read
-  only under `select: "many"`. Each is a non-negative integer, a number with
+  `style` is a hint a renderer reads - `radio`, `dropdown` or `chips` for
+  one, `checkboxes`, `list` or `chips` for many - from an open set the
+  renderer owns; what this type checks is that it is a string. `searchable` is
+  a hint too, a boolean, false when it is absent: true asks a renderer to let
+  the visitor filter the options. It changes nothing a response is checked
+  against, and one that is not a boolean is `document.invalid_hint`.
+  `required` defaults to false, and true means the visitor picks at least one
+  option. `min_selections` and `max_selections` bound how many options a
+  visitor picks, and they are read only under `select: "many"`. Each is a non-negative integer, a number with
   no fractional part counting as one - a bound written `2.0` is admitted as
   `2`. `format` is carried and never consulted: it is a field nothing reads,
   whatever it names.
@@ -87,7 +93,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
     do: %{
       required: [:label, :select, :answer_options],
       optional:
-        [:help, :style, :required, :min_selections, :max_selections, :format] ++
+        [:help, :style, :searchable, :required, :min_selections, :max_selections, :format] ++
           ContextOptions.fields() ++ Value.fields() ++ Messages.fields()
     }
 
@@ -101,6 +107,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
       bounds_findings(node, key) ++
       required_findings(node, key) ++
       style_findings(node, key) ++
+      searchable_findings(node, key) ++
       Value.findings(node) ++
       Messages.findings(node)
   end
@@ -367,6 +374,30 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
             message:
               "a style is the name a renderer looks up, a string, not #{inspect(style)}; which names there are is the renderer's",
             field: "style",
+            element_key: key
+          }
+        ]
+
+      :error ->
+        []
+    end
+  end
+
+  # Whether the renderer offers a filter is the renderer's to draw; that the
+  # hint is a boolean is this package's, because a renderer handed a string
+  # cannot tell which of the two it means.
+  defp searchable_findings(node, key) do
+    case Map.fetch(node, :searchable) do
+      {:ok, searchable} when is_boolean(searchable) ->
+        []
+
+      {:ok, searchable} ->
+        [
+          %Finding{
+            code: "document.invalid_hint",
+            message:
+              "searchable is a hint that says whether a renderer lets the visitor filter the options, true or false, not #{inspect(searchable)}",
+            field: "searchable",
             element_key: key
           }
         ]

@@ -50,7 +50,7 @@ defmodule Riddler.Screens do
   container was ever there. A container no candidate wins resolves to nothing.
 
   Every template field - `text`, `label` (a link's among them), `placeholder`,
-  `help` and an image's `alt`, and the `label` of
+  `help` and an image's `alt`, and the `label` and `description` of
   each of a choice question's `answer_options` - is rendered leniently: a
   variable the root does not carry renders as the empty string and is reported
   in `missing_variables`, so a visitor sees a screen rather than an error page.
@@ -862,24 +862,30 @@ defmodule Riddler.Screens do
     render_options(node, root, diagnostics)
   end
 
-  # A choice question's option labels are templates, after the element's own
-  # fields and in the order the options are listed; each option's `value` is
-  # literal and left as written. An option label is not a field of the element,
-  # so it is read here beside the document's list, as `validate/1` refuses it
+  # A choice question's option labels and descriptions are templates, after
+  # the element's own fields and in the order the options are listed; each
+  # option's `value` is literal and left as written. An option's template is
+  # not a field of the element, so it is read here beside the document's list,
+  # through `Document.option_template_fields/0`, as `validate/1` refuses it
   # beside that list. A variable one wants is reported under the question's
   # key. Only a choice question carries `answer_options`: on every other type
   # admission drops the field.
   defp render_options(%{answer_options: options} = node, root, diagnostics)
        when is_list(options) do
     {options, diagnostics} =
-      Enum.map_reduce(options, diagnostics, fn option, diagnostics ->
-        render_field(option, :label, root, diagnostics, node[:key])
-      end)
+      Enum.map_reduce(options, diagnostics, &render_option(&1, root, &2, node[:key]))
 
     {%{node | answer_options: options}, diagnostics}
   end
 
   defp render_options(node, _root, diagnostics), do: {node, diagnostics}
+
+  defp render_option(option, root, diagnostics, key) do
+    Enum.reduce(Document.option_template_fields(), {option, diagnostics}, fn field,
+                                                                             {option, diagnostics} ->
+      render_field(option, field, root, diagnostics, key)
+    end)
+  end
 
   defp render_field(holder, field, root, diagnostics, key) when is_map(holder) do
     with {:ok, source} when is_binary(source) <- Map.fetch(holder, field),

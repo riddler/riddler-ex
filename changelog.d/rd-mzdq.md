@@ -1,0 +1,7 @@
+### Added
+
+- `chips` is offered as a name for a choice question's `style`, for either `select`. The hint stays open: any string is passed through to the renderer, as before.
+- `searchable` on a choice question, a boolean hint, false when absent: true asks a renderer to let the visitor filter the options. It changes nothing a response is checked against. The resolved and presented question carry it where the document wrote it.
+- `description` on an authored option of a choice question, beside `value` and `label`: a template in the subset, a line a renderer shows under the option's label, rendered at resolve with a missing variable reported under the question's key. An option read from context by `answer_options_from` carries its value and label only; a `description` in the host's list is not read.
+- The refusals these fields bring: `document.invalid_hint` for a `searchable` that is not a boolean; `document.invalid_template` for an option `description` that is not a string or holds a construct outside the template subset; and `document.secret_reference` for an option `description` that names a secret question's response. A document that uses none of them is admitted, validated and resolved as before.
+- The presented-answer schema types a choice question's `searchable` as a boolean and an option's `description` as a string. An answer carrying either still validates against an earlier release's schema.

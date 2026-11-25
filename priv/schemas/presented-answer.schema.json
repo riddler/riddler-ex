@@ -413,6 +413,10 @@
                 "description": "The options the visitor is shown, in order: the options the document wrote, each label rendered, or, for a question that names answer_options_from, the options read from context at that path when the screen was resolved, each its value and its label as the host gave them and not rendered. An empty list where the path held no list of options, which the diagnostics report, or held an empty one. A presented question carries no answer_options_from.",
                 "items": {
                   "properties": {
+                    "description": {
+                      "description": "A line a renderer shows under the option label, rendered. Only an option the document wrote carries one; an option read from context carries none.",
+                      "type": "string"
+                    },
                     "label": {
                       "type": "string"
                     },
@@ -453,6 +457,10 @@
                 "type": "integer"
               },
               "required": {
+                "type": "boolean"
+              },
+              "searchable": {
+                "description": "A hint a renderer owns: true asks it to let the visitor filter the options. A question carrying none is false.",
                 "type": "boolean"
               },
               "select": {
