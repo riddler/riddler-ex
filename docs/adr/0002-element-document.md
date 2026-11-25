@@ -4870,3 +4870,558 @@ in a version 1 document), `element_key`, and a question owns its
   `node_key`: from the release that renames the field they describe the
   comparison by `element_key`, and that record is not amended here.
 - How a renderer draws an element.
+
+---
+
+## Amendment, 2026-11-24: `image`, `divider` and `link`, the URL rule, the date and time formats, the hints and an accessible label
+
+Status: proposed
+
+Recorded 2026-11-24, bead rd-6sdv. Eight additions to the vocabulary were
+ruled by the operator, 2026-11-24, with the dates as `text_question`
+formats and the slider as a hint rather than new types: `image`, `divider`,
+the `date`, `time` and `datetime` formats, `style` and `step` on
+`text_question`, the `chips` and `searchable` hints on `choice_question`, an
+option `description`, `link`, and `style` on `text`. That an image's `src`
+and a link's `href` take `https:` and host-relative URLs, and that an image's
+`src` also takes a `data:` URL, was ruled by the operator, 2026-11-24; which
+`data:` URLs - `data:image/png`, `image/jpeg`, `image/gif` and `image/webp`,
+base64 only, in a literal `src` only, at most 64 KiB of encoded text, with
+`image/svg+xml` refused - was ruled by the operator, 2026-11-24. An optional
+accessible label and description on every element is in the scope of the
+bead this entry is recorded for. The rest - every field name, hint name,
+finding code and check below, the `datetime` shape, what resolution answers,
+how a refused URL is reported, and the schema step - is this entry's own,
+written 2026-11-24 at `proposed`.
+
+Every cite below of the package as it stands is read at `d2e2d94`. The code
+half is separate requests; nothing below is citable from `lib/`, `priv/` or
+`corpus/` until they land, so what they add is described here, not cited.
+ADR-0005 carries the companion amendment of the same date, headed "a
+presented screen carries `image`, `divider` and `link`, the new formats and
+hints, and an accessible label", for what of this crosses the wire.
+
+Everything this entry adds is added: a document that uses none of it is
+admitted, validated and resolved as at `d2e2d94`, finding for finding, with
+the two exceptions this entry names under "A bound is in its format's
+shape" and "What is unchanged".
+
+### What the record now decides
+
+**The element types are `heading`, `text`, `image`, `divider`, `link`,
+`text_question`, `choice_question`, `boolean_question`, `secret_question`,
+`button` and `variant`.** Three display types join the eight the registry
+names (the module attribute `@types` in `lib/riddler/screens/registry.ex` at
+`d2e2d94`), and each is a type in a document of either `schema_version`: the
+version says how a screen spells its children, as the amendment above of
+this date decides, and not which types it may hold. None of the three is a
+question: none is answered, none is addressed by `responses.<key>`, and none
+is checked by response validation. Every rule this record states about an
+element holds of them - a `key` in `[a-z][a-z0-9_]*`, unique across the
+document, and an optional `condition`.
+
+**An `image` carries `src` and `alt`, and optionally `size` and `fit`.**
+
+- `src` is required. It is a literal URL or a path under `context`, and never
+  a template: it is not compiled, and a `{{` or a `{%` in it is refused (the
+  URL rule below). Which of the two it is, is read from its text: a string
+  that begins `context.` is a path, written as a `prefill` is and held to
+  the same rule (`Riddler.Screens.Value`'s `context_path/1` at `d2e2d94`);
+  every other string is a literal URL. The
+  two cannot be mistaken for each other, because no URL the rule admits
+  begins with `context.`, and no path begins with `https:`, `data:` or `/`.
+- `alt` is required and is a template in the ADR-0003 subset. It is what a
+  visitor who cannot see the image is told. The empty string is admitted and
+  marks the image as decorative: a renderer tells such a visitor nothing.
+- `size` and `fit` are hints a renderer reads, each a string from an open set
+  the renderer owns (the hints table below).
+
+**A `divider` carries no field of its own.** It is a rule between the
+elements before and after it. It carries `type`, `key`, an optional
+`condition` and the accessible fields every element may carry, and a field it
+does not name is dropped at admit with no finding, as on every type.
+
+**A `link` carries `label` and `href`, and optionally `style`.** `label` is a
+template in the subset, the text a visitor reads. `href` is a literal URL or
+a path under `context`, told apart as an image's `src` is, never a template,
+and held to the URL rule below. `style` is a hint (the hints table). A link
+raises no outcome: it carries no `outcome`, no `writes` and no `validates`,
+and each is a field it does not name, dropped at admit with no finding. A
+link does not submit the screen, is never among the outcomes a presented
+screen lists, and following one is the client's navigation, of which this
+package hears nothing.
+
+**`style` on a `text`.** A `text` may carry `style`, a hint: `body` and
+`caption` are the names offered, and a `text` with no `style` is `body`.
+
+**The URL rule.** A literal URL is checked at admit, by `validate/1`; a path
+is checked for its shape at admit and its value is checked at resolve. What
+each field admits:
+
+| Field | `https:` | host-relative | `data:` image |
+|---|---|---|---|
+| an image's `src`, a literal | admitted | admitted | admitted, as bounded below |
+| an image's `src`, a path's value at resolve | admitted | admitted | refused |
+| a link's `href`, a literal | admitted | admitted | refused |
+| a link's `href`, a path's value at resolve | admitted | admitted | refused |
+
+Any other scheme - `http:`, `javascript:`, `mailto:`, `file:` and every
+scheme this table does not name - is refused wherever it is written. The
+three forms are exact:
+
+- **An `https:` URL** is a string that begins `https://`, as written in lower
+  case, whose host, as the standard library's `URI.parse/1` reads it, is a
+  non-empty string.
+- **A host-relative URL** is a string that begins with `/` whose second
+  character, where it has one, is neither `/` nor `\`. A string that begins
+  `//` or `/\` names another host to a browser, and is refused.
+- **A `data:` image** is a string that begins with exactly one of
+  `data:image/png;base64,`, `data:image/jpeg;base64,`,
+  `data:image/gif;base64,` and `data:image/webp;base64,`, as written in lower
+  case and with no other parameter, followed by a non-empty payload that the
+  standard library's `Base.decode64/1` decodes: the base64 alphabet, padded,
+  its length a multiple of four. The whole `src` string, its prefix
+  included, is at most 65,536 bytes. `data:image/svg+xml` is refused
+  whatever its encoding, because an SVG image can carry script; so is every
+  other media type, a `data:` URL that is not base64, and one over the bound.
+
+And of every form: no space, no other whitespace and no ASCII control
+character (U+0000 to U+001F, and U+007F) anywhere in it, and no `{{` and no
+`{%`, which mark a template where none is read. Nothing is trimmed, folded or
+rewritten: a URL is admitted as written or refused, and a resolved one is
+what the document or the context wrote.
+
+At admit, a literal the rule refuses is `document.invalid_url`, its `field`
+`src` or `href` and its `element_key` the element's. Its message says which
+part of the rule the value fails and names the field, and never quotes a
+`data:` URL's payload. A path that is not a path under `context` is not a
+URL either: a string that begins `context.` and does not pass
+`context_path/1` is `document.invalid_context_path`, its
+`field` `src` or `href`, as a `prefill` is.
+
+At resolve, a path's value is read from the root's `context` when the
+element is shown. Where the path reaches a string the table admits for that
+field, the resolved element carries that string as its `src` or `href`.
+Where it reaches nothing, a value that is not a string, or a string the rule
+refuses - a `data:` URL included - the element is dropped from the resolved
+screen, as a hidden element is absent, and reported in `missing_variables`,
+its `key` the element's and its `variable` the path as written. That is the
+report a choice question's `answer_options_from` gives for a path holding no
+list of options (the `Riddler.Screens.Resolved` moduledoc, "The
+diagnostics", at `d2e2d94`), and the diagnostics keep the shape they have.
+The refused value is not written into the diagnostics, into a finding or
+anywhere else. A dropped element is reported once, by its path, and its
+templates are not rendered, so it contributes no other missing variable. A
+hidden element's path is never read and is not reported. The drop comes
+after a `variant`'s winner is chosen: a winner that is dropped leaves its
+`variant` resolving to nothing, and the next candidate is not considered.
+
+**The date and time formats.** A `text_question`'s `format` may name `date`,
+`time` or `datetime`, beside the five the package knows (the module attribute
+`@formats` in `lib/riddler/screens/document.ex` at `d2e2d94`). The response is
+a string in every case, as an `integer` or a `number` response may be:
+
+| Format | The shape | Example |
+|---|---|---|
+| `date` | `YYYY-MM-DD`, a calendar date that exists | `2026-11-24` |
+| `time` | `HH:MM` or `HH:MM:SS`, 24-hour, hours `00` to `23`, minutes and seconds `00` to `59` | `09:30` |
+| `datetime` | a `date` and a `time` joined by `T`, then `Z` or an offset `+HH:MM` or `-HH:MM` | `2026-11-24T09:30:00-07:00` |
+
+No fraction of a second, no lower-case `t` or `z`, no week or ordinal date,
+and no other ISO 8601 form is admitted. A `time` written `HH:MM` is the same
+time as `HH:MM:00`, and two `datetime` values are compared as the instants
+they name, so `2026-11-24T16:30:00Z` and `2026-11-24T09:30:00-07:00` are equal.
+
+Response validation applies them as it applies the existing formats (the
+private `checks/2` in `lib/riddler/screens/validation.ex` at `d2e2d94`): a
+blank response is the business of `required` alone; the response is read with
+the whitespace around it set aside, as the `email` and numeric checks read
+it; a response that is not a string, or not in the format's shape, is
+`response.format`, field `format`; and one before `min` or after `max` is
+`response.out_of_range`, its `field` naming the bound, both bounds inclusive.
+A question's `messages` keys the same three codes it keys today (the module
+attribute `@codes` in `lib/riddler/screens/messages.ex` at `d2e2d94`), and a
+`default` on such a question is held to being a string, as on any text
+question.
+
+**A bound is in its format's shape.** `min` and `max` on a `text_question`
+are read only by a format that reads them, and a bound that is there is now
+held to that format's shape at admit:
+
+| `format` | A `min` or a `max` that is there must be | `min` after `max` |
+|---|---|---|
+| `date`, `time`, `datetime` | a string in the format's shape | refused |
+| `integer`, `number` | a number | admitted, as at `d2e2d94` |
+| any other, or none | anything: nothing consults it, and no finding | - |
+
+Either failure is `document.invalid_bound`, its `field` the bound: `min` or
+`max` for a bound not in the shape, and `max` for a `min` after it. For the
+numeric formats this is a new refusal of a document `d2e2d94` admits: there a
+bound that is not a number is never consulted, so a question bounded by one
+bounds nothing (the private `range_findings/2`, `under?/2` and `over?/2` in
+`lib/riddler/screens/validation.ex` at `d2e2d94`). An author who writes
+`"min": "18"` meant a bound, and is now told. A numeric `min` above its `max`
+is left as it is: this entry decides nothing new of it.
+
+**`style` and `step` on a `text_question`.** `style` is a hint: `multiline`,
+a field for more than one line of text, and `slider` and `stepper`, read with
+the `integer` and `number` formats, are the names offered. `step` is the
+increment a `slider` or a `stepper` moves by, and is a hint too. It is read
+only with the numeric formats: with `integer` it is an integer above zero, a
+number with no fractional part counting as one; with `number`, a number above
+zero. A `step` that is there and is not so with a numeric format is
+`document.invalid_step`, its `field` `step`; with any other format, or none,
+it is a field nothing consults, as a `pattern` is without its format, and
+raises nothing. Response validation does not read `step`: a response between
+the bounds is admitted whatever the step. A renderer that draws no slider or
+stepper draws the field it would draw with no `style`, and loses nothing.
+
+**`chips`, `searchable` and an option's `description` on a
+`choice_question`.**
+
+- `chips` joins the names offered for a choice question's `style`, for
+  either `select`.
+- `searchable` is a boolean hint, default false: true asks a renderer to let
+  the visitor filter the options. It changes nothing a response is checked
+  against. One that is there and is not a boolean is `document.invalid_hint`,
+  its `field` `searchable`.
+- An authored option may carry `description`, beside `value` and `label`: a
+  line a renderer shows under the option's label, a template in the subset.
+  An option read from `context` by `answer_options_from` carries its `value`
+  and its `label` and nothing else, as at `d2e2d94`: a `"description"` the
+  host's list carries is not read.
+
+**An accessible label and description on every element.** Every element, of
+every type, may carry `accessible_label` and `accessible_description`, each
+optional and each a template in the subset. `accessible_label` is the name an
+assistive technology gives the element where the visible text is not enough;
+`accessible_description` is a longer account it may read after the name. A
+renderer reads them; this package checks them only as templates. They join
+the fields every element carries whatever its type (the module attribute
+`@common_fields` in `lib/riddler/screens/document.ex` at `d2e2d94`), so they
+are not in any type's `fields/0`. A `variant`'s own pair is carried nowhere,
+because a `variant` is replaced by its winner, which carries its own.
+
+**The hints.** Each is presentation, which is not this package's to
+enumerate. A name a hint does not offer, or one offered for another case, is
+passed through, as a button's `style` is (the private `style_findings/1` in
+`lib/riddler/screens/type/button.ex` at `d2e2d94`):
+
+| Type | Field | Names offered | A value admission refuses | With none |
+|---|---|---|---|---|
+| `text` | `style` | `body`, `caption` | not a string: `document.invalid_style` | `body` |
+| `image` | `size` | `icon`, `avatar`, `small`, `medium`, `large`, `banner` | not a string: `document.invalid_hint` | the renderer's |
+| `image` | `fit` | `contain`, `cover` | not a string: `document.invalid_hint` | the renderer's |
+| `link` | `style` | `inline`, `button` | not a string: `document.invalid_style` | the renderer's |
+| `text_question` | `style` | `multiline`, `slider`, `stepper` | not a string: `document.invalid_style` | a field for one line |
+| `text_question` | `step` | a number, as above | as above: `document.invalid_step` | none |
+| `choice_question` | `style` | `radio`, `dropdown`, `chips` for one; `checkboxes`, `list`, `chips` for many | not a string: `document.invalid_style`, unchanged | the renderer's, by the number of options |
+| `choice_question` | `searchable` | `true`, `false` | not a boolean: `document.invalid_hint` | `false` |
+
+**The template fields.** The fields a document writes as templates were
+`text`, `label`, `placeholder` and `help` (the module attribute
+`@template_fields` in `lib/riddler/screens/document.ex` at `d2e2d94`), with an
+option's `label` beside them. They are now those, `alt`, `accessible_label`
+and `accessible_description`, with an option's `label` and `description`
+beside them. Each is compiled at admit by the code an editor calls, and one
+holding a construct outside the subset, or a value that is not a string, is
+`document.invalid_template` (the private `refusals/4` in the same file at
+`d2e2d94`). Each is rendered at resolve, a variable the root does not carry
+rendering as the empty string and reported in `missing_variables` under the
+element's key, an option's under its question's. A template that names a
+secret question's response is refused as every template field's is.
+`src`, `href`, `size`, `fit`, `style`, `step` and `searchable` are literal.
+
+**What resolution answers.** A resolved element is the element with no
+`condition` and its templates rendered, as before, and each type here is
+carried with its fields in this form:
+
+| Type | The resolved element carries |
+|---|---|
+| `image` | `src` (the literal, or the path's value), `alt` rendered, and `size` and `fit` where the document wrote them |
+| `divider` | nothing beyond `type` and `key` |
+| `link` | `label` rendered, `href` (the literal, or the path's value), and `style` where written |
+| `text` | `text` rendered, and `style` where written |
+| `text_question` | as before, with `style` and `step` where written; `min`, `max` and `format` as before |
+| `choice_question` | as before, with `searchable` where written and each authored option's `description` rendered where written |
+| every type | `accessible_label` and `accessible_description` rendered, where written |
+
+No resolved element carries a path: an image or a link whose `src` or `href`
+was a path carries the value it reached, or is absent. A hint the document did
+not write is not added: a `text` with no `style` resolves with none, and is
+`body`.
+
+**The finding codes.** Every finding below carries the element's key as its
+`element_key` and a `field` naming what it is about. The messages are the
+code half's, in the register of the existing findings, and the enumeration
+stays the code half's tests' as the Decision delegates it; this table names
+the codes.
+
+| Code | Raised for | Reused or new |
+|---|---|---|
+| `document.missing_field` | an image without `src` or `alt`; a link without `label` or `href` | reused, its meaning unchanged |
+| `document.invalid_url` | a literal `src` or `href` the URL rule refuses | new |
+| `document.invalid_context_path` | a `src` or `href` read as a path that is not a path under `context` | reused: a `prefill` or `answer_options_from` that is not one |
+| `document.invalid_template` | an `alt`, an `accessible_label`, an `accessible_description` or an option's `description` that is not a string or holds a construct outside the subset | reused: a template field, which each now is |
+| `document.invalid_style` | a `style` on a `text`, a `link` or a `text_question` that is there and is not a string | reused: it reads for any element whose type names `style` |
+| `document.invalid_hint` | a `size` or `fit` that is not a string; a `searchable` that is not a boolean | new |
+| `document.invalid_step` | a `step` with a numeric format that is not a number above zero, or with `integer` not an integer | new |
+| `document.invalid_bound` | a `min` or `max` not in its format's shape; with a date or time format, a `min` after its `max` | new |
+| `document.unknown_format` | a `format` naming no format the package knows | reused; `date`, `time` and `datetime` are formats it knows |
+| `response.format` | a date or time response that is not a string in its format's shape | reused |
+| `response.out_of_range` | a date or time response before `min` or after `max`, its `field` the bound | reused |
+
+A refused URL at resolve raises no finding: resolution reports, it does not
+refuse, as the Decision says, and its report is the `missing_variables` entry
+above.
+
+**The schema step: `priv/schemas/screen-document.schema.json` names the two
+accessible fields and types nothing new.** Its `element` definition describes
+the fields every element shares, and it gains `accessible_label` and
+`accessible_description` there, each with a description and no `type`, so
+that a value of the wrong type is the finding `document.invalid_template`
+against an admitted document rather than a reason it is not a document, as
+an element's `label` is. Every other field this entry adds is a field a type
+names, carried through untouched and typed nowhere in the schema, as the
+schema's own description of an element says of such fields. `type` stays an
+open string. Nothing else in the schema moves.
+
+### Typespecs
+
+A contract for the code half, as the record's own typespecs are. An admitted
+element is atom-keyed, and a resolved one has the same shape with no
+`:condition` and its templates rendered.
+
+```elixir
+# On every element, beside :type, :key and :condition.
+@type accessible :: %{
+        optional(:accessible_label) => String.t(),
+        optional(:accessible_description) => String.t()
+      }
+
+# :type is "image". :src is a URL, or a path under context before resolve.
+@type image :: %{
+        :type => String.t(),
+        :key => String.t(),
+        optional(:condition) => String.t(),
+        :src => String.t(),
+        :alt => String.t(),
+        optional(:size) => String.t(),
+        optional(:fit) => String.t()
+      }
+
+# :type is "divider".
+@type divider :: %{
+        :type => String.t(),
+        :key => String.t(),
+        optional(:condition) => String.t()
+      }
+
+# :type is "link". :href is a URL, or a path under context before resolve.
+@type link :: %{
+        :type => String.t(),
+        :key => String.t(),
+        optional(:condition) => String.t(),
+        :label => String.t(),
+        :href => String.t(),
+        optional(:style) => String.t()
+      }
+
+# Added to a text: optional(:style) => String.t()
+# Added to a text_question: optional(:style) => String.t(),
+#   optional(:step) => number()
+# Added to a choice_question: optional(:searchable) => boolean()
+@type answer_option :: %{
+        :value => String.t(),
+        :label => String.t(),
+        optional(:description) => String.t()
+      }
+```
+
+### Worked examples
+
+These are from patron registration, a visitor becoming a library patron, the
+example world the repository names for new teaching text.
+
+A version 2 screen using each addition:
+
+```json
+{
+  "key": "patron_details",
+  "title": "Get your library card",
+  "elements": [
+    {
+      "type": "image",
+      "key": "library_logo",
+      "src": "/images/riverside-library.png",
+      "alt": "",
+      "size": "banner",
+      "fit": "contain"
+    },
+    {
+      "type": "image",
+      "key": "branch_photo",
+      "src": "context.branch.photo_url",
+      "alt": "The front of the {{ context.branch.name }} branch",
+      "size": "medium"
+    },
+    {
+      "type": "text",
+      "key": "card_intro",
+      "text": "A library card is free for everyone who lives in the county."
+    },
+    {
+      "type": "text",
+      "key": "card_note",
+      "style": "caption",
+      "text": "Bring a proof of address when you collect it."
+    },
+    {"type": "divider", "key": "details_rule"},
+    {
+      "type": "text_question",
+      "key": "birth_date",
+      "label": "Date of birth",
+      "format": "date",
+      "min": "1900-01-01",
+      "max": "2026-11-24",
+      "required": true,
+      "accessible_description": "Written as year, month and day, for example 1990-04-17."
+    },
+    {
+      "type": "text_question",
+      "key": "books_per_month",
+      "label": "About how many books do you read a month?",
+      "format": "integer",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "style": "slider"
+    },
+    {
+      "type": "choice_question",
+      "key": "card_type",
+      "label": "Which library card would you like?",
+      "select": "one",
+      "style": "chips",
+      "searchable": false,
+      "answer_options": [
+        {"value": "adult", "label": "Adult card", "description": "Up to 30 items at a time."},
+        {"value": "child", "label": "Child card", "description": "Under 13; a parent or guardian signs."}
+      ]
+    },
+    {
+      "type": "link",
+      "key": "borrowing_rules",
+      "label": "Read the borrowing rules",
+      "href": "https://library.example/borrowing-rules",
+      "style": "inline",
+      "accessible_label": "Read the borrowing rules of {{ context.branch.name }}"
+    },
+    {
+      "type": "button",
+      "key": "details_next",
+      "label": "Continue",
+      "outcome": "details_submitted"
+    }
+  ]
+}
+```
+
+Resolved with `resolve_screen(document, "patron_details", root)`, where the
+root's `"context"` is
+`{"branch": {"name": "Riverside", "photo_url": "https://library.example/riverside.jpg"}}`,
+the branch photo carries `"src": "https://library.example/riverside.jpg"` and
+`"alt": "The front of the Riverside branch"`, the link carries
+`"accessible_label": "Read the borrowing rules of Riverside"`, and every other
+element is as written less its template source. The diagnostics are empty.
+
+Resolved where the branch's `"photo_url"` is
+`"http://library.example/riverside.jpg"`, an `http:` URL, or is absent, or is
+a `data:` URL: the screen has no `branch_photo`, and `missing_variables`
+holds `{"key": "branch_photo", "variable": "context.branch.photo_url"}`. The
+value is not written into it.
+
+Validated with `validate_screen(document, "patron_details", root)`:
+
+- `"birth_date": "1990-04-17"` is `:ok`; `"1990-02-30"` and `"17/04/1990"` are
+  each `response.format`, its `field` `"format"`; `"1890-01-01"` is
+  `response.out_of_range`, its `field` `"min"`; and no response at all is
+  `response.required`.
+- `"books_per_month": "7"` is `:ok`, whatever the `step`; `"25"` is
+  `response.out_of_range`, its `field` `"max"`.
+- Nothing is checked of the image, the divider, the texts or the link.
+
+Things an author might write, and what `validate/1` says of each:
+
+- The logo's `src` as `"data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="`:
+  `document.invalid_url`, its `field` `"src"` and its `element_key`
+  `"library_logo"`. As `"data:image/png;base64,iVBORw0KGgo="` it is admitted.
+- The logo's `src` as `"//cdn.example/riverside-library.png"`:
+  `document.invalid_url`, because it names another host.
+- The link's `href` as `"data:image/png;base64,iVBORw0KGgo="`:
+  `document.invalid_url`, its `field` `"href"`; a link never takes a `data:`
+  URL. As `"https://library.example/rules?branch={{ context.branch.name }}"`:
+  `document.invalid_url`, a `href` is never a template.
+- The branch photo's `src` as `"context.Branch.photo"`:
+  `document.invalid_context_path`, its `field` `"src"`.
+- The birth date's `max` as `"24/11/2026"`, or as `20261124`:
+  `document.invalid_bound`, its `field` `"max"`. With `"min": "2026-12-01"`
+  beside its `max` of `"2026-11-24"`: `document.invalid_bound`, its `field`
+  `"max"`.
+- The books question's `min` as `"0"`: `document.invalid_bound`, its `field`
+  `"min"`. riddler 0.8.0 admits it and bounds nothing by it. Its `step` as
+  `0.5`: `document.invalid_step`.
+- The card question's `searchable` as `"yes"`: `document.invalid_hint`, its
+  `field` `"searchable"`.
+- An image with no `alt`: `document.missing_field`, its `field` `"alt"`.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the rule
+stated above answers a call one way, and this entry answers the same call
+another". A document naming `image`, `divider` or `link` answers
+`document.unknown_type` at `d2e2d94`, and a `format` of `date`, `time` or
+`datetime` answers `document.unknown_format`; this entry admits each. It also
+adds a refusal, the other mark the README names as sufficient: a numeric
+format's bound that is not a number is admitted at `d2e2d94`, and this entry
+refuses it.
+
+### What is unchanged
+
+Every existing type keeps its fields, its findings and its responses, but for
+the fields this entry adds to `text`, `text_question` and `choice_question`
+and the bound refusal above. A field a type does not name is dropped at admit
+with no finding, as before; a document that writes one of the fields this
+entry names on a type that did not name it until now, at `d2e2d94` had it
+dropped, and now has it read. The messages of `document.unknown_type` and
+`document.unknown_format` name the types and the formats this version knows,
+as each does at `d2e2d94` (the private `node_findings/3` in
+`lib/riddler/screens/document.ex` and `format_findings/1` in
+`lib/riddler/screens/type/text_question.ex`), so their lists name the
+additions; each finding's code, `field` and `element_key` are unchanged. The
+diagnostics keep their two lists. The body of a document carries no markup,
+no client function and no client data model: every template renders to plain
+text, and a URL is data a renderer reads. `type` stays an open string in the
+schema. The runtime dependencies stay `predicator` and `solid`, and the URL
+rule and the formats use the standard library. Renderers own `style`, the
+hints and everything else about presentation. The vocabulary is the record's:
+`responses`, `context`, `outcome`, `writes`, `elements` (and `nodes` in a
+version 1 document), `element_key`, and a question owns its `answer_options`.
+
+### What this does not decide
+
+- Layout: a group, a row, alignment, weight or spacing, and any container
+  type beyond `variant`.
+- Which renderer draws what for a hint, the default size of an image, and
+  whether a link opens in the same view.
+- A bound that is relative to the day of resolution (a birth date not in the
+  future, written as such), a bound read from `context`, and a numeric `min`
+  above its `max`.
+- A `description` on an option read from `context`, an option image or icon,
+  and a `condition` on an option.
+- Whether `step` is ever checked against a response, and a `step` for the
+  date and time formats.
+- A URL scheme beyond the table, a media type beyond the four, and a bound
+  beyond 65,536 bytes.
+- Named sets of types a client advertises, and a check written by the author
+  on a question; each is another record's.

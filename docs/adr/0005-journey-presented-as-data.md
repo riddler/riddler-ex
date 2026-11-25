@@ -2219,3 +2219,170 @@ its `answer_options`.
   amendments above leave them.
 - When version 1 admission ends; ADR-0002's amendment of this date says what
   is ruled of it.
+
+---
+
+## Amendment, 2026-11-24: a presented screen carries `image`, `divider` and `link`, the new formats and hints, and an accessible label
+
+Status: proposed
+
+Recorded 2026-11-24, bead rd-6sdv, the companion of ADR-0002's amendment of
+the same date headed "`image`, `divider` and `link`, the URL rule, the date
+and time formats, the hints and an accessible label", which decides the
+document, admission, resolution and the URL rule; this entry decides what of
+that crosses the wire. The additions themselves, the URL rule and the bound
+on a `data:` image were ruled by the operator, 2026-11-24, as that amendment
+records. The rest - the enumeration, the schema's properties and what a
+client built to an earlier release meets - is this entry's own, written
+2026-11-24 at `proposed`.
+
+Every cite below of the package as it stands is read at `d2e2d94`. The code
+half is separate requests; nothing below is citable from `lib/`, `priv/` or
+`corpus/` until they land, so what they add is described here, not cited.
+
+### What the record now decides
+
+**The presented screen carries the new types in the data form.** `"screen"`
+holds what `Riddler.Screens.resolve_screen/3` answers, in its data form, as
+Decision 3 says, so an `image`, a `divider` and a `link` that resolution
+leaves on a screen are among its `"elements"`, with the fields ADR-0002's
+amendment of this date tabulates under "What resolution answers": an image's
+`"src"`, `"alt"`, `"size"` and `"fit"`; a link's `"label"`, `"href"` and
+`"style"`; a divider's `"type"` and `"key"` alone. A `"src"` or `"href"` is
+always a URL by that amendment's rule, never a path: `https:`, host-relative,
+or, for an image's `"src"` written as a literal, a `data:` image of the four
+media types within its bound. No presented answer carries another scheme. An
+image or a link whose path reached no admitted URL is absent, and the screen's
+`"diagnostics"` carry its `"missing_variables"` entry, the path and not the
+value. The diagnostics keep the two lists they have.
+
+**`"moves"` lists no link.** The amendment above of 2026-11-18 says
+`"outcomes"` is the `outcome` of each button among the presented elements; a
+link is not a button and carries no `outcome`, so no link is ever among
+`"outcomes"` (the private `outcomes/1` in `lib/riddler/journey.ex` at
+`d2e2d94` reads buttons alone). A client sends no submit for a link, and
+following one is the client's navigation, of which this package hears
+nothing.
+
+**The presented answer's schema enumerates the three types.** The amendment
+above of 2026-11-18 decides that the schema lists the element types a
+presented screen can carry, and that a type the registry gains joins the
+enumeration in the release whose code presents it. `image`, `divider` and
+`link` join it in the release that carries the code half, each held to its
+fields in their resolved form: an image requires `"key"`, `"src"` and
+`"alt"`, each a string; a link requires `"key"`, `"label"` and `"href"`, each
+a string; a divider requires `"key"`. The hints are typed as strings, and
+`"searchable"` as a boolean. Within the definitions it already carries
+(`presented-answer.schema.json`'s `element` definition at `d2e2d94`):
+
+| Element | What its definition gains |
+|---|---|
+| every enumerated type | `"accessible_label"` and `"accessible_description"`, each a string |
+| `text` | `"style"`, a string |
+| `text_question` | `"style"`, a string; `"step"`, a number; `"date"`, `"time"` and `"datetime"` in the enumeration of `"format"` |
+| `choice_question` | `"searchable"`, a boolean; an option's `"description"`, a string |
+| `image` | a definition: `"src"`, `"alt"`, `"size"` and `"fit"` |
+| `divider` | a definition, of the shared fields alone |
+| `link` | a definition: `"label"`, `"href"` and `"style"` |
+
+The definition's `description`, which names the enumerated types, names the
+three. `variant` stays outside the enumeration, as resolution replaces it.
+Nothing is required that is not required at `d2e2d94` but in the three new
+definitions.
+
+**What a client built to an earlier release meets.** The amendment above of
+2026-11-18 says that no schema forbids a key it does not name, so every key
+this entry adds to an existing type validates against an earlier release's
+schema. Two things do not:
+
+- An `image`, a `divider` or a `link` is outside an earlier schema's
+  enumeration. The answer still validates, as that amendment decides of a
+  type outside the enumeration, and a client built to that schema follows the
+  fallback it states: it does not render the element and does not let the
+  visitor submit that screen from it.
+- A `text_question` whose `"format"` is `"date"`, `"time"` or `"datetime"`
+  carries a value outside an earlier schema's enumeration of `"format"`, and
+  an answer carrying one does not validate against that schema.
+
+The schemas are versioned with the package, as that amendment decides, and
+the release's changelog names the change. A screen that uses none of the
+additions is presented exactly as at `d2e2d94`, and validates against the
+schemas of both releases.
+
+### Typespecs
+
+Unchanged. The record's `screen` typedoc already says the resolved elements
+are string-keyed, and each element's fields are ADR-0002's amendment of this
+date's.
+
+### Worked examples
+
+Patron registration, the screen of ADR-0002's amendment of this date, with
+the root's `"context"` holding
+`{"branch": {"name": "Riverside", "photo_url": "https://library.example/riverside.jpg"}}`.
+`present(document, {:screen, "patron_details"}, root)` answers, abridged to
+three of its elements:
+
+```elixir
+#=> {:ok,
+#    %{
+#      "state" => "screen",
+#      "screen" => %{
+#        "key" => "patron_details",
+#        "title" => "Get your library card",
+#        "elements" => [
+#          %{"type" => "image", "key" => "branch_photo",
+#            "src" => "https://library.example/riverside.jpg",
+#            "alt" => "The front of the Riverside branch",
+#            "size" => "medium"},
+#          %{"type" => "divider", "key" => "details_rule"},
+#          %{"type" => "link", "key" => "borrowing_rules",
+#            "label" => "Read the borrowing rules",
+#            "href" => "https://library.example/borrowing-rules",
+#            "style" => "inline",
+#            "accessible_label" => "Read the borrowing rules of Riverside"},
+#          ...
+#        ],
+#        "diagnostics" => %{
+#          "missing_variables" => [],
+#          "undecidable_conditions" => []
+#        }
+#      },
+#      "moves" => %{"outcomes" => ["details_submitted"], "back" => false}
+#    }}
+```
+
+The link is not among `"outcomes"`; the one button is. Where the branch's
+`"photo_url"` is an `http:` URL, the answer has no `branch_photo`, and its
+`"missing_variables"` holds `%{"key" => "branch_photo", "variable" =>
+"context.branch.photo_url"}`.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the rule
+stated above answers a call one way, and this entry answers the same call
+another". The amendment above of 2026-11-18 enumerates the element types a
+presented screen carries and the formats a presented `text_question` names,
+and this entry answers each with more; and that amendment's reading that a
+later answer validates against an earlier schema is answered another way for
+an answer carrying a new format.
+
+### What is unchanged
+
+The status shapes and their refusals, the answer's `"state"`, `"reason"`,
+`"retry_after_ms"`, `"result"` and `"progress"`, `"moves"` but for the
+sentence on links, the submit and `decode_submit/1`, `put_context/2`, the
+access and host behaviours, the scope and a finding's wire form are
+unchanged. `Riddler.Journey` gains no function and no argument. Decision 6
+stands: this package renders, stores and transports nothing. The vocabulary
+is the record's: `responses`, `context`, `outcome`, `writes`, `elements`,
+`element_key`, and a question owns its `answer_options`.
+
+### What this does not decide
+
+- How a renderer draws an image, a divider, a link or a hint, and the
+  attributes it marks one with.
+- Named sets of types a client advertises when a screen is presented, and
+  what the server answers a client that does not support a type.
+- The transport, identity for the anonymous visitor and streaming, as the
+  amendments above leave them.
