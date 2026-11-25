@@ -5077,6 +5077,225 @@
         }
       },
       "name": "An image whose src path reaches nothing is dropped and reported once, its alt not rendered"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "href": "https://acme.example/terms",
+                "key": "billing_terms",
+                "label": "Acme billing terms",
+                "type": "link"
+              }
+            ],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "context.tenant.terms_url",
+                  "key": "billing_terms",
+                  "label": "{{ context.tenant.name }} billing terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "name": "Acme",
+              "terms_url": "https://acme.example/terms"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "A link whose href path reaches an https URL carries that URL, its label rendered"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "billing_terms",
+              "variable": "context.tenant.terms_url"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "context.tenant.terms_url",
+                  "key": "billing_terms",
+                  "label": "{{ context.tenant.name }} billing terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "name": "Acme",
+              "terms_url": "data:image/png;base64,iVBORw0KGgo="
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "A link whose href path reaches a data URL is dropped and its path reported, not its value"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "key": "plan_rule",
+                "type": "divider"
+              }
+            ],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "condition": "true",
+                  "key": "plan_rule",
+                  "type": "divider"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "A divider resolves to its type and key"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "key": "plan_note",
+                "style": "caption",
+                "text": "Billed monthly.",
+                "type": "text"
+              },
+              {
+                "key": "plan_intro",
+                "text": "Nothing is charged today.",
+                "type": "text"
+              }
+            ],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "key": "plan_note",
+                  "style": "caption",
+                  "text": "Billed monthly.",
+                  "type": "text"
+                },
+                {
+                  "key": "plan_intro",
+                  "text": "Nothing is charged today.",
+                  "type": "text"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "A text carries the style the document wrote, and a text with none carries none"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

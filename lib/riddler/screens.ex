@@ -49,8 +49,8 @@ defmodule Riddler.Screens do
   and the winner replaces the container, so nothing downstream needs to know a
   container was ever there. A container no candidate wins resolves to nothing.
 
-  Every template field - `text`, `label`, `placeholder`, `help` and an image's
-  `alt`, and the `label` of
+  Every template field - `text`, `label` (a link's among them), `placeholder`,
+  `help` and an image's `alt`, and the `label` of
   each of a choice question's `answer_options` - is rendered leniently: a
   variable the root does not carry renders as the empty string and is reported
   in `missing_variables`, so a visitor sees a screen rather than an error page.
@@ -68,6 +68,13 @@ defmodule Riddler.Screens do
   image's `alt` is not rendered. No resolved image carries a path. A literal
   `src` the rule refuses is a document `validate/1` refuses; a document no one
   validated resolves without that image.
+
+  A link's `href` is read in the same way, by the same rule, with no `data:`
+  form whether written or read (`Riddler.Screens.Type.Link`): a link whose
+  path reaches no URL the rule admits is absent and reported by its path, and
+  its `label` is not rendered. A divider resolves to its `type` and `key`. A
+  `text` carries its `style` where the document wrote one, and none where it
+  did not.
 
   A choice question that names `answer_options_from` reads its options from
   `"context"` at that path when it is resolved, and carries them as

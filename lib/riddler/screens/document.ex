@@ -112,18 +112,19 @@ defmodule Riddler.Screens.Document do
       and the element's key.
     * `document.invalid_writes` - a write that does not address a response,
       or whose value is not the constant form.
-  * `document.invalid_url` - an image's `src`, written as a literal, is not a
-  URL the rule admits: an `https://` URL naming a host, a host-relative
-  URL, or a base64 `data:` image of one of four raster types within its
-  bound, as `Riddler.Screens.Type.Image` states. Its `field` is `"src"`,
-  and its message says which part of the rule the value fails and never
-  quotes the value.
-  * `document.invalid_hint` - an image's `size` or `fit` is there and is not
-  a string.
-  * `document.invalid_style` - a `style` is there and is not a string, on a
-      element whose type names one: a button or a choice question. Which string
-      it is stays the renderer's business; that it is a string is this
-      package's.
+    * `document.invalid_url` - an image's `src` or a link's `href`, written
+      as a literal, is not a URL the rule admits: an `https://` URL naming a
+      host, a host-relative URL, or, for an image's `src` alone, a base64
+      `data:` image of one of four raster types within its bound, as
+      `Riddler.Screens.Type.Image` and `Riddler.Screens.Type.Link` state. Its
+      `field` is `"src"` or `"href"`, and its message says which part of the
+      rule the value fails and never quotes the value.
+    * `document.invalid_hint` - an image's `size` or `fit` is there and is not
+      a string.
+    * `document.invalid_style` - a `style` is there and is not a string, on an
+      element whose type names one: a text, a link, a button or a choice
+      question. Which string it is stays the renderer's business; that it is
+      a string is this package's.
     * `document.invalid_validates` - a button's `validates` is there and is
       not a boolean.
     * `document.invalid_outcome` - a button's `outcome` is there and is not
@@ -163,7 +164,8 @@ defmodule Riddler.Screens.Document do
       question that reads its options from context has no option of its own
       for a default to name, and any default on it is refused.
     * `document.invalid_context_path` - a `prefill`, a choice question's
-      `answer_options_from`, or an image's `src` beginning `context.`, that is not a string of dotted segments starting
+      `answer_options_from`, or an image's `src` or a link's `href`
+      beginning `context.`, that is not a string of dotted segments starting
       at `context`, with at least one more after it, each in the key shape
       `[a-z][a-z0-9_]*`; its `field` names which.
     * `document.conflicting_options` - a choice question carries both

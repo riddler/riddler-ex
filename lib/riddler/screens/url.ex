@@ -2,7 +2,8 @@ defmodule Riddler.Screens.Url do
   @moduledoc false
 
   # The one URL rule every URL a document carries passes: an image's `src`
-  # today, written as a literal or reached through a path under `context`.
+  # and a link's `href`, each written as a literal or reached through a path
+  # under `context`.
   # Admission checks a literal and the shape of a path; resolution checks the
   # value a path reaches. Both read this module, so the two cannot disagree
   # about what a URL is.
@@ -50,7 +51,7 @@ defmodule Riddler.Screens.Url do
 
   # The fields each type carries a URL in, and whether a literal there may be a
   # `data:` image. The one table resolution reads.
-  @url_fields %{"image" => {:src, true}}
+  @url_fields %{"image" => {:src, true}, "link" => {:href, false}}
 
   # Any whitespace, Unicode's included, and the ASCII control characters
   # U+0000 to U+001F and U+007F.
@@ -73,6 +74,15 @@ defmodule Riddler.Screens.Url do
   @doc false
   @spec bound() :: pos_integer()
   def bound, do: @data_bound
+
+  # Whether a literal URL in the field `type` carries may be a `data:` image,
+  # read from the one table, so admission and resolution cannot disagree.
+  @doc false
+  @spec data?(String.t()) :: boolean()
+  def data?(type) do
+    {_field, data?} = Map.fetch!(@url_fields, type)
+    data?
+  end
 
   # -- the rule ----------------------------------------------------------------
 

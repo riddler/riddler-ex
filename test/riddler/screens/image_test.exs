@@ -231,9 +231,15 @@ defmodule Riddler.Screens.ImageTest do
       for value <- Enum.map(@refused, &elem(&1, 1)) ++ [@png, nil, 42, %{"url" => "/x"}] do
         root = root(%{"tenant" => %{"logo_url" => value}})
 
-        assert {[],
-                %{missing_variables: [%{key: "tenant_logo", variable: "context.tenant.logo_url"}]}} =
-                 resolved([element], root),
+        assert match?(
+                 {[],
+                  %{
+                    missing_variables: [
+                      %{key: "tenant_logo", variable: "context.tenant.logo_url"}
+                    ]
+                  }},
+                 resolved([element], root)
+               ),
                inspect(value)
       end
 
@@ -246,8 +252,10 @@ defmodule Riddler.Screens.ImageTest do
     # the javascript literal was carried and this test went red.
     test "a literal the rule refuses, in a document no one validated, is not presented" do
       for {what, src} <- @refused do
-        assert {[], %{missing_variables: []}} =
-                 resolved([logo(%{"src" => src})], root(%{})),
+        assert match?(
+                 {[], %{missing_variables: []}},
+                 resolved([logo(%{"src" => src})], root(%{}))
+               ),
                what
       end
     end
