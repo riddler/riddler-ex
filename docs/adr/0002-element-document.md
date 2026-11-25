@@ -5425,3 +5425,490 @@ version 1 document), `element_key`, and a question owns its `answer_options`.
   beyond 65,536 bytes.
 - Named sets of types a client advertises, and a check written by the author
   on a question; each is another record's.
+
+---
+
+## Amendment, 2026-11-24: a question's `checks`, conditions its author writes and the host's validation evaluates
+
+Status: proposed
+
+Recorded 2026-11-24, bead rd-t1ap. That a question may carry checks its
+author writes as predicator conditions, evaluated in the host like the rest
+of response validation, was ruled by the operator, 2026-11-24. That a check
+whose condition cannot be decided raises no finding and is reported in the
+diagnostics was ruled by the operator, 2026-11-24. The rest - the field and
+its entries, which elements take it, the author's code and its namespace,
+what admission refuses, when a check is evaluated, the finding a failing
+check raises, the order of the findings, the diagnostics entry, and where
+today's date comes from - is this entry's own, written 2026-11-24 at
+`proposed`.
+
+Every cite below of the package as it stands is read at `3d5085f`, and every
+cite of the condition evaluator is of predicator 9.4.1, the version
+`mix.lock` resolves at `3d5085f`. The code half is a separate request;
+nothing below is citable from `lib/`, `priv/` or `corpus/` until it lands,
+so what it adds is described here, not cited. The `date` format the worked
+examples use is the amendment above of this date headed "`image`, `divider`
+and `link`, the URL rule, the date and time formats, the hints and an
+accessible label", also at `proposed`. ADR-0005 carries the companion
+amendment of the same date, headed "a presented screen's diagnostics may
+carry `undecidable_checks`", for what of this crosses the wire.
+
+A document that declares no `checks` is admitted, validated and resolved
+exactly as at `3d5085f`, finding for finding and diagnostic for diagnostic.
+
+### What the record now decides
+
+**A question may carry `checks`, a list of conditions its response has to
+satisfy.** Every question type takes it: `text_question`,
+`choice_question`, `boolean_question` and `secret_question`. `checks` is
+optional. It is a JSON array, and each entry is an object of three fields,
+each required:
+
+| Field | What it is |
+|---|---|
+| `condition` | a predicator condition, in the language an element's `condition` is written in; the check passes where it evaluates true |
+| `code` | the code of the finding the check raises where it fails, written by the author |
+| `message` | what the author says a failing check tells the visitor: a plain string in one language, not a template, rendered by nothing and interpolating nothing, as a value in a question's `messages` is |
+
+A field of an entry that this table does not name is dropped at admit with
+no finding, as a field an element's type does not name is. An empty list is
+admitted and checks nothing. The entries are read in the order the list
+gives them.
+
+**No element but a question takes `checks`.** A `heading`, a `text`, an
+`image`, a `divider`, a `link`, a `button` or a `variant` carrying `checks`
+is refused at admit. This is an exception to the record's rule that a field
+a type does not name is dropped with no finding, and it is one on purpose:
+an author who writes a check expects a response to be held to it, and a
+check dropped without a word is a check that never runs and says nothing.
+A `variant`'s candidates are elements of their own, and a question among
+them carries its own `checks`.
+
+**The author's code is in the `check.` namespace.** A `code` is a string of
+two or more segments joined by `.`, the first `check` and each after it
+matching `[a-z][a-z0-9_]*`: `check.emails_differ` is one, and
+`check.birth_date.future` another. The codes this package raises begin
+`document.`, `template.`, `response.` or `submit.` (every finding code
+raised in `lib/` at `3d5085f`), and this package raises no code beginning `check.`
+itself, now or in a later release. So an author's code never collides with
+one of the package's, and a host tells an author's finding from the
+package's by the prefix alone. Two checks on one question may not carry the
+same code, so that a finding and a diagnostics entry each name one check;
+two questions may, as two choice questions may offer the same option value.
+
+**A check's condition is compiled at admit, and one that does not compile
+is the document's defect.** `validate/1` compiles each check's condition as
+it compiles an element's condition (the private `compile_condition/2` in
+`lib/riddler/screens/document.ex` at `3d5085f`). What it refuses, each
+finding's `field` `"checks"` and its `element_key` the key of the element
+carrying them:
+
+| What the document wrote | Finding |
+|---|---|
+| `checks` on an element that is not a question | `document.invalid_check`, one finding |
+| `checks` that is not a list | `document.invalid_check`, one finding |
+| an entry that is not an object | `document.invalid_check`, one per such entry |
+| an entry with no `condition`, no `code` or no `message` | `document.invalid_check`, one per field missing |
+| a `code` that is not a string in the `check.` shape | `document.invalid_check` |
+| a `message` that is not a string, or is the empty string | `document.invalid_check` |
+| a `code` an earlier entry on the same question carries | `document.invalid_check`, on the later entry |
+| a `condition` that is not a string | `document.invalid_condition`, no `position` |
+| a `condition` that does not parse | `document.invalid_condition`, its `position` the place the compiler gave, as for an element's condition |
+| a `condition` that names a secret question's response, `responses.<key>` or a path under it | `document.secret_reference`, as for an element's condition |
+
+`document.invalid_check` is the one new code. The two reused codes keep
+their meaning, a condition that does not parse and a read of a secret's
+response, and their `field` `"checks"` is what tells a host the condition is
+a check's and not the element's own. Each message names the entry by its
+place in the list, counting from one, and by its code where the entry
+carries a string one; the messages are the code half's, in the register of
+the existing findings. The findings come in list order, and within one
+entry in the order of the table.
+
+**A check reads `responses` and `context`, and never a secret's response.**
+A check's condition is evaluated against the root an element's condition is
+evaluated against: `"context"` and `"responses"`, with the response of every
+secret question the document declares removed (the private `reading/2` in
+`lib/riddler/screens.ex` at `3d5085f`). A name outside those two is a name
+the root does not carry. A check that names a secret question's response is
+refused at admit, as above; in a document no one validated it reads a root
+that does not carry that response, so it is undecidable, and it is never
+decided against a secret's value. A check on a secret question therefore
+reads neither that question's own response nor any other secret's, and may
+read the rest. A check reads a response as the visitor sent it: the built-in
+checks set the whitespace around a text response aside, and a check does not
+unless its condition says so, with predicator's `trim`.
+
+**Today is the host's.** This package reads no clock of its own. A check
+that compares a response with today's date reads that date from `context`,
+where the host put it; the worked examples read `context.today`, a string in
+the `date` format, `YYYY-MM-DD`, which is the host's to compute in whatever
+time zone it serves the visitor in. A root that does not carry it leaves
+such a check undecidable.
+
+**Response validation evaluates a question's checks after its built-in
+checks, over the shown elements only.** `validate_screen/3,4` reads the
+screen resolved against the root it was given, as the amendment above
+headed "the screen validated is the screen shown" decides, so a question a
+condition hid, or a candidate that did not win its `variant`, has none of
+its checks evaluated. For each shown question, in document order:
+
+1. The built-in checks run as at `3d5085f`. A question they raise a finding
+   on answers that finding, and none of its checks is evaluated: there is
+   one finding per failing element, as the `validate_screen/3` documentation
+   in `lib/riddler/screens.ex` says at `3d5085f`, and a check is never asked
+   about a response that is already the wrong shape or out of its bounds.
+2. A question whose own response is nothing answered has none of its checks
+   evaluated. Nothing answered is what its type's built-in checks read as
+   such: absent or `null`; for a text or a secret question, a string that is
+   empty or only whitespace (the private `blank?/1` in
+   `lib/riddler/screens/validation.ex` at `3d5085f`); for a choice question,
+   nothing selected under its `select` (the private `nothing_selected?/2`
+   there). A blank response is `required`'s business alone, as it is not a
+   format's. It is read from the root the host passed, as the built-in
+   checks read it.
+3. Otherwise its checks are evaluated in list order. A check whose condition
+   evaluates true passes. The first whose condition evaluates false raises
+   the finding below, and no check after it is evaluated. A check whose
+   condition is undecidable raises nothing, and the next is evaluated.
+
+A check's condition is decided exactly where an element's condition is:
+where the evaluator answers `{:ok, true}` or `{:ok, false}` (the private
+`evaluate/4` in `lib/riddler/screens.ex` at `3d5085f`). Every other answer -
+a name the root does not carry, a key missing from a map it holds, operands
+of types an operator does not compare, an evaluation error, a value that is
+not a boolean - leaves it undecidable, and so does a condition that is not a
+string or does not compile, in a document no one validated; `validate/1`
+is where an author is told of those two.
+
+The per-button opt-out covers checks as it covers every other check: a press
+through a button declaring `validates` as `false` answers `:ok` and
+evaluates no check (the private `opted_out?/2` in
+`lib/riddler/screens/validation.ex` at `3d5085f`).
+
+**A failing check raises one finding, and the finding carries no
+response.**
+
+| Field | Value |
+|---|---|
+| `code` | the check's `code`, as written |
+| `message` | this package's own sentence, naming the question by its rendered label, as every response finding does, and the check by its code; it quotes no response and not the condition |
+| `field` | `"checks"` |
+| `element_key` | the question's key |
+| `position` | `nil` |
+| `author_message` | the check's `message`, as written |
+
+`message` stays the package's engineering sentence and the author's text
+rides beside it as `author_message`, as the amendment above of 2026-11-18
+decides for `messages`; where a finding is shown to a visitor, a renderer
+shows `author_message` where it is a string. A question's `messages` keys
+only the codes its type raises (the module attribute `@codes` in
+`lib/riddler/screens/messages.ex` at `3d5085f`), and a check's code is not
+among them: a check carries its own text, and `document.unknown_message_code`
+still refuses a `messages` key a type does not raise. Nothing on the finding
+is read from a response, so no finding a check raises carries a response, a
+secret question's or any other.
+
+**The order of the findings.** The `response.undecidable` findings come
+first, as at `3d5085f` (`validate/5` in `lib/riddler/screens/validation.ex`),
+then one finding per failing question in document order: its built-in
+finding where it has one, and otherwise its first failing check's. A check's
+finding sits at its question's place among the others; the check findings
+are not a block of their own.
+
+**An undecidable check raises no finding and is reported in the
+diagnostics.** Resolution reads a shown question's checks for one purpose,
+to report those the root does not decide; it raises nothing and hides
+nothing by them. For each shown question whose own response is not nothing
+answered, by step 2 above, each check whose condition the reading root does
+not decide is reported in a third list of the diagnostics,
+`undecidable_checks`, one entry per check:
+
+| Key | Value |
+|---|---|
+| `key` | the question's key |
+| `code` | the check's `code`, as written |
+| `condition` | the check's `condition`, as written |
+
+The entries are in document order, and a question's in the order of its
+`checks`. Resolution reads every check of such a question, whether or not
+response validation would reach it: the list is what the root could not
+decide, as `undecidable_conditions` is, and not what a validation set aside.
+No entry carries a response. `undecidable_checks` is a key of the
+diagnostics exactly when it holds an entry. Diagnostics that would hold none
+carry `missing_variables` and `undecidable_conditions` alone, the shape of
+`Riddler.Screens.Resolved`'s `diagnostics` type at `3d5085f`, so a document
+with no check, and a screen none of whose checks went undecided, resolves
+byte for byte as before. The list is on what `resolve/2` and
+`resolve_screen/3` answer, and so on what `Riddler.Journey.present/3`
+answers. `validate_screen/3,4` answers `:ok` or its findings, its shape
+unchanged; a host reads the report for the root it validated with by
+resolving that screen with that root, as it does to present the screen
+again.
+
+This is how an undecidable condition is reported, and not how validation
+treats one. An element's undecidable condition is `response.undecidable` at
+validation, because whether the element was asked at all is in doubt, and
+answering `:ok` would accept a submission no one checked (the amendment
+above headed "the screen validated is the screen shown", under "An
+undecidable condition is a finding"). A check's question was asked, and its
+response passed every built-in check; what is in doubt is a rule its author
+wrote over other values, and by the ruling above it holds the visitor at the
+screen only where the root decides it false.
+
+**A resolved question carries no `checks`.** Resolution leaves a shown
+question without its `checks`, as without its `condition`: both are what the
+host decides with, and neither is handed to a client. A resolved question is
+otherwise as before.
+
+**The schema step: none.** `priv/schemas/screen-document.schema.json` types
+the fields every element shares and no field a type names, and `checks` is a
+field the question types name: it is carried through untouched to the
+document checks, as `messages` is, and the schema does not move.
+
+### Typespecs
+
+A contract for the code half, as the record's own typespecs are. An admitted
+check is atom-keyed, as an admitted option is.
+
+```elixir
+@type check :: %{condition: String.t(), code: String.t(), message: String.t()}
+
+# Added to each question type: optional(:checks) => [check()]
+
+@typedoc "A check the root could not decide, and the question carrying it."
+@type undecidable_check :: %{key: term(), code: term(), condition: term()}
+
+@typedoc "What resolution reports without refusing."
+@type diagnostics :: %{
+        required(:missing_variables) => [missing_variable()],
+        required(:undecidable_conditions) => [undecidable_condition()],
+        optional(:undecidable_checks) => [undecidable_check()]
+      }
+```
+
+### Worked examples
+
+These are from patron registration, a visitor becoming a library patron,
+the example world the repository names for new teaching text. A version 2
+screen whose questions carry checks:
+
+```json
+{
+  "key": "patron_contact",
+  "title": "How we reach you",
+  "elements": [
+    {
+      "type": "text_question",
+      "key": "reminder_email",
+      "label": "Email for due-date reminders",
+      "format": "email",
+      "required": true
+    },
+    {
+      "type": "text_question",
+      "key": "reminder_email_again",
+      "label": "Type the email again",
+      "required": true,
+      "checks": [
+        {
+          "condition": "responses.reminder_email_again == responses.reminder_email",
+          "code": "check.emails_differ",
+          "message": "The two email addresses do not match."
+        }
+      ]
+    },
+    {
+      "type": "text_question",
+      "key": "birth_date",
+      "label": "Date of birth",
+      "format": "date",
+      "required": true,
+      "checks": [
+        {
+          "condition": "trim(responses.birth_date)::date <= context.today::date",
+          "code": "check.birth_date_in_future",
+          "message": "A date of birth cannot be in the future."
+        }
+      ]
+    },
+    {
+      "type": "text_question",
+      "key": "holds_requested",
+      "label": "How many holds would you like to place now?",
+      "format": "integer",
+      "min": 0,
+      "checks": [
+        {
+          "condition": "responses.holds_requested::integer <= context.branch.max_holds",
+          "code": "check.too_many_holds",
+          "message": "This branch takes fewer holds at a time."
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "key": "contact_next",
+      "label": "Continue",
+      "outcome": "contact_submitted"
+    }
+  ]
+}
+```
+
+The second check compares dates: `::date` reads a `YYYY-MM-DD` string as a
+date, and predicator compares two dates chronologically (`cast/2` in
+`lib/predicator/cast.ex` and the private `compare_values/3` in
+`lib/predicator/evaluator.ex`, predicator 9.4.1). The third reads the
+response as an integer, because a typed number arrives as the text the
+visitor typed or as the number a client decoded, and predicator compares a
+string with a number as undecidable, not as false.
+
+Validated with `validate_screen(document, "patron_contact", root)`, where
+the root's `"context"` is
+`{"today": "2026-11-24", "branch": {"name": "Riverside", "max_holds": 5}}`:
+
+- With `"reminder_email"` and `"reminder_email_again"` both
+  `"ada@example.com"`, `"birth_date": "1990-04-17"` and
+  `"holds_requested": "3"`, the answer is `:ok`.
+- With `"reminder_email_again": "ada@exmaple.com"`, the one finding is
+  `check.emails_differ`, its `field` `"checks"`, its `element_key`
+  `"reminder_email_again"`, its `author_message` `"The two email addresses
+  do not match."` and its `position` `nil`. Its `message` names "Type the
+  email again" and the code, and neither address.
+- With `"birth_date": "2031-04-17"`: `check.birth_date_in_future`. With
+  `"17/04/1990"`: `response.format`, its `field` `"format"`, and the check is
+  not evaluated. With no birth date at all: `response.required`, and the
+  check is not evaluated.
+- With `"holds_requested": "7"`: `check.too_many_holds`. With `"-1"`:
+  `response.out_of_range`, its `field` `"min"`, and the check is not
+  evaluated. With no response to it, the question being optional: nothing,
+  and the check is not evaluated. With `" 7"`, a space before the digits:
+  the `integer` format sets the space aside and passes it, the cast does not
+  read it, and so the check is undecidable: no finding, and an entry in
+  `undecidable_checks`.
+- With all three failing at once - `"ada@exmaple.com"`, `"2031-04-17"` and
+  `"7"` - the findings are `check.emails_differ`,
+  `check.birth_date_in_future` and `check.too_many_holds`, in that order,
+  the order of their questions.
+- Pressed through a button declaring `validates` as `false`, any of these is
+  `:ok`, and no check is evaluated.
+
+A check the root does not decide. With a `"context"` that carries neither
+`"today"` nor `"branch"`, and responses carrying
+`"reminder_email_again": "ada@example.com"` with no `"reminder_email"`,
+`"birth_date": "2031-04-17"` and `"holds_requested": "7"`,
+`validate_screen/3` answers one finding, `response.required` on
+`"reminder_email"`, and nothing for the three checks, none of which the root
+decides. `resolve_screen(document, "patron_contact", root)` answers, for the
+same root, these diagnostics:
+
+```elixir
+%{
+  missing_variables: [],
+  undecidable_conditions: [],
+  undecidable_checks: [
+    %{
+      key: "reminder_email_again",
+      code: "check.emails_differ",
+      condition: "responses.reminder_email_again == responses.reminder_email"
+    },
+    %{
+      key: "birth_date",
+      code: "check.birth_date_in_future",
+      condition: "trim(responses.birth_date)::date <= context.today::date"
+    },
+    %{
+      key: "holds_requested",
+      code: "check.too_many_holds",
+      condition: "responses.holds_requested::integer <= context.branch.max_holds"
+    }
+  ]
+}
+```
+
+With no responses at all, as when the screen is first presented, every
+question is nothing answered, no check is read, and the diagnostics carry
+no `undecidable_checks`.
+
+Things an author might write, and what `validate/1` says of each:
+
+- `checks` on the button `"contact_next"`: `document.invalid_check`, its
+  `field` `"checks"` and its `element_key` `"contact_next"`.
+- The first check's `code` as `"emails_differ"`, or as `"response.format"`:
+  `document.invalid_check`; a code is in the `check.` namespace.
+- Its `condition` as `"responses.reminder_email_again =="`:
+  `document.invalid_condition`, its `field` `"checks"`, with the place the
+  compiler gave.
+- A second check on `"holds_requested"` also coded `check.too_many_holds`:
+  `document.invalid_check` on the second.
+- A check with no `message`: `document.invalid_check`. A `message` written
+  `"{{ context.branch.name }} takes fewer holds"` is admitted and is not a
+  template: the visitor is shown the braces as written.
+- On a screen that also asks a secret question `"library_pin"`, a check
+  whose condition reads `len(responses.library_pin) >= 4`:
+  `document.secret_reference`, its `field` `"checks"`.
+
+### Which sentences this supersedes
+
+- The amendment above of 2026-11-18 says of `author_message` that "It is set
+  on exactly one kind of finding": a finding response validation raises
+  where the question's `messages` carries its code. It is now set on a
+  second, the finding a failing check raises, from the check's `message`.
+- The diagnostics are `missing_variables` and `undecidable_conditions` in
+  the amendment above headed "the screen validated is the screen shown",
+  under "A single-screen call returns its diagnostics", and in the
+  `Riddler.Screens.Resolved` documentation at `3d5085f`; they keep those two
+  lists and carry `undecidable_checks` beside them where it holds an entry.
+  `resolve/2` and `resolve_screen/3` still answer the same shape.
+- The amendment above of this date leaves "a check written by the author on
+  a question" to another record, and with it a bound relative to the day of
+  resolution and a bound read from `context`. This entry is that record for
+  the check. `min` and `max` stay literal, as that amendment decides; a bound
+  against today or against a value in `context` is written as a check.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` states the test: an entry is an Amendment where "the rule
+stated above answers a call one way, and this entry answers the same call
+another". At `3d5085f` a `checks` on any element is a field its type does not
+name, dropped at admit, and a response passing every built-in check is
+`:ok`; this entry reads it on a question and refuses a response a check
+decides false. It also adds refusals, the other mark the README names as
+sufficient: a `checks` on an element that is not a question, and a
+malformed one on a question, are admitted at `3d5085f` and refused here.
+
+### What is unchanged
+
+An element's `condition` and what resolution and validation do with it,
+`response.undecidable` included. Every built-in check, its codes, its
+fields and its messages; a question's `messages` and the codes it may key.
+`validate_screen/3,4`'s arguments and answers, and the per-button opt-out.
+`resolve/2` and `resolve_screen/3` answer the two lists they answer at
+`3d5085f` wherever no check goes undecided. A resolved question's fields.
+`Riddler.Finding` gains no field. The runtime dependencies stay `predicator`
+and `solid`, and a check is a predicator condition and nothing else: not a
+template, not a function a host passes, not a call out of the package. The
+package reads no store, process, clock or transport for it. The vocabulary
+is the record's: `responses`, `context`, `outcome`, `writes`, `elements`
+(and `nodes` in a version 1 document), `element_key`, and a question owns
+its `answer_options`.
+
+### What this does not decide
+
+- A check on a button, on a screen or on a document, and a check over
+  several questions as one unit: a check is a question's, and its finding
+  names that question.
+- A severity: a check that is decided false holds the visitor at the screen,
+  and there is no check that warns without holding.
+- A check evaluated in a client, or handed to one.
+- A `message` in more than one language.
+- Whether a condition, an element's or a check's, may read the evaluator's
+  own clock. predicator 9.4.1 carries a `Date.now()` function and relative
+  dates such as `3d ago` among what it evaluates by default (its
+  `builtin_providers/0` in `lib/predicator/functions/provider.ex`), and this
+  package evaluates a condition with those defaults (the private `evaluate/4`
+  in `lib/riddler/screens.ex` at `3d5085f`). The worked examples read today
+  from `context`, and a later record decides whether the evaluator's clock
+  is refused.
