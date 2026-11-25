@@ -8430,6 +8430,390 @@
         }
       },
       "name": "An accessible_label and an accessible_description in a version 1 document are admitted and held to the template rule, as at version 2"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "max": "2026-11-24",
+                  "min": "1900-01-01",
+                  "type": "text_question"
+                },
+                {
+                  "format": "time",
+                  "key": "callback_time",
+                  "label": "Best time to call you",
+                  "max": "17:30:00",
+                  "min": "09:00",
+                  "type": "text_question"
+                },
+                {
+                  "format": "datetime",
+                  "key": "trial_starts_at",
+                  "label": "Start your trial at",
+                  "max": "2026-12-24T17:00-07:00",
+                  "min": "2026-11-24T09:00:00Z",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A date, a time and a datetime question, each bounded in its format's shape, are admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_bound",
+            "element_key": "birth_date",
+            "field": "max"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "max": "24/11/2026",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A date bound not in the date's shape is refused, naming the bound"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_bound",
+            "element_key": "birth_date",
+            "field": "max"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "max": 20261124,
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A date bound written as a number is refused, naming the bound"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_bound",
+            "element_key": "birth_date",
+            "field": "min"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "min": "2026-02-30",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A date bound naming a day the calendar does not have is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_bound",
+            "element_key": "callback_time",
+            "field": "min"
+          },
+          {
+            "code": "document.invalid_bound",
+            "element_key": "trial_starts_at",
+            "field": "max"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "time",
+                  "key": "callback_time",
+                  "label": "Best time to call you",
+                  "min": "9:00",
+                  "type": "text_question"
+                },
+                {
+                  "format": "datetime",
+                  "key": "trial_starts_at",
+                  "label": "Start your trial at",
+                  "max": "2026-11-24T09:00:00",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A time bound and a datetime bound not in their shapes are each refused, naming the bound"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_bound",
+            "element_key": "birth_date",
+            "field": "max"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "max": "2026-11-24",
+                  "min": "2026-12-01",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A date min after its max is refused on the max"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_bound",
+            "element_key": "trial_starts_at",
+            "field": "max"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "datetime",
+                  "key": "trial_starts_at",
+                  "label": "Start your trial at",
+                  "max": "2026-11-24T16:00:00Z",
+                  "min": "2026-11-24T09:30:00-07:00",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A datetime min after its max as instants is refused on the max, whatever their offsets"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "time",
+                  "key": "callback_time",
+                  "label": "Best time to call you",
+                  "max": "09:00:00",
+                  "min": "09:00",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A time min equal to its max, one written with seconds, is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_bound",
+            "element_key": "seats",
+            "field": "min"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "min": "18",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A numeric bound that is not a number is refused, naming the bound"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "max": 2,
+                  "min": 10,
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A numeric min above its max is admitted with no finding"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "email",
+                  "key": "email",
+                  "label": "Work email",
+                  "max": [],
+                  "min": "anything",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A bound under a format that reads no bound is consulted by nothing, and admitted"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"

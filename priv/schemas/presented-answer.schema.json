@@ -400,7 +400,10 @@
                   "phone",
                   "pattern",
                   "integer",
-                  "number"
+                  "number",
+                  "date",
+                  "time",
+                  "datetime"
                 ]
               },
               "help": {

@@ -22,7 +22,10 @@ defmodule Riddler.Screens.ValidationTest do
     "phone" => {%{}, "ring me"},
     "pattern" => {%{"pattern" => "[0-9]{4}"}, "no"},
     "integer" => {%{}, "three"},
-    "number" => {%{}, "three"}
+    "number" => {%{}, "three"},
+    "date" => {%{}, "17/04/1990"},
+    "time" => {%{}, "half past nine"},
+    "datetime" => {%{}, "2026-11-24T09:30:00"}
   }
 
   defp raw_fixture, do: @fixture |> File.read!() |> Jason.decode!()
