@@ -82,9 +82,9 @@ defmodule Riddler.Screens.ChoiceQuestionTest do
     # Sabotage: made `admit_option/1` keep the option as the document wrote it;
     # the options came back string-keyed, carrying the extra field, and this
     # went red.
-    test "admits a choice question's options atom-keyed, value and label only, in order" do
+    test "admits a choice question's options atom-keyed, dropping a field an option does not name, in order" do
       options = [
-        %{"value" => "personal", "label" => "Personal", "description" => "For one person"},
+        %{"value" => "personal", "label" => "Personal", "price" => "free"},
         %{"value" => "business", "label" => "Business"}
       ]
 

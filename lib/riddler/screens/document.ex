@@ -108,8 +108,9 @@ defmodule Riddler.Screens.Document do
     * `document.invalid_condition` - a condition that does not parse.
     * `document.invalid_template` - a template field holding a construct
       outside the template subset, a choice question option's `label` and
-      an image's `alt` among them. The finding carries the construct the template refused,
-      and the element's key.
+      `description` and an image's `alt` among them. An option's
+      `description` that is not a string is this finding too. The finding
+      carries the construct the template refused, and the element's key.
     * `document.invalid_writes` - a write that does not address a response,
       or whose value is not the constant form.
     * `document.invalid_url` - an image's `src` or a link's `href`, written
@@ -120,7 +121,8 @@ defmodule Riddler.Screens.Document do
       `field` is `"src"` or `"href"`, and its message says which part of the
       rule the value fails and never quotes the value.
     * `document.invalid_hint` - an image's `size` or `fit` is there and is not
-      a string.
+      a string, or a choice question's `searchable` is there and is not a
+      boolean.
     * `document.invalid_style` - a `style` is there and is not a string, on an
       element whose type names one: a text, a link, a button or a choice
       question. Which string it is stays the renderer's business; that it is
@@ -301,12 +303,16 @@ defmodule Riddler.Screens.Document do
   # The element type whose response no template, condition or write may read.
   @secret_type "secret_question"
 
-  # A choice question's options. An option's `label` is a template too, but it
-  # is not a field of the element, so it is not on the list above: the refusal
-  # below and the render in `Riddler.Screens` each read it beside that list.
-  # An option's `value` is literal text.
+  # A choice question's options. An option's `label` and `description` are
+  # templates too, but they are not fields of the element, so they are not on
+  # the list above: the refusal below and the render in `Riddler.Screens` each
+  # read them beside that list, through `option_template_fields/0`. An option's
+  # `value` is literal text. The schema types `value` and `label`, so admission
+  # refuses either of another JSON type; a `description` is typed nowhere, and
+  # one that is not a string is the template finding, as an element's `alt` is.
   @choice_type "choice_question"
-  @option_fields [:value, :label]
+  @option_template_fields [:label, :description]
+  @option_fields [:value | @option_template_fields]
   @option_scalars [{"value", :string}, {"label", :string}]
   @selection_bounds [:min_selections, :max_selections]
 
@@ -402,6 +408,13 @@ defmodule Riddler.Screens.Document do
   @doc false
   @spec template_fields() :: [atom()]
   def template_fields, do: @template_fields
+
+  # The template fields of a choice question's option, read the same way and
+  # for the same reason: the refusal here and the render in `Riddler.Screens`
+  # are two passes over one list.
+  @doc false
+  @spec option_template_fields() :: [atom()]
+  def option_template_fields, do: @option_template_fields
 
   @doc false
   @spec formats() :: [String.t()]
@@ -1058,15 +1071,18 @@ defmodule Riddler.Screens.Document do
     node_fields ++ option_template_findings(node, key)
   end
 
-  # Each option's `label`, after the element's own template fields and in the
-  # order the options are listed. The finding is the one an element's template
-  # field raises, on the question's key; the message names the option.
+  # Each option's `label` and then its `description`, after the element's own
+  # template fields and in the order the options are listed. The finding is the
+  # one an element's template field raises, on the question's key; the message
+  # names the option.
   defp option_template_findings(%{type: @choice_type, answer_options: options}, key)
        when is_list(options) do
     for {option, position} <- Enum.with_index(options, 1),
         is_map(option),
-        {:ok, source} <- [Map.fetch(option, :label)],
-        finding <- refusals(source, "the label template of option #{position}", "label", key) do
+        field <- @option_template_fields,
+        {:ok, source} <- [Map.fetch(option, field)],
+        finding <-
+          refusals(source, "the #{field} template of option #{position}", "#{field}", key) do
       finding
     end
   end
@@ -1125,8 +1141,9 @@ defmodule Riddler.Screens.Document do
   defp option_paths(%{type: @choice_type, answer_options: options}) when is_list(options) do
     for option <- options,
         is_map(option),
-        {:ok, source} <- [Map.fetch(option, :label)],
-        do: {"label", template_paths(source)}
+        field <- @option_template_fields,
+        {:ok, source} <- [Map.fetch(option, field)],
+        do: {Atom.to_string(field), template_paths(source)}
   end
 
   defp option_paths(_node), do: []
