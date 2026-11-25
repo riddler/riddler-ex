@@ -2420,7 +2420,11 @@ entry answers that call another way. Where resolution reports a check the
 root could not decide, `"diagnostics"` carries `"undecidable_checks"` beside
 the two: a list in document order, each entry an object of `"key"`, the
 question's key, `"code"`, the check's code, and `"condition"`, the check's
-condition, each as the document wrote it. Where resolution reports none, the
+condition, each as the document wrote it. `"code"` and `"condition"` are
+always strings: ADR-0002's amendment of this date has resolution skip, in a
+document no one validated, a check entry that is not an object or whose
+`condition`, `code` or `message` is not a string, so no such entry is
+reported. Where resolution reports none, the
 key is absent and the diagnostics are as at `3d5085f`, so a screen with no
 check, or none undecided, is presented byte for byte as before. An entry
 carries no response. It rides inside `"screen"`, as the diagnostics do, in
@@ -2440,7 +2444,10 @@ meets an unknown key it may ignore.
 date leaves a resolved question without its `checks`, as without its
 `condition`, so no element of a presented screen carries one and no element
 definition in the schema gains a property. A client is not handed a check
-and evaluates none.
+as part of a question and evaluates none. An undecided check's `"code"` and
+`"condition"` do reach the client, in the diagnostics entry above, as an
+undecidable element condition's `"condition"` does in
+`"undecidable_conditions"` at `3d5085f`.
 
 **A check's finding is in the wire form a finding already has.** A failing
 check's finding is a `Riddler.Finding` like any other: its `"code"` the

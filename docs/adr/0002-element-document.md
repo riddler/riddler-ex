@@ -5524,7 +5524,12 @@ a check's and not the element's own. Each message names the entry by its
 place in the list, counting from one, and by its code where the entry
 carries a string one; the messages are the code half's, in the register of
 the existing findings. The findings come in list order, and within one
-entry in the order of the table.
+entry in the order of the table. `document.secret_reference` is raised once
+per entry and per secret question that entry's condition names, however many
+times it names it, as for an element's condition, so two checks naming one
+secret question raise two findings; its message names the entry by its
+place and code, as `document.invalid_check`'s does, and the secret
+question's key, which is not a secret.
 
 **A check reads `responses` and `context`, and never a secret's response.**
 A check's condition is evaluated against the root an element's condition is
@@ -5578,9 +5583,20 @@ where the evaluator answers `{:ok, true}` or `{:ok, false}` (the private
 `evaluate/4` in `lib/riddler/screens.ex` at `3d5085f`). Every other answer -
 a name the root does not carry, a key missing from a map it holds, operands
 of types an operator does not compare, an evaluation error, a value that is
-not a boolean - leaves it undecidable, and so does a condition that is not a
-string or does not compile, in a document no one validated; `validate/1`
-is where an author is told of those two.
+not a boolean - leaves it undecidable, and so does a condition that does
+not compile, in a document no one validated; `validate/1` is where an author
+is told of that.
+
+In a document no one validated, resolution and validation read only the
+well-formed part of `checks`. A `checks` that is not a list is read as no
+checks; an entry that is not an object, or whose `condition`, `code` or
+`message` is absent or is not a string, is skipped. A skipped entry is
+neither evaluated nor reported: it raises no finding and puts no entry in
+the diagnostics, so every value a check's finding or a diagnostics entry
+carries is a string the document wrote. Every such defect is refused by
+`validate/1`, as the table above says, and that is where an author is told
+of it. An entry whose strings are all there but whose `code` is not in the
+`check.` shape, or repeats an earlier entry's, is read as written.
 
 The per-button opt-out covers checks as it covers every other check: a press
 through a button declaring `validates` as `false` answers `:ok` and
@@ -5659,8 +5675,11 @@ screen only where the root decides it false.
 
 **A resolved question carries no `checks`.** Resolution leaves a shown
 question without its `checks`, as without its `condition`: both are what the
-host decides with, and neither is handed to a client. A resolved question is
-otherwise as before.
+host decides with, and neither is handed to a client as part of the
+question. An undecided check's `code` and `condition` do reach a client, in
+the diagnostics entry above, as an undecidable element condition's
+`condition` does in `undecidable_conditions` at `3d5085f`. A resolved
+question is otherwise as before.
 
 **The schema step: none.** `priv/schemas/screen-document.schema.json` types
 the fields every element shares and no field a type names, and `checks` is a
@@ -5678,7 +5697,7 @@ check is atom-keyed, as an admitted option is.
 # Added to each question type: optional(:checks) => [check()]
 
 @typedoc "A check the root could not decide, and the question carrying it."
-@type undecidable_check :: %{key: term(), code: term(), condition: term()}
+@type undecidable_check :: %{key: term(), code: String.t(), condition: String.t()}
 
 @typedoc "What resolution reports without refusing."
 @type diagnostics :: %{
@@ -5856,17 +5875,25 @@ Things an author might write, and what `validate/1` says of each:
   on exactly one kind of finding": a finding response validation raises
   where the question's `messages` carries its code. It is now set on a
   second, the finding a failing check raises, from the check's `message`.
+  The same sentence is in the `Riddler.Finding` moduledoc, its
+  `:author_message` bullet in `lib/riddler/finding.ex` at `3d5085f`, which
+  also says the value is taken from the question's `messages`; the code half
+  amends that bullet to name a check's finding and its `message`.
+  `priv/schemas/finding.schema.json` describes `author_message` as the text
+  the author set for the finding's code on the question, and that
+  description is read as covering a check's `message`, which is such a
+  text.
 - The diagnostics are `missing_variables` and `undecidable_conditions` in
   the amendment above headed "the screen validated is the screen shown",
   under "A single-screen call returns its diagnostics", and in the
   `Riddler.Screens.Resolved` documentation at `3d5085f`; they keep those two
   lists and carry `undecidable_checks` beside them where it holds an entry.
   `resolve/2` and `resolve_screen/3` still answer the same shape.
-- The amendment above of this date leaves "a check written by the author on
-  a question" to another record, and with it a bound relative to the day of
-  resolution and a bound read from `context`. This entry is that record for
-  the check. `min` and `max` stay literal, as that amendment decides; a bound
-  against today or against a value in `context` is written as a check.
+- The amendment above of this date leaves a bound relative to today and a
+  bound read from `context` undecided, and "a check written by the author on
+  a question" to another record. This entry decides that such a bound is
+  written as a check, and `min` and `max` stay the literals that amendment
+  holds to their format's shape.
 
 ### Why an amendment and not a note
 
@@ -5878,6 +5905,10 @@ name, dropped at admit, and a response passing every built-in check is
 decides false. It also adds refusals, the other mark the README names as
 sufficient: a `checks` on an element that is not a question, and a
 malformed one on a question, are admitted at `3d5085f` and refused here.
+Both changes reach a host on riddler 0.8.0 whose documents already carry a
+`checks` key, which 0.8.0 drops on every element: a well-formed one on a
+question is now enforced, and any other is now refused. The code half's
+changelog fragment names both, so the release notes tell such a host.
 
 ### What is unchanged
 
