@@ -231,7 +231,7 @@ defmodule Riddler.Screens.ValueTest do
     # journey's question node came back without "value" and this test went
     # red.
     test "a journey's presented question node carries the value as data" do
-      {:ok, %{"screen" => %{"nodes" => [node]}}} =
+      {:ok, %{"screen" => %{"elements" => [node]}}} =
         Journey.present(document([full()]), {:screen, "account"}, %{"context" => @context})
 
       assert node["value"] == "ada@example.com"

@@ -368,7 +368,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
                    "held" => ^held
                  } = node,
                  _button
-               ] = answer["screen"]["nodes"]
+               ] = answer["screen"]["elements"]
 
         refute Map.has_key?(node, "value")
       end
@@ -428,10 +428,10 @@ defmodule Riddler.Screens.SecretQuestionTest do
 
     defp presented_held(:absent) do
       {:ok, answer} = Journey.present(patron_document(), {:screen, "card_pin"}, %{})
-      hd(answer["screen"]["nodes"])["held"]
+      hd(answer["screen"]["elements"])["held"]
     end
 
-    defp presented_held(response), do: hd(presented_pin(response)["screen"]["nodes"])["held"]
+    defp presented_held(response), do: hd(presented_pin(response)["screen"]["elements"])["held"]
   end
 
   describe "response validation" do

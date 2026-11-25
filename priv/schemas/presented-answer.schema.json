@@ -162,7 +162,7 @@
           "type": "array"
         },
         "undecidable_conditions": {
-          "description": "A condition the root could not decide; its node is hidden.",
+          "description": "A condition the root could not decide; its element is hidden.",
           "items": {
             "properties": {
               "condition": {
@@ -187,29 +187,7 @@
       ],
       "type": "object"
     },
-    "moves": {
-      "description": "What a client may submit from the screen. A client reads it here and never derives it from the nodes.",
-      "properties": {
-        "back": {
-          "description": "Whether the host lets the visitor go back from this screen.",
-          "type": "boolean"
-        },
-        "outcomes": {
-          "description": "The outcome of each shown button, in document order.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array",
-          "uniqueItems": true
-        }
-      },
-      "required": [
-        "outcomes",
-        "back"
-      ],
-      "type": "object"
-    },
-    "node": {
+    "element": {
       "allOf": [
         {
           "if": {
@@ -533,7 +511,7 @@
           }
         }
       ],
-      "description": "A resolved node. No node carries a condition. The types this schema enumerates are heading, text, text_question, choice_question, boolean_question, secret_question and button; a node of one of them carries a key and is held to its type's fields below. A node of any other type needs only its type, and is not refused here.",
+      "description": "A resolved element. No element carries a condition. The types this schema enumerates are heading, text, text_question, choice_question, boolean_question, secret_question and button; an element of one of them carries a key and is held to its type's fields below. An element of any other type needs only its type, and is not refused here.",
       "not": {
         "required": [
           "condition"
@@ -549,6 +527,28 @@
       },
       "required": [
         "type"
+      ],
+      "type": "object"
+    },
+    "moves": {
+      "description": "What a client may submit from the screen. A client reads it here and never derives it from the elements.",
+      "properties": {
+        "back": {
+          "description": "Whether the host lets the visitor go back from this screen.",
+          "type": "boolean"
+        },
+        "outcomes": {
+          "description": "The outcome of each shown button, in document order.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "outcomes",
+        "back"
       ],
       "type": "object"
     },
@@ -576,15 +576,15 @@
         "diagnostics": {
           "$ref": "#/definitions/diagnostics"
         },
-        "key": {
-          "type": "string"
-        },
-        "nodes": {
-          "description": "The nodes the visitor is shown, in document order.",
+        "elements": {
+          "description": "The elements the visitor is shown, in document order.",
           "items": {
-            "$ref": "#/definitions/node"
+            "$ref": "#/definitions/element"
           },
           "type": "array"
+        },
+        "key": {
+          "type": "string"
         },
         "title": {
           "description": "The screen's title as the document wrote it, or null where it wrote none.",
@@ -597,16 +597,16 @@
       "required": [
         "key",
         "title",
-        "nodes",
+        "elements",
         "diagnostics"
       ],
       "type": "object"
     },
     "value": {
-      "description": "What the question presents as already given: the response the root holds for it, as written whatever its shape; else the value its prefill reads from context, else its default, each only where it is of the question's response shape. Untyped, because a response is presented as written. Optional: a question node with nothing to present carries no value. It is not a response: validation reads only the responses the root holds."
+      "description": "What the question presents as already given: the response the root holds for it, as written whatever its shape; else the value its prefill reads from context, else its default, each only where it is of the question's response shape. Untyped, because a response is presented as written. Optional: a question element with nothing to present carries no value. It is not a response: validation reads only the responses the root holds."
     }
   },
-  "description": "The value inside {:ok, ...} that Riddler.Journey.present/3 returns: a step of a Journey as data, for a client to render. Its state is a screen, waiting or done. A screen state carries the screen, resolved: hidden nodes absent, each container replaced by its winner, every template field rendered, no condition anywhere. No part of this schema forbids a key it does not name, so what a later release presents still validates against this one. A node whose type is one this schema enumerates is held to the fields that type names, as validate/1 holds a document to them; a node whose type is any other string still validates, and a client that does not know its type does not render that node and does not let the visitor submit that screen from it.",
+  "description": "The value inside {:ok, ...} that Riddler.Journey.present/3 returns: a step of a Journey as data, for a client to render. Its state is a screen, waiting or done. A screen state carries the screen, resolved: hidden elements absent, each container replaced by its winner, every template field rendered, no condition anywhere. No part of this schema forbids a key it does not name, so what a later release presents still validates against this one. An element whose type is one this schema enumerates is held to the fields that type names, as validate/1 holds a document to them; an element whose type is any other string still validates, and a client that does not know its type does not render that element and does not let the visitor submit that screen from it.",
   "properties": {
     "state": {
       "description": "Where the host's execution is for the visitor.",

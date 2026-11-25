@@ -231,7 +231,7 @@ defmodule Riddler.Screens.ContextOptionsTest do
     # Sabotage: made the context read a no-op; the presented node carried the
     # path and no options, and this test went red.
     test "a journey's presented question carries the options as data" do
-      {:ok, %{"screen" => %{"nodes" => [node]}}} =
+      {:ok, %{"screen" => %{"elements" => [node]}}} =
         Journey.present(document([plan(%{})]), {:screen, "account"}, root(@plans))
 
       assert node["answer_options"] == [

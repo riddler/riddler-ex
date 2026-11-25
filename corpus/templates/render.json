@@ -287,8 +287,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "include",
-            "node_key": null
+            "element_key": null,
+            "field": "include"
           }
         ]
       },
@@ -303,8 +303,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "render",
-            "node_key": null
+            "element_key": null,
+            "field": "render"
           }
         ]
       },
@@ -319,8 +319,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "increment",
-            "node_key": null
+            "element_key": null,
+            "field": "increment"
           }
         ]
       },
@@ -335,8 +335,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "decrement",
-            "node_key": null
+            "element_key": null,
+            "field": "decrement"
           }
         ]
       },
@@ -351,8 +351,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "cycle",
-            "node_key": null
+            "element_key": null,
+            "field": "cycle"
           }
         ]
       },
@@ -367,8 +367,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "tablerow",
-            "node_key": null
+            "element_key": null,
+            "field": "tablerow"
           }
         ]
       },
@@ -383,8 +383,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "liquid",
-            "node_key": null
+            "element_key": null,
+            "field": "liquid"
           }
         ]
       },
@@ -399,13 +399,13 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "comment",
-            "node_key": null
+            "element_key": null,
+            "field": "comment"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "liquid",
-            "node_key": null
+            "element_key": null,
+            "field": "liquid"
           }
         ]
       },
@@ -420,13 +420,13 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "comment",
-            "node_key": null
+            "element_key": null,
+            "field": "comment"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "liquid",
-            "node_key": null
+            "element_key": null,
+            "field": "liquid"
           }
         ]
       },
@@ -441,13 +441,13 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endcomment",
-            "node_key": null
+            "element_key": null,
+            "field": "endcomment"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "liquid",
-            "node_key": null
+            "element_key": null,
+            "field": "liquid"
           }
         ]
       },
@@ -462,13 +462,13 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endif",
-            "node_key": null
+            "element_key": null,
+            "field": "endif"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "liquid",
-            "node_key": null
+            "element_key": null,
+            "field": "liquid"
           }
         ]
       },
@@ -483,13 +483,13 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "else",
-            "node_key": null
+            "element_key": null,
+            "field": "else"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "liquid",
-            "node_key": null
+            "element_key": null,
+            "field": "liquid"
           }
         ]
       },
@@ -504,13 +504,13 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endfor",
-            "node_key": null
+            "element_key": null,
+            "field": "endfor"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "liquid",
-            "node_key": null
+            "element_key": null,
+            "field": "liquid"
           }
         ]
       },
@@ -525,13 +525,13 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endraw",
-            "node_key": null
+            "element_key": null,
+            "field": "endraw"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "liquid",
-            "node_key": null
+            "element_key": null,
+            "field": "liquid"
           }
         ]
       },
@@ -546,13 +546,13 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endraw",
-            "node_key": null
+            "element_key": null,
+            "field": "endraw"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "liquid",
-            "node_key": null
+            "element_key": null,
+            "field": "liquid"
           }
         ]
       },
@@ -567,13 +567,13 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endcomment",
-            "node_key": null
+            "element_key": null,
+            "field": "endcomment"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "liquid",
-            "node_key": null
+            "element_key": null,
+            "field": "liquid"
           }
         ]
       },
@@ -588,8 +588,8 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endraw",
-            "node_key": null
+            "element_key": null,
+            "field": "endraw"
           }
         ]
       },
@@ -604,8 +604,8 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "comment",
-            "node_key": null
+            "element_key": null,
+            "field": "comment"
           }
         ]
       },
@@ -620,8 +620,8 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endcomment",
-            "node_key": null
+            "element_key": null,
+            "field": "endcomment"
           }
         ]
       },
@@ -636,8 +636,8 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endif",
-            "node_key": null
+            "element_key": null,
+            "field": "endif"
           }
         ]
       },
@@ -652,8 +652,8 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "else",
-            "node_key": null
+            "element_key": null,
+            "field": "else"
           }
         ]
       },
@@ -668,8 +668,8 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endunless",
-            "node_key": null
+            "element_key": null,
+            "field": "endunless"
           }
         ]
       },
@@ -684,8 +684,8 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endfor",
-            "node_key": null
+            "element_key": null,
+            "field": "endfor"
           }
         ]
       },
@@ -700,8 +700,8 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "else",
-            "node_key": null
+            "element_key": null,
+            "field": "else"
           }
         ]
       },
@@ -716,8 +716,8 @@
         "findings": [
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endcapture",
-            "node_key": null
+            "element_key": null,
+            "field": "endcapture"
           }
         ]
       },
@@ -732,13 +732,13 @@
         "findings": [
           {
             "code": "template.filter_not_allowed",
-            "field": "escape",
-            "node_key": null
+            "element_key": null,
+            "field": "escape"
           },
           {
             "code": "template.trailing_text_not_allowed",
-            "field": "endif",
-            "node_key": null
+            "element_key": null,
+            "field": "endif"
           }
         ]
       },
@@ -753,8 +753,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "endif",
-            "node_key": null
+            "element_key": null,
+            "field": "endif"
           }
         ]
       },
@@ -807,8 +807,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "echo",
-            "node_key": null
+            "element_key": null,
+            "field": "echo"
           }
         ]
       },
@@ -823,8 +823,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "acme_widget",
-            "node_key": null
+            "element_key": null,
+            "field": "acme_widget"
           }
         ]
       },
@@ -839,8 +839,8 @@
         "findings": [
           {
             "code": "template.filter_not_allowed",
-            "field": "escape",
-            "node_key": null
+            "element_key": null,
+            "field": "escape"
           }
         ]
       },
@@ -855,8 +855,8 @@
         "findings": [
           {
             "code": "template.filter_not_allowed",
-            "field": "escape_once",
-            "node_key": null
+            "element_key": null,
+            "field": "escape_once"
           }
         ]
       },
@@ -871,8 +871,8 @@
         "findings": [
           {
             "code": "template.filter_not_allowed",
-            "field": "newline_to_br",
-            "node_key": null
+            "element_key": null,
+            "field": "newline_to_br"
           }
         ]
       },
@@ -887,8 +887,8 @@
         "findings": [
           {
             "code": "template.filter_not_allowed",
-            "field": "strip_html",
-            "node_key": null
+            "element_key": null,
+            "field": "strip_html"
           }
         ]
       },
@@ -903,8 +903,8 @@
         "findings": [
           {
             "code": "template.filter_not_allowed",
-            "field": "shout",
-            "node_key": null
+            "element_key": null,
+            "field": "shout"
           }
         ]
       },
@@ -919,18 +919,18 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "cycle",
-            "node_key": null
+            "element_key": null,
+            "field": "cycle"
           },
           {
             "code": "template.filter_not_allowed",
-            "field": "escape",
-            "node_key": null
+            "element_key": null,
+            "field": "escape"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "render",
-            "node_key": null
+            "element_key": null,
+            "field": "render"
           }
         ]
       },
@@ -945,8 +945,8 @@
         "findings": [
           {
             "code": "template.parse_error",
-            "field": null,
-            "node_key": null
+            "element_key": null,
+            "field": null
           }
         ]
       },
@@ -961,8 +961,8 @@
         "findings": [
           {
             "code": "template.parse_error",
-            "field": null,
-            "node_key": null
+            "element_key": null,
+            "field": null
           }
         ]
       },
@@ -977,8 +977,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "endif",
-            "node_key": null
+            "element_key": null,
+            "field": "endif"
           }
         ]
       },
@@ -993,8 +993,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "include",
-            "node_key": null
+            "element_key": null,
+            "field": "include"
           }
         ]
       },
@@ -1009,13 +1009,13 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "render",
-            "node_key": null
+            "element_key": null,
+            "field": "render"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "endif",
-            "node_key": null
+            "element_key": null,
+            "field": "endif"
           }
         ]
       },
@@ -1030,13 +1030,13 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "include",
-            "node_key": null
+            "element_key": null,
+            "field": "include"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "endif",
-            "node_key": null
+            "element_key": null,
+            "field": "endif"
           }
         ]
       },
@@ -1051,8 +1051,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "endif",
-            "node_key": null
+            "element_key": null,
+            "field": "endif"
           }
         ]
       },
@@ -1067,8 +1067,8 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "elsif",
-            "node_key": null
+            "element_key": null,
+            "field": "elsif"
           }
         ]
       },
@@ -1083,13 +1083,13 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "endif",
-            "node_key": null
+            "element_key": null,
+            "field": "endif"
           },
           {
             "code": "template.filter_not_allowed",
-            "field": "escape",
-            "node_key": null
+            "element_key": null,
+            "field": "escape"
           }
         ]
       },
@@ -1104,13 +1104,13 @@
         "findings": [
           {
             "code": "template.tag_not_allowed",
-            "field": "include",
-            "node_key": null
+            "element_key": null,
+            "field": "include"
           },
           {
             "code": "template.tag_not_allowed",
-            "field": "render",
-            "node_key": null
+            "element_key": null,
+            "field": "render"
           }
         ]
       },

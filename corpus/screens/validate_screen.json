@@ -6,13 +6,13 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "first_name"
+            "element_key": "first_name",
+            "field": "required"
           },
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "email"
+            "element_key": "email",
+            "field": "required"
           }
         ],
         "ok": false
@@ -59,8 +59,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "first_name"
+            "element_key": "first_name",
+            "field": "required"
           }
         ],
         "ok": false
@@ -154,8 +154,8 @@
         "findings": [
           {
             "code": "response.format",
-            "field": "format",
-            "node_key": "email"
+            "element_key": "email",
+            "field": "format"
           }
         ],
         "ok": false
@@ -282,8 +282,8 @@
         "findings": [
           {
             "code": "response.format",
-            "field": "format",
-            "node_key": "billing_phone"
+            "element_key": "billing_phone",
+            "field": "format"
           }
         ],
         "ok": false
@@ -352,8 +352,8 @@
         "findings": [
           {
             "code": "response.format",
-            "field": "format",
-            "node_key": "card_last_four"
+            "element_key": "card_last_four",
+            "field": "format"
           }
         ],
         "ok": false
@@ -454,8 +454,8 @@
         "findings": [
           {
             "code": "response.format",
-            "field": "format",
-            "node_key": "seats"
+            "element_key": "seats",
+            "field": "format"
           }
         ],
         "ok": false
@@ -523,8 +523,8 @@
         "findings": [
           {
             "code": "response.format",
-            "field": "format",
-            "node_key": "monthly_spend"
+            "element_key": "monthly_spend",
+            "field": "format"
           }
         ],
         "ok": false
@@ -561,8 +561,8 @@
         "findings": [
           {
             "code": "response.out_of_range",
-            "field": "min",
-            "node_key": "seats"
+            "element_key": "seats",
+            "field": "min"
           }
         ],
         "ok": false
@@ -632,8 +632,8 @@
         "findings": [
           {
             "code": "response.out_of_range",
-            "field": "max",
-            "node_key": "seats"
+            "element_key": "seats",
+            "field": "max"
           }
         ],
         "ok": false
@@ -765,8 +765,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "referral"
+            "element_key": "referral",
+            "field": "required"
           }
         ],
         "ok": false
@@ -845,8 +845,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "billing_email"
+            "element_key": "billing_email",
+            "field": "required"
           }
         ],
         "ok": false
@@ -894,8 +894,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "billing_email"
+            "element_key": "billing_email",
+            "field": "required"
           }
         ],
         "ok": false
@@ -942,8 +942,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "billing_email"
+            "element_key": "billing_email",
+            "field": "required"
           }
         ],
         "ok": false
@@ -1019,8 +1019,8 @@
         "findings": [
           {
             "code": "response.undecidable",
-            "field": "condition",
-            "node_key": "company"
+            "element_key": "company",
+            "field": "condition"
           }
         ],
         "ok": false
@@ -1055,8 +1055,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "vat_id"
+            "element_key": "vat_id",
+            "field": "required"
           }
         ],
         "ok": false
@@ -1185,8 +1185,8 @@
         "findings": [
           {
             "code": "response.undecidable",
-            "field": "condition",
-            "node_key": "team_name"
+            "element_key": "team_name",
+            "field": "condition"
           }
         ],
         "ok": false
@@ -1235,8 +1235,8 @@
         "findings": [
           {
             "code": "response.undecidable",
-            "field": "condition",
-            "node_key": "team_name"
+            "element_key": "team_name",
+            "field": "condition"
           }
         ],
         "ok": false
@@ -1285,8 +1285,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "billing_email"
+            "element_key": "billing_email",
+            "field": "required"
           }
         ],
         "ok": false
@@ -1372,8 +1372,8 @@
         "findings": [
           {
             "code": "response.not_an_option",
-            "field": "answer_options",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "answer_options"
           }
         ],
         "ok": false
@@ -1419,8 +1419,8 @@
         "findings": [
           {
             "code": "response.not_an_option",
-            "field": "answer_options",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "answer_options"
           }
         ],
         "ok": false
@@ -1466,8 +1466,8 @@
         "findings": [
           {
             "code": "response.invalid_shape",
-            "field": "select",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "select"
           }
         ],
         "ok": false
@@ -1515,8 +1515,8 @@
         "findings": [
           {
             "code": "response.invalid_shape",
-            "field": "select",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "select"
           }
         ],
         "ok": false
@@ -1563,8 +1563,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "required"
           }
         ],
         "ok": false
@@ -1698,8 +1698,8 @@
         "findings": [
           {
             "code": "response.invalid_shape",
-            "field": "select",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "select"
           }
         ],
         "ok": false
@@ -1749,8 +1749,8 @@
         "findings": [
           {
             "code": "response.invalid_shape",
-            "field": "select",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "select"
           }
         ],
         "ok": false
@@ -1801,8 +1801,8 @@
         "findings": [
           {
             "code": "response.invalid_shape",
-            "field": "select",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "select"
           }
         ],
         "ok": false
@@ -1855,8 +1855,8 @@
         "findings": [
           {
             "code": "response.invalid_shape",
-            "field": "select",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "select"
           }
         ],
         "ok": false
@@ -1909,8 +1909,8 @@
         "findings": [
           {
             "code": "response.not_an_option",
-            "field": "answer_options",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "answer_options"
           }
         ],
         "ok": false
@@ -1964,8 +1964,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "required"
           }
         ],
         "ok": false
@@ -2061,8 +2061,8 @@
         "findings": [
           {
             "code": "response.out_of_range",
-            "field": "min_selections",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "min_selections"
           }
         ],
         "ok": false
@@ -2115,8 +2115,8 @@
         "findings": [
           {
             "code": "response.out_of_range",
-            "field": "max_selections",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "max_selections"
           }
         ],
         "ok": false
@@ -2220,8 +2220,8 @@
         "findings": [
           {
             "code": "response.not_an_option",
-            "field": "answer_options",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "answer_options"
           }
         ],
         "ok": false
@@ -2307,8 +2307,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "plan_terms"
+            "element_key": "plan_terms",
+            "field": "required"
           }
         ],
         "ok": false
@@ -2344,8 +2344,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "plan_terms"
+            "element_key": "plan_terms",
+            "field": "required"
           }
         ],
         "ok": false
@@ -2408,8 +2408,8 @@
         "findings": [
           {
             "code": "response.invalid_shape",
-            "field": "type",
-            "node_key": "plan_terms"
+            "element_key": "plan_terms",
+            "field": "type"
           }
         ],
         "ok": false
@@ -2547,18 +2547,18 @@
         "findings": [
           {
             "code": "response.invalid_shape",
-            "field": "select",
-            "node_key": "plan_choice"
+            "element_key": "plan_choice",
+            "field": "select"
           },
           {
             "code": "response.not_an_option",
-            "field": "answer_options",
-            "node_key": "plan_heard_from"
+            "element_key": "plan_heard_from",
+            "field": "answer_options"
           },
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "plan_terms"
+            "element_key": "plan_terms",
+            "field": "required"
           }
         ],
         "ok": false
@@ -2666,8 +2666,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "required"
           }
         ],
         "ok": false
@@ -2701,8 +2701,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "required"
           }
         ],
         "ok": false
@@ -2800,8 +2800,8 @@
         "findings": [
           {
             "code": "response.invalid_shape",
-            "field": "type",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "type"
           }
         ],
         "ok": false
@@ -2839,8 +2839,8 @@
         "findings": [
           {
             "code": "response.invalid_shape",
-            "field": "type",
-            "node_key": "account_pin"
+            "element_key": "account_pin",
+            "field": "type"
           }
         ],
         "ok": false
@@ -2942,13 +2942,13 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "work_email"
+            "element_key": "work_email",
+            "field": "required"
           },
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "newsletter"
+            "element_key": "newsletter",
+            "field": "required"
           }
         ],
         "ok": false
@@ -2995,13 +2995,13 @@
         "findings": [
           {
             "code": "response.format",
-            "field": "format",
-            "node_key": "work_email"
+            "element_key": "work_email",
+            "field": "format"
           },
           {
             "code": "response.not_an_option",
-            "field": "answer_options",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "answer_options"
           }
         ],
         "ok": false
@@ -3085,8 +3085,8 @@
         "findings": [
           {
             "code": "response.not_an_option",
-            "field": "answer_options",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "answer_options"
           }
         ],
         "ok": false
@@ -3193,8 +3193,8 @@
         "findings": [
           {
             "code": "response.not_an_option",
-            "field": "answer_options",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "answer_options"
           }
         ],
         "ok": false
@@ -3241,8 +3241,8 @@
         "findings": [
           {
             "code": "response.not_an_option",
-            "field": "answer_options",
-            "node_key": "addons"
+            "element_key": "addons",
+            "field": "answer_options"
           }
         ],
         "ok": false
@@ -3307,8 +3307,8 @@
         "findings": [
           {
             "code": "response.out_of_range",
-            "field": "min_selections",
-            "node_key": "addons"
+            "element_key": "addons",
+            "field": "min_selections"
           }
         ],
         "ok": false
@@ -3373,8 +3373,8 @@
         "findings": [
           {
             "code": "response.required",
-            "field": "required",
-            "node_key": "plan"
+            "element_key": "plan",
+            "field": "required"
           }
         ],
         "ok": false
@@ -3432,8 +3432,8 @@
         "findings": [
           {
             "code": "response.format",
-            "field": "format",
-            "node_key": "reminder_email"
+            "element_key": "reminder_email",
+            "field": "format"
           }
         ],
         "ok": false

@@ -89,14 +89,14 @@ defmodule Riddler.Journey do
       iex> root = %{"context" => %{"returning" => "yes", "first_name" => "Ada"}}
       iex> {:ok, %{"state" => "screen", "screen" => screen}} =
       ...>   Riddler.Journey.present(document, {:screen, "patron_details"}, root)
-      iex> Enum.map(screen["nodes"], & &1["text"])
+      iex> Enum.map(screen["elements"], & &1["text"])
       ["Welcome back, Ada."]
       iex> Riddler.Journey.present(document, :waiting, root)
       {:ok, %{"state" => "waiting"}}
       iex> {:ok, root} = Riddler.Journey.put_context(root, %{"first_name" => "Ada"})
       iex> {:ok, %{"screen" => screen}} =
       ...>   Riddler.Journey.present(document, {:screen, "patron_details"}, root)
-      iex> {screen["nodes"], screen["diagnostics"]["undecidable_conditions"]}
+      iex> {screen["elements"], screen["diagnostics"]["undecidable_conditions"]}
       {[], [%{"key" => "welcome_back", "condition" => "context.returning == 'yes'"}]}
   """
 
@@ -156,7 +156,7 @@ defmodule Riddler.Journey do
   @type moves :: %{required(String.t()) => [String.t()] | boolean()}
 
   @typedoc """
-  `"key"`, `"title"`, `"nodes"` (the resolved nodes, string-keyed) and
+  `"key"`, `"title"`, `"elements"` (the resolved elements, string-keyed) and
   `"diagnostics"` => `%{"missing_variables" => [...],
   "undecidable_conditions" => [...]}`.
   """
@@ -178,7 +178,7 @@ defmodule Riddler.Journey do
 
   For `{:screen, key}`, the screen `Riddler.Screens.resolve_screen/3`
   resolves for that key and root, in data form: `"key"`, `"title"` and
-  `"nodes"` as resolution leaves them - hidden nodes absent, each container
+  `"elements"` as resolution leaves them - hidden elements absent, each container
   collapsed to its winner, every template field rendered, no `condition`
   anywhere, `writes` carried through - and `"diagnostics"`, with
   `"missing_variables"` and `"undecidable_conditions"` in document order. The
@@ -187,8 +187,8 @@ defmodule Riddler.Journey do
 
   Beside `"screen"` the answer carries `"moves"`, what a client may submit
   from that screen, so that a client reads it and never derives it from the
-  nodes. `"outcomes"` is the `outcome` of each button among the screen's
-  `"nodes"`, in document order: a button a condition hid, or a candidate that
+  elements. `"outcomes"` is the `outcome` of each button among the screen's
+  `"elements"`, in document order: a button a condition hid, or a candidate that
   did not win its container, is not among them, and a screen that shows no
   button lists `[]`. No two buttons a screen can show together raise one
   outcome in a document `Riddler.Screens.Document.validate/1` accepts, so no
@@ -279,7 +279,7 @@ defmodule Riddler.Journey do
          "screen" => %{
            "key" => "patron_details",
            "title" => "Get your library card",
-           "nodes" => [
+           "elements" => [
              %{
                "type" => "button",
                "key" => "details_next",

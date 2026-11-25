@@ -134,7 +134,7 @@ defmodule Riddler.Screens.HelpTest do
     # Sabotage: removed :help from the boolean question's optional fields;
     # the presented node carried no "help" and this test went red.
     test "a journey's presented question node carries its help rendered" do
-      {:ok, %{"screen" => %{"nodes" => nodes}}} =
+      {:ok, %{"screen" => %{"elements" => nodes}}} =
         Journey.present(
           document(questions("Hello, {{ context.first_name }}.")),
           {:screen, "account"},

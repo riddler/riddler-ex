@@ -69,7 +69,7 @@ defmodule Riddler.JourneyTest do
                 "screen" => %{
                   "key" => "patron_details",
                   "title" => "Get your library card",
-                  "nodes" => [
+                  "elements" => [
                     %{
                       "type" => "text",
                       "key" => "details_greeting",
@@ -94,7 +94,7 @@ defmodule Riddler.JourneyTest do
       assert {:ok, %{"screen" => screen}} =
                Journey.present(document, {:screen, "patron_details"}, %{})
 
-      assert screen["nodes"] |> Enum.map(& &1["key"]) == ["first_name"]
+      assert screen["elements"] |> Enum.map(& &1["key"]) == ["first_name"]
 
       assert screen["diagnostics"] == %{
                "missing_variables" => [],
@@ -116,7 +116,7 @@ defmodule Riddler.JourneyTest do
     test "carries a button's writes through untouched", %{document: document} do
       root = %{"context" => %{"branch_name" => "Central"}}
 
-      assert {:ok, %{"screen" => %{"nodes" => [hint, button]}}} =
+      assert {:ok, %{"screen" => %{"elements" => [hint, button]}}} =
                Journey.present(document, {:screen, "card_pickup"}, root)
 
       assert hint["text"] == "Collect your card at Central."
@@ -139,7 +139,7 @@ defmodule Riddler.JourneyTest do
     test "reads the root for context and responses and nothing else", %{document: document} do
       root = %{"context" => %{}, "branch_name" => "Central"}
 
-      assert {:ok, %{"screen" => %{"nodes" => [hint, _button]}}} =
+      assert {:ok, %{"screen" => %{"elements" => [hint, _button]}}} =
                Journey.present(document, {:screen, "card_pickup"}, root)
 
       assert hint["text"] == "Collect your card at ."

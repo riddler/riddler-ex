@@ -16,7 +16,7 @@ defmodule Riddler.CorpusTest do
   become strings, and atom values other than `true`, `false` and `nil` become
   strings. Nothing else is touched - a rendered string, a number and a list
   come back as themselves. Findings are the one shaped exception: a finding is
-  compared as `code`, `field` and `node_key` and never by its message, because
+  compared as `code`, `field` and `element_key` and never by its message, because
   the code is the stable thing a host switches on and the message is prose a
   second runtime is not obliged to reproduce word for word.
 
@@ -619,17 +619,17 @@ defmodule Riddler.CorpusTest do
         "outcome" => "details_submitted"
       }
 
-      assert ExJsonSchema.Validator.valid?(schema, with_nodes([button]))
-      refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.delete(button, "outcome")]))
+      assert ExJsonSchema.Validator.valid?(schema, with_elements([button]))
+      refute ExJsonSchema.Validator.valid?(schema, with_elements([Map.delete(button, "outcome")]))
 
       refute ExJsonSchema.Validator.valid?(
                schema,
-               with_nodes([Map.put(button, "condition", "context.returning == 'yes'")])
+               with_elements([Map.put(button, "condition", "context.returning == 'yes'")])
              )
 
       refute ExJsonSchema.Validator.valid?(
                schema,
-               with_nodes([
+               with_elements([
                  %{
                    "type" => "heading",
                    "key" => "details_heading",
@@ -641,7 +641,7 @@ defmodule Riddler.CorpusTest do
 
       assert ExJsonSchema.Validator.valid?(
                schema,
-               with_nodes([
+               with_elements([
                  %{
                    "type" => "text_question",
                    "key" => "first_name",
@@ -653,17 +653,17 @@ defmodule Riddler.CorpusTest do
 
       refute ExJsonSchema.Validator.valid?(
                schema,
-               with_nodes([%{"type" => "text", "key" => "details_greeting"}])
+               with_elements([%{"type" => "text", "key" => "details_greeting"}])
              )
 
       refute ExJsonSchema.Validator.valid?(
                schema,
-               with_nodes([%{"type" => "boolean_question", "key" => "reminders_wanted"}])
+               with_elements([%{"type" => "boolean_question", "key" => "reminders_wanted"}])
              )
 
       refute ExJsonSchema.Validator.valid?(
                schema,
-               with_nodes([
+               with_elements([
                  %{
                    "type" => "choice_question",
                    "key" => "card_type",
@@ -675,7 +675,7 @@ defmodule Riddler.CorpusTest do
 
       assert ExJsonSchema.Validator.valid?(
                schema,
-               with_nodes([
+               with_elements([
                  %{"type" => "card_preview", "key" => "card_preview", "theme" => "dark"}
                ])
              )
@@ -706,7 +706,7 @@ defmodule Riddler.CorpusTest do
       for question <- questions, value <- [:none, "personal", ["personal"], true, 2, nil] do
         node = if value == :none, do: question, else: Map.put(question, "value", value)
 
-        assert ExJsonSchema.Validator.valid?(schema, with_nodes([node])),
+        assert ExJsonSchema.Validator.valid?(schema, with_elements([node])),
                "#{question["type"]} with #{inspect(value)}"
       end
     end
@@ -740,15 +740,18 @@ defmodule Riddler.CorpusTest do
       ]
 
       for question <- questions do
-        assert ExJsonSchema.Validator.valid?(schema, with_nodes([question])), question["type"]
+        assert ExJsonSchema.Validator.valid?(schema, with_elements([question])), question["type"]
 
         assert ExJsonSchema.Validator.valid?(
                  schema,
-                 with_nodes([Map.put(question, "help", "Billed to Acme.")])
+                 with_elements([Map.put(question, "help", "Billed to Acme.")])
                ),
                question["type"]
 
-        refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.put(question, "help", 3)])),
+        refute ExJsonSchema.Validator.valid?(
+                 schema,
+                 with_elements([Map.put(question, "help", 3)])
+               ),
                question["type"]
       end
     end
@@ -785,10 +788,10 @@ defmodule Riddler.CorpusTest do
         numeric = Map.put(question, "messages", %{"response.required" => 3})
         listed = Map.put(question, "messages", ["Answer this one."])
 
-        assert ExJsonSchema.Validator.valid?(schema, with_nodes([question])), question["type"]
-        assert ExJsonSchema.Validator.valid?(schema, with_nodes([keyed])), question["type"]
-        refute ExJsonSchema.Validator.valid?(schema, with_nodes([numeric])), question["type"]
-        refute ExJsonSchema.Validator.valid?(schema, with_nodes([listed])), question["type"]
+        assert ExJsonSchema.Validator.valid?(schema, with_elements([question])), question["type"]
+        assert ExJsonSchema.Validator.valid?(schema, with_elements([keyed])), question["type"]
+        refute ExJsonSchema.Validator.valid?(schema, with_elements([numeric])), question["type"]
+        refute ExJsonSchema.Validator.valid?(schema, with_elements([listed])), question["type"]
       end
     end
 
@@ -806,10 +809,10 @@ defmodule Riddler.CorpusTest do
         "held" => true
       }
 
-      assert ExJsonSchema.Validator.valid?(schema, with_nodes([secret]))
-      refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.put(secret, "value", "")]))
-      refute ExJsonSchema.Validator.valid?(schema, with_nodes([Map.delete(secret, "held")]))
-      refute ExJsonSchema.Validator.valid?(schema, with_nodes([%{secret | "held" => "yes"}]))
+      assert ExJsonSchema.Validator.valid?(schema, with_elements([secret]))
+      refute ExJsonSchema.Validator.valid?(schema, with_elements([Map.put(secret, "value", "")]))
+      refute ExJsonSchema.Validator.valid?(schema, with_elements([Map.delete(secret, "held")]))
+      refute ExJsonSchema.Validator.valid?(schema, with_elements([%{secret | "held" => "yes"}]))
     end
 
     # Sabotage: removed the choice question's refusal of "answer_options_from"
@@ -826,16 +829,16 @@ defmodule Riddler.CorpusTest do
         "answer_options" => []
       }
 
-      assert ExJsonSchema.Validator.valid?(schema, with_nodes([plan]))
+      assert ExJsonSchema.Validator.valid?(schema, with_elements([plan]))
 
       refute ExJsonSchema.Validator.valid?(
                schema,
-               with_nodes([Map.put(plan, "answer_options_from", "context.account.plans")])
+               with_elements([Map.put(plan, "answer_options_from", "context.account.plans")])
              )
 
       refute ExJsonSchema.Validator.valid?(
                schema,
-               with_nodes([Map.delete(plan, "answer_options")])
+               with_elements([Map.delete(plan, "answer_options")])
              )
     end
   end
@@ -910,18 +913,18 @@ defmodule Riddler.CorpusTest do
     # The findings are the package's own, put through the one encoder as a
     # host puts them on the wire: submit findings with and without a field, a
     # response finding, a document finding and a template finding with a
-    # position, so field, node_key and position are each exercised with a
+    # position, so field, element_key and position are each exercised with a
     # value and with null.
     #
-    # Sabotage: typed "node_key" as a string only in the schema; every finding
-    # whose node_key is nil failed validation and this test went red. And
+    # Sabotage: typed "element_key" as a string only in the schema; every finding
+    # whose element_key is nil failed validation and this test went red. And
     # again with "field" typed so; the not-an-object finding failed and it
     # went red.
     test "validates the data form of findings the package raises" do
       schema = resolved_schema(@finding_schema)
       findings = Enum.map(raised_findings(), &Riddler.Encoding.to_data/1)
 
-      for key <- ["field", "node_key", "position", "author_message"] do
+      for key <- ["field", "element_key", "position", "author_message"] do
         assert Enum.any?(findings, &is_nil(&1[key])), key
         assert Enum.any?(findings, &(not is_nil(&1[key]))), key
       end
@@ -946,7 +949,7 @@ defmodule Riddler.CorpusTest do
         "code" => "submit.missing_field",
         "message" => ~s(the submit carries no "outcome"),
         "field" => "outcome",
-        "node_key" => nil,
+        "element_key" => nil,
         "position" => nil,
         "author_message" => nil
       }
@@ -954,14 +957,14 @@ defmodule Riddler.CorpusTest do
       assert ExJsonSchema.Validator.valid?(schema, finding)
       assert ExJsonSchema.Validator.valid?(schema, Map.put(finding, "hint", "later"))
 
-      for key <- ["code", "message", "field", "node_key", "position", "author_message"] do
+      for key <- ["code", "message", "field", "element_key", "position", "author_message"] do
         refute ExJsonSchema.Validator.valid?(schema, Map.delete(finding, key)), key
       end
 
       refute ExJsonSchema.Validator.valid?(schema, %{finding | "code" => nil})
       refute ExJsonSchema.Validator.valid?(schema, %{finding | "message" => 1})
       refute ExJsonSchema.Validator.valid?(schema, %{finding | "field" => 1})
-      refute ExJsonSchema.Validator.valid?(schema, %{finding | "node_key" => 1})
+      refute ExJsonSchema.Validator.valid?(schema, %{finding | "element_key" => 1})
       refute ExJsonSchema.Validator.valid?(schema, %{finding | "author_message" => 1})
       assert ExJsonSchema.Validator.valid?(schema, %{finding | "author_message" => "Try again."})
       assert ExJsonSchema.Validator.valid?(schema, %{finding | "field" => nil})
@@ -1033,7 +1036,7 @@ defmodule Riddler.CorpusTest do
     |> Enum.find(&(&1["state"] == "screen"))
   end
 
-  defp with_nodes(nodes), do: put_in(screen_answer(), ["screen", "nodes"], nodes)
+  defp with_elements(elements), do: put_in(screen_answer(), ["screen", "elements"], elements)
 
   # -- running one case -------------------------------------------------------
 

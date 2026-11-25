@@ -13,6 +13,13 @@
       "description": "A stable, machine-readable reason, such as submit.missing_field or response.required.",
       "type": "string"
     },
+    "element_key": {
+      "description": "The key of the document element the finding belongs to; null where there is no key a host can look an element up by.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "field": {
       "description": "What the finding is about: the refused construct, field or key; null when the refusal is about the input as a whole.",
       "type": [
@@ -23,13 +30,6 @@
     "message": {
       "description": "The package's own sentence naming what was refused.",
       "type": "string"
-    },
-    "node_key": {
-      "description": "The key of the document node the finding belongs to; null where there is no key a host can look a node up by.",
-      "type": [
-        "string",
-        "null"
-      ]
     },
     "position": {
       "description": "Where in some source text the refusal is, both counts one-based, or null. The unit a column counts is the one the Riddler.Finding documentation names for the finding's code.",
@@ -61,7 +61,7 @@
     "code",
     "message",
     "field",
-    "node_key",
+    "element_key",
     "position",
     "author_message"
   ],

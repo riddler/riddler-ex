@@ -360,12 +360,12 @@ defmodule Riddler.Corpus do
   # through this before it is compared: structs become maps, atom keys become
   # strings, and atom values other than `true`, `false` and `nil` become
   # strings. A finding is the one shaped exception: it is compared as `code`,
-  # `field` and `node_key` and never by its message, because the code is the
+  # `field` and `element_key` and never by its message, because the code is the
   # stable thing a host switches on and the message is prose a second runtime
   # is not obliged to reproduce word for word.
   defp encode_findings(findings) do
     Enum.map(findings, fn finding ->
-      %{"code" => finding.code, "field" => finding.field, "node_key" => finding.element_key}
+      %{"code" => finding.code, "field" => finding.field, "element_key" => finding.element_key}
     end)
   end
 
