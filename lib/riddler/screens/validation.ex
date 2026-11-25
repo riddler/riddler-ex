@@ -37,6 +37,7 @@ defmodule Riddler.Screens.Validation do
   alias Riddler.Screens.Compilers
   alias Riddler.Screens.Messages
   alias Riddler.Screens.Resolved
+  alias Riddler.Screens.Temporal
   alias Riddler.Screens.Type.SecretQuestion
 
   # An element a response answers is an element that declares something about the
@@ -452,6 +453,9 @@ defmodule Riddler.Screens.Validation do
   defp check("pattern", node, response), do: pattern(node, response)
   defp check("integer", node, response), do: numeric(node, response, :integer)
   defp check("number", node, response), do: numeric(node, response, :number)
+  defp check("date", node, response), do: temporal(node, response, "date")
+  defp check("time", node, response), do: temporal(node, response, "time")
+  defp check("datetime", node, response), do: temporal(node, response, "datetime")
   defp check(_unknown, _node, _response), do: []
 
   defp matching(regex, node, response, what) when is_binary(response) do
@@ -579,6 +583,55 @@ defmodule Riddler.Screens.Validation do
       element_key: Finding.element_key(node[:key])
     }
   end
+
+  # -- the date and time formats and their range -------------------------------
+
+  # A date, a time or a datetime is a string, read with the whitespace around
+  # it set aside as the other formats read it, and held to the format's shape
+  # by the one reading admission holds a bound to. The bounds are read the
+  # same way and compared as the values they name, both inclusive; a bound
+  # that does not read is already `document.invalid_bound`, raised before a
+  # visitor arrives, so it bounds nothing here, as a numeric bound that is not
+  # a number does not.
+  defp temporal(node, response, format) when is_binary(response) do
+    trimmed = String.trim(response)
+
+    case Temporal.read(format, trimmed) do
+      {:ok, value} -> temporal_range_findings(node, format, trimmed, value)
+      :error -> [temporal_format_finding(node, response, format)]
+    end
+  end
+
+  defp temporal(node, response, format), do: [temporal_format_finding(node, response, format)]
+
+  defp temporal_format_finding(node, response, format),
+    do:
+      format_finding(
+        node,
+        "#{inspect(response)} is not a #{format} in the shape this question asks for"
+      )
+
+  defp temporal_range_findings(node, format, text, value) do
+    min = Map.get(node, :min)
+    max = Map.get(node, :max)
+
+    cond do
+      bound_after?(Temporal.read(format, min), value) ->
+        [range_finding(node, "min", "no earlier than", min, text)]
+
+      bound_before?(Temporal.read(format, max), value) ->
+        [range_finding(node, "max", "no later than", max, text)]
+
+      true ->
+        []
+    end
+  end
+
+  defp bound_after?({:ok, bound}, value), do: bound > value
+  defp bound_after?(_unread, _value), do: false
+
+  defp bound_before?({:ok, bound}, value), do: bound < value
+  defp bound_before?(_unread, _value), do: false
 
   # -- findings ---------------------------------------------------------------
 

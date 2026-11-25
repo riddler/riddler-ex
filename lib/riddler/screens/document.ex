@@ -154,6 +154,13 @@ defmodule Riddler.Screens.Document do
       `min_selections` above `max_selections`, or either above the number of
       options. A bound with no fractional part counts as its integer.
     * `document.unknown_format` - a format name this package does not know.
+    * `document.invalid_bound` - a text question's `min` or `max` is there
+      and is not in the shape of the format that reads it: a number for the
+      `integer` and `number` formats, and a string in the format's own shape
+      for `date`, `time` and `datetime`, where a `min` after its `max` is
+      refused too, its `field` `"max"`. A bound under any other format, or
+      none, is a field nothing consults and raises nothing, and a numeric
+      `min` above its `max` is admitted.
     * `document.invalid_pattern` - a question that asks for the `pattern`
       format declares a `pattern` that format cannot compile. Nothing a
       visitor could type would satisfy it, so it is the document that is
@@ -325,7 +332,7 @@ defmodule Riddler.Screens.Document do
   # The validation formats this package will recognize when a response
   # arrives. A document naming one of these is admitted; the checks
   # themselves belong to response validation.
-  @formats ["email", "phone", "pattern", "integer", "number"]
+  @formats ["email", "phone", "pattern", "integer", "number", "date", "time", "datetime"]
 
   @key_shape ~r/^[a-z][a-z0-9_]*$/
 

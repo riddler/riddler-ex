@@ -3498,6 +3498,573 @@
         "screen": "patron_details"
       },
       "name": "A version 2 document's response finding names its element"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "max": "2026-11-24",
+                  "min": "1900-01-01",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "birth_date": "1990-04-17"
+        },
+        "screen": "account"
+      },
+      "name": "A date response that is a calendar date between its bounds is accepted"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "birth_date": " 1990-04-17 "
+        },
+        "screen": "account"
+      },
+      "name": "A date response is read with the whitespace around it set aside"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "element_key": "birth_date",
+            "field": "format"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "birth_date": "1990-02-30"
+        },
+        "screen": "account"
+      },
+      "name": "A date response naming a day the calendar does not have is not in the format"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "element_key": "birth_date",
+            "field": "format"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "birth_date": "17/04/1990"
+        },
+        "screen": "account"
+      },
+      "name": "A date response not written YYYY-MM-DD is not in the format"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "element_key": "birth_date",
+            "field": "format"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "birth_date": 19900417
+        },
+        "screen": "account"
+      },
+      "name": "A date response that is not a string is not in the format"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.out_of_range",
+            "element_key": "birth_date",
+            "field": "min"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "min": "1900-01-01",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "birth_date": "1890-01-01"
+        },
+        "screen": "account"
+      },
+      "name": "A date response before the question's minimum is out of range"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.out_of_range",
+            "element_key": "birth_date",
+            "field": "max"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "max": "2026-11-24",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "birth_date": "2031-04-17"
+        },
+        "screen": "account"
+      },
+      "name": "A date response after the question's maximum is out of range"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "birth_date",
+                  "label": "Date of birth",
+                  "max": "2026-11-24",
+                  "min": "1900-01-01",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "birth_date": "2026-11-24"
+        },
+        "screen": "account"
+      },
+      "name": "A date response on the bound itself is in range"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "time",
+                  "key": "callback_time",
+                  "label": "Best time to call you",
+                  "max": "17:30:00",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "callback_time": "17:30"
+        },
+        "screen": "account"
+      },
+      "name": "A time written HH:MM is the same time as HH:MM:00 at a bound"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.out_of_range",
+            "element_key": "callback_time",
+            "field": "max"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "time",
+                  "key": "callback_time",
+                  "label": "Best time to call you",
+                  "max": "17:30",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "callback_time": "17:30:01"
+        },
+        "screen": "account"
+      },
+      "name": "A time response one second past the maximum is out of range"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "element_key": "callback_time",
+            "field": "format"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "time",
+                  "key": "callback_time",
+                  "label": "Best time to call you",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "callback_time": "24:00"
+        },
+        "screen": "account"
+      },
+      "name": "A time response outside the 24-hour clock is not in the format"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "datetime",
+                  "key": "trial_starts_at",
+                  "label": "Start your trial at",
+                  "max": "2026-11-24T16:30:00Z",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "trial_starts_at": "2026-11-24T09:30:00-07:00"
+        },
+        "screen": "account"
+      },
+      "name": "A datetime response is compared with its bound as the instant it names"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.out_of_range",
+            "element_key": "trial_starts_at",
+            "field": "max"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "datetime",
+                  "key": "trial_starts_at",
+                  "label": "Start your trial at",
+                  "max": "2026-11-24T16:30:00Z",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "trial_starts_at": "2026-11-24T09:30:01-07:00"
+        },
+        "screen": "account"
+      },
+      "name": "A datetime response one second past the maximum instant is out of range"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "element_key": "trial_starts_at",
+            "field": "format"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "datetime",
+                  "key": "trial_starts_at",
+                  "label": "Start your trial at",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "trial_starts_at": "2026-11-24T09:30:00"
+        },
+        "screen": "account"
+      },
+      "name": "A datetime response with no zone is not in the format"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "element_key": "trial_starts_at",
+            "field": "format"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "datetime",
+                  "key": "trial_starts_at",
+                  "label": "Start your trial at",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "trial_starts_at": "2026-11-24T09:30:00.000Z"
+        },
+        "screen": "account"
+      },
+      "name": "A datetime response with a fraction of a second is not in the format"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.format",
+            "element_key": "trial_starts_at",
+            "field": "format"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "datetime",
+                  "key": "trial_starts_at",
+                  "label": "Start your trial at",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "responses": {
+          "trial_starts_at": "2026-11-24t09:30:00z"
+        },
+        "screen": "account"
+      },
+      "name": "A datetime response with a lower-case separator is not in the format"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"

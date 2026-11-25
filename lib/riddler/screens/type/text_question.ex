@@ -35,9 +35,27 @@ defmodule Riddler.Screens.Type.TextQuestion do
   is told while they are authoring rather than when a visitor submits. On a
   question that does not ask for the `pattern` format, a `pattern` is a field
   nothing consults and nothing here reads it. `min` and `max` are the bounds
-  the `integer` and `number` formats hold a response between. A question that
-  declares one without the format that reads it declares something nothing
-  consults.
+  the `integer`, `number`, `date`, `time` and `datetime` formats hold a
+  response between, both inclusive, and a bound that is there is held here to
+  the shape of the format that reads it: a number for `integer` and `number`,
+  and for the three date and time formats a string in the format's own shape,
+  with a `min` that is not after its `max`. Either failure is
+  `document.invalid_bound`. A question that declares a bound without a format
+  that reads it declares something nothing consults, and nothing here reads
+  it either; a numeric `min` above its `max` is left as it is written.
+
+  The date and time formats take a response as a string, as the numeric ones
+  may: `date` is `YYYY-MM-DD`, a calendar date that exists; `time` is `HH:MM`
+  or `HH:MM:SS`, 24-hour; `datetime` is a date and a time joined by `T`, then
+  `Z` or an offset `+HH:MM` or `-HH:MM`. No fraction of a second, no
+  lower-case `t` or `z`, and no other ISO 8601 form. A `time` written `HH:MM`
+  is the same time as `HH:MM:00`, and two `datetime` values are compared as
+  the instants they name.
+
+      iex> node = %{type: "text_question", key: "seats", label: "Seats", format: "integer", min: "1"}
+      iex> [finding] = Riddler.Screens.Type.TextQuestion.validate(node)
+      iex> {finding.code, finding.field}
+      {"document.invalid_bound", "min"}
 
       iex> node = %{type: "text_question", key: "pin", label: "PIN", format: "pattern", pattern: "[0-9"}
       iex> [finding] = Riddler.Screens.Type.TextQuestion.validate(node)
@@ -59,7 +77,10 @@ defmodule Riddler.Screens.Type.TextQuestion do
   alias Riddler.Screens.Compilers
   alias Riddler.Screens.Document
   alias Riddler.Screens.Messages
+  alias Riddler.Screens.Temporal
   alias Riddler.Screens.Value
+
+  @numeric_formats ["integer", "number"]
 
   @impl true
   def fields,
@@ -74,7 +95,8 @@ defmodule Riddler.Screens.Type.TextQuestion do
   def validate(node) do
     required_findings(node) ++
       format_findings(node) ++
-      pattern_findings(node) ++ Value.findings(node) ++ Messages.findings(node)
+      pattern_findings(node) ++
+      bound_findings(node) ++ Value.findings(node) ++ Messages.findings(node)
   end
 
   # `required` says whether an empty response is acceptable, so a value that
@@ -170,4 +192,73 @@ defmodule Riddler.Screens.Type.TextQuestion do
   # are part of what it compiles, and a check with its own copy of them would
   # drift from the one that runs when a visitor submits.
   defp usable?(pattern), do: match?({:ok, _regex}, Compilers.compile_pattern(pattern))
+
+  # `min` and `max` are read by the format that bounds a response, and only by
+  # it, so a bound is held to that format's shape and to nothing else: a
+  # bound under another format, or none, is a field nothing consults, as a
+  # `pattern` is without its format. A bound that is there and is not in the
+  # shape bounds nothing when a visitor submits, which an author who wrote one
+  # did not mean, so it is reported while they are authoring.
+  #
+  # For the numeric formats a bound is a number, and a `min` above its `max` is
+  # left as it is written. For the date and time formats a bound is a string in
+  # the format's own shape, and a `min` after its `max` is refused too, under
+  # the same code and on the `max`: no response could be between them.
+  defp bound_findings(node) do
+    format = Map.get(node, :format)
+
+    cond do
+      format in @numeric_formats -> numeric_bound_findings(node)
+      Temporal.format?(format) -> temporal_bound_findings(node, format)
+      true -> []
+    end
+  end
+
+  defp numeric_bound_findings(node) do
+    for field <- [:min, :max],
+        {:ok, bound} <- [Map.fetch(node, field)],
+        not is_number(bound),
+        do: bound_finding(node, field, "#{inspect(bound)} is not a number, so it bounds nothing")
+  end
+
+  defp temporal_bound_findings(node, format) do
+    read = for field <- [:min, :max], do: {field, read_bound(node, field, format)}
+
+    case read do
+      [{:min, {:ok, min}}, {:max, {:ok, max}}] when min > max ->
+        [
+          bound_finding(
+            node,
+            :max,
+            "the min #{inspect(node.min)} is after the max #{inspect(node.max)}, so no #{format} is between them"
+          )
+        ]
+
+      read ->
+        for {field, :error} <- read,
+            do:
+              bound_finding(
+                node,
+                field,
+                "#{inspect(Map.get(node, field))} is not a #{format} in the shape the #{format} format reads, so it bounds nothing"
+              )
+    end
+  end
+
+  # A bound that is not there is no bound, and is neither read nor refused.
+  defp read_bound(node, field, format) do
+    case Map.fetch(node, field) do
+      {:ok, bound} -> Temporal.read(format, bound)
+      :error -> :absent
+    end
+  end
+
+  defp bound_finding(node, field, message) do
+    %Finding{
+      code: "document.invalid_bound",
+      message: message,
+      field: Atom.to_string(field),
+      element_key: Finding.element_key(node[:key])
+    }
+  end
 end
