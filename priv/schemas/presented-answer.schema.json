@@ -202,6 +202,14 @@
           },
           "then": {
             "properties": {
+              "accessible_description": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
+              "accessible_label": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
               "level": {
                 "maximum": 6,
                 "minimum": 1,
@@ -231,6 +239,14 @@
           },
           "then": {
             "properties": {
+              "accessible_description": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
+              "accessible_label": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
               "style": {
                 "description": "A hint a renderer owns: body and caption are the names offered, and a text carrying none is body.",
                 "type": "string"
@@ -258,6 +274,14 @@
           },
           "then": {
             "properties": {
+              "accessible_description": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
+              "accessible_label": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
               "alt": {
                 "description": "What a visitor who cannot see the image is told, rendered; the empty string marks it decorative.",
                 "type": "string"
@@ -294,6 +318,16 @@
             ]
           },
           "then": {
+            "properties": {
+              "accessible_description": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
+              "accessible_label": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              }
+            },
             "required": [
               "key"
             ]
@@ -312,6 +346,14 @@
           },
           "then": {
             "properties": {
+              "accessible_description": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
+              "accessible_label": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
               "href": {
                 "description": "A URL by the document's URL rule: https:// or host-relative, never a data: URL. Never a path.",
                 "type": "string"
@@ -344,6 +386,14 @@
           },
           "then": {
             "properties": {
+              "accessible_description": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
+              "accessible_label": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
               "format": {
                 "enum": [
                   "email",
@@ -409,8 +459,16 @@
               ]
             },
             "properties": {
+              "accessible_description": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
+              "accessible_label": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
               "answer_options": {
-                "description": "The options the visitor is shown, in order: the options the document wrote, each label rendered, or, for a question that names answer_options_from, the options read from context at that path when the screen was resolved, each its value and its label as the host gave them and not rendered. An empty list where the path held no list of options, which the diagnostics report, or held an empty one. A presented question carries no answer_options_from.",
+                "description": "The options the visitor is shown, in order: the options the document wrote, each label and each description rendered, or, for a question that names answer_options_from, the options read from context at that path when the screen was resolved, each its value and its label as the host gave them and not rendered. An empty list where the path held no list of options, which the diagnostics report, or held an empty one. A presented question carries no answer_options_from.",
                 "items": {
                   "properties": {
                     "description": {
@@ -497,6 +555,14 @@
           },
           "then": {
             "properties": {
+              "accessible_description": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
+              "accessible_label": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
               "format": {
                 "description": "Carried and never consulted."
               },
@@ -544,6 +610,14 @@
               ]
             },
             "properties": {
+              "accessible_description": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
+              "accessible_label": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
               "held": {
                 "description": "Whether the root the host passed holds the sealed form for this question. It is all a secret question carries of its response: never the text the visitor typed and never the sealed string, so it carries no value.",
                 "type": "boolean"
@@ -585,6 +659,14 @@
           },
           "then": {
             "properties": {
+              "accessible_description": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
+              "accessible_label": {
+                "description": "Rendered, and carried only where the document wrote one.",
+                "type": "string"
+              },
               "label": {
                 "type": "string"
               },

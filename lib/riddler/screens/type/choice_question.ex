@@ -32,8 +32,9 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   them as `answer_options`, each its value and its label as the host wrote
   them - the labels are not templates, and a `"description"` the host's list
   carries is not read. A path that reaches no such list resolves the question
-  with no options and is reported in `missing_variables`. A response is checked against the options the context
-  holds when the screen is validated, not when it was shown. The checks of
+  with no options and is reported in `missing_variables`. A response is
+  checked against the options the context holds when the screen is
+  validated, not when it was shown. The checks of
   authored options do not apply to such a question, and its selection bounds
   are not compared with a number of options at admit, there being none.
 
@@ -57,8 +58,9 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   against, and one that is not a boolean is `document.invalid_hint`.
   `required` defaults to false, and true means the visitor picks at least one
   option. `min_selections` and `max_selections` bound how many options a
-  visitor picks, and they are read only under `select: "many"`. Each is a non-negative integer, a number with
-  no fractional part counting as one - a bound written `2.0` is admitted as
+  visitor picks, and they are read only under `select: "many"`. Each is a
+  non-negative integer, a number with no fractional part counting as one - a
+  bound written `2.0` is admitted as
   `2`. `format` is carried and never consulted: it is a field nothing reads,
   whatever it names.
 

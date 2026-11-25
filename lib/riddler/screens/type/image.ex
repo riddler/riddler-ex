@@ -51,7 +51,8 @@ defmodule Riddler.Screens.Type.Image do
 
   @impl true
   def validate(node) do
-    Url.findings(node, :src, true) ++ Enum.flat_map(@hints, &hint_findings(node, &1))
+    Url.findings(node, :src, Url.data?("image")) ++
+      Enum.flat_map(@hints, &hint_findings(node, &1))
   end
 
   # Which hint it is stays the renderer's; that it is a string is this

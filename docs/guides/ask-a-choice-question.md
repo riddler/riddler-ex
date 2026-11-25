@@ -82,8 +82,8 @@ for a missing field or a `value` outside the pattern,
 `style` tells the host's renderer which widget to draw. The names offered are
 `radio`, `dropdown` and `chips` for `select: "one"`, and `checkboxes`, `list`
 and `chips` for `select: "many"`. The set is open and the renderer owns it:
-Riddler checks that `style` is a string and nothing more (a `style` that is not a string is
-`document.invalid_style`), so a name it does not list, or one
+Riddler checks that `style` is a string and nothing more (a `style` that is
+not a string is `document.invalid_style`), so a name it does not list, or one
 offered for the other `select`, is passed through to the renderer unchanged. A
 renderer that gets no `style` picks a widget by the number of options.
 
@@ -147,11 +147,13 @@ of "tick to agree".
 
 `Riddler.Screens.resolve/2` and `resolve_screen/3` hand back the question with
 its `label` rendered and no `condition`, and `answer_options` in the same
-order with each option's `label` rendered against the root. Each `value` comes
-back exactly as written, and `select`, `style`, `required` and the bounds are
-carried through. A variable an option label wants that the root does not carry
-renders as the empty string and is reported in `missing_variables` under the
-question's key, as for any other template on the element.
+order with each option's `label` rendered against the root, and its
+`description` too where the document wrote one. Each `value` comes back
+exactly as written, and `select`, `style`, `searchable`, `required` and the
+bounds are carried through. A variable an option label or description wants
+that the root does not carry renders as the empty string and is reported in
+`missing_variables` under the question's key, as for any other template on the
+element.
 
 Resolved against a root whose `context.branch_name` is `Riverside`, the last
 option above reads `%{value: "local_authors", label: "Books by Riverside
