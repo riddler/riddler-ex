@@ -6,8 +6,8 @@ defmodule Riddler.Screens.Validation do
   # The public entry points are `Riddler.Screens.validate_screen/3` and
   # `/4`; this module holds the checks behind them and is not part of the
   # package's surface. It is handed a screen that has already been resolved,
-  # which is the whole of why the response checks can be this small: a node
-  # that is here is a node the visitor was shown, every container has already
+  # which is the whole of why the response checks can be this small: an element
+  # that is here is an element the visitor was shown, every container has already
   # collapsed to its winner, and there is no condition left to consult.
   #
   # The one thing it is told about resolution rather than about the screen is
@@ -39,8 +39,8 @@ defmodule Riddler.Screens.Validation do
   alias Riddler.Screens.Resolved
   alias Riddler.Screens.Type.SecretQuestion
 
-  # A node a response answers is a node that declares something about the
-  # response: whether it is required, or the format it has to be in. A node
+  # An element a response answers is an element that declares something about the
+  # response: whether it is required, or the format it has to be in. An element
   # that declares neither has nothing to check. The two choice types are the
   # exception, and are checked whatever they declare: a choice question's
   # options are a declaration, and a boolean question is held to its shape.
@@ -57,7 +57,7 @@ defmodule Riddler.Screens.Validation do
   @phone ~r/^\+?[0-9][0-9 ()\.\-]*$/
 
   # The undecidable findings come first: they are about whether the screen could
-  # be resolved at all, which precedes anything about a response, and the nodes
+  # be resolved at all, which precedes anything about a response, and the elements
   # they name are not on the resolved screen, so there is no document order to
   # interleave them into.
   @spec validate(Resolved.screen(), Resolved.diagnostics(), map(), map(), term()) ::
@@ -78,14 +78,14 @@ defmodule Riddler.Screens.Validation do
 
   # -- what resolution could not decide ---------------------------------------
 
-  # A condition the root could not decide, as one finding per node resolution
+  # A condition the root could not decide, as one finding per element resolution
   # reported. The amendment to `docs/adr/0002-element-document.md` headed "the
   # screen validated is the screen shown" decides that such a screen answers a
   # finding rather than `:ok` where the press validates: once
   # validation resolves against the host's real root, a condition that cannot be
   # decided says the root the host handed in does not carry what the document
   # asks about, which is a defect in the call and not a property of the visitor.
-  # Answering `:ok` would treat the node as hidden, which is the false pass that
+  # Answering `:ok` would treat the element as hidden, which is the false pass that
   # amendment removes.
   #
   # `missing_variables`, the other half of the diagnostics, is deliberately not
@@ -185,8 +185,8 @@ defmodule Riddler.Screens.Validation do
   # naming no pressed button has no button to read `validates` from, so it
   # runs the checks in full: that is every arity-3 call, and it is an arity-4
   # call handed `nil` as well. The clause below is what says so, and it is
-  # also what keeps a button node carrying no `key` out of the match - the
-  # node's absent key would otherwise compare equal to the absent press and
+  # also what keeps a button element carrying no `key` out of the match - the
+  # element's absent key would otherwise compare equal to the absent press and
   # silence every finding on the screen at once.
   defp opted_out?(_screen, nil), do: false
 
@@ -197,12 +197,12 @@ defmodule Riddler.Screens.Validation do
     end
   end
 
-  # The key reaching here is never `nil`, so a button node carrying no `key`
+  # The key reaching here is never `nil`, so a button element carrying no `key`
   # is never a candidate: nothing can press a button nothing can name, and a
-  # keyless node sitting in front of a keyed one hides it from nobody.
+  # keyless element sitting in front of a keyed one hides it from nobody.
   defp button?(node, key), do: node[:type] == "button" and node[:key] == key
 
-  # -- one node ---------------------------------------------------------------
+  # -- one element ---------------------------------------------------------------
 
   # A question's findings, each carrying the author's message for its code
   # where the question's `messages` keys it. Only here: the undecidable
@@ -582,10 +582,10 @@ defmodule Riddler.Screens.Validation do
 
   # -- findings ---------------------------------------------------------------
 
-  # Every site here that puts a node's key on a finding goes through
+  # Every site here that puts an element's key on a finding goes through
   # `Finding.element_key/1`, for the reason the document checks do: a key is a
   # string by the record the document implements, the field is typed that way,
-  # and a key of any other form is one no host can look a node up by. This path
+  # and a key of any other form is one no host can look an element up by. This path
   # runs on every submission rather than once at authoring time, so it is the
   # half a host indexing findings by that field meets most often.
   defp format_finding(node, detail), do: finding(node, "response.format", "format", detail)

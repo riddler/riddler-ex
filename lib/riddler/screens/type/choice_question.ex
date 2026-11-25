@@ -14,7 +14,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
   with it as written, and unique among this question's own options. It is not
   a key, so two questions may both offer the same value. `label` is what the
   visitor reads, and it is a template. Admission keeps exactly those two
-  fields of an option and drops any other, as it drops a node field a type
+  fields of an option and drops any other, as it drops an element field a type
   does not name.
 
   `answer_options_from` is the other way to give a question its options: a
@@ -163,7 +163,7 @@ defmodule Riddler.Screens.Type.ChoiceQuestion do
 
   # One finding per defect, so an option carrying neither field is told both.
   # Admission answers `nil` for an option that is not an object, so the last
-  # clause answers only a node built by hand rather than admitted.
+  # clause answers only an element built by hand rather than admitted.
   defp option_findings(option, position, key) when is_map(option) do
     value_findings(option, position, key) ++ label_findings(option, position, key)
   end

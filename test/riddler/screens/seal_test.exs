@@ -122,7 +122,7 @@ defmodule Riddler.Screens.SealTest do
       refute inspect(sealed, limit: :infinity, printable_limit: :infinity) =~ @sentinel
     end
 
-    # Sabotage: made the seal walk only the screen's top-level nodes; the
+    # Sabotage: made the seal walk only the screen's top-level elements; the
     # variant's candidate was not sealed and this test went red.
     test "a secret question in a variant's candidate is sealed whatever its condition" do
       assert {:ok, %{"backup_pin" => %{"sealed" => "handle-1"}}} =
@@ -137,8 +137,8 @@ defmodule Riddler.Screens.SealTest do
     end
 
     # Sabotage: dropped the uniq_by from first_per_key/1; the wrong shape was
-    # refused twice, once per node, and this test went red.
-    test "a key two nodes declare, in a document no one validated, is sealed and refused once" do
+    # refused twice, once per element, and this test went red.
+    test "a key two elements declare, in a document no one validated, is sealed and refused once" do
       document =
         Document.admit(%{
           "schema_version" => 1,

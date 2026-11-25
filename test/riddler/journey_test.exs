@@ -111,7 +111,7 @@ defmodule Riddler.JourneyTest do
              ]
     end
 
-    # Sabotage: dropped the writes from the encoded node; the button came back
+    # Sabotage: dropped the writes from the encoded element; the button came back
     # without them and this test went red.
     test "carries a button's writes through untouched", %{document: document} do
       root = %{"context" => %{"branch_name" => "Central"}}

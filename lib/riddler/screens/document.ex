@@ -20,7 +20,7 @@ defmodule Riddler.Screens.Document do
   `Jason.decode!/1` gives - and builds a struct whose fields are atoms. The
   two are different things: what the host writes is JSON, and what this
   package reads is the struct. A screen is `%{key: ..., title: ...,
-  elements: [...]}` and a node is an atom-keyed map carrying `:type`, its `:key`
+  elements: [...]}` and an element is an atom-keyed map carrying `:type`, its `:key`
   and `:condition` where the document declared them, and the fields its type
   names. `metadata` is the one map that keeps its string keys: it is an open
   map by declaration, and a host may put what it likes beside `name`,
@@ -47,16 +47,16 @@ defmodule Riddler.Screens.Document do
   `admit/1` answers `nil` for an input that is not a screen document - not
   a map, or a map whose spine is not a document's: no list of screens, a
   `metadata` that is there and is not an object, `null` included, a screen
-  that is not an object, a screen with no list of nodes, a node that is not
+  that is not an object, a screen with no list of elements, an element that is not
   an object, a variant whose candidates are not a list. It answers
   `nil` too for a value of the wrong JSON type in a field the document schema
-  types: an `id`, a `kind`, a screen's `key` or `title`, or a node's `key`,
+  types: an `id`, a `kind`, a screen's `key` or `title`, or an element's `key`,
   `type` or `condition` that is there and is not a string, `null` included; a
   `schema_version` that is there and is not an integer, a number with no
   fractional part counting as one and admitted as its integer; a `nodes` on a
-  node whose type reads none that is not a list of nodes; and an
+  element whose type reads none that is not a list of elements; and an
   `answer_options` on a choice question that is not a list of objects, or an
-  option whose `value` or `label` is there and is not a string. A list of nodes
+  option whose `value` or `label` is there and is not a string. A list of elements
   there is admitted and dropped, as any field the type does not name is. That
   is the whole of what it refuses, and the document schema refuses each of
   them too, so a value the schema calls a document is admitted. Everything
@@ -64,10 +64,10 @@ defmodule Riddler.Screens.Document do
   that does not parse - is a document that exists and is wrong, and saying
   which is `validate/1`'s job.
 
-  A field this version does not know is not carried onto the admitted node.
+  A field this version does not know is not carried onto the admitted element.
   `metadata` is the declared place for what a host wants to keep beside the
-  vocabulary, and the admitted node map is atom-keyed by declaration, so
-  there is nowhere on a node for an unrecognized key to live. Whether such a
+  vocabulary, and the admitted element map is atom-keyed by declaration, so
+  there is nowhere on an element for an unrecognized key to live. Whether such a
   key should also be a finding is not decided by the record this module
   implements, and this version does not raise one.
 
@@ -77,11 +77,11 @@ defmodule Riddler.Screens.Document do
   the wording:
 
     * `document.unknown_kind` - the envelope names a content kind this
-      package has no runtime for. The finding carries the value and no node
-      key, because the envelope is the document's and not any one node's.
+      package has no runtime for. The finding carries the value and no element
+      key, because the envelope is the document's and not any one element's.
     * `document.invalid_schema_version` - the envelope declares a
       `schema_version` other than the two this package implements, 1 and 2.
-      No node key, for the same reason.
+      No element key, for the same reason.
     * `document.other_version_spelling` - a screen or a variant carries the
       other version's key for its children: `elements` in a version 1
       document, or one declaring no version, and `nodes` in a version 2
@@ -92,28 +92,28 @@ defmodule Riddler.Screens.Document do
     * `document.unknown_type` - the registry has no such type.
     * `document.duplicate_key` - a key used twice anywhere in the document.
       Only the keys that are strings are compared. A key that is not a string
-      is already `document.invalid_key`, and two nodes carrying the same
+      is already `document.invalid_key`, and two elements carrying the same
       non-string key are never reported as a duplicate: there is no key there
       to have been used twice, and saying there is would tell the author to
       rename one of them when what each of them needs is a key.
     * `document.invalid_key` - a key missing, a key that is there and is not
       a string, or a key not matching `[a-z][a-z0-9_]*`. One code, three
       messages, because all three are the same mistake from the document's
-      side: the node has no name anything else can use. The first two carry
-      no node key - `element_key` is how a host looks the node up, and neither
+      side: the element has no name anything else can use. The first two carry
+      no element key - `element_key` is how a host looks the element up, and neither
       an absent key nor a key of the wrong form is a name to look one up by -
       and the key the document did write is named in the message.
-    * `document.missing_field` - a field the node's type requires.
+    * `document.missing_field` - a field the element's type requires.
     * `document.level_out_of_range` - a heading level outside 1 to 6.
     * `document.invalid_condition` - a condition that does not parse.
     * `document.invalid_template` - a template field holding a construct
       outside the template subset, a choice question option's `label`
       among them. The finding carries the construct the template refused,
-      and the node's key.
+      and the element's key.
     * `document.invalid_writes` - a write that does not address a response,
       or whose value is not the constant form.
     * `document.invalid_style` - a `style` is there and is not a string, on a
-      node whose type names one: a button or a choice question. Which string
+      element whose type names one: a button or a choice question. Which string
       it is stays the renderer's business; that it is a string is this
       package's.
     * `document.invalid_validates` - a button's `validates` is there and is
@@ -180,7 +180,7 @@ defmodule Riddler.Screens.Document do
     * `document.secret_reference` - a template, a condition or a button's
       `writes` entry, anywhere in the document, names a secret question's
       response, `responses.<key>`, or a path under it. Its `element_key` is the
-      node carrying the reference and its `field` the field that carries it;
+      element carrying the reference and its `field` the field that carries it;
       the message names the secret question's key, which is not a secret.
     * `document.duplicate_outcome` - two buttons that a screen can show
       together raise the same `outcome`, so a client handed that screen could
@@ -201,9 +201,9 @@ defmodule Riddler.Screens.Document do
   ## Examples
 
       iex> doc = Riddler.Screens.Document.admit(%{
-      ...>   "schema_version" => 1,
+      ...>   "schema_version" => 2,
       ...>   "id" => "edoc_signup",
-      ...>   "screens" => [%{"key" => "account", "title" => "Create your account", "nodes" => [
+      ...>   "screens" => [%{"key" => "account", "title" => "Create your account", "elements" => [
       ...>     %{"type" => "heading", "key" => "account_heading", "level" => 1, "text" => "Create your account"}
       ...>   ]}]
       ...> })
@@ -257,7 +257,8 @@ defmodule Riddler.Screens.Document do
   An admitted screen: its key, its title, and its elements in order, whichever
   version the document was written in. A screen that carried the other
   version's key carries that key as `:other_version_spelling`, which is what
-  `validate/1` refuses it by.
+  `validate/1` refuses it by. The key is an internal mark, not part of what a
+  host reads: a valid document never carries it, and resolution drops it.
   """
   @type screen :: %{
           required(:key) => String.t() | nil,
@@ -277,7 +278,7 @@ defmodule Riddler.Screens.Document do
 
   defstruct schema_version: nil, kind: @default_kind, id: nil, metadata: %{}, screens: []
 
-  # The fields every node carries whatever its type is. The rest come from
+  # The fields every element carries whatever its type is. The rest come from
   # the type's own `fields/0`.
   @common_fields [:type, :key, :condition]
 
@@ -287,11 +288,11 @@ defmodule Riddler.Screens.Document do
   # passes over the same fields, and both read it through `template_fields/0`.
   @template_fields [:text, :label, :placeholder, :help]
 
-  # The node type whose response no template, condition or write may read.
+  # The element type whose response no template, condition or write may read.
   @secret_type "secret_question"
 
   # A choice question's options. An option's `label` is a template too, but it
-  # is not a field of the node, so it is not on the list above: the refusal
+  # is not a field of the element, so it is not on the list above: the refusal
   # below and the render in `Riddler.Screens` each read it beside that list.
   # An option's `value` is literal text.
   @choice_type "choice_question"
@@ -354,12 +355,12 @@ defmodule Riddler.Screens.Document do
 
   The checks are the document's own - keys, conditions, templates,
   duplicates, and the fields each type requires - together with the checks
-  each type raises about itself. Findings come back in document order, node
-  by node, with the duplicate keys first because they are about the document
-  rather than about any one node.
+  each type raises about itself. Findings come back in document order, element
+  by element, with the duplicate keys first because they are about the document
+  rather than about any one element.
 
-      iex> doc = Riddler.Screens.Document.admit(%{"screens" => [
-      ...>   %{"key" => "account", "title" => "Create your account", "nodes" => [
+      iex> doc = Riddler.Screens.Document.admit(%{"schema_version" => 2, "screens" => [
+      ...>   %{"key" => "account", "title" => "Create your account", "elements" => [
       ...>     %{"type" => "carousel", "key" => "pictures"}
       ...>   ]}
       ...> ]})
@@ -607,12 +608,12 @@ defmodule Riddler.Screens.Document do
   defp other_spelling(admitted, other), do: Map.put(admitted, @other_spelling, other)
 
   # A choice question's `answer_options` is the one field a type names that
-  # the document schema types, under a conditional on the node's `type`: an
+  # the document schema types, under a conditional on the element's `type`: an
   # array of objects, each `value` and `label` a string where present. A value
   # of another shape there is not a document, as for every field the schema
   # types. Each option is admitted atom-keyed, carrying the `value` and `label`
-  # the document wrote and nothing else, as a node carries only the fields its
-  # type names. On every other node `answer_options` is a field the type does
+  # the document wrote and nothing else, as an element carries only the fields its
+  # type names. On every other element `answer_options` is a field the type does
   # not name, untyped by the schema and dropped above whatever it holds.
   #
   # The selection bounds are not typed by the schema, and a bound with no
@@ -844,12 +845,12 @@ defmodule Riddler.Screens.Document do
 
   # -- each button a screen can show raises its own outcome -------------------
 
-  # A screen's own nodes are all shown together, conditions aside, so the
+  # A screen's own elements are all shown together, conditions aside, so the
   # buttons under one of them are compared with the buttons under every other.
-  # The buttons under one node are never compared with each other: the only
-  # node that holds others is a variant, which resolves to one winner, so at
-  # most one button under it is ever shown. Walking the screen's nodes in
-  # order, each button whose outcome a button under an earlier node already
+  # The buttons under one element are never compared with each other: the only
+  # element that holds others is a variant, which resolves to one winner, so at
+  # most one button under it is ever shown. Walking the screen's elements in
+  # order, each button whose outcome a button under an earlier element already
   # raised is one finding naming the first such button.
   defp outcome_findings(screen) do
     {findings, _seen} =
@@ -897,7 +898,7 @@ defmodule Riddler.Screens.Document do
           %Finding{
             code: "document.unknown_type",
             message:
-              "#{inspect(node.type)} is not a node type this package knows; the types are #{Enum.join(Registry.types(), ", ")}",
+              "#{inspect(node.type)} is not an element type this package knows; the types are #{Enum.join(Registry.types(), ", ")}",
             field: "type",
             element_key: Finding.element_key(node[:key])
           }
@@ -906,7 +907,7 @@ defmodule Riddler.Screens.Document do
       {:ok, module} ->
         key = Finding.element_key(node[:key])
 
-        key_findings(node[:key], "the #{node.type} node") ++
+        key_findings(node[:key], "the #{node.type} element") ++
           condition_findings(node, key) ++
           spelled_fields(missing_findings(node, module, key), version) ++
           other_spelling_findings(node, node.type, version) ++
@@ -937,7 +938,7 @@ defmodule Riddler.Screens.Document do
     [
       %Finding{
         code: "document.invalid_key",
-        message: "#{what} carries no key, and a key is how everything else names a node",
+        message: "#{what} carries no key, and a key is how everything else names an element",
         field: "key",
         element_key: nil
       }
@@ -946,14 +947,14 @@ defmodule Riddler.Screens.Document do
 
   # A key that is there and is not a string is a different mistake from an
   # absent one, and the author fixing it needs to be told which: they wrote a
-  # key, and they wrote it in a form nothing can name a node by. The value is
+  # key, and they wrote it in a form nothing can name an element by. The value is
   # named here and not put on `element_key`, for the reason the moduledoc gives.
   defp key_findings(key, what) do
     [
       %Finding{
         code: "document.invalid_key",
         message:
-          "#{what} carries #{inspect(key)} as its key, and a key is the string that names a node",
+          "#{what} carries #{inspect(key)} as its key, and a key is the string that names an element",
         field: "key",
         element_key: nil
       }
@@ -1015,7 +1016,7 @@ defmodule Riddler.Screens.Document do
         not refused?(node, field) do
       %Finding{
         code: "document.missing_field",
-        message: "a #{node.type} node carries #{field}, and this one does not",
+        message: "a #{node.type} element carries #{field}, and this one does not",
         field: Atom.to_string(field),
         element_key: key
       }
@@ -1047,8 +1048,8 @@ defmodule Riddler.Screens.Document do
     node_fields ++ option_template_findings(node, key)
   end
 
-  # Each option's `label`, after the node's own template fields and in the
-  # order the options are listed. The finding is the one a node's template
+  # Each option's `label`, after the element's own template fields and in the
+  # order the options are listed. The finding is the one an element's template
   # field raises, on the question's key; the message names the option.
   defp option_template_findings(%{type: @choice_type, answer_options: options}, key)
        when is_list(options) do
@@ -1184,7 +1185,7 @@ defmodule Riddler.Screens.Document do
       {:error, findings} ->
         Enum.map(findings, fn finding ->
           # The wrapped refusal's position is a place in the template this
-          # node writes, so it survives the re-wrap. The message already
+          # element writes, so it survives the re-wrap. The message already
           # carries it as prose; carrying the field too is what spares a
           # host parsing that sentence, and this is the door a host with a
           # document comes through.

@@ -1,14 +1,14 @@
 defmodule Riddler.Screens.Registry do
   @moduledoc """
-  The node types this version of the runtime knows, by the name a document
+  The element types this version of the runtime knows, by the name a document
   spells them with.
 
   A document's `type` is an open string: the schema does not enumerate the
   types, so a host may carry a document holding a type through a validator
   older than that type without having it rejected on the way. This registry
   is the other half of that rule. It does enumerate them, so a type it does
-  not know is refused here, loudly, naming the type and the node - never a
-  node quietly passed through as though the runtime had understood it.
+  not know is refused here, loudly, naming the type and the element - never an
+  element quietly passed through as though the runtime had understood it.
 
   The types are `heading`, `text`, `text_question`, `choice_question`,
   `boolean_question`, `secret_question`, `button` and `variant`.

@@ -190,7 +190,7 @@ defmodule Riddler.Screens.ValueTest do
       end
     end
 
-    # Sabotage: left default and prefill on the presented node; the resolved
+    # Sabotage: left default and prefill on the presented element; the resolved
     # question carried both and this test went red.
     test "a resolved question carries no default and no prefill" do
       {[node], _diagnostics} = resolved([full()], %{})
@@ -228,9 +228,9 @@ defmodule Riddler.Screens.ValueTest do
     end
 
     # Sabotage: skipped the presented value for every question type; the
-    # journey's question node came back without "value" and this test went
+    # journey's question element came back without "value" and this test went
     # red.
-    test "a journey's presented question node carries the value as data" do
+    test "a journey's presented question element carries the value as data" do
       {:ok, %{"screen" => %{"elements" => [node]}}} =
         Journey.present(document([full()]), {:screen, "account"}, %{"context" => @context})
 

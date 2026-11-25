@@ -2,7 +2,7 @@ defmodule Riddler.Screens.Value do
   @moduledoc false
 
   # A question's `default` and `prefill`, and the `value` a resolved question
-  # node presents from them. Shared by the three question types that take
+  # element presents from them. Shared by the three question types that take
   # both - `text_question`, `choice_question` and `boolean_question` - and by
   # `Riddler.Screens`, which presents the value. A secret question takes
   # neither and presents no value; its refusal of both is its own.
@@ -17,7 +17,7 @@ defmodule Riddler.Screens.Value do
   # The presented value is the first of these that yields one: a response
   # the root holds for the question, as written; the value at the prefill's
   # path, where it is one the question's default could be; the default, put
-  # to the same test. A node none of them yields one for carries no value.
+  # to the same test. An element none of them yields one for carries no value.
   # The value is presentation only: response validation reads the responses
   # the root holds and never a value.
   #

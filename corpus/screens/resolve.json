@@ -153,7 +153,7 @@
           "responses": {}
         }
       },
-      "name": "Include condition: the node is hidden and its condition reported when the root carries nothing to decide it with"
+      "name": "Include condition: the element is hidden and its condition reported when the root carries nothing to decide it with"
     },
     {
       "expected": {
@@ -205,7 +205,7 @@
           }
         }
       },
-      "name": "Include condition: the node is shown, and carries no condition, once the condition holds"
+      "name": "Include condition: the element is shown, and carries no condition, once the condition holds"
     },
     {
       "expected": {
@@ -1303,7 +1303,7 @@
         },
         "screen": "confirm"
       },
-      "name": "The signup wizard's confirm screen at two seats shows the referral question, and no node carries a condition"
+      "name": "The signup wizard's confirm screen at two seats shows the referral question, and no element carries a condition"
     },
     {
       "expected": {
@@ -3551,7 +3551,7 @@
           "responses": {}
         }
       },
-      "name": "A question's messages are carried on the resolved node as written, on every question type"
+      "name": "A question's messages are carried on the resolved element as written, on every question type"
     },
     {
       "expected": {

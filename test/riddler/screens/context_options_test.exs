@@ -143,7 +143,7 @@ defmodule Riddler.Screens.ContextOptionsTest do
       refute Map.has_key?(node, :answer_options_from)
     end
 
-    # Sabotage: read the options before the node's templates were rendered;
+    # Sabotage: read the options before the element's templates were rendered;
     # the host's label was rendered as a template and this test went red.
     test "an option's label read from context is the host's text and is not rendered" do
       plans = [%{"value" => "business", "label" => "Business for {{ context.company }}"}]
@@ -216,7 +216,7 @@ defmodule Riddler.Screens.ContextOptionsTest do
       refute Map.has_key?(presented, :answer_options_from)
     end
 
-    # Sabotage: presented the node before its options were read from context;
+    # Sabotage: presented the element before its options were read from context;
     # the prefill among the context's options was not presented and this test
     # went red.
     test "a prefill is presented where it is among the options the context holds" do
@@ -228,7 +228,7 @@ defmodule Riddler.Screens.ContextOptionsTest do
       refute Map.has_key?(presented, :value)
     end
 
-    # Sabotage: made the context read a no-op; the presented node carried the
+    # Sabotage: made the context read a no-op; the presented element carried the
     # path and no options, and this test went red.
     test "a journey's presented question carries the options as data" do
       {:ok, %{"screen" => %{"elements" => [node]}}} =

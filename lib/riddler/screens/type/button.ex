@@ -76,7 +76,7 @@ defmodule Riddler.Screens.Type.Button do
   # Which style it is stays the renderer's, as the moduledoc says; that it is
   # a string is this package's, because a renderer handed a number has no name
   # to look up. Checked only where the button declares one: `style` is
-  # optional and an absent field never reaches the admitted node.
+  # optional and an absent field never reaches the admitted element.
   defp style_findings(node) do
     case Map.fetch(node, :style) do
       {:ok, style} when is_binary(style) ->

@@ -89,7 +89,7 @@ defmodule Riddler.ScreensTest do
       refute Enum.any?(resolved.diagnostics.missing_variables, &(&1.key in keys(screen)))
     end
 
-    # Sabotage: dropped the `render/3` call from `present/3` so a node kept its
+    # Sabotage: dropped the `render/3` call from `present/3` so an element kept its
     # template source; the greeting came back with the braces in it and this
     # test went red.
     test "the account screen with a first name renders the greeting" do
@@ -146,7 +146,7 @@ defmodule Riddler.ScreensTest do
       assert %{key: "plan_business_hint", variable: "responses.first_name"} in resolved.diagnostics.missing_variables
     end
 
-    # Sabotage: made `resolve_nodes/3` keep a hidden node instead of dropping
+    # Sabotage: made `resolve_nodes/3` keep a hidden element instead of dropping
     # it; the referral question and its heading appeared at one seat and this
     # test went red.
     test "the confirm screen at one seat hides the referral question" do
@@ -238,7 +238,7 @@ defmodule Riddler.ScreensTest do
   describe "resolve/2 over the signup fixture" do
     # Sabotage: made the undecidable branch report nothing; the diagnostics
     # list came back empty and this test went red.
-    test "an undecidable condition hides its node and names it" do
+    test "an undecidable condition hides its element and names it" do
       {:ok, resolved} = Screens.resolve(document(), root(%{}))
       plan = Enum.find(resolved.screens, &(&1.key == "plan"))
 
@@ -292,7 +292,7 @@ defmodule Riddler.ScreensTest do
                "The card on file was declined. Try another one."
     end
 
-    # Sabotage: made `decide/3` answer `false` for a node carrying no
+    # Sabotage: made `decide/3` answer `false` for an element carrying no
     # condition; the default never won, the screen came back empty, and this
     # test went red.
     test "the last candidate with no condition is the default" do
@@ -302,7 +302,7 @@ defmodule Riddler.ScreensTest do
       assert keys(hd(resolved.screens)) == ["card_notice_default"]
     end
 
-    # Sabotage: made `shown/3` present a node whose condition came back false;
+    # Sabotage: made `shown/3` present an element whose condition came back false;
     # the notice appeared for a host with no card on file and this test went
     # red.
     test "a container's own condition hides it before any candidate is tried" do
@@ -331,7 +331,7 @@ defmodule Riddler.ScreensTest do
              ]
     end
 
-    # Sabotage: made `present/3` treat a container as an ordinary node; the
+    # Sabotage: made `present/3` treat a container as an ordinary element; the
     # `variant` itself survived into the output and this test went red.
     test "a container no candidate wins resolves to nothing" do
       document =

@@ -15,31 +15,31 @@ defmodule Riddler.Screens.Resolved do
 
   ## The screens
 
-  A resolved screen keeps its `key` and `title` and carries its nodes in the
-  order the document declared them, with the nodes a condition hid absent
+  A resolved screen keeps its `key` and `title` and carries its elements in the
+  order the document declared them, with the elements a condition hid absent
   rather than flagged, every container collapsed to its winner, every template
-  field rendered to text, and no `condition` anywhere: a node that is present
-  is a node that is shown. `writes` is carried through unchanged, because it is
+  field rendered to text, and no `condition` anywhere: an element that is present
+  is an element that is shown. `writes` is carried through unchanged, because it is
   what the host applies when the visitor presses the button.
 
   ## The diagnostics
 
   `missing_variables` carries two kinds of entry, each with the key of the
-  node it was found on: a template variable that was absent (its `variable`
+  element it was found on: a template variable that was absent (its `variable`
   the name the template wanted, once per field that wanted it), and an
   `answer_options_from` path that held no list of options (its `variable` the
   path as written). `undecidable_conditions`
-  names each node whose condition could not be evaluated, together with the
+  names each element whose condition could not be evaluated, together with the
   condition that could not be evaluated. Both are in document order, and both
-  are lists of entries rather than bare keys: one node can want two variables,
+  are lists of entries rather than bare keys: one element can want two variables,
   and a diagnostic that cannot say which variable is a diagnostic an author
   cannot act on.
   """
 
-  @typedoc "A template variable that was absent, and the node that wanted it."
+  @typedoc "A template variable that was absent, and the element that wanted it."
   @type missing_variable :: %{key: term(), variable: String.t()}
 
-  @typedoc "A condition that could not be evaluated, and the node carrying it."
+  @typedoc "A condition that could not be evaluated, and the element carrying it."
   @type undecidable_condition :: %{key: term(), condition: term()}
 
   @typedoc "What resolution reports without refusing."

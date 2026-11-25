@@ -203,7 +203,7 @@ defmodule Riddler.FindingPositionUnitsTest do
     # Mutation: have the re-wrap in `Riddler.Screens.Document.refusals/3` carry
     # the wrapped position with its column converted to characters, and this
     # reddens.
-    test "on a template a document node writes, carried through the re-wrap" do
+    test "on a template a document element writes, carried through the re-wrap" do
       discriminating!(@greeting)
 
       assert [%Finding{code: "document.invalid_template", position: position}] =

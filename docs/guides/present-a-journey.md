@@ -37,13 +37,13 @@ The examples below use one screen of patron registration:
 ```elixir
 document =
   Riddler.Screens.Document.admit(%{
-    "schema_version" => 1,
+    "schema_version" => 2,
     "id" => "patron_registration",
     "screens" => [
       %{
         "key" => "patron_details",
         "title" => "Get your library card",
-        "nodes" => [
+        "elements" => [
           %{
             "type" => "text",
             "key" => "welcome_back",
@@ -92,8 +92,8 @@ Riddler.Journey.present(document, {:screen, "patron_details"}, root)
 ```
 
 `"screen"` is the screen `Riddler.Screens.resolve_screen/3` resolves for that
-key and root, as data: nodes a condition hid are absent, every template is
-rendered, and no `condition` is left on any node.
+key and root, as data: elements a condition hid are absent, every template is
+rendered, and no `condition` is left on any element.
 
 `"diagnostics"` comes inside the screen and lists the variables the root did
 not carry (`"missing_variables"`) and the conditions that could not be
@@ -102,7 +102,7 @@ screen without the report of resolving it.
 
 `"moves"` comes beside the screen, at the root of the answer, on every screen
 answer. It says what a client may submit from this screen, so a client reads
-it and never works it out from the nodes:
+it and never works it out from the elements:
 
 - `"outcomes"` lists the `outcome` of each button the screen shows, in
   document order. A button a condition hid is not listed, and a screen that
@@ -181,19 +181,19 @@ Do not put a secret in a result: it goes to the client as written.
 
 ## What a presented question carries
 
-A question node in a presented screen is the question as resolved, with a few
+A question element in a presented screen is the question as resolved, with a few
 fields a client reads. This document has one text question:
 
 ```elixir
 document =
   Riddler.Screens.Document.admit(%{
-    "schema_version" => 1,
+    "schema_version" => 2,
     "id" => "patron_registration",
     "screens" => [
       %{
         "key" => "patron_details",
         "title" => "Get your library card",
-        "nodes" => [
+        "elements" => [
           %{
             "type" => "text_question",
             "key" => "reminder_email",
@@ -237,7 +237,7 @@ hd(screen["elements"])
   root already holds for the question, as written, so a screen shown again
   after a refused submit shows what the visitor sent. Else it is what the
   `prefill` path reads from `"context"`. Else the question's `default`. A
-  question none of them yields a value for carries no `"value"`. The node
+  question none of them yields a value for carries no `"value"`. The element
   carries neither `prefill` nor `default`. `"value"` is for drawing only:
   validation reads the responses in the root and never a `"value"`, so a
   required question that shows a prefill the visitor did not send back is

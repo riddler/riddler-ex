@@ -466,7 +466,7 @@ defmodule Riddler.CorpusTest do
       assert disagreements == []
     end
 
-    # Sabotage: typed a node's key as an integer in the schema; every document
+    # Sabotage: typed an element's key as an integer in the schema; every document
     # the corpus carries failed validation and this test went red.
     test "validates every document the rest of the corpus carries, resolved documents included" do
       schema = resolved_schema(@document_schema)
@@ -609,7 +609,7 @@ defmodule Riddler.CorpusTest do
     # schema; the button with no outcome validated and this test went red. And
     # again with "text", the boolean question's "label" and the choice
     # question's "answer_options" each dropped from its type's required list.
-    test "holds a node of an enumerated type to its fields, and lets a node of another type through" do
+    test "holds an element of an enumerated type to its fields, and lets an element of another type through" do
       schema = resolved_schema(@presented_schema)
 
       button = %{
@@ -816,7 +816,7 @@ defmodule Riddler.CorpusTest do
     end
 
     # Sabotage: removed the choice question's refusal of "answer_options_from"
-    # from the schema; the node still carrying the path validated and this
+    # from the schema; the element still carrying the path validated and this
     # test went red.
     test "holds a choice question to its options, possibly none, and refuses a path to them" do
       schema = resolved_schema(@presented_schema)

@@ -126,7 +126,7 @@ defmodule Riddler.Screens.Seal do
 
   # A key declared twice - two of a variant's candidates asking the same
   # secret question - names one response, which is checked and sealed once,
-  # under the first node that declares it.
+  # under the first element that declares it.
   defp first_per_key(nodes), do: Enum.uniq_by(nodes, & &1.key)
 
   defp finding(node, code, field, message) do

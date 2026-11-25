@@ -44,7 +44,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
   end
 
   describe "admission" do
-    # Sabotage: removed the "secret_question" row from the registry; the node
+    # Sabotage: removed the "secret_question" row from the registry; the element
     # was document.unknown_type and this test went red.
     test "a secret question carrying key, label, required and help is admitted with no finding" do
       node = pin(%{"help" => "You will type it each time you sign in, {{ context.first_name }}."})
@@ -64,7 +64,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
     end
 
     # Sabotage: added :format to the type's optional fields;
-    # the admitted node carried it and this test went red.
+    # the admitted element carried it and this test went red.
     test "a placeholder, a format or a pattern on a secret question is dropped with no finding" do
       node =
         pin(%{"placeholder" => "Four digits", "format" => "pattern", "pattern" => "[0-9]{4}"})
@@ -123,9 +123,9 @@ defmodule Riddler.Screens.SecretQuestionTest do
     defp text(key, source, overrides \\ %{}),
       do: Map.merge(%{"type" => "text", "key" => key, "text" => source}, overrides)
 
-    # Sabotage: made the reference check answer [] for every node; no
+    # Sabotage: made the reference check answer [] for every element; no
     # document.secret_reference was raised and this test went red.
-    test "a template, a condition and a write naming it are each refused on the node carrying it" do
+    test "a template, a condition and a write naming it are each refused on the element carrying it" do
       nodes = [
         pin(),
         text("pin_echo", "Your PIN is {{ responses.account_pin }}."),
@@ -279,7 +279,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
     end
 
     # Sabotage: made presented/2 delete only :condition; the default reached
-    # the resolved node and this test went red.
+    # the resolved element and this test went red.
     test "a resolved secret question carries no condition, default or prefill" do
       node =
         pin(%{
@@ -341,7 +341,7 @@ defmodule Riddler.Screens.SecretQuestionTest do
     # Mutation: in `lib/riddler/screens.ex`, made `held/2` answer
     # `Map.take(root["responses"], Document.secret_keys(document))` and made the
     # secret clause of `presented/2` put `Map.get(held, node[:key])` under
-    # `:held`, carrying the held response onto the node; the plaintext and the
+    # `:held`, carrying the held response onto the element; the plaintext and the
     # sealed sentinel were each in the encoded answer and this test went red.
     test "neither the plaintext nor the sealed string is anywhere in the encoded presented answer" do
       for {response, held} <- [{@sentinel, false}, {%{"sealed" => @sealed_sentinel}, true}] do
