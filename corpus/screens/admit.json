@@ -7294,6 +7294,499 @@
         }
       },
       "name": "An image whose fit is not a string is an invalid hint"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "key": "plan_rule",
+                  "type": "divider"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A divider carrying no field of its own is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "https://acme.example/terms",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "style": "inline",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link carrying a label, an https href and a style is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "/billing/terms",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link whose href is a host-relative URL is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "context.tenant.terms_url",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link whose href is a path under context is admitted, its value read at resolve"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_url",
+            "element_key": "billing_terms",
+            "field": "href"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "data:image/png;base64,iVBORw0KGgo=",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link whose href is a data URL is refused, a link never taking one"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_url",
+            "element_key": "billing_terms",
+            "field": "href"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "javascript:alert(1)",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link whose href is a javascript URL is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_url",
+            "element_key": "billing_terms",
+            "field": "href"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "http://acme.example/terms",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link whose href is an http URL is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_url",
+            "element_key": "billing_terms",
+            "field": "href"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "https://acme.example/terms?plan={{ context.plan }}",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link whose href carries template syntax is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_context_path",
+            "element_key": "billing_terms",
+            "field": "href"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "context.Tenant.terms",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link whose href begins context. and is not a path under context is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.missing_field",
+            "element_key": "billing_terms",
+            "field": "href"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link carrying no href is missing a field"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_style",
+            "element_key": "billing_terms",
+            "field": "style"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "https://acme.example/terms",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "style": 1,
+                  "type": "link"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link whose style is not a string is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "href": "https://acme.example/terms",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "outcome": "terms_read",
+                  "type": "link",
+                  "validates": false,
+                  "writes": {
+                    "responses.plan": [
+                      "const",
+                      "business"
+                    ]
+                  }
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link carrying an outcome, writes and validates is admitted with each dropped"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "key": "plan_note",
+                  "style": "caption",
+                  "text": "Billed monthly.",
+                  "type": "text"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A text whose style is caption is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_style",
+            "element_key": "plan_note",
+            "field": "style"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "key": "plan_note",
+                  "style": [
+                    "caption"
+                  ],
+                  "text": "Billed monthly.",
+                  "type": "text"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A text whose style is not a string is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "alt": "",
+                  "key": "tenant_logo",
+                  "src": "/images/acme.png",
+                  "type": "image"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "An image in a version 1 document is admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 1,
+          "screens": [
+            {
+              "key": "account",
+              "nodes": [
+                {
+                  "href": "https://acme.example/terms",
+                  "key": "billing_terms",
+                  "label": "Read the billing terms",
+                  "type": "link"
+                },
+                {
+                  "key": "plan_rule",
+                  "type": "divider"
+                }
+              ],
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A link and a divider in a version 1 document are admitted"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"
