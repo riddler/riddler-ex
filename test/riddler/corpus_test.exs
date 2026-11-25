@@ -60,7 +60,7 @@ defmodule Riddler.CorpusTest do
   # a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
     "corpus/screens/admit.json" => 154,
-    "corpus/screens/resolve.json" => 58,
+    "corpus/screens/resolve.json" => 59,
     "corpus/screens/validate_screen.json" => 79,
     "corpus/screens/seal_secrets.json" => 15,
     "corpus/templates/render.json" => 74,
