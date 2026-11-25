@@ -245,6 +245,43 @@
           "if": {
             "properties": {
               "type": {
+                "const": "image"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "alt": {
+                "description": "What a visitor who cannot see the image is told, rendered; the empty string marks it decorative.",
+                "type": "string"
+              },
+              "fit": {
+                "description": "A hint a renderer owns.",
+                "type": "string"
+              },
+              "size": {
+                "description": "A hint a renderer owns.",
+                "type": "string"
+              },
+              "src": {
+                "description": "A URL by the document's URL rule: https://, host-relative, or a data: image the document wrote. Never a path.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "src",
+              "alt"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
                 "const": "text_question"
               }
             },
@@ -511,7 +548,7 @@
           }
         }
       ],
-      "description": "A resolved element. No element carries a condition. The types this schema enumerates are heading, text, text_question, choice_question, boolean_question, secret_question and button; an element of one of them carries a key and is held to its type's fields below. An element of any other type needs only its type, and is not refused here.",
+      "description": "A resolved element. No element carries a condition. The types this schema enumerates are heading, text, image, text_question, choice_question, boolean_question, secret_question and button; an element of one of them carries a key and is held to its type's fields below. An element of any other type needs only its type, and is not refused here.",
       "not": {
         "required": [
           "condition"

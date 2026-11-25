@@ -4588,6 +4588,495 @@
         }
       },
       "name": "A version 2 document resolves to what its version 1 form resolves to, keeping the version it declared"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "alt": "The Acme logo",
+                "key": "tenant_logo",
+                "size": "icon",
+                "src": "data:image/png;base64,iVBORw0KGgo=",
+                "type": "image"
+              }
+            ],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "alt": "The {{ context.tenant.name }} logo",
+                  "key": "tenant_logo",
+                  "size": "icon",
+                  "src": "data:image/png;base64,iVBORw0KGgo=",
+                  "type": "image"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "logo_url": null,
+              "name": "Acme"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "An image whose src is a literal data URL carries it as written, its alt rendered"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "alt": "The Acme logo",
+                "key": "tenant_logo",
+                "src": "https://cdn.example/acme.png",
+                "type": "image"
+              }
+            ],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "alt": "The {{ context.tenant.name }} logo",
+                  "key": "tenant_logo",
+                  "src": "context.tenant.logo_url",
+                  "type": "image"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "logo_url": "https://cdn.example/acme.png",
+              "name": "Acme"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "An image whose src path reaches an https URL carries that URL"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "alt": "The Acme logo",
+                "key": "tenant_logo",
+                "src": "/images/acme.png",
+                "type": "image"
+              }
+            ],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "alt": "The {{ context.tenant.name }} logo",
+                  "key": "tenant_logo",
+                  "src": "context.tenant.logo_url",
+                  "type": "image"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "logo_url": "/images/acme.png",
+              "name": "Acme"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "An image whose src path reaches a host-relative URL carries that URL"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "tenant_logo",
+              "variable": "context.tenant.logo_url"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "alt": "The {{ context.tenant.name }} logo",
+                  "key": "tenant_logo",
+                  "src": "context.tenant.logo_url",
+                  "type": "image"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "logo_url": "http://cdn.example/acme.png",
+              "name": "Acme"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "An image whose src path reaches an http URL is dropped and its path reported, not its value"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "tenant_logo",
+              "variable": "context.tenant.logo_url"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "alt": "The {{ context.tenant.name }} logo",
+                  "key": "tenant_logo",
+                  "src": "context.tenant.logo_url",
+                  "type": "image"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "logo_url": "javascript:alert(1)",
+              "name": "Acme"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "An image whose src path reaches a javascript URL is dropped and its path reported"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "tenant_logo",
+              "variable": "context.tenant.logo_url"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "alt": "The {{ context.tenant.name }} logo",
+                  "key": "tenant_logo",
+                  "src": "context.tenant.logo_url",
+                  "type": "image"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "logo_url": "data:image/png;base64,iVBORw0KGgo=",
+              "name": "Acme"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "An image whose src path reaches a data URL is dropped and its path reported, a data URL being admitted only where the document wrote it"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "tenant_logo",
+              "variable": "context.tenant.logo_url"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "alt": "The {{ context.tenant.name }} logo",
+                  "key": "tenant_logo",
+                  "src": "context.tenant.logo_url",
+                  "type": "image"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "logo_url": "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=",
+              "name": "Acme"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "An image whose src path reaches an SVG data URL is dropped and its path reported"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "tenant_logo",
+              "variable": "context.tenant.logo_url"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "alt": "The {{ context.tenant.name }} logo",
+                  "key": "tenant_logo",
+                  "src": "context.tenant.logo_url",
+                  "type": "image"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "logo_url": 42,
+              "name": "Acme"
+            }
+          },
+          "responses": {}
+        }
+      },
+      "name": "An image whose src path reaches a value that is not a string is dropped and its path reported"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [
+            {
+              "key": "tenant_logo",
+              "variable": "context.tenant.logo_url"
+            }
+          ],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [],
+            "key": "account",
+            "title": "Create your account"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "alt": "The {{ context.tenant.name }} logo",
+                  "key": "tenant_logo",
+                  "src": "context.tenant.logo_url",
+                  "type": "image"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "An image whose src path reaches nothing is dropped and reported once, its alt not rendered"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

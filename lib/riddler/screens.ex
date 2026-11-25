@@ -49,12 +49,25 @@ defmodule Riddler.Screens do
   and the winner replaces the container, so nothing downstream needs to know a
   container was ever there. A container no candidate wins resolves to nothing.
 
-  Every template field - `text`, `label`, `placeholder` and `help`, and the `label` of
+  Every template field - `text`, `label`, `placeholder`, `help` and an image's
+  `alt`, and the `label` of
   each of a choice question's `answer_options` - is rendered leniently: a
   variable the root does not carry renders as the empty string and is reported
   in `missing_variables`, so a visitor sees a screen rather than an error page.
   An option's `value` is literal and is left as written. An element that is hidden is never rendered, so it contributes no
   missing variables.
+
+  An image's `src` is a URL or a path under `context`. A path is read from
+  `"context"` when the image is shown, and the resolved image carries the
+  value it reaches where that is an `https://` URL or a host-relative one, as
+  `Riddler.Screens.Type.Image` states the rule; a `data:` URL is admitted only
+  where the document wrote it. Where the path reaches nothing, a value that is
+  not a string, or a URL the rule refuses, the image is absent from the
+  resolved screen and reported in `missing_variables` under its key, its
+  `variable` the path as written; the value is reported nowhere, and the
+  image's `alt` is not rendered. No resolved image carries a path. A literal
+  `src` the rule refuses is a document `validate/1` refuses; a document no one
+  validated resolves without that image.
 
   A choice question that names `answer_options_from` reads its options from
   `"context"` at that path when it is resolved, and carries them as
@@ -182,6 +195,7 @@ defmodule Riddler.Screens do
   alias Riddler.Screens.Seal
   alias Riddler.Screens.Type.SecretQuestion
   alias Riddler.Screens.Upgrade
+  alias Riddler.Screens.Url
   alias Riddler.Screens.Validation
   alias Riddler.Screens.Value
   alias Riddler.Template
@@ -752,11 +766,22 @@ defmodule Riddler.Screens do
   # carried its candidates under the other version's key only is resolved as
   # a leaf, as a container carrying none is, and what admission marked it
   # with is the document's refusal, not a field of the element.
+  #
+  # An element carrying a URL has it read first: one whose path reached no URL
+  # the rule admits is absent, reported once by its path, and its templates
+  # are never rendered, so it contributes no other missing variable.
   defp resolve_leaf(node, root, held, diagnostics) do
     node = Map.delete(node, :other_version_spelling)
-    {node, diagnostics} = render(node, root, diagnostics)
-    {node, unread} = ContextOptions.resolve(node, root["context"])
-    {presented(node, root, held), missing(diagnostics, node[:key], unread)}
+
+    case Url.resolve(node, root["context"]) do
+      {:drop, variables} ->
+        {nil, missing(diagnostics, node[:key], variables)}
+
+      {:ok, node} ->
+        {node, diagnostics} = render(node, root, diagnostics)
+        {node, unread} = ContextOptions.resolve(node, root["context"])
+        {presented(node, root, held), missing(diagnostics, node[:key], unread)}
+    end
   end
 
   # A resolved element carries no condition. A secret question carries no initial

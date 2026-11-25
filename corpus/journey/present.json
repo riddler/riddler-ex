@@ -6661,6 +6661,91 @@
         "status": "screen"
       },
       "name": "A version 2 document presents exactly the answer its version 1 form presents"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "account_submitted"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [
+              {
+                "key": "tenant_badge",
+                "variable": "context.tenant.badge_url"
+              }
+            ],
+            "undecidable_conditions": []
+          },
+          "elements": [
+            {
+              "alt": "The Acme logo",
+              "key": "tenant_logo",
+              "size": "banner",
+              "src": "https://cdn.example/acme.png",
+              "type": "image"
+            },
+            {
+              "key": "account_next",
+              "label": "Continue",
+              "outcome": "account_submitted",
+              "type": "button"
+            }
+          ],
+          "key": "account",
+          "title": "Create your account"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "alt": "The {{ context.tenant.name }} logo",
+                  "key": "tenant_logo",
+                  "size": "banner",
+                  "src": "context.tenant.logo_url",
+                  "type": "image"
+                },
+                {
+                  "alt": "",
+                  "key": "tenant_badge",
+                  "src": "context.tenant.badge_url",
+                  "type": "image"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_submitted",
+                  "type": "button"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "tenant": {
+              "badge_url": "http://cdn.example/badge.png",
+              "logo_url": "https://cdn.example/acme.png",
+              "name": "Acme"
+            }
+          },
+          "responses": {}
+        },
+        "screen": "account",
+        "status": "screen"
+      },
+      "name": "A screen status presents an image at the URL its path reached, and leaves out an image whose path reached an http URL, reporting the path"
     }
   ],
   "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"
