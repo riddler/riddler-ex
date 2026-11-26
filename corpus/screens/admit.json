@@ -8814,6 +8814,324 @@
         }
       },
       "name": "A bound under a format that reads no bound is consulted by nothing, and admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": []
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "checks": [
+                    {
+                      "code": "check.emails_differ",
+                      "condition": "responses.work_email_again == responses.work_email",
+                      "message": "The two email addresses do not match."
+                    }
+                  ],
+                  "key": "work_email_again",
+                  "label": "Type the email again",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "checks": [
+                    {
+                      "code": "check.too_many_seats",
+                      "condition": "responses.seats::integer <= context.plan.max_seats",
+                      "message": "This plan takes fewer seats."
+                    }
+                  ],
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "min": 1,
+                  "type": "text_question"
+                },
+                {
+                  "checks": [
+                    {
+                      "code": "check.unknown_referral",
+                      "condition": "responses.referral == 'friend'",
+                      "message": "Tell us who referred you."
+                    }
+                  ],
+                  "condition": "context.show_referral == true",
+                  "key": "referral",
+                  "label": "Who referred you?",
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_created",
+                  "type": "button"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A question's checks, each a condition, an author's code and a message, are admitted"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_check",
+            "element_key": "account_next",
+            "field": "checks"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "checks": [
+                    {
+                      "code": "check.emails_differ",
+                      "condition": "responses.work_email_again == responses.work_email",
+                      "message": "The two email addresses do not match."
+                    }
+                  ],
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_created",
+                  "type": "button"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Checks on an element that is not a question are refused rather than dropped"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_check",
+            "element_key": "work_email_again",
+            "field": "checks"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "checks": [
+                    {
+                      "code": "response.format",
+                      "condition": "responses.work_email_again == responses.work_email",
+                      "message": "The two email addresses do not match."
+                    }
+                  ],
+                  "key": "work_email_again",
+                  "label": "Type the email again",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A check's code outside the check namespace is refused, a code the package raises included"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_check",
+            "element_key": "seats",
+            "field": "checks"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "checks": [
+                    {
+                      "code": "check.too_many_seats",
+                      "condition": "responses.seats::integer <= context.plan.max_seats",
+                      "message": "This plan takes fewer seats."
+                    },
+                    {
+                      "code": "check.too_many_seats",
+                      "condition": "responses.work_email_again == responses.work_email",
+                      "message": "The two email addresses do not match."
+                    }
+                  ],
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "Two checks on one question carrying one code: the later one is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_check",
+            "element_key": "work_email_again",
+            "field": "checks"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "checks": [
+                    {
+                      "code": "check.emails_differ",
+                      "condition": "responses.work_email_again == responses.work_email"
+                    }
+                  ],
+                  "key": "work_email_again",
+                  "label": "Type the email again",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A check with no message is refused"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_condition",
+            "element_key": "work_email_again",
+            "field": "checks"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "checks": [
+                    {
+                      "code": "check.emails_differ",
+                      "condition": "responses.work_email_again ==",
+                      "message": "The two email addresses do not match."
+                    }
+                  ],
+                  "key": "work_email_again",
+                  "label": "Type the email again",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A check's condition that does not parse is refused, its field checks"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.secret_reference",
+            "element_key": "work_email",
+            "field": "checks"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "key": "card_pin",
+                  "label": "Choose a PIN",
+                  "type": "secret_question"
+                },
+                {
+                  "checks": [
+                    {
+                      "code": "check.pin_set",
+                      "condition": "responses.card_pin != ''",
+                      "message": "Choose a PIN first."
+                    }
+                  ],
+                  "key": "work_email",
+                  "label": "Work email",
+                  "type": "text_question"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        }
+      },
+      "name": "A check whose condition reads a secret question's response is refused, its field checks"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"

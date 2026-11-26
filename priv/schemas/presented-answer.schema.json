@@ -161,6 +161,29 @@
           },
           "type": "array"
         },
+        "undecidable_checks": {
+          "description": "A check the root could not decide, whose question is shown and which raised no finding. Present only where it holds an entry.",
+          "items": {
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "code",
+              "condition"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
         "undecidable_conditions": {
           "description": "A condition the root could not decide; its element is hidden.",
           "items": {

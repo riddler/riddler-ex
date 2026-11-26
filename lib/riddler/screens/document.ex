@@ -23,7 +23,9 @@ defmodule Riddler.Screens.Document do
   elements: [...]}` and an element is an atom-keyed map carrying `:type`, its `:key`
   and `:condition` where the document declared them, its
   `:accessible_label` and `:accessible_description` where the document wrote
-  them, on any type, and the fields its type names. `metadata` is the one
+  them, on any type, its `:checks` where the document wrote them, each check
+  that is an object carried atom-keyed with its `:condition`, `:code` and
+  `:message` and nothing else, and the fields its type names. `metadata` is the one
   map that keeps its string keys: it is an open map by declaration, and a
   host may put what it likes beside `name`, `description` and `domain`.
 
@@ -106,7 +108,18 @@ defmodule Riddler.Screens.Document do
       and the key the document did write is named in the message.
     * `document.missing_field` - a field the element's type requires.
     * `document.level_out_of_range` - a heading level outside 1 to 6.
-    * `document.invalid_condition` - a condition that does not parse.
+    * `document.invalid_condition` - a condition that does not parse, an
+      element's or a check's; a check's carries the `field` `"checks"` and a
+      message naming the check by its place and its code.
+    * `document.invalid_check` - a `checks` on an element that is not a
+      question, or one that is not a list; and, per entry, an entry that is
+      not an object, one with no `condition`, `code` or `message`, a `code`
+      that is not a string of two or more dotted segments beginning `check`
+      (an author's code, which this package never raises), a `message` that
+      is not a non-empty string, and a `code` an earlier check on the same
+      question carries. Its `field` is `"checks"`, and its message names the
+      entry by its place, counting from one, and by its code where it carries
+      one.
     * `document.invalid_template` - a template field holding a construct
       outside the template subset, a choice question option's `label` and
       `description`, an image's `alt`, and the `accessible_label` and
@@ -199,8 +212,8 @@ defmodule Riddler.Screens.Document do
       `default` or a `prefill`, its `field` naming which. A secret is a value
       only the visitor supplies, and the finding never repeats what the field
       holds.
-    * `document.secret_reference` - a template, a condition or a button's
-      `writes` entry, anywhere in the document, names a secret question's
+    * `document.secret_reference` - a template, a condition, a check's
+      condition or a button's `writes` entry, anywhere in the document, names a secret question's
       response, `responses.<key>`, or a path under it. Its `element_key` is the
       element carrying the reference and its `field` the field that carries it;
       the message names the secret question's key, which is not a secret.
@@ -238,6 +251,7 @@ defmodule Riddler.Screens.Document do
   """
 
   alias Riddler.Finding
+  alias Riddler.Screens.Checks
   alias Riddler.Screens.Compilers
   alias Riddler.Screens.Registry
   alias Riddler.Template
@@ -304,8 +318,12 @@ defmodule Riddler.Screens.Document do
   # the type's own `fields/0`. The accessible label and description are here
   # rather than in any type's list because every type may carry them; both are
   # templates, so they are on the template list below too.
+  #
+  # `checks` is here too: only a question takes it, and on any other element it
+  # is refused rather than dropped, so admission carries it wherever it was
+  # written for `validate/1` to say which.
   @accessible_fields [:accessible_label, :accessible_description]
-  @common_fields [:type, :key, :condition | @accessible_fields]
+  @common_fields [:type, :key, :condition, :checks | @accessible_fields]
 
   # The string fields a document writes as templates. Every other string in a
   # document is literal text. This is the one declaration of the list: the
@@ -528,7 +546,7 @@ defmodule Riddler.Screens.Document do
   defp admit_node(_raw, _spelling), do: :error
 
   defp admit_common(raw, other, spelling) do
-    common = Map.put_new(take(raw, @common_fields), :type, nil)
+    common = raw |> take(@common_fields) |> Map.put_new(:type, nil) |> admit_checks()
 
     case Registry.fetch(common.type) do
       {:ok, module} ->
@@ -540,6 +558,9 @@ defmodule Riddler.Screens.Document do
              do: {:ok, common}
     end
   end
+
+  defp admit_checks(%{checks: checks} = common), do: %{common | checks: Checks.admit(checks)}
+  defp admit_checks(common), do: common
 
   defp admit_typed(raw, common, module, other, spelling) do
     %{required: required, optional: optional} = module.fields()
@@ -950,6 +971,7 @@ defmodule Riddler.Screens.Document do
           template_findings(node, key) ++
           secret_reference_findings(node, key, secrets) ++
           spelled_fields(module.validate(node), version) ++
+          check_findings(node, key, secrets) ++
           Enum.flat_map(candidates(node), &node_findings(&1, secrets, version))
     end
   end
@@ -1040,6 +1062,176 @@ defmodule Riddler.Screens.Document do
       field: "condition",
       element_key: key,
       position: position
+    }
+  end
+
+  # -- a question's checks ----------------------------------------------------
+
+  # A `checks` on an element that is not a question, or one that is not a
+  # list, is one finding. Otherwise each entry is read in list order, and an
+  # entry's findings come in this order: not an object; each of `condition`,
+  # `code` and `message` missing; a `code` not in the `check.` shape; a
+  # `message` that is not a non-empty string; a `code` an earlier entry
+  # carries; then its condition, as an element's condition is read: not a
+  # string, not parsing, and naming a secret question's response. Every
+  # finding's `field` is `"checks"`, and its message names the entry by its
+  # place, counting from one, and by its code where the entry carries a string
+  # one.
+  defp check_findings(%{checks: checks} = node, key, secrets) do
+    cond do
+      node.type not in Checks.question_types() ->
+        [
+          invalid_check(
+            "checks are carried by a question, and a #{node.type} element is not one",
+            key
+          )
+        ]
+
+      not is_list(checks) ->
+        [invalid_check("checks is a list of checks, not #{inspect(checks)}", key)]
+
+      true ->
+        {findings, _codes} =
+          checks
+          |> Enum.with_index(1)
+          |> Enum.reduce({[], []}, fn {entry, place}, {findings, codes} ->
+            {findings ++ entry_findings(entry, place, codes, key, secrets), seen(entry, codes)}
+          end)
+
+        findings
+    end
+  end
+
+  defp check_findings(_node, _key, _secrets), do: []
+
+  defp seen(%{code: code}, codes) when is_binary(code), do: codes ++ [code]
+  defp seen(_entry, codes), do: codes
+
+  defp entry_findings(entry, place, codes, key, secrets) when is_map(entry) do
+    named = named_check(place, entry)
+
+    missing =
+      for field <- Checks.fields(), not Map.has_key?(entry, field) do
+        invalid_check("#{named} carries no #{field}", key)
+      end
+
+    missing ++
+      code_findings(entry, named, key) ++
+      message_findings(entry, named, key) ++
+      repeated_code_findings(entry, named, codes, key) ++
+      check_condition_findings(entry, named, key, secrets)
+  end
+
+  defp entry_findings(entry, place, _codes, key, _secrets) do
+    [
+      invalid_check(
+        "check #{place} is an object of condition, code and message, not #{inspect(entry)}",
+        key
+      )
+    ]
+  end
+
+  defp code_findings(%{code: code}, named, key) do
+    if Checks.code?(code) do
+      []
+    else
+      [
+        invalid_check(
+          "the code of #{named} is #{inspect(code)}, and an author's code is a string in the check. namespace: check, then one or more segments joined by dots, each a lower-case letter followed by lower-case letters, digits and underscores",
+          key
+        )
+      ]
+    end
+  end
+
+  defp code_findings(_entry, _named, _key), do: []
+
+  defp message_findings(%{message: message}, _named, _key)
+       when is_binary(message) and message != "",
+       do: []
+
+  defp message_findings(%{message: message}, named, key) do
+    [
+      invalid_check(
+        "the message of #{named} is the text its author shows, a non-empty string, not #{inspect(message)}",
+        key
+      )
+    ]
+  end
+
+  defp message_findings(_entry, _named, _key), do: []
+
+  defp repeated_code_findings(%{code: code}, named, codes, key) when is_binary(code) do
+    if code in codes do
+      [
+        invalid_check(
+          "#{named} carries a code an earlier check on this question carries, and each check on a question carries its own",
+          key
+        )
+      ]
+    else
+      []
+    end
+  end
+
+  defp repeated_code_findings(_entry, _named, _codes, _key), do: []
+
+  # A check's condition is refused as an element's condition is, by the same
+  # codes, its `field` `"checks"` telling a host the condition is a check's.
+  defp check_condition_findings(%{condition: condition}, named, key, secrets)
+       when is_binary(condition) do
+    parse =
+      for %Finding{} = finding <- compile_condition(condition, key) do
+        %{
+          finding
+          | field: "checks",
+            message: "the condition of #{named} does not parse: " <> after_lead(finding.message)
+        }
+      end
+
+    paths = condition_paths(condition)
+
+    secret =
+      for secret <- secrets, names_response?(paths, secret) do
+        %Finding{
+          code: "document.secret_reference",
+          message:
+            "the condition of #{named} reads responses.#{secret}, the response to the secret question #{inspect(secret)}, and no template, condition or write reads a secret question's response",
+          field: "checks",
+          element_key: key
+        }
+      end
+
+    parse ++ secret
+  end
+
+  defp check_condition_findings(%{condition: condition}, named, key, _secrets) do
+    [
+      %Finding{
+        code: "document.invalid_condition",
+        message: "the condition of #{named} is #{inspect(condition)}, which is not a condition",
+        field: "checks",
+        element_key: key
+      }
+    ]
+  end
+
+  defp check_condition_findings(_entry, _named, _key, _secrets), do: []
+
+  defp after_lead("the condition does not parse: " <> rest), do: rest
+  defp after_lead(message), do: message
+
+  defp named_check(place, %{code: code}) when is_binary(code),
+    do: "check #{place} (#{inspect(code)})"
+
+  defp named_check(place, _entry), do: "check #{place}"
+
+  defp invalid_check(message, key) do
+    %Finding{
+      code: "document.invalid_check",
+      message: message,
+      field: "checks",
+      element_key: key
     }
   end
 

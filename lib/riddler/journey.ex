@@ -158,7 +158,8 @@ defmodule Riddler.Journey do
   @typedoc """
   `"key"`, `"title"`, `"elements"` (the resolved elements, string-keyed) and
   `"diagnostics"` => `%{"missing_variables" => [...],
-  "undecidable_conditions" => [...]}`.
+  "undecidable_conditions" => [...]}`, with `"undecidable_checks" => [...]`
+  beside them where resolution reported a check it could not decide.
   """
   @type screen :: %{required(String.t()) => term()}
 
@@ -181,7 +182,9 @@ defmodule Riddler.Journey do
   `"elements"` as resolution leaves them - hidden elements absent, each container
   collapsed to its winner, every template field rendered, no `condition`
   anywhere, `writes` carried through - and `"diagnostics"`, with
-  `"missing_variables"` and `"undecidable_conditions"` in document order. The
+  `"missing_variables"` and `"undecidable_conditions"` in document order, and
+  `"undecidable_checks"` beside them where resolution reported a check it
+  could not decide; no element carries `checks`. The
   diagnostics ride inside the screen, so a caller is never handed a screen
   without the report of resolving it.
 

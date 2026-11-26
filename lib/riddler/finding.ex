@@ -62,13 +62,15 @@ defmodule Riddler.Finding do
       one sentence; this field is the same fact in the form an editor can act
       on without parsing that sentence.
     * `:author_message` - what the document's author says a refused response
-      tells the visitor, or `nil`. It is set on exactly one kind of finding:
-      one `Riddler.Screens.validate_screen/3` or `/4` raises on a question's
-      response, where that question's `messages` carries the finding's code,
-      and it is then that string as written. Every other finding carries
-      `nil`: every `document.*` finding, `response.undecidable`, every
-      refusal of `Riddler.Screens.seal_secrets/4`, and a response finding on
-      a question whose `messages` does not carry its code. It never replaces
+      tells the visitor, or `nil`. It is set on two kinds of finding, both
+      raised by `Riddler.Screens.validate_screen/3` or `/4` on a question's
+      response: a built-in finding whose code that question's `messages`
+      carries, and it is then that string as written; and the finding a
+      failing check raises, and it is then the check's `message` as written.
+      Every other finding carries `nil`: every `document.*` finding,
+      `response.undecidable`, every refusal of
+      `Riddler.Screens.seal_secrets/4`, and a response finding on a question
+      whose `messages` does not carry its code. It never replaces
       `:message`, which stays this package's own sentence; where a finding is
       shown to a visitor, a renderer shows this where it is a string and its
       own text otherwise.
