@@ -1,4 +1,0 @@
-### Added
-
-- An authoring schema, `priv/authoring/screen-authoring.schema.json`, that an authoring tool validates a screen document against while it is written: the element types are enumerated, each type takes exactly the fields the type registry names for it and the fields every element shares, and a field the runtime does not read is refused rather than dropped. A document `Riddler.Screens.Document.validate/1` accepts, and carrying no field it drops, validates against it. The transport schema, `priv/schemas/screen-document.schema.json`, is unchanged, and `type` stays an open string there.
-- Element instructions, `priv/authoring/screen-elements.md`: a short plain text per element type, saying what the type is and the fields it requires and takes. Both files are generated from the type registry by `mix riddler.authoring`, ship in the package, and are never edited by hand; `mix riddler.authoring --check` reports a committed copy that differs.
