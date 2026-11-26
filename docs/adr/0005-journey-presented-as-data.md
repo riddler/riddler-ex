@@ -2615,7 +2615,7 @@ sentence on a later key scoped). It was re-verified at the tag and again at
   presented schema's description says "hidden elements absent" and scopes its
   later-release sentence to "a key a later release adds".
 - Decision 6's sentence and the two counts are read as the note of this date
-  above, bead rd-d8rq, says.
+  above says.
 
 **A presented screen carries `image`, `divider` and `link`, the new formats
 and hints, and an accessible label.** It shipped in riddler 0.9.0, the
