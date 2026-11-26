@@ -97,9 +97,13 @@ defmodule Riddler.MixProject do
       # in the tarball - but a later `priv/` addition should have to say that it
       # ships rather than ship by being in the right folder. `test/packaging_test.exs`
       # fails on a schema this list does not cover.
+      # `priv/authoring` ships for the same reason: an authoring tool reads the
+      # authoring schema and the element instructions out of the installed
+      # application directory.
       # The explanation and how-to pages ship because the README links them by a
       # relative path, and hex.pm resolves README links against the tarball.
-      files: ~w(lib priv/schemas mix.exs .formatter.exs README.md LICENSE CHANGELOG.md
+      files:
+        ~w(lib priv/schemas priv/authoring mix.exs .formatter.exs README.md LICENSE CHANGELOG.md
            docs/guides/ask-a-choice-question.md docs/guides/post-a-submit.md
            docs/guides/present-a-journey.md docs/guides/seal-a-secret-answer.md
            docs/guides/supply-options-at-run-time.md docs/upgrading/from-0-7-0.md

@@ -29,6 +29,8 @@ defmodule Riddler.PackagingTest do
 
   use ExUnit.Case, async: true
 
+  alias Riddler.Screens.Authoring
+
   @schema_dir "priv/schemas"
 
   # Sabotage: removing "priv/schemas" from mix.exs's package files: list turned
@@ -65,6 +67,16 @@ defmodule Riddler.PackagingTest do
         assert schema in packaged,
                "#{schema} is not in the package tarball; package files: expands to " <>
                  inspect(Enum.sort(packaged))
+      end
+    end
+
+    # Sabotage: removed "priv/authoring" from mix.exs's package files: list;
+    # both authoring files were named as missing and this test went red.
+    test "covers the authoring schema and the element instructions" do
+      packaged = packaged_files()
+
+      for file <- Authoring.paths() do
+        assert file in packaged, "#{file} is not in the package tarball"
       end
     end
   end
