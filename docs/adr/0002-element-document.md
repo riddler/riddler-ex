@@ -4433,7 +4433,7 @@ is changed, and this note decides nothing.
 
 ## Amendment, 2026-11-24: the children of a screen are `elements`, as `schema_version` 2
 
-Status: proposed
+Status: accepted (2026-11-26, riddler 0.8.0)
 
 Recorded 2026-11-24, bead rd-jezd. That the children of a screen and of a
 container are renamed from `nodes` to `elements` as version 2 of the
@@ -4875,7 +4875,7 @@ in a version 1 document), `element_key`, and a question owns its
 
 ## Amendment, 2026-11-24: `image`, `divider` and `link`, the URL rule, the date and time formats, the hints and an accessible label
 
-Status: proposed
+Status: accepted (2026-11-26, riddler 0.9.0)
 
 Recorded 2026-11-24, bead rd-6sdv. Eight additions to the vocabulary were
 ruled by the operator, 2026-11-24, with the dates as `text_question`
@@ -5430,7 +5430,7 @@ version 1 document), `element_key`, and a question owns its `answer_options`.
 
 ## Amendment, 2026-11-24: a question's `checks`, conditions its author writes and the host's validation evaluates
 
-Status: proposed
+Status: accepted (2026-11-26, riddler 0.9.0)
 
 Recorded 2026-11-24, bead rd-t1ap. That a question may carry checks its
 author writes as predicator conditions, evaluated in the host like the rest
@@ -5948,7 +5948,7 @@ its `answer_options`.
 
 ## Amendment, 2026-11-26: a text question's `step` that is not a number is refused whatever the format
 
-Status: proposed
+Status: accepted (2026-11-26, riddler 0.9.0)
 
 Recorded 2026-11-26, bead rd-d3jo. That a `step` that is there and is not a
 number is refused at admit whatever the format was ruled by the operator,
@@ -6019,3 +6019,201 @@ the one the amendment above names; no code is added.
 
 - Whether `step` is ever checked against a response, and a `step` for the
   date and time formats, as the amendment above leaves them.
+
+---
+
+Noted 2026-11-26, bead rd-8yzh. Two notes by addition on the amendment above
+headed "the children of a screen are `elements`, as `schema_version` 2", read
+against `main` at `fde4a57`, the commit tagged `v0.9.0`, and at `d2e2d94`, the
+commit tagged `v0.8.0`.
+
+**What the screen document schema types, by version.** The amendment says,
+under "One screen document schema describes both versions", that "A screen
+and an element each type `elements` and `nodes` as a list of elements", and
+that "The schema makes neither key required nor forbidden by the value of
+`schema_version`". Neither sentence holds as written at either commit. The
+code half kept riddler 0.7.0's answers for a version 1 document and for a
+version this package does not implement (`43743a4`, "Keeps 0.7.0 answers for
+version 1 and others", and `413c7e6`, "Agrees schema and admission at every
+version", both in `v0.8.0`), and at both commits
+`priv/schemas/screen-document.schema.json` and admission (the module
+attribute `@spellings` and the private `spelling/2` and `held/2` in
+`lib/riddler/screens/document.ex`) agree on this:
+
+- `nodes` is a list of elements on a screen and on an element at every
+  version.
+- `elements` is a list of elements wherever a document is read from
+  `elements`: at version 2, and at a version this package does not implement
+  when none of its screens carries `nodes`. Wherever a document is read from
+  `nodes` - version 1, a document declaring no version, and a version this
+  package does not implement when any of its screens carries `nodes` -
+  `elements` is a key nothing reads, of any value, as 0.7.0 dropped it. A
+  version 1 screen or `variant` carrying it is still refused by
+  `document.other_version_spelling`, the value unread.
+- At a version this package does not implement, a document any of whose
+  screens carries `nodes` is held to `nodes` on every screen: that is where
+  the schema makes a key required by the value of `schema_version`. Such a
+  document is still `document.invalid_schema_version` once admitted.
+- The typing at version 2 is held in a second definition,
+  `element_version_2`, beside `element`, through conditionals on
+  `schema_version` at the top of the schema.
+
+The rest of that paragraph holds at both commits: a screen requires one of
+the two keys, the definition `node` is named `element`, `schema_version` is
+typed an integer and its description names the two versions and the key each
+spells, a document whose screen or container carries the other version's key
+in the shape the schema gives it is a document refused by
+`document.other_version_spelling`, and the schema's description still says
+"schema-valid means admitted".
+
+**The `validate_screen` worked example's root.** The amendment's last worked
+example validates with a root whose `"responses"` holds `"reminder_email":
+"ada-at-example"`, and says either form answers one finding,
+`response.format`. Read that root as the resolve example's root, its
+`"context"` `{"returning": "yes", "first_name": "Ada", "age": 34}`, with that
+response added; so read, either form answers exactly that one finding, its
+`field` `"format"` and its `element_key` `"reminder_email"`, at both commits.
+A root carrying the response and no `"context"` leaves the conditions of
+`welcome_back` and `card_notice_child` undecidable and answers
+`response.undecidable` for each before the `response.format`, as the
+amendment above headed "the screen validated is the screen shown" decides.
+
+Nothing above is changed, and this note decides nothing new: it states what
+the code half already on `main` does.
+
+---
+
+Noted 2026-11-26. The four amendments above headed "the children of a screen
+are `elements`, as `schema_version` 2", "`image`, `divider` and `link`, the
+URL rule, the date and time formats, the hints and an accessible label", "a
+question's `checks`, conditions its author writes and the host's validation
+evaluates" and "a text question's `step` that is not a number is refused
+whatever the format" move from `proposed` to `accepted`, each Status line
+flipped in place and nothing else in them reworded. The record's own Status
+stays accepted, and its row in `docs/adr/README.md` is unchanged. The flip was
+decided by the conductor under a standing consent, 2026-11-26.
+
+**The children of a screen are `elements`, as `schema_version` 2.** It
+shipped in riddler 0.8.0, the commit tagged `v0.8.0` (`d2e2d94`) and
+published on Hex; its code half is `71c651d` (version 2 admitted, the other
+version's key refused, the code surface renamed), `43743a4` and `413c7e6`
+(0.7.0's answers kept for version 1 and other versions, the schema and
+admission agreed), `69921a2` (the data form spelled `elements` and
+`element_key`), and `cae4a0b` and `370ac23` (the upgrade task and its pure
+function). It was re-verified at the tag and again at `fde4a57`, every cite
+re-located by anchor. What was read:
+
+- `Riddler.Screens.Document.validate/1` raises
+  `document.other_version_spelling`, its `field` the key refused and its
+  `element_key` the screen's or the variant's, for each case the worked
+  examples list, and nothing for what sits under the refused key; a
+  `schema_version` of `3` is `document.invalid_schema_version`, its
+  `element_key` `nil`, its message naming 1 and 2; `2.0` is version 2.
+- A screen of the admitted struct carries its children as `elements`, and
+  `schema_version` as the document declared it. `Riddler.Screens.resolve/2`
+  keeps that `schema_version`, and the worked example's version 2 form, its
+  version 1 form and its form with no `schema_version` resolve to the same
+  screen.
+- `Riddler.Finding` carries `:element_key` and no `:node_key`;
+  `Riddler.Screens.Type.element/0` stands where `node_t/0` stood;
+  `finding.schema.json` names and requires `element_key`; the corpus case
+  schema describes an expected finding by `code`, `field` and `element_key`;
+  `encode_findings/1` in `lib/riddler/corpus.ex` writes those three; and
+  `corpus/screens/admit.json` holds the refusal in both directions beside the
+  version 1 cases.
+- `Riddler.Screens.upgrade/1` rewrites the worked example's version 1 form,
+  with or without its `schema_version`, to exactly its version 2 form, and
+  `mix riddler.upgrade` rewrites a file holding a version 1 document as
+  version 2, its `schema_version` and the `nodes` of each screen and
+  `variant` and nothing else.
+- `test/packaging_test.exs` still holds `priv/schemas/` to one document
+  schema. From riddler 0.9.0 the package also ships
+  `priv/authoring/screen-authoring.schema.json` (`df24063`), the schema an
+  authoring tool validates a document against while it is written; it sits
+  outside `priv/schemas/`, its own description says the transport schema
+  stays the contract for carrying a document, and the amendment's sentence
+  is read as being about that transport schema.
+- The two sentences on what the schema types are superseded by the code half
+  above, as the note of this date above, bead rd-8yzh, says, and the
+  `validate_screen` worked example is read with the root that note gives.
+
+**`image`, `divider` and `link`, the URL rule, the date and time formats, the
+hints and an accessible label.** It shipped in riddler 0.9.0, the commit
+tagged `v0.9.0` (`fde4a57`) and published on Hex; its code half is `2e2539a`
+(the image and the URL rule), `3d5085f` (the divider, the link and a text's
+`style`), `2c910de` (`chips`, `searchable` and an option's `description`),
+`7ef91cc` (the accessible label and description), `88afa89` (the date and
+time formats and `document.invalid_bound`) and `e03898d` (`style` and `step`
+on a text question). It was re-verified at the tag. What was read:
+
+- The worked screen is admitted, and resolves for the branch root as the
+  amendment says; with the photo URL an `http:` URL, absent, or a `data:`
+  URL, `branch_photo` is absent and `missing_variables` holds its entry with
+  the path and not the value. A winner dropped for its path leaves its
+  `variant` resolving to nothing.
+- Every validation listed answers as written, and every thing an author might
+  write answers the finding listed, its `field` and its `element_key`; each
+  hint the table types answers its code when it is not a string, or for
+  `searchable` not a boolean; a `data:` image of 65,534 bytes is admitted
+  and one over 65,536 is not; a `//` or `/\` start, `http:`, `javascript:`
+  and whitespace are refused; no `invalid_url` message quotes a payload.
+- `2026-11-24T16:30:00Z` and `2026-11-24T09:30:00-07:00` compare equal, a
+  lower-case `z` and a fraction of a second are `response.format`, and a
+  `time` written `HH:MM` equals `HH:MM:00`.
+- An option read by `answer_options_from` carries its `value` and `label`
+  alone. The screen document schema gains `accessible_label` and
+  `accessible_description` on `element`, untyped, and nothing else since
+  `d2e2d94`.
+- Its sentence on a `step` under another format, or none, "it is a field
+  nothing consults, as a `pattern` is without its format, and raises
+  nothing", and the two table rows the amendment of 2026-11-26 names, are
+  superseded where the `step` is not a number by that amendment, accepted in
+  this request: such a `step` is `document.invalid_step` whatever the format
+  (`5fd1a4c`). A `step` that is a number under another format, `-1`
+  included, still raises nothing.
+
+**A question's `checks`, conditions its author writes and the host's
+validation evaluates.** It shipped in riddler 0.9.0 (`fde4a57`); its code
+half is `80c98cd`. It was re-verified at the tag. What was read:
+
+- Every validation of the `patron_contact` screen answers as written: the
+  check's finding carries the author's code, `field` `"checks"`, the
+  question's `element_key`, `position` `nil` and the check's `message` as
+  `author_message`, and a message naming the question's label and the code
+  and no response; the built-in finding wins over a check, a blank response
+  reads no check, the three failing checks come in question order, and a
+  press through a button declaring `validates` as `false` is `:ok`.
+- The undecided root answers `response.required` alone, and
+  `resolve_screen/3` reports the three `undecidable_checks` entries in
+  document order; with no responses the diagnostics carry the two lists
+  alone; `" 7"` passes the format and leaves its check undecidable.
+- Every thing an author might write answers the finding listed, its `field`
+  `"checks"`; a resolved question carries no `checks`.
+- `Riddler.Finding`'s `:author_message` bullet names a check's finding, as
+  the amendment's "Which sentences this supersedes" says the code half would;
+  nothing in `lib/` raises a code beginning `check.`; `mix.lock` resolves
+  predicator 9.4.1.
+
+**A text question's `step` that is not a number is refused whatever the
+format.** It shipped in riddler 0.9.0 (`fde4a57`); its code half is
+`5fd1a4c`, the private `step_findings/1` in
+`lib/riddler/screens/type/text_question.ex`. A string `step` under `email`,
+and a `null` or a boolean `step` with no format, are `document.invalid_step`,
+its `field` `"step"`; a number under another format is admitted; `2.0` with
+`integer` and `0.5` with `number` are admitted; the presented answer's schema
+types `step` a number.
+
+Three sentences are read, not changed:
+
+- **Their own status.** Each amendment's opening paragraph calls its own part
+  written "at `proposed`". It was written so; it now reads accepted, by this
+  note.
+- **What is described and not cited.** Each says nothing it adds is citable
+  from `lib/`, `priv/` or `corpus/` until the code lands, and the step
+  amendment cites its code half by anchor alone. All of it has landed, at the
+  commits above.
+- **ADR-0001's corpus sentences.** The elements amendment leaves ADR-0001's
+  sentences on comparing a corpus finding by `node_key` unamended; the note
+  of this date at the foot of ADR-0001 reads them by `element_key`.
+
+The notes above that read any of the four stand under the acceptance.
