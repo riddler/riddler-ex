@@ -20,7 +20,11 @@ defmodule Riddler.Screens.Authoring do
   # The key and check-code patterns are the runtime's own regex sources, each
   # ending in `$`. A validator with PCRE semantics, as this suite uses, reads
   # them as `validate/1` does; an ECMA-262 validator also refuses a key or a
-  # code ending in a line break, which `validate/1` admits.
+  # code ending in a line break, which `validate/1` admits. An authored
+  # option's `value` takes the key pattern too, and there the difference runs
+  # the other way: `validate/1` reads a value anchored with `\A` and `\z` and
+  # refuses one ending in a line break, which a PCRE validator admits against
+  # this schema.
   #
   # The instructions are a short plain text per type: the sentence below, kept
   # here beside the registry rather than in the written file, and the type's

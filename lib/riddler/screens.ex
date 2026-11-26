@@ -12,9 +12,11 @@ defmodule Riddler.Screens do
 
   Both are pure and total over anything an admitted document can hold: they
   consult no store, raise on nothing, and report what they could not decide
-  rather than refusing it. Both report through the same pair of diagnostics:
-  `resolve/2` carries them on the resolved document, `resolve_screen/3` answers
-  with them beside the screen.
+  rather than refusing it. Both report through the same diagnostics,
+  `missing_variables` and `undecidable_conditions`, and a third list,
+  `undecidable_checks`, where a check was not decided: `resolve/2` carries
+  them on the resolved document, `resolve_screen/3` answers with them beside
+  the screen.
 
   ## The root
 
@@ -50,8 +52,10 @@ defmodule Riddler.Screens do
   container was ever there. A container no candidate wins resolves to nothing.
 
   Every template field - `text`, `label` (a link's among them), `placeholder`,
-  `help` and an image's `alt`, and the `label` and `description` of
-  each of a choice question's `answer_options` - is rendered leniently: a
+  `help` and an image's `alt`, the `accessible_label` and
+  `accessible_description` any element may carry, and the `label` and
+  `description` of each of a choice question's `answer_options` - is
+  rendered leniently: a
   variable the root does not carry renders as the empty string and is reported
   in `missing_variables`, so a visitor sees a screen rather than an error page.
   An option's `value` is literal and is left as written. An element that is hidden is never rendered, so it contributes no
