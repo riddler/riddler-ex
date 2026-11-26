@@ -270,6 +270,28 @@ defmodule Riddler.Screens.DateTimeFormatTest do
       assert codes(q, "2026-11-24T09:00-07:60") == [{"response.format", "format"}]
       assert codes(q, "2026-11-24T09:00+14:00") == :ok
     end
+
+    # Sabotage: made the offset reading refuse a `-` sign with zero hours and
+    # minutes; -00:00 was not read and this test went red.
+    test "reads the offset -00:00 as UTC, the same instant as Z" do
+      assert Temporal.read("datetime", "2026-11-24T16:30:00-00:00") ==
+               Temporal.read("datetime", "2026-11-24T16:30:00Z")
+
+      q = question("datetime", %{"max" => "2026-11-24T16:30:00Z"})
+
+      assert codes(q, "2026-11-24T16:30:00-00:00") == :ok
+      assert codes(q, "2026-11-24T16:30:01-00:00") == [{"response.out_of_range", "max"}]
+    end
+
+    # Sabotage: made the datetime reading fall back to the date reading where
+    # its expression did not match; the date-only string was read as
+    # midnight UTC and this test went red.
+    test "refuses a date with no time and no offset" do
+      q = question("datetime")
+
+      assert Temporal.read("datetime", "2026-11-24") == :error
+      assert codes(q, "2026-11-24") == [{"response.format", "format"}]
+    end
   end
 
   describe "a bound refused at admit" do
