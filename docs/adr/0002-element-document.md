@@ -6134,7 +6134,7 @@ re-located by anchor. What was read:
   stays the contract for carrying a document, and the amendment's sentence
   is read as being about that transport schema.
 - The two sentences on what the schema types are superseded by the code half
-  above, as the note of this date above, bead rd-8yzh, says, and the
+  above, as the note of this date above says, and the
   `validate_screen` worked example is read with the root that note gives.
 
 **`image`, `divider` and `link`, the URL rule, the date and time formats, the

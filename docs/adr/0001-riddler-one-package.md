@@ -1754,7 +1754,7 @@ compares at this date" and the notes under it, and in the flip note of
 and `element_key`: `encode_findings/1` in `lib/riddler/corpus.ex` writes
 those three keys and no other at both commits, and no case under `corpus/`
 carries `node_key` at either. A case those sentences say expects a null
-`node_key` expects a null `element_key`. The `@doc false` coercion the
-position amendment names as Riddler.Finding.node_key/1 is
+`node_key` expects a null `element_key`. The `@doc false` coercion the note
+of 2026-09-17 on the source position names as Riddler.Finding.node_key/1 is
 Riddler.Finding.element_key/1, still `@doc false` and doing the same.
 Nothing above is changed, and this note decides nothing.
