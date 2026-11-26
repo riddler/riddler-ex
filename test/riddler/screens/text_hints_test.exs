@@ -116,19 +116,34 @@ defmodule Riddler.Screens.TextHintsTest do
     end
 
     # Sabotage: read the step as the number format's whatever the format; the
-    # zero and the string on the email, date and formatless questions were
-    # refused and this test went red.
-    test "with any other format, or none, a step raises nothing and is carried" do
-      for format <- [nil, "email", "phone", "date", "pattern"], step <- [0, -2, "fast"] do
-        element =
-          seats_question(%{"step" => step})
-          |> then(&if(format, do: Map.put(&1, "format", format), else: &1))
-          |> then(&if(format == "pattern", do: Map.put(&1, "pattern", "[0-9]+"), else: &1))
+    # zero and the negative step on the email, date and formatless questions
+    # were refused and this test went red.
+    test "with any other format, or none, a number step raises nothing and is carried" do
+      for format <- [nil, "email", "phone", "date", "pattern"], step <- [0, -2, 0.5, 3] do
+        element = non_numeric_question(format, step)
 
         assert findings([element]) == [], inspect({format, step})
         assert %{step: ^step} = admitted_element([element])
       end
     end
+
+    # Sabotage: restored the step check to the numeric formats alone; the
+    # string, boolean and null steps on the email, date and formatless
+    # questions raised nothing and this test went red.
+    test "with any other format, or none, a step that is not a number is an invalid step" do
+      for format <- [nil, "email", "phone", "date", "pattern"],
+          step <- ["fast", "1", true, nil] do
+        assert findings([non_numeric_question(format, step)]) ==
+                 [{"document.invalid_step", "seat_count", "step"}],
+               inspect({format, step})
+      end
+    end
+  end
+
+  defp non_numeric_question(format, step) do
+    seats_question(%{"step" => step})
+    |> then(&if(format, do: Map.put(&1, "format", format), else: &1))
+    |> then(&if(format == "pattern", do: Map.put(&1, "pattern", "[0-9]+"), else: &1))
   end
 
   describe "resolution, response validation and presentation" do
@@ -218,6 +233,31 @@ defmodule Riddler.Screens.TextHintsTest do
                  put_in(answer, ["screen", "elements"], [broken, button])
                ),
                inspect(broken)
+      end
+    end
+
+    # A step under a format that does not read it is carried to the presented
+    # question as written, and the presented-answer schema types it a number
+    # whatever the format, so admission refusing a step that is not a number is
+    # what keeps every presented answer valid against that schema.
+    # Sabotage: typed step as a string in the presented-answer schema; the
+    # presented email and formatless questions failed validation and this
+    # test went red.
+    test "a number step under a non-numeric format presents an answer the schema accepts" do
+      schema =
+        "priv/schemas/presented-answer.schema.json"
+        |> File.read!()
+        |> Jason.decode!()
+        |> ExJsonSchema.Schema.resolve()
+
+      for {format, step} <- [{"email", 2}, {"date", 0.5}, {nil, -1}] do
+        elements = [non_numeric_question(format, step), next_button()]
+
+        {:ok, answer} = Journey.present(document(elements), {:screen, "plan"}, root(%{}))
+
+        [question, _button] = answer["screen"]["elements"]
+        assert %{"step" => ^step} = question
+        assert ExJsonSchema.Validator.valid?(schema, answer), inspect({format, step})
       end
     end
 

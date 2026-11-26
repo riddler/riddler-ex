@@ -458,7 +458,7 @@
                 "type": "boolean"
               },
               "step": {
-                "description": "A hint a renderer owns: the increment a slider or a stepper moves by, carried as the document wrote it. This package reads it only under the integer and number formats, and response validation does not read it.",
+                "description": "A hint a renderer owns: the increment a slider or a stepper moves by, carried as the document wrote it. A step that is not a number is refused at admit whatever the format; this package reads its value only under the integer and number formats, and response validation does not read it.",
                 "type": "number"
               },
               "style": {
