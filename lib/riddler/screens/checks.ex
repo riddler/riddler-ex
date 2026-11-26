@@ -44,6 +44,11 @@ defmodule Riddler.Screens.Checks do
   @spec code?(term()) :: boolean()
   def code?(code), do: is_binary(code) and Regex.match?(@code_shape, code)
 
+  # The code shape as a pattern source, for the authoring schema.
+  @doc false
+  @spec code_pattern() :: String.t()
+  def code_pattern, do: Regex.source(@code_shape)
+
   # -- admission --------------------------------------------------------------
 
   # A list of checks is admitted entry by entry: an entry that is an object

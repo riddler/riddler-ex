@@ -455,6 +455,11 @@ defmodule Riddler.Screens.Document do
   @spec formats() :: [String.t()]
   def formats, do: @formats
 
+  # The key shape as a pattern source, for the authoring schema.
+  @doc false
+  @spec key_pattern() :: String.t()
+  def key_pattern, do: Regex.source(@key_shape)
+
   # The keys of every secret question the document declares, on any screen and
   # among any variant's candidates, whatever its condition. Only a key that is
   # a string names a response. Admission refuses a reference to one of these

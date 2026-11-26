@@ -1,0 +1,1211 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "else": {
+        "properties": {
+          "screens": {
+            "items": {
+              "$ref": "#/definitions/screen_version_1"
+            }
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": 2
+          }
+        },
+        "required": [
+          "schema_version"
+        ]
+      },
+      "then": {
+        "properties": {
+          "screens": {
+            "items": {
+              "$ref": "#/definitions/screen_version_2"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "check": {
+      "additionalProperties": false,
+      "description": "A question's check: a condition its response has to satisfy, the author's code and the message shown when it does not.",
+      "properties": {
+        "code": {
+          "pattern": "^check(\\.[a-z][a-z0-9_]*)+$",
+          "type": "string"
+        },
+        "condition": {
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "condition",
+        "code",
+        "message"
+      ],
+      "type": "object"
+    },
+    "element_version_1": {
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "boolean_question"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A question a visitor answers yes or no, shown as a lone checkbox or toggle.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "checks": {
+                "items": {
+                  "$ref": "#/definitions/check"
+                },
+                "type": "array"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "default": {},
+              "format": {},
+              "help": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "messages": {},
+              "prefill": {},
+              "required": {},
+              "type": {
+                "const": "boolean_question"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "label"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "button"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A control a visitor presses; its outcome names what the press raises.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "outcome": {},
+              "style": {},
+              "type": {
+                "const": "button"
+              },
+              "validates": {},
+              "writes": {}
+            },
+            "required": [
+              "type",
+              "key",
+              "label",
+              "outcome"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "choice_question"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "required": [
+                      "answer_options"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "answer_options_from"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "description": "A question a visitor answers by picking one or many of its options, written as answer_options or read from context with answer_options_from, one of the two.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "answer_options": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "description": {},
+                    "label": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "value",
+                    "label"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "answer_options_from": {},
+              "checks": {
+                "items": {
+                  "$ref": "#/definitions/check"
+                },
+                "type": "array"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "default": {},
+              "format": {},
+              "help": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "max_selections": {},
+              "messages": {},
+              "min_selections": {},
+              "prefill": {},
+              "required": {},
+              "searchable": {},
+              "select": {},
+              "style": {},
+              "type": {
+                "const": "choice_question"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "label",
+              "select"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "divider"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A rule between the elements before it and the elements after it.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "type": {
+                "const": "divider"
+              }
+            },
+            "required": [
+              "type",
+              "key"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "heading"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A section title: a level from 1 to 6 and the text of the heading.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "level": {},
+              "text": {},
+              "type": {
+                "const": "heading"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "level",
+              "text"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "image"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A picture, and the alt text a visitor who cannot see it is told.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "alt": {},
+              "condition": {
+                "type": "string"
+              },
+              "fit": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "size": {},
+              "src": {},
+              "type": {
+                "const": "image"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "src",
+              "alt"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "link"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A place a visitor may go from the screen, and the label that names it.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "href": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "style": {},
+              "type": {
+                "const": "link"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "label",
+              "href"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "secret_question"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A question whose response is a secret the visitor types, such as a PIN; it never carries a default or a prefill.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "checks": {
+                "items": {
+                  "$ref": "#/definitions/check"
+                },
+                "type": "array"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "help": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "messages": {},
+              "required": {},
+              "type": {
+                "const": "secret_question"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "label"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A block of authored prose.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "style": {},
+              "text": {},
+              "type": {
+                "const": "text"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "text"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text_question"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A question a visitor answers with a line of text, optionally held to a format.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "checks": {
+                "items": {
+                  "$ref": "#/definitions/check"
+                },
+                "type": "array"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "default": {},
+              "format": {},
+              "help": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "max": {},
+              "messages": {},
+              "min": {},
+              "pattern": {},
+              "placeholder": {},
+              "prefill": {},
+              "required": {},
+              "step": {},
+              "style": {},
+              "type": {
+                "const": "text_question"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "label"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "variant"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A container that shows the first of its candidates whose condition holds, and nothing else.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "nodes": {
+                "items": {
+                  "$ref": "#/definitions/element_version_1"
+                },
+                "type": "array"
+              },
+              "type": {
+                "const": "variant"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "nodes"
+            ]
+          }
+        }
+      ],
+      "description": "An element of a version 1 document: one of the enumerated types, with the fields that type takes.",
+      "properties": {
+        "type": {
+          "enum": [
+            "boolean_question",
+            "button",
+            "choice_question",
+            "divider",
+            "heading",
+            "image",
+            "link",
+            "secret_question",
+            "text",
+            "text_question",
+            "variant"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "element_version_2": {
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "boolean_question"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A question a visitor answers yes or no, shown as a lone checkbox or toggle.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "checks": {
+                "items": {
+                  "$ref": "#/definitions/check"
+                },
+                "type": "array"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "default": {},
+              "format": {},
+              "help": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "messages": {},
+              "prefill": {},
+              "required": {},
+              "type": {
+                "const": "boolean_question"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "label"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "button"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A control a visitor presses; its outcome names what the press raises.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "outcome": {},
+              "style": {},
+              "type": {
+                "const": "button"
+              },
+              "validates": {},
+              "writes": {}
+            },
+            "required": [
+              "type",
+              "key",
+              "label",
+              "outcome"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "choice_question"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "required": [
+                      "answer_options"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "answer_options_from"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "description": "A question a visitor answers by picking one or many of its options, written as answer_options or read from context with answer_options_from, one of the two.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "answer_options": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "description": {},
+                    "label": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "value",
+                    "label"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "answer_options_from": {},
+              "checks": {
+                "items": {
+                  "$ref": "#/definitions/check"
+                },
+                "type": "array"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "default": {},
+              "format": {},
+              "help": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "max_selections": {},
+              "messages": {},
+              "min_selections": {},
+              "prefill": {},
+              "required": {},
+              "searchable": {},
+              "select": {},
+              "style": {},
+              "type": {
+                "const": "choice_question"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "label",
+              "select"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "divider"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A rule between the elements before it and the elements after it.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "type": {
+                "const": "divider"
+              }
+            },
+            "required": [
+              "type",
+              "key"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "heading"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A section title: a level from 1 to 6 and the text of the heading.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "level": {},
+              "text": {},
+              "type": {
+                "const": "heading"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "level",
+              "text"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "image"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A picture, and the alt text a visitor who cannot see it is told.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "alt": {},
+              "condition": {
+                "type": "string"
+              },
+              "fit": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "size": {},
+              "src": {},
+              "type": {
+                "const": "image"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "src",
+              "alt"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "link"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A place a visitor may go from the screen, and the label that names it.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "href": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "style": {},
+              "type": {
+                "const": "link"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "label",
+              "href"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "secret_question"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A question whose response is a secret the visitor types, such as a PIN; it never carries a default or a prefill.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "checks": {
+                "items": {
+                  "$ref": "#/definitions/check"
+                },
+                "type": "array"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "help": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "messages": {},
+              "required": {},
+              "type": {
+                "const": "secret_question"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "label"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A block of authored prose.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "style": {},
+              "text": {},
+              "type": {
+                "const": "text"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "text"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text_question"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A question a visitor answers with a line of text, optionally held to a format.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "checks": {
+                "items": {
+                  "$ref": "#/definitions/check"
+                },
+                "type": "array"
+              },
+              "condition": {
+                "type": "string"
+              },
+              "default": {},
+              "format": {},
+              "help": {},
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "label": {},
+              "max": {},
+              "messages": {},
+              "min": {},
+              "pattern": {},
+              "placeholder": {},
+              "prefill": {},
+              "required": {},
+              "step": {},
+              "style": {},
+              "type": {
+                "const": "text_question"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "label"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "variant"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "additionalProperties": false,
+            "description": "A container that shows the first of its candidates whose condition holds, and nothing else.",
+            "properties": {
+              "accessible_description": {},
+              "accessible_label": {},
+              "condition": {
+                "type": "string"
+              },
+              "elements": {
+                "items": {
+                  "$ref": "#/definitions/element_version_2"
+                },
+                "type": "array"
+              },
+              "key": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              },
+              "type": {
+                "const": "variant"
+              }
+            },
+            "required": [
+              "type",
+              "key",
+              "elements"
+            ]
+          }
+        }
+      ],
+      "description": "An element of a version 2 document: one of the enumerated types, with the fields that type takes.",
+      "properties": {
+        "type": {
+          "enum": [
+            "boolean_question",
+            "button",
+            "choice_question",
+            "divider",
+            "heading",
+            "image",
+            "link",
+            "secret_question",
+            "text",
+            "text_question",
+            "variant"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "screen_version_1": {
+      "additionalProperties": false,
+      "description": "A screen of a version 1 document: its key, its title, and its elements under nodes.",
+      "properties": {
+        "key": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/definitions/element_version_1"
+          },
+          "type": "array"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "nodes"
+      ],
+      "type": "object"
+    },
+    "screen_version_2": {
+      "additionalProperties": false,
+      "description": "A screen of a version 2 document: its key, its title, and its elements under elements.",
+      "properties": {
+        "elements": {
+          "items": {
+            "$ref": "#/definitions/element_version_2"
+          },
+          "type": "array"
+        },
+        "key": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "elements"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "Generated by mix riddler.authoring from the element type registry; never edited by hand. The schema an authoring tool validates a screen document against while it is written: the element types are enumerated, each type takes exactly the fields the registry names for it and the fields every element shares, and a field this version does not read is refused. The transport schema, screen-document.schema.json, stays the contract for carrying a document, with type an open string. A document the runtime accepts with no finding, and carrying no field it drops, validates here; what a schema cannot state - a condition that parses, a template in the subset, a key used once in the document - stays a finding the runtime raises. A version 2 document spells a screen's and a variant's children elements, and a version 1 document, or one declaring no version, spells them nodes.",
+  "properties": {
+    "id": {
+      "description": "The name of the document.",
+      "type": "string"
+    },
+    "kind": {
+      "description": "The content kind; absent means screens.",
+      "enum": [
+        "screens"
+      ]
+    },
+    "metadata": {
+      "description": "An open map a host keeps beside the vocabulary.",
+      "type": "object"
+    },
+    "schema_version": {
+      "description": "1 or 2, and absent means 1.",
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "screens": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "screens"
+  ],
+  "title": "Screen document for authoring",
+  "type": "object"
+}
