@@ -9487,7 +9487,7 @@
                 {
                   "key": "seats",
                   "label": "How many seats?",
-                  "step": "fast",
+                  "step": -2,
                   "type": "text_question"
                 }
               ],
@@ -9600,6 +9600,141 @@
         }
       },
       "name": "An integer question step written as a string is an invalid step"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_step",
+            "element_key": "seats",
+            "field": "step"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "email",
+                  "key": "seats",
+                  "label": "Work email",
+                  "step": "1",
+                  "type": "text_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A text question step written as a string under the email format is an invalid step"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_step",
+            "element_key": "seats",
+            "field": "step"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "step": "fast",
+                  "type": "text_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A text question step written as a string on a question with no format is an invalid step"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_step",
+            "element_key": "seats",
+            "field": "step"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "date",
+                  "key": "seats",
+                  "label": "Start date",
+                  "step": true,
+                  "type": "text_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A text question step that is a boolean under the date format is an invalid step"
+    },
+    {
+      "expected": {
+        "admitted": true,
+        "findings": [
+          {
+            "code": "document.invalid_step",
+            "element_key": "seats",
+            "field": "step"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "email",
+                  "key": "seats",
+                  "label": "Work email",
+                  "step": null,
+                  "type": "text_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        }
+      },
+      "name": "A text question step written as null under the email format is an invalid step"
     }
   ],
   "name": "Admission: what makes a value a screen document, and every reason a document is refused"

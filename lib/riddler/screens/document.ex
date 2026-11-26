@@ -174,9 +174,10 @@ defmodule Riddler.Screens.Document do
       refused too, its `field` `"max"`. A bound under any other format, or
       none, is a field nothing consults and raises nothing, and a numeric
       `min` above its `max` is admitted.
-    * `document.invalid_step` - a text question's `step` is there under the
-      `integer` or `number` format and is not a number above zero, or, under
-      `integer`, is a number with a fractional part. A step under any other
+    * `document.invalid_step` - a text question's `step` is there and is not
+      a number, whatever the format, or none; or is there under the `integer`
+      or `number` format and is not a number above zero, or, under `integer`,
+      is a number with a fractional part. A number step under any other
       format, or none, is a field nothing consults and raises nothing.
     * `document.invalid_pattern` - a question that asks for the `pattern`
       format declares a `pattern` that format cannot compile. Nothing a

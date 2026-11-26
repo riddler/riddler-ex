@@ -54,8 +54,10 @@ defmodule Riddler.Screens.Type.TextQuestion do
   with `integer` it is an integer above zero, a number with no fractional
   part counting as one, and with `number` a number above zero; a step that is
   not so is `document.invalid_step`. With any other format, or none, a `step`
-  is a field nothing consults, as a `pattern` is without its format, and
-  nothing here reads it. Response validation does not read `step`: a response
+  is a field nothing consults, as a `pattern` is without its format, and it
+  raises nothing if it is a number, whatever its value; one that is not a
+  number is `document.invalid_step` whatever the format, because the question
+  is presented with it. Response validation does not read `step`: a response
   between the bounds is admitted whatever the step. Each is carried to the
   resolved question as written, and a question that writes neither resolves
   with neither.
@@ -300,13 +302,15 @@ defmodule Riddler.Screens.Type.TextQuestion do
     end
   end
 
-  # `step` is read by the numeric formats alone, as a bound is, so it is held
-  # to their shape and to nothing else: under another format, or none, it is a
-  # field nothing consults. A step that is not above zero moves a slider
+  # `step` is read by the numeric formats alone, as a bound is, so only they
+  # hold it to a slider's shape: a step that is not above zero moves a slider
   # nowhere, and under `integer` a fractional one moves it off the integers.
+  # Under another format, or none, nothing consults it, but it is carried to
+  # the presented question, whose schema types it a number, so whatever the
+  # format a step that is not a number is refused.
   defp step_findings(node) do
-    with format when format in @numeric_formats <- Map.get(node, :format),
-         {:ok, step} <- Map.fetch(node, :step),
+    with {:ok, step} <- Map.fetch(node, :step),
+         format = Map.get(node, :format),
          false <- step?(format, step) do
       [
         %Finding{
@@ -323,9 +327,11 @@ defmodule Riddler.Screens.Type.TextQuestion do
 
   defp step?("integer", step), do: is_number(step) and step > 0 and step == trunc(step)
   defp step?("number", step), do: is_number(step) and step > 0
+  defp step?(_format, step), do: is_number(step)
 
   defp step_shape("integer"), do: "an integer above zero"
   defp step_shape("number"), do: "a number above zero"
+  defp step_shape(_format), do: "a number"
 
   defp bound_finding(node, field, message) do
     %Finding{

@@ -5927,6 +5927,59 @@
         }
       },
       "name": "A text question that writes a step and no style resolves with the step alone"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "format": "email",
+                "key": "seats",
+                "label": "Work email",
+                "step": 2,
+                "type": "text_question"
+              }
+            ],
+            "key": "plan",
+            "title": "Pick a plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "email",
+                  "key": "seats",
+                  "label": "Work email",
+                  "step": 2,
+                  "type": "text_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "A number step under the email format is carried to the resolved question as written"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"
