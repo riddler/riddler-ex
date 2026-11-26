@@ -140,9 +140,9 @@ defmodule Riddler.Screens.Document do
       a string, or a choice question's `searchable` is there and is not a
       boolean.
     * `document.invalid_style` - a `style` is there and is not a string, on an
-      element whose type names one: a text, a link, a button or a choice
-      question. Which string it is stays the renderer's business; that it is
-      a string is this package's.
+      element whose type names one: a text, a link, a button, a text
+      question or a choice question. Which string it is stays the renderer's
+      business; that it is a string is this package's.
     * `document.invalid_validates` - a button's `validates` is there and is
       not a boolean.
     * `document.invalid_outcome` - a button's `outcome` is there and is not
@@ -174,6 +174,10 @@ defmodule Riddler.Screens.Document do
       refused too, its `field` `"max"`. A bound under any other format, or
       none, is a field nothing consults and raises nothing, and a numeric
       `min` above its `max` is admitted.
+    * `document.invalid_step` - a text question's `step` is there under the
+      `integer` or `number` format and is not a number above zero, or, under
+      `integer`, is a number with a fractional part. A step under any other
+      format, or none, is a field nothing consults and raises nothing.
     * `document.invalid_pattern` - a question that asks for the `pattern`
       format declares a `pattern` that format cannot compile. Nothing a
       visitor could type would satisfy it, so it is the document that is

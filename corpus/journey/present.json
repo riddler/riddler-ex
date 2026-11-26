@@ -7244,6 +7244,76 @@
         "status": "screen"
       },
       "name": "A presented screen's diagnostics carry undecidable_checks where a check went undecided, and no element carries checks"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "plan_chosen"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_conditions": []
+          },
+          "elements": [
+            {
+              "format": "number",
+              "key": "seats",
+              "label": "How many seats?",
+              "step": 0.5,
+              "style": "slider",
+              "type": "text_question"
+            },
+            {
+              "key": "plan_next",
+              "label": "Continue",
+              "outcome": "plan_chosen",
+              "type": "button"
+            }
+          ],
+          "key": "plan",
+          "title": "Pick a plan"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "number",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "step": 0.5,
+                  "style": "slider",
+                  "type": "text_question"
+                },
+                {
+                  "key": "plan_next",
+                  "label": "Continue",
+                  "outcome": "plan_chosen",
+                  "type": "button"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        },
+        "screen": "plan",
+        "status": "screen"
+      },
+      "name": "A screen status presents a text question's style and step as the document wrote them"
     }
   ],
   "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"
