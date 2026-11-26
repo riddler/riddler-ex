@@ -5819,6 +5819,114 @@
         }
       },
       "name": "Diagnostics in which no check went undecided carry the two lists alone"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "format": "integer",
+                "key": "seats",
+                "label": "How many seats?",
+                "step": 5,
+                "style": "stepper",
+                "type": "text_question"
+              }
+            ],
+            "key": "plan",
+            "title": "Pick a plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "step": 5,
+                  "style": "stepper",
+                  "type": "text_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "A text question's style and step are carried to the resolved question as written"
+    },
+    {
+      "expected": {
+        "diagnostics": {
+          "missing_variables": [],
+          "undecidable_conditions": []
+        },
+        "id": "edoc_signup_screens",
+        "kind": "screens",
+        "metadata": {},
+        "schema_version": 2,
+        "screens": [
+          {
+            "elements": [
+              {
+                "format": "number",
+                "key": "seats",
+                "label": "How many seats?",
+                "step": 0.25,
+                "type": "text_question"
+              }
+            ],
+            "key": "plan",
+            "title": "Pick a plan"
+          }
+        ]
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "number",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "step": 0.25,
+                  "type": "text_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "root": {
+          "context": {},
+          "responses": {}
+        }
+      },
+      "name": "A text question that writes a step and no style resolves with the step alone"
     }
   ],
   "name": "Resolution: a screen document against one visitor's context and responses"

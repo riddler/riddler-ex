@@ -44,6 +44,22 @@ defmodule Riddler.Screens.Type.TextQuestion do
   that reads it declares something nothing consults, and nothing here reads
   it either; a numeric `min` above its `max` is left as it is written.
 
+  `style` is a hint a renderer owns - `multiline`, a field for more than one
+  line of text, and `slider` and `stepper`, read with the `integer` and
+  `number` formats, are the names offered - and one this package does not
+  offer is passed through; one that is not a string is
+  `document.invalid_style`. A renderer that draws no slider or stepper draws
+  the field it would draw with no `style`. `step` is the increment a slider or
+  a stepper moves by, a hint too, and is read only with the numeric formats:
+  with `integer` it is an integer above zero, a number with no fractional
+  part counting as one, and with `number` a number above zero; a step that is
+  not so is `document.invalid_step`. With any other format, or none, a `step`
+  is a field nothing consults, as a `pattern` is without its format, and
+  nothing here reads it. Response validation does not read `step`: a response
+  between the bounds is admitted whatever the step. Each is carried to the
+  resolved question as written, and a question that writes neither resolves
+  with neither.
+
   The date and time formats take a response as a string, as the numeric ones
   may: `date` is `YYYY-MM-DD`, a calendar date that exists; `time` is `HH:MM`
   or `HH:MM:SS`, 24-hour; `datetime` is a date and a time joined by `T`, then
@@ -56,6 +72,11 @@ defmodule Riddler.Screens.Type.TextQuestion do
       iex> [finding] = Riddler.Screens.Type.TextQuestion.validate(node)
       iex> {finding.code, finding.field}
       {"document.invalid_bound", "min"}
+
+      iex> node = %{type: "text_question", key: "seats", label: "Seats", format: "integer", step: 0}
+      iex> [finding] = Riddler.Screens.Type.TextQuestion.validate(node)
+      iex> {finding.code, finding.field}
+      {"document.invalid_step", "step"}
 
       iex> node = %{type: "text_question", key: "pin", label: "PIN", format: "pattern", pattern: "[0-9"}
       iex> [finding] = Riddler.Screens.Type.TextQuestion.validate(node)
@@ -87,7 +108,7 @@ defmodule Riddler.Screens.Type.TextQuestion do
     do: %{
       required: [:label],
       optional:
-        [:placeholder, :help, :required, :format, :pattern, :min, :max] ++
+        [:placeholder, :help, :required, :format, :pattern, :min, :max, :style, :step] ++
           Value.fields() ++ Messages.fields()
     }
 
@@ -96,7 +117,9 @@ defmodule Riddler.Screens.Type.TextQuestion do
     required_findings(node) ++
       format_findings(node) ++
       pattern_findings(node) ++
-      bound_findings(node) ++ Value.findings(node) ++ Messages.findings(node)
+      bound_findings(node) ++
+      style_findings(node) ++
+      step_findings(node) ++ Value.findings(node) ++ Messages.findings(node)
   end
 
   # `required` says whether an empty response is acceptable, so a value that
@@ -252,6 +275,57 @@ defmodule Riddler.Screens.Type.TextQuestion do
       :error -> :absent
     end
   end
+
+  # Which style a renderer draws is the renderer's; that the hint is a string
+  # is this package's, because a renderer handed anything else has no name to
+  # look up.
+  defp style_findings(node) do
+    case Map.fetch(node, :style) do
+      {:ok, style} when is_binary(style) ->
+        []
+
+      {:ok, style} ->
+        [
+          %Finding{
+            code: "document.invalid_style",
+            message:
+              "a style is the name a renderer looks up, a string, not #{inspect(style)}; which names there are is the renderer's",
+            field: "style",
+            element_key: Finding.element_key(node[:key])
+          }
+        ]
+
+      :error ->
+        []
+    end
+  end
+
+  # `step` is read by the numeric formats alone, as a bound is, so it is held
+  # to their shape and to nothing else: under another format, or none, it is a
+  # field nothing consults. A step that is not above zero moves a slider
+  # nowhere, and under `integer` a fractional one moves it off the integers.
+  defp step_findings(node) do
+    with format when format in @numeric_formats <- Map.get(node, :format),
+         {:ok, step} <- Map.fetch(node, :step),
+         false <- step?(format, step) do
+      [
+        %Finding{
+          code: "document.invalid_step",
+          message: "#{inspect(step)} is not #{step_shape(format)}, so it is not a step",
+          field: "step",
+          element_key: Finding.element_key(node[:key])
+        }
+      ]
+    else
+      _ -> []
+    end
+  end
+
+  defp step?("integer", step), do: is_number(step) and step > 0 and step == trunc(step)
+  defp step?("number", step), do: is_number(step) and step > 0
+
+  defp step_shape("integer"), do: "an integer above zero"
+  defp step_shape("number"), do: "a number above zero"
 
   defp bound_finding(node, field, message) do
     %Finding{

@@ -59,12 +59,12 @@ defmodule Riddler.CorpusTest do
   # count is part of what this version pins: a case lost in a rebase is a case
   # a second runtime stops being held to, and nothing else would notice.
   @case_counts %{
-    "corpus/screens/admit.json" => 230,
-    "corpus/screens/resolve.json" => 77,
-    "corpus/screens/validate_screen.json" => 102,
+    "corpus/screens/admit.json" => 245,
+    "corpus/screens/resolve.json" => 79,
+    "corpus/screens/validate_screen.json" => 104,
     "corpus/screens/seal_secrets.json" => 15,
     "corpus/templates/render.json" => 74,
-    "corpus/journey/present.json" => 79,
+    "corpus/journey/present.json" => 80,
     "corpus/journey/put_context.json" => 8,
     "corpus/journey/decode_submit.json" => 22,
     "corpus/journey/from_data.json" => 18,

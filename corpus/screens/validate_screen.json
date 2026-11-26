@@ -4688,6 +4688,81 @@
         "screen": "account"
       },
       "name": "Failing checks come one per question, in document order, among the built-in findings"
+    },
+    {
+      "expected": {
+        "ok": true
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "max": 50,
+                  "min": 0,
+                  "step": 5,
+                  "style": "slider",
+                  "type": "text_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "seats": "7"
+        },
+        "screen": "plan"
+      },
+      "name": "A numeric response between the bounds is accepted whatever the question's step"
+    },
+    {
+      "expected": {
+        "findings": [
+          {
+            "code": "response.out_of_range",
+            "element_key": "seats",
+            "field": "max"
+          }
+        ],
+        "ok": false
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "max": 50,
+                  "min": 0,
+                  "step": 5,
+                  "style": "slider",
+                  "type": "text_question"
+                }
+              ],
+              "key": "plan",
+              "title": "Pick a plan"
+            }
+          ]
+        },
+        "responses": {
+          "seats": "55"
+        },
+        "screen": "plan"
+      },
+      "name": "A numeric response above the maximum of a stepped question is out of range"
     }
   ],
   "name": "Response validation: what a visitor's responses have to satisfy before a host accepts the screen"
