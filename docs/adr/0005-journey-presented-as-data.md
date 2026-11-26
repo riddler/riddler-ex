@@ -2005,7 +2005,7 @@ This note decides nothing.
 
 ## Amendment, 2026-11-24: a presented screen carries `elements`, and a finding `element_key`
 
-Status: proposed
+Status: accepted (2026-11-26, riddler 0.8.0)
 
 Recorded 2026-11-24, bead rd-jezd, the companion of ADR-0002's amendment of
 the same date headed "the children of a screen are `elements`, as
@@ -2224,7 +2224,7 @@ its `answer_options`.
 
 ## Amendment, 2026-11-24: a presented screen carries `image`, `divider` and `link`, the new formats and hints, and an accessible label
 
-Status: proposed
+Status: accepted (2026-11-26, riddler 0.9.0)
 
 Recorded 2026-11-24, bead rd-6sdv, the companion of ADR-0002's amendment of
 the same date headed "`image`, `divider` and `link`, the URL rule, the date
@@ -2391,7 +2391,7 @@ is the record's: `responses`, `context`, `outcome`, `writes`, `elements`,
 
 ## Amendment, 2026-11-24: a presented screen's diagnostics may carry `undecidable_checks`
 
-Status: proposed
+Status: accepted (2026-11-26, riddler 0.9.0)
 
 Recorded 2026-11-24, bead rd-t1ap, the companion of ADR-0002's amendment of
 the same date headed "a question's `checks`, conditions its author writes and
@@ -2544,3 +2544,117 @@ owns its `answer_options`.
 - A check handed to a client or evaluated in one.
 - The transport, identity for the anonymous visitor and streaming, as the
   amendments above leave them.
+
+---
+
+Noted 2026-11-26, bead rd-d8rq. Two notes by addition, read against `main` at
+`fde4a57`, the commit tagged `v0.9.0`, and at `d2e2d94`, the commit tagged
+`v0.8.0`.
+
+**Decision 6, as the amendments of 2026-11-24 restate it.** The amendment
+above headed "a presented screen carries `elements`, and a finding
+`element_key`" says under "What is unchanged" that "Decision 6 stands: this
+package renders, stores and transports nothing"; the amendment headed "a
+presented screen carries `image`, `divider` and `link`, the new formats and
+hints, and an accessible label" says the same, and the amendment headed "a
+presented screen's diagnostics may carry `undecidable_checks`" says it with
+"and it reads no clock". Decision 6 lists what this package does not own by
+its own list: storage, the stepper, the transport and identity. That it
+renders nothing is not Decision 6's but the amendment above of 2026-11-18's,
+in its paragraph "The fallback for a node type a client does not know." ("This
+package renders nothing and sees no client"). Read each sentence as Decision
+6's list standing, with the rendering half cited to that amendment. "It reads
+no clock" is about the package's own code, as ADR-0002's amendment of
+2026-11-24 headed "a question's `checks`, conditions its author writes and
+the host's validation evaluates" says ("This package reads no clock of its
+own"); whether a condition may read the evaluator's clock is left by that
+amendment under "What this does not decide". At both commits nothing under
+`lib/` renders, keeps a store, starts a process, calls a transport or reads
+the system clock.
+
+**Two counts, read without them.** The elements amendment says a finding's
+wire form carries every key, "the six of the struct", and then lists them;
+and that "this release removes two keys that earlier schemas require", which
+the same paragraph names as `"nodes"` and `"node_key"`. Read each sentence
+without its count: the keys are the ones listed after the first, and the two
+named in the second's paragraph. Each list matches `main` at both commits:
+the struct's fields are `:code`, `:message`, `:field`, `:element_key`,
+`:position` and `:author_message`, and riddler 0.7.0's presented answer and
+finding schemas require `"nodes"` and `"node_key"`.
+
+Nothing above is changed, and this note decides nothing.
+
+---
+
+Noted 2026-11-26. The three amendments above headed "a presented screen
+carries `elements`, and a finding `element_key`", "a presented screen carries
+`image`, `divider` and `link`, the new formats and hints, and an accessible
+label" and "a presented screen's diagnostics may carry `undecidable_checks`"
+move from `proposed` to `accepted`, each Status line flipped in place and
+nothing else in them reworded. The record's own Status stays accepted, and
+its row in `docs/adr/README.md` is unchanged. The flip was decided by the
+conductor under a standing consent, 2026-11-26.
+
+**A presented screen carries `elements`, and a finding `element_key`.** It
+shipped in riddler 0.8.0, the commit tagged `v0.8.0` (`d2e2d94`) and
+published on Hex; its code half is `69921a2` (the wire spelled `elements` and
+`element_key`, and the schemas) and `3d50442` (the presented schema's
+sentence on a later key scoped). It was re-verified at the tag and again at
+`fde4a57`. What was read:
+
+- `Riddler.Journey.present/3` answers the worked example as written for the
+  version 1 document and the same answer for its version 2 form, `"moves"`
+  listing the one button's outcome; it carries no `"nodes"` and no
+  `schema_version`.
+- A finding's data form carries the six keys, `"element_key"` among them and
+  no `"node_key"`; `decode_submit/1` refuses a submit with no `"outcome"` by
+  `submit.missing_field`, its `element_key` `nil`.
+- `presented-answer.schema.json` names its definition `element`, and its
+  `screen` requires `"elements"`; `finding.schema.json` requires
+  `element_key`; the answer and the finding validate against both. The
+  presented schema's description says "hidden elements absent" and scopes its
+  later-release sentence to "a key a later release adds".
+- Decision 6's sentence and the two counts are read as the note of this date
+  above, bead rd-d8rq, says.
+
+**A presented screen carries `image`, `divider` and `link`, the new formats
+and hints, and an accessible label.** It shipped in riddler 0.9.0, the
+commit tagged `v0.9.0` (`fde4a57`) and published on Hex; its code half is
+the commits ADR-0002's flip note of this date names for its companion. It
+was re-verified at the tag. What was read:
+
+- The worked example presents the three elements as written, the link not
+  among `"outcomes"`; with an `http:` photo URL the image is absent and
+  `"missing_variables"` carries the path.
+- `presented-answer.schema.json`'s `element` definition enumerates the three
+  types, holds each to the fields and requirements the table gives, types
+  `"step"` a number, `"searchable"` a boolean and an option's
+  `"description"` a string, enumerates `"date"`, `"time"` and `"datetime"`
+  for `"format"`, and gives every enumerated type the two accessible fields;
+  no `required` it held at `d2e2d94` changed, and the only new ones are the
+  three definitions' and the `undecidable_checks` entry's below.
+- The worked answer validates against this release's schema. Against
+  riddler 0.8.0's it fails only for the `date` question; with that question
+  taken out it validates, and a screen using none of the additions validates
+  against both.
+
+**A presented screen's diagnostics may carry `undecidable_checks`.** It
+shipped in riddler 0.9.0 (`fde4a57`); its code half is `80c98cd`. It was
+re-verified at the tag. What was read:
+
+- The worked example presents `"undecidable_checks"` with the two entries as
+  written, in document order; with `"today"` and `"branch"` in the context
+  the diagnostics carry the two lists alone; no presented element carries
+  `"checks"`.
+- The schema's `diagnostics` definition gains an optional
+  `undecidable_checks`, its items requiring `key`, `code` and `condition`,
+  each a string; its `required` stays the two lists. `finding.schema.json`
+  is unchanged since `3d5085f`. The `Riddler.Journey` `screen` typedoc and
+  `present/3`'s documentation name the third list.
+
+One sentence of each is read, not changed: each amendment's opening paragraph
+calls its own part written "at `proposed`", and says nothing it adds is
+citable until the code lands. Each was written so; the code has landed at the
+commits above, and each now reads accepted, by this note.
+
+The notes above that read any of the three stand under the acceptance.

@@ -1738,3 +1738,23 @@ The second amendment's "no file gains or loses a case" is a claim about its
 own request, and holds there; the file counts have moved since by cases
 later requests added, as the entry above says. The later notes above that
 read either amendment stand under the acceptance.
+
+---
+
+Noted 2026-11-26, bead rd-6ts2. One note by addition, read against `main` at
+`fde4a57`, the commit tagged `v0.9.0`, and at `d2e2d94`, the commit tagged
+`v0.8.0`. From riddler 0.8.0 the field of `Riddler.Finding` this record calls
+`node_key` is `element_key`, the same value by the same rule, as ADR-0002's
+amendment of 2026-11-24 headed "the children of a screen are `elements`, as
+`schema_version` 2" decides. So every sentence above that says the corpus
+compares a finding by `code`, `field` and `node_key` - in the note on the
+corpus position, in the corpus case name amendment's "What each capability
+compares at this date" and the notes under it, and in the flip note of
+2026-09-26 - describes, from that release, the comparison by `code`, `field`
+and `element_key`: `encode_findings/1` in `lib/riddler/corpus.ex` writes
+those three keys and no other at both commits, and no case under `corpus/`
+carries `node_key` at either. A case those sentences say expects a null
+`node_key` expects a null `element_key`. The `@doc false` coercion the
+position amendment names as Riddler.Finding.node_key/1 is
+Riddler.Finding.element_key/1, still `@doc false` and doing the same.
+Nothing above is changed, and this note decides nothing.
