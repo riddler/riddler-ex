@@ -89,9 +89,16 @@ defmodule Riddler.Screens do
   the path as written; an empty list is a question with no options and is not
   reported.
 
-  The output carries no `condition` anywhere, and carries `writes` through
-  untouched: what a button sets is the host's to apply when the visitor presses
-  it.
+  The output carries no `condition` and no `checks` anywhere, and carries
+  `writes` through untouched: what a button sets is the host's to apply when
+  the visitor presses it.
+
+  A shown question whose own response is not nothing answered has its
+  `checks` read for one purpose: each check the root does not decide is
+  reported in a third list of the diagnostics, `undecidable_checks`, an entry
+  of the question's `key`, the check's `code` and its `condition`. Resolution
+  raises nothing and hides nothing by a check, and the list is a key of the
+  diagnostics only where it holds an entry.
 
   ## The value a question presents
 
@@ -134,7 +141,19 @@ defmodule Riddler.Screens do
   A question's `messages` maps a finding code to the text its author shows
   for it. A finding raised on that question's response whose code it keys
   carries that text as `author_message`, and its `message` is unchanged;
-  every other finding carries `author_message` `nil`.
+  every other built-in finding carries `author_message` `nil`.
+
+  A question's `checks` are conditions its author writes over `context` and
+  `responses`, evaluated after the built-in checks against the root a
+  condition reads, which carries no secret question's response. A question
+  the built-in checks raise a finding on answers that finding and none of its
+  checks is evaluated, and neither is a question whose own response is
+  nothing answered. Otherwise its checks are evaluated in order: the first
+  the root decides false raises one finding, its `code` the check's, its
+  `field` `"checks"`, its `author_message` the check's `message`, and a
+  `message` naming the question and the check and quoting no response; a
+  check the root does not decide raises nothing, and the next is evaluated.
+  A question a condition hid has none of its checks evaluated.
 
   A secret question answers at most one finding, and none of its findings
   carries anything of the response. A response in the sealed form, an object
@@ -196,6 +215,7 @@ defmodule Riddler.Screens do
   """
 
   alias Riddler.Finding
+  alias Riddler.Screens.Checks
   alias Riddler.Screens.ContextOptions
   alias Riddler.Screens.Document
   alias Riddler.Screens.Resolved
@@ -207,7 +227,10 @@ defmodule Riddler.Screens do
   alias Riddler.Screens.Value
   alias Riddler.Template
 
-  @empty_diagnostics %{missing_variables: [], undecidable_conditions: []}
+  # `undecidable_checks` is gathered beside the two lists and is a key of the
+  # diagnostics a caller is handed only where it holds an entry, so a screen
+  # with no check, or none undecided, reports the two lists alone.
+  @empty_diagnostics %{missing_variables: [], undecidable_conditions: [], undecidable_checks: []}
 
   # The question types that present a `value`: every question type but the
   # secret question, which presents `held` instead.
@@ -249,11 +272,10 @@ defmodule Riddler.Screens do
   @spec resolve(Document.t(), map()) :: {:ok, Resolved.t()}
   def resolve(%Document{} = document, root) when is_map(root) do
     root = normalize(root)
-    held = held(document, root)
-    root = reading(document, root)
+    scope = scope(document, root)
 
     {screens, diagnostics} =
-      Enum.map_reduce(document.screens, @empty_diagnostics, &resolve_one(&1, {root, held}, &2))
+      Enum.map_reduce(document.screens, @empty_diagnostics, &resolve_one(&1, scope, &2))
 
     {:ok,
      %Resolved{
@@ -261,7 +283,7 @@ defmodule Riddler.Screens do
        kind: document.kind,
        id: document.id,
        metadata: document.metadata,
-       screens: screens,
+       screens: Enum.map(screens, &unchecked/1),
        diagnostics: order(diagnostics)
      }}
   end
@@ -272,7 +294,8 @@ defmodule Riddler.Screens do
   `{:ok, screen, diagnostics}`: the screen, and what resolving *that* screen
   could not decide. The diagnostics are the shape `resolve/2` carries on a
   resolved document - `missing_variables` and `undecidable_conditions`, both in
-  document order - narrowed to the one screen. A caller is never handed a
+  document order, with `undecidable_checks` beside them where a check went
+  undecided - narrowed to the one screen. A caller is never handed a
   screen whose resolution reported something without being handed the report,
   which is what lets a single-screen host tell an element hidden by a condition
   that held from an element hidden because the condition could not be decided.
@@ -316,21 +339,9 @@ defmodule Riddler.Screens do
   @spec resolve_screen(Document.t(), term(), map()) ::
           {:ok, Resolved.screen(), Resolved.diagnostics()} | {:error, :no_such_screen}
   def resolve_screen(%Document{} = document, screen_key, root) when is_map(root) do
-    case Enum.find(document.screens, &(&1.key == screen_key)) do
-      nil ->
-        {:error, :no_such_screen}
-
-      screen ->
-        root = normalize(root)
-
-        {resolved, diagnostics} =
-          resolve_one(
-            screen,
-            {reading(document, root), held(document, root)},
-            @empty_diagnostics
-          )
-
-        {:ok, resolved, order(diagnostics)}
+    case checked_screen(document, screen_key, normalize(root)) do
+      {:ok, screen, diagnostics} -> {:ok, unchecked(screen), diagnostics}
+      {:error, :no_such_screen} = no_such_screen -> no_such_screen
     end
   end
 
@@ -503,7 +514,7 @@ defmodule Riddler.Screens do
       when is_map(root) do
     root = normalize(root)
 
-    case resolve_screen(document, screen_key, root) do
+    case checked_screen(document, screen_key, root) do
       {:ok, screen, diagnostics} ->
         Validation.validate(
           screen,
@@ -689,6 +700,34 @@ defmodule Riddler.Screens do
 
   # -- screens ---------------------------------------------------------------
 
+  # The one screen resolved with its shown questions still carrying their
+  # `checks`, which response validation reads. `resolve_screen/3` hands a
+  # caller the screen without them, as `resolve/2` hands every screen.
+  defp checked_screen(document, screen_key, root) do
+    case Enum.find(document.screens, &(&1.key == screen_key)) do
+      nil ->
+        {:error, :no_such_screen}
+
+      screen ->
+        {resolved, diagnostics} = resolve_one(screen, scope(document, root), @empty_diagnostics)
+        {:ok, resolved, order(diagnostics)}
+    end
+  end
+
+  # A resolved element carries no `checks`, as it carries no `condition`: both
+  # are what the host decides with, and neither is handed to a client as part
+  # of the element. Resolution collapses every container to its winner, so a
+  # resolved screen's elements are all leaves.
+  defp unchecked(screen),
+    do: %{screen | elements: Enum.map(screen.elements, &Map.delete(&1, :checks))}
+
+  # `scope` is `{root, held, responses}`: the root a condition, a template and
+  # a check read, the keys of the secret questions that hold a sealed value,
+  # and the responses the host passed, which say whether a question was
+  # answered.
+  defp scope(document, root),
+    do: {reading(document, root), held(document, root), root["responses"]}
+
   defp normalize(root) do
     %{
       "context" => submap(root, "context"),
@@ -725,8 +764,6 @@ defmodule Riddler.Screens do
         do: key
   end
 
-  # `scope` is `{root, held}`: the root a condition and a template read, and
-  # the keys of the secret questions that hold a sealed value.
   defp resolve_one(screen, scope, diagnostics) do
     {nodes, diagnostics} = resolve_nodes(screen.elements, scope, diagnostics)
     {%{key: screen.key, title: screen.title, elements: nodes}, diagnostics}
@@ -750,17 +787,17 @@ defmodule Riddler.Screens do
   # are different things: a false condition is silent, an undecidable one is
   # reported, and a container that no candidate won is neither - the container
   # asked a question and every answer was no.
-  defp shown(node, {root, _held} = scope, diagnostics) do
+  defp shown(node, {root, _held, _responses} = scope, diagnostics) do
     case decide(node, root, diagnostics) do
       {true, diagnostics} -> present(node, scope, diagnostics)
       {false, diagnostics} -> {nil, diagnostics}
     end
   end
 
-  defp present(node, {root, held} = scope, diagnostics) do
+  defp present(node, scope, diagnostics) do
     case Map.fetch(node, :elements) do
       {:ok, candidates} when is_list(candidates) -> winner(candidates, scope, diagnostics)
-      _not_a_container -> resolve_leaf(node, root, held, diagnostics)
+      _not_a_container -> resolve_leaf(node, scope, diagnostics)
     end
   end
 
@@ -777,7 +814,12 @@ defmodule Riddler.Screens do
   # An element carrying a URL has it read first: one whose path reached no URL
   # the rule admits is absent, reported once by its path, and its templates
   # are never rendered, so it contributes no other missing variable.
-  defp resolve_leaf(node, root, held, diagnostics) do
+  #
+  # A shown question whose own response is not nothing answered has every
+  # check its root does not decide reported in `undecidable_checks`, whether
+  # or not response validation would reach it: the list is what the root
+  # could not decide. Nothing is raised or hidden by a check here.
+  defp resolve_leaf(node, {root, held, responses}, diagnostics) do
     node = Map.delete(node, :other_version_spelling)
 
     case Url.resolve(node, root["context"]) do
@@ -787,7 +829,23 @@ defmodule Riddler.Screens do
       {:ok, node} ->
         {node, diagnostics} = render(node, root, diagnostics)
         {node, unread} = ContextOptions.resolve(node, root["context"])
-        {presented(node, root, held), missing(diagnostics, node[:key], unread)}
+
+        diagnostics =
+          diagnostics
+          |> missing(node[:key], unread)
+          |> undecided_checks(node, root, responses)
+
+        {presented(node, root, held), diagnostics}
+    end
+  end
+
+  defp undecided_checks(diagnostics, node, root, responses) do
+    if Validation.nothing_answered?(node, Map.get(responses, node[:key])) do
+      diagnostics
+    else
+      Map.update!(diagnostics, :undecidable_checks, fn reported ->
+        Enum.reverse(Checks.undecidable(node, root), reported)
+      end)
     end
   end
 
@@ -814,7 +872,7 @@ defmodule Riddler.Screens do
   # whose condition holds replaces the container.
   defp winner([], _scope, diagnostics), do: {nil, diagnostics}
 
-  defp winner([candidate | rest], {root, _held} = scope, diagnostics) do
+  defp winner([candidate | rest], {root, _held, _responses} = scope, diagnostics) do
     case decide(candidate, root, diagnostics) do
       {true, diagnostics} -> present(candidate, scope, diagnostics)
       {false, diagnostics} -> winner(rest, scope, diagnostics)
@@ -911,12 +969,18 @@ defmodule Riddler.Screens do
     end)
   end
 
-  # Both lists are built by prepending, so both are reversed once at the end
-  # and come back in document order.
+  # Every list is built by prepending, so each is reversed once at the end
+  # and comes back in document order. `undecidable_checks` is a key only where
+  # it holds an entry.
   defp order(diagnostics) do
-    %{
+    ordered = %{
       missing_variables: Enum.reverse(diagnostics.missing_variables),
       undecidable_conditions: Enum.reverse(diagnostics.undecidable_conditions)
     }
+
+    case diagnostics.undecidable_checks do
+      [] -> ordered
+      reported -> Map.put(ordered, :undecidable_checks, Enum.reverse(reported))
+    end
   end
 end

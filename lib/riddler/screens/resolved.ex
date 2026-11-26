@@ -18,7 +18,7 @@ defmodule Riddler.Screens.Resolved do
   A resolved screen keeps its `key` and `title` and carries its elements in the
   order the document declared them, with the elements a condition hid absent
   rather than flagged, every container collapsed to its winner, every template
-  field rendered to text, and no `condition` anywhere: an element that is present
+  field rendered to text, and no `condition` and no `checks` anywhere: an element that is present
   is an element that is shown. `writes` is carried through unchanged, because it is
   what the host applies when the visitor presses the button.
 
@@ -34,6 +34,13 @@ defmodule Riddler.Screens.Resolved do
   are lists of entries rather than bare keys: one element can want two variables,
   and a diagnostic that cannot say which variable is a diagnostic an author
   cannot act on.
+
+  `undecidable_checks` is a third list, a key of the diagnostics only where
+  it holds an entry: each check the root could not decide on a shown question
+  whose own response was not nothing answered, with the question's key, the
+  check's `code` and its `condition`, in document order and, on one
+  question, in the order of its `checks`. Such a check raised no finding and
+  hid nothing. Diagnostics with no such entry are the two lists alone.
   """
 
   @typedoc "A template variable that was absent, and the element that wanted it."
@@ -42,10 +49,14 @@ defmodule Riddler.Screens.Resolved do
   @typedoc "A condition that could not be evaluated, and the element carrying it."
   @type undecidable_condition :: %{key: term(), condition: term()}
 
+  @typedoc "A check the root could not decide, and the question carrying it."
+  @type undecidable_check :: %{key: term(), code: String.t(), condition: String.t()}
+
   @typedoc "What resolution reports without refusing."
   @type diagnostics :: %{
-          missing_variables: [missing_variable()],
-          undecidable_conditions: [undecidable_condition()]
+          required(:missing_variables) => [missing_variable()],
+          required(:undecidable_conditions) => [undecidable_condition()],
+          optional(:undecidable_checks) => [undecidable_check()]
         }
 
   @typedoc "A resolved screen: the shape of the screen it came from."

@@ -34,6 +34,7 @@ defmodule Riddler.Screens.Validation do
   alias Predicator.Errors.EvaluationError
   alias Predicator.Errors.UndefinedVariableError
   alias Riddler.Finding
+  alias Riddler.Screens.Checks
   alias Riddler.Screens.Compilers
   alias Riddler.Screens.Messages
   alias Riddler.Screens.Resolved
@@ -70,7 +71,7 @@ defmodule Riddler.Screens.Validation do
       responses = root["responses"]
 
       case undecidable_findings(diagnostics, reading_root) ++
-             Enum.flat_map(screen.elements, &authored_findings(&1, responses)) do
+             Enum.flat_map(screen.elements, &question_findings(&1, responses, reading_root)) do
         [] -> :ok
         findings -> {:error, findings}
       end
@@ -204,6 +205,39 @@ defmodule Riddler.Screens.Validation do
   defp button?(node, key), do: node[:type] == "button" and node[:key] == key
 
   # -- one element ---------------------------------------------------------------
+
+  # One finding per failing question: its built-in finding where it has one,
+  # and otherwise the finding of its first check the root decides false. A
+  # question the built-in checks refuse has none of its checks evaluated, so a
+  # check is never asked about a response already of the wrong shape or out of
+  # its bounds, and neither has a question whose own response is nothing
+  # answered, which is `required`'s business alone. A check reads the root
+  # resolution reads, which carries no secret question's response.
+  defp question_findings(node, responses, reading_root) do
+    response = Map.get(responses, node[:key])
+
+    case authored_findings(node, responses) do
+      [] ->
+        if nothing_answered?(node, response),
+          do: [],
+          else: Checks.findings(node, reading_root, label(node))
+
+      findings ->
+        findings
+    end
+  end
+
+  # What a question's type reads as nothing answered: absent or `null`; for a
+  # text or a secret question, a string that is empty or only whitespace; for
+  # a choice question, nothing selected under its `select`. Resolution reads
+  # it too, to report only the checks of a question that was answered.
+  @doc false
+  @spec nothing_answered?(map(), term()) :: boolean()
+  def nothing_answered?(%{type: @choice_type} = node, response),
+    do: nothing_selected?(Map.get(node, :select), response)
+
+  def nothing_answered?(%{type: @boolean_type}, response), do: is_nil(response)
+  def nothing_answered?(_node, response), do: blank?(response)
 
   # A question's findings, each carrying the author's message for its code
   # where the question's `messages` keys it. Only here: the undecidable

@@ -34,7 +34,7 @@ defmodule Riddler.Screens.Type do
 
   @typedoc """
   An admitted element, a child of a screen or of a container: `:type` and,
-  where the document declared them, `:key`, `:condition`,
+  where the document declared them, `:key`, `:condition`, `:checks`,
   `:accessible_label`, `:accessible_description` and the fields the element's
   type names.
   """

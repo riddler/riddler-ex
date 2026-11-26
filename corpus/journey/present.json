@@ -7107,6 +7107,143 @@
         "status": "screen"
       },
       "name": "A screen status presents a date, a time and a datetime question with their bounds as the document wrote them"
+    },
+    {
+      "expected": {
+        "moves": {
+          "back": false,
+          "outcomes": [
+            "account_created"
+          ]
+        },
+        "screen": {
+          "diagnostics": {
+            "missing_variables": [],
+            "undecidable_checks": [
+              {
+                "code": "check.too_many_seats",
+                "condition": "responses.seats::integer <= context.plan.max_seats",
+                "key": "seats"
+              }
+            ],
+            "undecidable_conditions": []
+          },
+          "elements": [
+            {
+              "format": "email",
+              "key": "work_email",
+              "label": "Work email",
+              "required": true,
+              "type": "text_question",
+              "value": "ada@example.com"
+            },
+            {
+              "key": "work_email_again",
+              "label": "Type the email again",
+              "required": true,
+              "type": "text_question",
+              "value": "ada@example.com"
+            },
+            {
+              "format": "integer",
+              "key": "seats",
+              "label": "How many seats?",
+              "min": 1,
+              "type": "text_question",
+              "value": "9"
+            },
+            {
+              "key": "account_next",
+              "label": "Continue",
+              "outcome": "account_created",
+              "type": "button"
+            }
+          ],
+          "key": "account",
+          "title": "Create your account"
+        },
+        "state": "screen"
+      },
+      "input": {
+        "document": {
+          "id": "edoc_signup_screens",
+          "schema_version": 2,
+          "screens": [
+            {
+              "elements": [
+                {
+                  "format": "email",
+                  "key": "work_email",
+                  "label": "Work email",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "checks": [
+                    {
+                      "code": "check.emails_differ",
+                      "condition": "responses.work_email_again == responses.work_email",
+                      "message": "The two email addresses do not match."
+                    }
+                  ],
+                  "key": "work_email_again",
+                  "label": "Type the email again",
+                  "required": true,
+                  "type": "text_question"
+                },
+                {
+                  "checks": [
+                    {
+                      "code": "check.too_many_seats",
+                      "condition": "responses.seats::integer <= context.plan.max_seats",
+                      "message": "This plan takes fewer seats."
+                    }
+                  ],
+                  "format": "integer",
+                  "key": "seats",
+                  "label": "How many seats?",
+                  "min": 1,
+                  "type": "text_question"
+                },
+                {
+                  "checks": [
+                    {
+                      "code": "check.unknown_referral",
+                      "condition": "responses.referral == 'friend'",
+                      "message": "Tell us who referred you."
+                    }
+                  ],
+                  "condition": "context.show_referral == true",
+                  "key": "referral",
+                  "label": "Who referred you?",
+                  "type": "text_question"
+                },
+                {
+                  "key": "account_next",
+                  "label": "Continue",
+                  "outcome": "account_created",
+                  "type": "button"
+                }
+              ],
+              "key": "account",
+              "title": "Create your account"
+            }
+          ]
+        },
+        "root": {
+          "context": {
+            "show_referral": false
+          },
+          "responses": {
+            "seats": "9",
+            "work_email": "ada@example.com",
+            "work_email_again": "ada@example.com"
+          }
+        },
+        "screen": "account",
+        "status": "screen"
+      },
+      "name": "A presented screen's diagnostics carry undecidable_checks where a check went undecided, and no element carries checks"
     }
   ],
   "name": "A Journey's step as data: the status a host passes, and the screen, waiting or done it is presented as"
