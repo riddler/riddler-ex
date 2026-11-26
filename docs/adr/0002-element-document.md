@@ -5072,18 +5072,9 @@ number with no fractional part counting as one; with `number`, a number above
 zero. A `step` that is there and is not so with a numeric format is
 `document.invalid_step`, its `field` `step`; with any other format, or none,
 it is a field nothing consults, as a `pattern` is without its format, and
-one that is a number raises nothing, whatever its value. A `step` that is not
-a number is `document.invalid_step`, its `field` `step`, whatever the format,
-or none: the resolved and presented question carry it as written, and the
-presented answer's schema types it a number. Response validation does not
-read `step`: a response between the bounds is admitted whatever the step. A
-renderer that draws no slider or stepper draws the field it would draw with
-no `style`, and loses nothing.
-Amended in place 2026-11-26, bead rd-d3jo, before any release carried
-`step`: that a `step` that is not a number is refused whatever the format was
-ruled by the operator, 2026-11-26; this paragraph and the two table rows
-naming `document.invalid_step` below had said that a `step` under any other
-format, or none, raised nothing whatever it was.
+raises nothing. Response validation does not read `step`: a response between
+the bounds is admitted whatever the step. A renderer that draws no slider or
+stepper draws the field it would draw with no `style`, and loses nothing.
 
 **`chips`, `searchable` and an option's `description` on a
 `choice_question`.**
@@ -5123,7 +5114,7 @@ passed through, as a button's `style` is (the private `style_findings/1` in
 | `image` | `fit` | `contain`, `cover` | not a string: `document.invalid_hint` | the renderer's |
 | `link` | `style` | `inline`, `button` | not a string: `document.invalid_style` | the renderer's |
 | `text_question` | `style` | `multiline`, `slider`, `stepper` | not a string: `document.invalid_style` | a field for one line |
-| `text_question` | `step` | a number, as above | not a number, whatever the format; with a numeric format, as above: `document.invalid_step` | none |
+| `text_question` | `step` | a number, as above | as above: `document.invalid_step` | none |
 | `choice_question` | `style` | `radio`, `dropdown`, `chips` for one; `checkboxes`, `list`, `chips` for many | not a string: `document.invalid_style`, unchanged | the renderer's, by the number of options |
 | `choice_question` | `searchable` | `true`, `false` | not a boolean: `document.invalid_hint` | `false` |
 
@@ -5174,7 +5165,7 @@ the codes.
 | `document.invalid_template` | an `alt`, an `accessible_label`, an `accessible_description` or an option's `description` that is not a string or holds a construct outside the subset | reused: a template field, which each now is |
 | `document.invalid_style` | a `style` on a `text`, a `link` or a `text_question` that is there and is not a string | reused: it reads for any element whose type names `style` |
 | `document.invalid_hint` | a `size` or `fit` that is not a string; a `searchable` that is not a boolean | new |
-| `document.invalid_step` | a `step` that is not a number, whatever the format; a `step` with a numeric format that is not a number above zero, or with `integer` not an integer | new |
+| `document.invalid_step` | a `step` with a numeric format that is not a number above zero, or with `integer` not an integer | new |
 | `document.invalid_bound` | a `min` or `max` not in its format's shape; with a date or time format, a `min` after its `max` | new |
 | `document.unknown_format` | a `format` naming no format the package knows | reused; `date`, `time` and `datetime` are formats it knows |
 | `response.format` | a date or time response that is not a string in its format's shape | reused |
@@ -5952,3 +5943,79 @@ its `answer_options`.
   in `lib/riddler/screens.ex` at `3d5085f`). The worked examples read today
   from `context`, and a later record decides whether the evaluator's clock
   is refused.
+
+---
+
+## Amendment, 2026-11-26: a text question's `step` that is not a number is refused whatever the format
+
+Status: proposed
+
+Recorded 2026-11-26, bead rd-d3jo. That a `step` that is there and is not a
+number is refused at admit whatever the format was ruled by the operator,
+2026-11-26. The rest - the wording below, and that a number at or below zero
+under a format that does not read it stays unrefused - is this entry's own,
+written 2026-11-26 at `proposed`.
+
+The amendment above headed "`image`, `divider` and `link`, the URL rule, the
+date and time formats, the hints and an accessible label" says, in its
+paragraph on `style` and `step`, that a `step` "with any other format, or
+none, ... is a field nothing consults, as a `pattern` is without its format,
+and raises nothing". That held for a `step` of any kind, a string included.
+Its companion in ADR-0005, of the same date, types the presented question's
+`"step"` as a number (`priv/schemas/presented-answer.schema.json`, the
+`element` definition's `step` for a `text_question`, at `df24063`), and resolution carries a
+`step` to the resolved and presented question as the document wrote it. So a
+document whose email question carried a string `step` was admitted, and the
+answer it presented did not validate against that schema. No published
+version carries `step`, so the narrowing below reaches no admitted document
+of a release.
+
+### What the record now decides
+
+- A `text_question`'s `step` that is there and is not a number is
+  `document.invalid_step`, its `field` `step`, whatever the format, and with
+  none. A string, a boolean and `null` are each not a number.
+- With the `integer` or `number` format the rules are as the amendment above
+  states them: with `integer` an integer above zero, a number with no
+  fractional part counting as one, and with `number` a number above zero.
+- With any other format, or none, a `step` that is a number raises nothing,
+  whatever its value, zero and below included, and is carried to the
+  resolved and presented question as written. Nothing reads its value there.
+- Response validation does not read `step`, as before.
+
+The code half is the private `step_findings/1` in
+`lib/riddler/screens/type/text_question.ex`, in the request that carries this
+entry, cited by anchor alone.
+
+This supersedes, in the amendment above, the clause of its `style` and
+`step` paragraph that reads "with any other format, or none, it is a field
+nothing consults, as a `pattern` is without its format, and raises nothing",
+where the `step` is not a number; and two table rows, each where it names a
+`step` that is not a number under another format, or none:
+
+- in the hints table, "| `text_question` | `step` | a number, as above | as
+  above: `document.invalid_step` | none |", whose refusal now also covers a
+  `step` that is not a number, whatever the format;
+- in the finding codes table, the `document.invalid_step` row's "a `step`
+  with a numeric format that is not a number above zero, or with `integer`
+  not an integer", to which "a `step` that is not a number, whatever the
+  format" is added.
+
+### Why an amendment and not a note
+
+`docs/adr/README.md` names a new refusal as sufficient for an Amendment, and
+this entry adds one: a string `step` on an email question is admitted with
+no finding by the amendment above, and this entry refuses it.
+
+### What is unchanged
+
+A document that carries no `step` is admitted, validated, resolved and
+presented as before. Every other finding, field and response of a
+`text_question` is unchanged, and so is ADR-0005's companion amendment,
+which already types the presented `step` as a number. The finding code is
+the one the amendment above names; no code is added.
+
+### What this does not decide
+
+- Whether `step` is ever checked against a response, and a `step` for the
+  date and time formats, as the amendment above leaves them.
